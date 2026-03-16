@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "https://socionics-match.netlify.app/*"
+  to   = "https://match.socionicsinsight.com/:splat"
+  status = 301
+  force  = true
