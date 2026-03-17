@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Socionics Match — Find Your Type</title>
-  <meta name="description" content="The first matching platform built on Socionics intertype relations. Not an algorithm — a theory. Join the waitlist." />
+  <meta name="description" content="Match by intertype relation, not algorithm. Socionics maps 16 named relationship dynamics between every personality type. Join the waitlist." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
@@ -13,13 +13,13 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:        #1c1d26;
-      --surface:   #23253200;
-      --border:    rgba(255,255,255,0.10);
-      --accent:    #c9a96e;
-      --accent-dim:#8a6f42;
-      --text:      #e4dfd4;
-      --muted:     #5e5b55;
+      --bg:        #f7f4ef;
+      --surface:   #eeeae3;
+      --border:    rgba(60,50,30,0.12);
+      --accent:    #9a6f38;
+      --accent-lt: #c9a96e;
+      --text:      #1e1b16;
+      --muted:     #7a7268;
       --serif:     'Cormorant Garamond', Georgia, serif;
       --sans:      'DM Sans', system-ui, sans-serif;
     }
@@ -36,7 +36,6 @@
       overflow-x: hidden;
     }
 
-    /* ── Type grid background ── */
     .type-grid {
       position: fixed;
       inset: 0;
@@ -45,7 +44,7 @@
       grid-template-rows: repeat(4, 1fr);
       pointer-events: none;
       z-index: 0;
-      opacity: 0.045;
+      opacity: 0.055;
     }
     .type-grid span {
       display: flex;
@@ -58,7 +57,6 @@
       color: var(--accent);
     }
 
-    /* ── Subtle vignette ── */
     body::after {
       content: '';
       position: fixed;
@@ -68,7 +66,6 @@
       z-index: 1;
     }
 
-    /* ── Layout ── */
     .page { position: relative; z-index: 2; }
 
     header {
@@ -95,9 +92,8 @@
       text-decoration: none;
       transition: color 0.2s;
     }
-    header nav a:hover { color: var(--text); }
+    header nav a:hover { color: var(--accent); }
 
-    /* ── Hero ── */
     .hero {
       min-height: calc(100vh - 72px);
       display: flex;
@@ -130,10 +126,7 @@
       opacity: 0;
       animation: fadeUp 0.7s 0.25s forwards;
     }
-    h1 em {
-      font-style: italic;
-      color: var(--accent);
-    }
+    h1 em { font-style: italic; color: var(--accent); }
 
     .hero-sub {
       font-size: clamp(1rem, 2.2vw, 1.2rem);
@@ -145,10 +138,8 @@
       animation: fadeUp 0.7s 0.4s forwards;
     }
 
-    /* ── Form ── */
     .waitlist-form {
       display: flex;
-      gap: 0;
       max-width: 460px;
       width: 100%;
       border: 1px solid var(--border);
@@ -158,11 +149,11 @@
       animation: fadeUp 0.7s 0.55s forwards;
       transition: border-color 0.2s;
     }
-    .waitlist-form:focus-within { border-color: var(--accent-dim); }
+    .waitlist-form:focus-within { border-color: var(--accent); }
 
     .waitlist-form input[type="email"] {
       flex: 1;
-      background: #2a2c3a;
+      background: #fff;
       border: none;
       outline: none;
       padding: 0.9rem 1.25rem;
@@ -175,7 +166,7 @@
 
     .waitlist-form button {
       background: var(--accent);
-      color: #0c0d14;
+      color: #fff;
       border: none;
       padding: 0.9rem 1.5rem;
       font-family: var(--sans);
@@ -187,7 +178,7 @@
       white-space: nowrap;
       transition: background 0.2s;
     }
-    .waitlist-form button:hover { background: #d4b47a; }
+    .waitlist-form button:hover { background: #7d5a2c; }
 
     .form-note {
       font-size: 0.75rem;
@@ -197,7 +188,6 @@
       animation: fadeUp 0.7s 0.65s forwards;
     }
 
-    /* ── Relation strip ── */
     .relation-strip {
       display: flex;
       gap: 0.5rem;
@@ -217,9 +207,8 @@
       border-radius: 2px;
       color: var(--muted);
     }
-    .rel-pill.hi { border-color: var(--accent-dim); color: var(--accent); }
+    .rel-pill.hi { border-color: var(--accent-lt); color: var(--accent); }
 
-    /* ── How it works ── */
     .how {
       padding: 6rem 2rem;
       max-width: 900px;
@@ -243,8 +232,8 @@
     .steps {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0;
       border: 1px solid var(--border);
+      background: rgba(255,255,255,0.55);
     }
     .step {
       padding: 2.5rem 2rem;
@@ -256,8 +245,7 @@
       font-family: var(--serif);
       font-size: 3rem;
       font-weight: 400;
-      color: var(--accent);
-      opacity: 0.35;
+      color: var(--accent-lt);
       line-height: 1;
       margin-bottom: 1.25rem;
     }
@@ -274,16 +262,12 @@
       line-height: 1.75;
     }
 
-    /* ── Theory callout ── */
     .theory {
       border-top: 1px solid var(--border);
       padding: 5rem 2rem;
       text-align: center;
     }
-    .theory-inner {
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    .theory-inner { max-width: 600px; margin: 0 auto; }
     .theory blockquote {
       font-family: var(--serif);
       font-size: clamp(1.4rem, 3vw, 2rem);
@@ -299,20 +283,16 @@
       line-height: 1.8;
     }
 
-    /* ── Footer ── */
     footer {
       border-top: 1px solid var(--border);
       padding: 2rem 3rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: gap;
       gap: 1rem;
+      flex-wrap: wrap;
     }
-    footer p {
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
+    footer p { font-size: 0.78rem; color: var(--muted); }
     footer a {
       color: var(--muted);
       text-decoration: none;
@@ -321,26 +301,14 @@
     }
     footer a:hover { color: var(--accent); }
 
-    /* ── Animations ── */
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(18px); }
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Success state ── */
-    .success-msg {
-      display: none;
-      font-family: var(--serif);
-      font-size: 1.05rem;
-      font-style: italic;
-      color: var(--accent);
-      margin-top: 1rem;
-    }
-
-    /* ── Responsive ── */
     @media (max-width: 600px) {
       header { padding: 1.25rem 1.5rem; }
-      .waitlist-form { flex-direction: column; border-radius: 0; }
+      .waitlist-form { flex-direction: column; }
       .waitlist-form button { text-align: center; }
       .step { border-right: none; border-bottom: 1px solid var(--border); }
       .step:last-child { border-bottom: none; }
@@ -350,7 +318,6 @@
 </head>
 <body>
 
-  <!-- Background type grid -->
   <div class="type-grid" aria-hidden="true">
     <span>ILE</span><span>SEI</span><span>ESE</span><span>LII</span>
     <span>EIE</span><span>LSI</span><span>SLE</span><span>IEI</span>
@@ -366,18 +333,17 @@
       </nav>
     </header>
 
-    <!-- Hero -->
     <section class="hero">
       <p class="eyebrow">Now in development &mdash; Join the waitlist</p>
 
       <h1>Match by <em>personality,</em><br>not algorithm.</h1>
 
       <p class="hero-sub">
-        Socionics maps 16 specific relationship dynamics between every personality type.
-        This app surfaces them &mdash; so you know not just <em>who</em> you&rsquo;re meeting, but <em>how</em> you&rsquo;ll relate.
+        Socionics maps 16 named relationship dynamics between every personality type &mdash;
+        not just compatible or incompatible, but characterised dynamics each with a predictable pattern.
+        This app puts that theory in your hands.
       </p>
 
-      <!-- Netlify form -->
       <form name="waitlist" method="POST" data-netlify="true" class="waitlist-form" id="waitlist-form">
         <input type="hidden" name="form-name" value="waitlist" />
         <input type="email" name="email" placeholder="Your email address" required aria-label="Email address" />
@@ -385,7 +351,6 @@
       </form>
       <p class="form-note">No spam. One email when it launches.</p>
 
-      <!-- Relation type pills -->
       <div class="relation-strip" aria-label="Intertype relation examples">
         <span class="rel-pill hi">Duality</span>
         <span class="rel-pill hi">Activity</span>
@@ -398,10 +363,9 @@
       </div>
     </section>
 
-    <!-- How it works -->
     <section class="how">
       <p class="section-label">How it works</p>
-      <h2>A matching platform with<br>an explicit theory underneath it.</h2>
+      <h2>You choose the dynamic.<br>Not a black-box algorithm.</h2>
 
       <div class="steps">
         <div class="step">
@@ -412,7 +376,7 @@
         <div class="step">
           <div class="step-num">02</div>
           <h3>Choose your dynamic</h3>
-          <p>Select which intertype relations you&rsquo;re open to. Duals for deep complementarity. Mirrors for intellectual sparring. You set the terms &mdash; not a black-box algorithm.</p>
+          <p>Select which intertype relations you&rsquo;re open to. Duals for deep complementarity. Mirrors for intellectual sparring. You set the terms &mdash; the app surfaces who fits.</p>
         </div>
         <div class="step">
           <div class="step-num">03</div>
@@ -422,14 +386,12 @@
       </div>
     </section>
 
-    <!-- Theory callout -->
     <section class="theory">
       <div class="theory-inner">
-        <blockquote>&ldquo;Not compatible or incompatible &mdash; but named, characterised dynamics each with a predictable character.&rdquo;</blockquote>
+        <blockquote>&ldquo;Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations. The unit of analysis is the dyad, not the person.&rdquo;</blockquote>
         <p>
-          Socionics was developed in the 1970s on Jungian foundations.
-          Unlike MBTI or the Big Five, it is primarily a theory of <em>intertype relations</em> &mdash; the unit of analysis is the dyad, not the person.
-          This app is the first large-scale empirical test of those predictions.
+          Developed in the 1970s on Jungian foundations, Socionics maps 16 specific dynamics between every type pair.
+          This app is built for the English-language Socionics community &mdash; and designed to generate real data on whether the theory holds at scale.
         </p>
       </div>
     </section>
@@ -449,11 +411,9 @@
         const data = new FormData(form);
         fetch('/', { method: 'POST', body: data })
           .then(() => {
-            form.innerHTML = '<p style="font-family:\'Cormorant Garamond\',serif;font-style:italic;color:#c9a96e;font-size:1.1rem;">You&rsquo;re on the list. We&rsquo;ll be in touch.</p>';
+            form.innerHTML = '<p style="font-family:\'Cormorant Garamond\',serif;font-style:italic;color:#9a6f38;font-size:1.1rem;">You&rsquo;re on the list. We&rsquo;ll be in touch.</p>';
           })
-          .catch(() => {
-            form.submit();
-          });
+          .catch(() => { form.submit(); });
       });
     }
   </script>
