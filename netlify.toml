@@ -3,6 +3,12 @@
   publish = "dist"
 
 [[redirects]]
+  from = "https://socionics-match.netlify.app/*"
+  to = "https://socion.app/:splat"
+  status = 301
+  force = true  
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
