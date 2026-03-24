@@ -6,7 +6,7 @@
   from = "https://socionics-match.netlify.app/*"
   to = "https://socion.app/:splat"
   status = 301
-  force = true  
+  force = true
 
 [[redirects]]
   from = "/*"
