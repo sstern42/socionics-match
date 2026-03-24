@@ -1,5 +1,8 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
 [[redirects]]
-  from = "https://socionics-match.netlify.app/*"
-  to   = "https://match.socionicsinsight.com/:splat"
-  status = 301
-  force  = true
+  from = "/*"
+  to = "/index.html"
+  status = 200
