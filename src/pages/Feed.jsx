@@ -34,8 +34,8 @@ export default function Feed() {
   }, [loading, session, profile, retried, retrying])
 
   useEffect(() => {
-    if (profile) loadFeed()
-  }, [profile?.id])
+    if (!loading && profile) loadFeed()
+  }, [profile?.id, loading])
 
   async function loadFeed() {
     if (!profile) return
