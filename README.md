@@ -2,7 +2,16 @@
 
 Socionics-based matching. [socion.app](https://socion.app)
 
-Match by intertype relation, not algorithm. Socionics maps 16 named relationship dynamics between every personality type. Socion puts that theory in users' hands.
+Match by intertype relation, not algorithm. Socionics maps 16 named relationship dynamics between every personality type. Socion puts that theory in users' hands — you choose the dynamic, the system shows you who fits.
+
+## How it works
+
+1. Complete a type questionnaire or enter your type directly
+2. Select which intertype dynamics you want to match on (Dual, Mirror, Activity, or any of the 16)
+3. Browse profiles whose type produces your chosen relation
+4. Connect and message
+
+The matching logic is in [`src/data/relations.js`](src/data/relations.js) — fully open and auditable.
 
 ## Stack
 
@@ -24,14 +33,16 @@ npm run dev
 ## Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Run `supabase/schema.sql` in the SQL editor
-3. Copy your project URL and anon key into `.env`
+2. Run `supabase/schema.sql` in the SQL editor to create tables
+3. Run `supabase/rls_reset.sql` to configure Row Level Security policies
+4. Enable realtime on the `messages` table (handled by `rls_reset.sql`)
+5. Copy your project URL and anon key into `.env`
 
 ## Deploy
 
 Push to `main` — Netlify deploys automatically.
 
-Set environment variables in Netlify dashboard:
+Set environment variables in the Netlify dashboard:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
@@ -39,22 +50,39 @@ Set environment variables in Netlify dashboard:
 
 ```
 src/
-  components/   Layout and shared UI
+  components/   Layout, feed cards, messaging UI, relation picker
   data/         Intertype relations matrix (relations.js)
-  lib/          Supabase client
-  pages/        Route-level components
+  lib/          Supabase client, auth, profile, feed, messages
+  pages/        Route-level components (Feed, Messages, ProfileSetup, ProfileEdit, ...)
 supabase/
-  schema.sql    Full data model — run once in Supabase SQL editor
+  schema.sql      Full data model — run once
+  rls_reset.sql   Row Level Security policies — run once (safe to re-run)
 ```
+
+## Routes
+
+| Path | Description |
+|---|---|
+| `/` | Landing page |
+| `/onboarding` | Type questionnaire |
+| `/auth` | Sign in / sign up |
+| `/profile/setup` | Profile creation (post-auth) |
+| `/profile/edit` | Edit profile details and relation preferences |
+| `/feed` | Matching feed |
+| `/messages` | Messaging (supports `?match=uuid` deep link) |
+
+## Intertype relations matrix
+
+The full 16×16 matrix lives in `src/data/relations.js` and is sourced from [socionics.com](http://www.socionics.com/rel/relcht.htm). All 256 cells are validated for symmetry and correct asymmetric inverse pairs (Supervisor/Supervisee, Benefactor/Beneficiary).
 
 ## Build phases
 
 - **Phase 0** ✅ Infrastructure — React scaffold, Supabase schema, Netlify deploy
-- **Phase 1** Type onboarding questionnaire
-- **Phase 2** Profile creation and auth
-- **Phase 3** Matching feed
-- **Phase 4** Messaging and post-match feedback
-- **Phase 5** Launch on r/socionics and English-language Discord servers
+- **Phase 1** ✅ Type onboarding questionnaire
+- **Phase 2** ✅ Auth + profile creation
+- **Phase 3** ✅ Matching feed with relation filtering
+- **Phase 4** ✅ Messaging + realtime
+- **Phase 5** ✅ Launch — socion.app live, repo public
 
 ## Related
 
