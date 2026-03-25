@@ -46,6 +46,7 @@ export default function Feed() {
         getFeedProfiles({
           userType: profile.type,
           relationPreferences: profile.relation_preferences ?? [],
+          userPurpose: profile.purpose ?? [],
           currentUserId: profile.id,
         }),
         getExistingMatches(profile.id),

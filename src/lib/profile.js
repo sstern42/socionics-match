@@ -1,13 +1,13 @@
 import { supabase } from './supabase'
 
-export async function createProfile({ authId, type, typeConfidence, profileData }) {
+export async function createProfile({ authId, type, typeConfidence, profileData, purpose = ['dating'] }) {
   const { data, error } = await supabase
     .from('users')
     .insert({
       auth_id: authId,
       type,
       type_confidence: typeConfidence,
-      purpose: ['dating'],
+      purpose,
       relation_preferences: [],
       profile_data: profileData,
     })
@@ -36,6 +36,14 @@ export async function updateProfileData(userId, { profileData, type, avatarUrl }
   const { error } = await supabase
     .from('users')
     .update(updates)
+    .eq('id', userId)
+  if (error) throw error
+}
+
+export async function updatePurpose(userId, purpose) {
+  const { error } = await supabase
+    .from('users')
+    .update({ purpose })
     .eq('id', userId)
   if (error) throw error
 }
