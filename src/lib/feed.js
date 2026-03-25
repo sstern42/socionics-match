@@ -4,7 +4,7 @@ import { getRelation } from '../data/relations'
 export async function getFeedProfiles({ userType, relationPreferences, currentUserId, limit = 20 }) {
   const { data, error } = await supabase
     .from('users')
-    .select('id, type, type_confidence, profile_data, location, relation_preferences')
+    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url')
     .neq('id', currentUserId)
     .not('profile_data', 'is', null)
     .limit(100)

@@ -52,20 +52,34 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       transition: 'border-color 0.2s',
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500 }}>
-            {name}{age ? `, ${age}` : ''}
-          </h3>
-          {location && (
-            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.15rem' }}>{location}</p>
-          )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
+            background: 'var(--bg-secondary, #f0ede6)',
+            border: '1px solid var(--border)',
+            overflow: 'hidden',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {profile.avatar_url
+              ? <img src={profile.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{name ? name[0].toUpperCase() : '?'}</span>
+            }
+          </div>
+          <div>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
+              {name}{age ? `, ${age}` : ''}
+            </h3>
+            {location && (
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.1rem' }}>{location}</p>
+            )}
+          </div>
         </div>
         <span style={{
           fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
           fontWeight: 500, color: colours.text,
           background: colours.bg, border: `1px solid ${colours.border}`,
-          padding: '0.25rem 0.6rem', borderRadius: 3,
+          padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0,
         }}>
           {type}
         </span>
