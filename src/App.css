@@ -5,3 +5,14 @@
   .nav-desktop { display: none !important; }
   .nav-burger { display: block !important; }
 }
+
+/* Messages layout */
+@media (max-width: 600px) {
+  .messages-grid { grid-template-columns: 1fr !important; }
+  .messages-sidebar.hidden-mobile { display: none !important; }
+  .back-btn { display: block !important; }
+}
+@media (min-width: 601px) {
+  .messages-sidebar { display: block !important; }
+  .back-btn.show-mobile { display: none !important; }
+}

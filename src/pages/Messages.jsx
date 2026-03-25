@@ -60,9 +60,9 @@ export default function Messages() {
         display: 'flex', flexDirection: 'column',
         padding: '0 1.5rem',
       }}>
-        <div style={{
+        <div className="messages-grid" style={{
           flex: 1, display: 'grid',
-          gridTemplateColumns: mobileShowConvo ? '1fr' : '260px 1fr',
+          gridTemplateColumns: '260px 1fr',
           border: '1px solid var(--border)',
           borderTop: 'none',
           background: '#fff',
@@ -72,8 +72,7 @@ export default function Messages() {
           <div style={{
             borderRight: '1px solid var(--border)',
             overflowY: 'auto',
-            display: mobileShowConvo ? 'none' : 'block',
-          }}>
+          }} className={mobileShowConvo ? 'messages-sidebar hidden-mobile' : 'messages-sidebar'}>
             <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
               <p className="eyebrow">Connections</p>
             </div>
@@ -88,8 +87,8 @@ export default function Messages() {
             {mobileShowConvo && (
               <button
                 onClick={() => setMobileShowConvo(false)}
-                style={{ display: 'none', background: 'none', border: 'none', color: 'var(--accent)', padding: '0.75rem 1rem', textAlign: 'left', cursor: 'pointer', fontSize: '0.82rem', borderBottom: '1px solid var(--border)' }}
-                className="back-btn"
+                style={{ background: 'none', border: 'none', color: 'var(--accent)', padding: '0.75rem 1rem', textAlign: 'left', cursor: 'pointer', fontSize: '0.82rem', borderBottom: '1px solid var(--border)' }}
+                className="back-btn show-mobile"
               >
                 ← Back
               </button>
