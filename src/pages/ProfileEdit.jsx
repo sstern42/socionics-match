@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
-import { updateProfileData, updateRelationPreferences, uploadAvatar } from '../lib/profile'
+import { updateProfileData, updateRelationPreferences, updatePurpose, uploadAvatar } from '../lib/profile'
 import { TYPES } from '../data/relations'
+import PurposePicker from '../components/profile/PurposePicker'
 
 export default function ProfileEdit() {
   const { profile, refreshProfile } = useAuth()
@@ -18,6 +19,7 @@ export default function ProfileEdit() {
   const [location, setLocation] = useState(profile?.profile_data?.location ?? '')
   const [type, setType] = useState(profile?.type ?? '')
 
+  const [purposes, setPurposes] = useState(profile?.purpose ?? ['dating'])
   const [relations, setRelations] = useState(profile?.relation_preferences ?? [])
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url ?? null)
@@ -41,6 +43,7 @@ export default function ProfileEdit() {
           avatarUrl,
         }),
         updateRelationPreferences(profile.id, relations),
+        updatePurpose(profile.id, purposes),
       ])
       await refreshProfile()
       navigate('/feed')
@@ -187,7 +190,14 @@ export default function ProfileEdit() {
             </p>
           </div>
 
-          <RelationPicker selected={relations} onChange={setRelations} />
+          <div>
+            <p style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.75rem' }}>Looking for</p>
+            <PurposePicker selected={purposes} onChange={setPurposes} />
+          </div>
+          <div>
+            <p style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.75rem' }}>Dynamics</p>
+            <RelationPicker selected={relations} onChange={setRelations} />
+          </div>
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
 
@@ -199,8 +209,8 @@ export default function ProfileEdit() {
               type="button"
               className="btn-primary"
               onClick={handleSave}
-              disabled={saving || relations.length === 0}
-              style={{ opacity: (saving || relations.length === 0) ? 0.5 : 1 }}
+              disabled={saving || relations.length === 0 || purposes.length === 0}
+              style={{ opacity: (saving || relations.length === 0 || purposes.length === 0) ? 0.5 : 1 }}
             >
               {saving ? 'Saving…' : 'Save changes'}
             </button>

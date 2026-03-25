@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
@@ -33,9 +33,17 @@ export default function Feed() {
     }
   }, [loading, session, profile, retried, retrying])
 
+  // Run loadFeed when profile is available.
+  // Using profile?.id + loading covers both:
+  // - profile arriving after mount (id changes)
+  // - profile already in context when mounted (runs immediately on mount)
+  const hasFetched = useRef(false)
   useEffect(() => {
-    if (profile) loadFeed()
-  }, [profile?.id])
+    if (!loading && profile && !hasFetched.current) {
+      hasFetched.current = true
+      loadFeed()
+    }
+  }, [profile?.id, loading])
 
   async function loadFeed() {
     if (!profile) return
@@ -46,6 +54,7 @@ export default function Feed() {
         getFeedProfiles({
           userType: profile.type,
           relationPreferences: profile.relation_preferences ?? [],
+          userPurpose: profile.purpose ?? [],
           currentUserId: profile.id,
         }),
         getExistingMatches(profile.id),

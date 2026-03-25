@@ -1,10 +1,10 @@
 import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
 
-export async function getFeedProfiles({ userType, relationPreferences, currentUserId, limit = 20 }) {
+export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 20 }) {
   const { data, error } = await supabase
     .from('users')
-    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url')
+    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose')
     .neq('id', currentUserId)
     .not('profile_data', 'is', null)
     .limit(100)
@@ -20,7 +20,8 @@ export async function getFeedProfiles({ userType, relationPreferences, currentUs
       displayRelation: getRelation(profile.type, userType),
     }))
     .filter(profile =>
-      profile.relation && relationPreferences.includes(profile.relation)
+      profile.relation && relationPreferences.includes(profile.relation) &&
+      (userPurpose.length === 0 || (profile.purpose ?? []).some(p => userPurpose.includes(p)))
     )
     .slice(0, limit)
 }

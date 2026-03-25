@@ -5,6 +5,7 @@ import EntryChoice from '../components/onboarding/EntryChoice'
 import TypeSelector from '../components/onboarding/TypeSelector'
 import QuestionScreen from '../components/onboarding/QuestionScreen'
 import ResultScreen from '../components/onboarding/ResultScreen'
+import PurposePicker from '../components/profile/PurposePicker'
 import { QUESTIONS } from '../data/questions'
 import { computeTypeDistribution } from '../data/scoring'
 import { useAuth } from '../lib/AuthContext'
@@ -13,10 +14,16 @@ export default function Onboarding() {
   const { session } = useAuth()
   const navigate = useNavigate()
 
-  const [step, setStep] = useState('entry')
+  const [step, setStep] = useState('purpose')
+  const [purposes, setPurposes] = useState([])
   const [questionIndex, setQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
+
+  function handlePurposeNext() {
+    sessionStorage.setItem('socion_purpose', JSON.stringify(purposes))
+    setStep('entry')
+  }
 
   function handleAnswer(questionId, choice) {
     const newAnswers = { ...answers, [questionId]: choice }
@@ -31,15 +38,11 @@ export default function Onboarding() {
   }
 
   function handleConfirm(type, distribution) {
-    // Persist to sessionStorage so ProfileSetup can read it
     sessionStorage.setItem('socion_type', type)
     sessionStorage.setItem('socion_confidence', JSON.stringify(distribution))
-
     if (session) {
-      // Already signed in — go straight to profile setup
       navigate('/profile/setup')
     } else {
-      // Need to create account first
       navigate('/auth')
     }
   }
@@ -52,6 +55,32 @@ export default function Onboarding() {
         alignItems: 'center', justifyContent: 'center',
         padding: '4rem 1.5rem',
       }}>
+        {step === 'purpose' && (
+          <div style={{ width: '100%', maxWidth: 560, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div style={{ textAlign: 'center' }}>
+              <p className="eyebrow">Step 1 of 3</p>
+              <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
+                What are you <em>looking for?</em>
+              </h1>
+              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem' }}>
+                Select everything that applies. You can change this later.
+              </p>
+            </div>
+            <PurposePicker selected={purposes} onChange={setPurposes} />
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handlePurposeNext}
+                disabled={purposes.length === 0}
+                style={{ opacity: purposes.length === 0 ? 0.5 : 1 }}
+              >
+                Next — find your type
+              </button>
+            </div>
+          </div>
+        )}
+
         {step === 'entry' && (
           <EntryChoice
             onKnowType={() => setStep('selector')}

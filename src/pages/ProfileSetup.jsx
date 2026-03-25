@@ -17,6 +17,7 @@ export default function ProfileSetup() {
 
   const savedType = sessionStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || 'null')
+  const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || "['dating']")
 
   const [step, setStep] = useState('details')
   const [name, setName] = useState('')
@@ -38,6 +39,7 @@ export default function ProfileSetup() {
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
         profileData: { name, age: parseInt(age), bio, location },
+        purpose: savedPurpose,
       })
 
       if (!newProfile) {
@@ -50,6 +52,7 @@ export default function ProfileSetup() {
 
       sessionStorage.removeItem('socion_type')
       sessionStorage.removeItem('socion_confidence')
+      sessionStorage.removeItem('socion_purpose')
 
       await refreshProfile()
       navigate('/feed')
