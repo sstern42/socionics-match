@@ -61,7 +61,10 @@ export default function Layout({ children }) {
 
         <footer className="site-footer">
           <p>&copy; {new Date().getFullYear()} Spencer Stern</p>
-          <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
+          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
+            <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
+            <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
+          </div>
         </footer>
       </div>
     </>
