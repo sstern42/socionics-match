@@ -6,10 +6,14 @@ import { supabase } from '../lib/supabase'
 
 export default function Feedback() {
   const { matchId } = useParams()
-  const { profile } = useAuth()
+  const { profile, session, loading } = useAuth()
   const navigate = useNavigate()
 
   const [match, setMatch] = useState(null)
+
+  useEffect(() => {
+    if (!loading && !session) navigate('/auth')
+  }, [session, loading])
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')
