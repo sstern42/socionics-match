@@ -62,7 +62,7 @@ export default function Messages() {
       }}>
         <div style={{
           flex: 1, display: 'grid',
-          gridTemplateColumns: '260px 1fr',
+          gridTemplateColumns: mobileShowConvo ? '1fr' : '260px 1fr',
           border: '1px solid var(--border)',
           borderTop: 'none',
           background: '#fff',
