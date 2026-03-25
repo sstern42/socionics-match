@@ -39,6 +39,7 @@ export default function Layout({ children }) {
               <>
                 {navLink('/feed', 'Matches')}
                 {navLink('/messages', 'Messages')}
+                {navLink('/profile/edit', 'Profile')}
                 <button
                   onClick={handleSignOut}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)', transition: 'color 0.2s' }}
