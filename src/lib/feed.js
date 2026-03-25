@@ -2,7 +2,6 @@ import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
 
 export async function getFeedProfiles({ userType, relationPreferences, currentUserId, limit = 20 }) {
-  // Fetch all other users with profiles
   const { data, error } = await supabase
     .from('users')
     .select('id, type, type_confidence, profile_data, location, relation_preferences')
@@ -12,11 +11,13 @@ export async function getFeedProfiles({ userType, relationPreferences, currentUs
 
   if (error) throw error
 
-  // Filter client-side by relation match
   return data
     .map(profile => ({
       ...profile,
+      // relation = YOUR role (used for filtering against your preferences)
       relation: getRelation(userType, profile.type),
+      // displayRelation = THEIR role relative to you (shown on the card)
+      displayRelation: getRelation(profile.type, userType),
     }))
     .filter(profile =>
       profile.relation && relationPreferences.includes(profile.relation)

@@ -114,10 +114,11 @@ export default function Feed() {
     )
   }
 
-  const feedRelations = [...new Set(profiles.map(p => p.relation).filter(Boolean))]
+  // Pills show displayRelation (what they are to you); filter still uses relation (your role)
+  const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = filterRelation === 'ALL'
     ? profiles
-    : profiles.filter(p => p.relation === filterRelation)
+    : profiles.filter(p => (p.displayRelation ?? p.relation) === filterRelation)
 
   return (
     <Layout>
@@ -133,14 +134,14 @@ export default function Feed() {
           </p>
         </div>
 
-        {feedRelations.length > 1 && (
+        {feedDisplayRelations.length > 1 && (
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
             <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
               All ({profiles.length})
             </button>
-            {feedRelations.map(rel => (
+            {feedDisplayRelations.map(rel => (
               <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
-                {RELATIONS[rel]?.name} ({profiles.filter(p => p.relation === rel).length})
+                {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
               </button>
             ))}
           </div>
@@ -170,7 +171,7 @@ export default function Feed() {
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
               Selected relations: <strong>{profile?.relation_preferences?.join(', ') || 'none'}</strong>
             </p>
-            <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
+            <button type="button" className="btn-ghost" onClick={() => navigate('/profile/setup')}>Update preferences</button>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
