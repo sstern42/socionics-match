@@ -25,7 +25,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
         options: {
-          emailRedirectTo: 'https://socion.app/feed',
+          emailRedirectTo: `${window.location.origin}/feed`,
         },
       })
       if (error) throw error

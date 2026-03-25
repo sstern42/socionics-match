@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { createProfile, updateRelationPreferences } from '../lib/profile'
+import { COUNTRIES } from '../data/countries'
 
 export default function ProfileSetup() {
   const { session, profile, refreshProfile } = useAuth()
@@ -23,7 +24,7 @@ export default function ProfileSetup() {
   const [name, setName] = useState('')
   const [age, setAge] = useState('')
   const [bio, setBio] = useState('')
-  const [location, setLocation] = useState('')
+  const [country, setCountry] = useState('')
   const [type, setType] = useState(savedType)
   const [relations, setRelations] = useState([])
   const [error, setError] = useState(null)
@@ -38,7 +39,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, age: parseInt(age), bio, location },
+        profileData: { name, age: parseInt(age), bio, country },
         purpose: savedPurpose,
       })
 
@@ -83,7 +84,17 @@ export default function ProfileSetup() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input className="input-standalone" placeholder="First name" value={name} onChange={e => setName(e.target.value)} />
               <input className="input-standalone" placeholder="Age" type="number" min="18" max="99" value={age} onChange={e => setAge(e.target.value)} />
-              <input className="input-standalone" placeholder="Location (city, country)" value={location} onChange={e => setLocation(e.target.value)} />
+              <select
+                className="input-standalone"
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                style={{ fontFamily: 'var(--sans)' }}
+              >
+                <option value="">Country (optional)</option>
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
               <textarea
                 className="input-standalone"
                 placeholder="A short bio — how you'd describe yourself to a stranger"
