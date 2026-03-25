@@ -23,12 +23,14 @@ const RELATION_COLOURS = {
 // matchId is the matches.id for an already-connected profile, or null if not yet connected
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
-  const { profile_data, type, relation, location } = profile
+  const { profile_data, type, relation, displayRelation, location } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
   const bio = profile_data?.bio
-  const relInfo = RELATIONS[relation]
-  const colours = RELATION_COLOURS[relation] ?? RELATION_COLOURS.IDENTITY
+  // displayRelation = what they are to you (e.g. SUPERVISOR)
+  // relation = your role (e.g. SUPERVISEE) — used for connect/filter logic
+  const relInfo = RELATIONS[displayRelation ?? relation]
+  const colours = RELATION_COLOURS[displayRelation ?? relation] ?? RELATION_COLOURS.IDENTITY
 
   function handleAction() {
     if (alreadyMatched && matchId) {
