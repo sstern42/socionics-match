@@ -170,7 +170,7 @@ export default function Feed() {
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
               Selected relations: <strong>{profile?.relation_preferences?.join(', ') || 'none'}</strong>
             </p>
-            <button type="button" className="btn-ghost" onClick={() => navigate('/profile/setup')}>Update preferences</button>
+            <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
