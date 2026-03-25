@@ -17,6 +17,14 @@ export async function createProfile({ authId, type, typeConfidence, profileData 
   return data
 }
 
+export async function updateProfileData(userId, { profileData, type }) {
+  const { error } = await supabase
+    .from('users')
+    .update({ profile_data: profileData, type })
+    .eq('id', userId)
+  if (error) throw error
+}
+
 export async function updateRelationPreferences(userId, preferences) {
   const { error } = await supabase
     .from('users')
