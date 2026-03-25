@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabase'
 
 const RELATION_PILLS = [
   { label: 'Duality',        hi: true },
@@ -18,10 +20,21 @@ export default function Home() {
   const ctaPath = session && profile ? '/feed' : '/onboarding'
   const ctaLabel = session && profile ? 'View your matches' : 'Find your type'
 
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    supabase
+      .from('stats')
+      .select('users, countries, connections, types')
+      .eq('id', 1)
+      .single()
+      .then(({ data }) => { if (data) setStats(data) })
+  }, [])
+
   return (
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem 6rem', gap: '1.5rem' }}>
-        <p className="eyebrow fade-up-1">Now in beta</p>
+        <p className="eyebrow fade-up-1">Live</p>
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
@@ -42,6 +55,22 @@ export default function Home() {
             <span key={label} className={`rel-pill${hi ? ' active' : ''}`}>{label}</span>
           ))}
         </div>
+
+        {stats && (
+          <div className="fade-up-5" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
+            {[
+              { value: stats.users, label: 'members' },
+              { value: stats.countries, label: 'countries' },
+              { value: stats.connections, label: 'connections' },
+              { value: stats.types, label: 'types represented' },
+            ].map(({ value, label }) => (
+              <div key={label} style={{ textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
+                <div style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.3rem' }}>{label}</div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
@@ -63,7 +92,7 @@ export default function Home() {
           <div className="step">
             <div className="step-num">03</div>
             <h3>Match with purpose</h3>
-            <p>Dating at launch. Friendship, networking, and team building to follow. A Dual is a Dual whether you&rsquo;re dating or building a team.</p>
+            <p>Dating, friendship, networking, and team building. A Dual is a Dual whether you&rsquo;re dating or building a team.</p>
           </div>
         </div>
       </section>
