@@ -2,14 +2,18 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { signIn } from '../lib/auth'
 import { useAuth } from '../lib/AuthContext'
+
+const IS_PROD = window.location.hostname === 'socion.app'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const { session, profile, loading: authLoading } = useAuth()
+  const { session, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -17,19 +21,30 @@ export default function Auth() {
     if (session) navigate('/feed')
   }, [session, authLoading])
 
-  async function handleSubmit() {
+  async function handleMagicLink() {
     if (!email.trim()) return
     setError(null)
     setLoading(true)
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/feed`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/feed` },
       })
       if (error) throw error
       setSent(true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handlePassword() {
+    if (!email.trim() || !password) return
+    setError(null)
+    setLoading(true)
+    try {
+      await signIn(email.trim(), password)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -66,7 +81,7 @@ export default function Auth() {
               Welcome to <em>Socion</em>
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem' }}>
-              Enter your email and we'll send you a sign-in link.
+              {IS_PROD ? "Enter your email and we'll send you a sign-in link." : "Preview environment — use email and password."}
             </p>
           </div>
 
@@ -77,25 +92,35 @@ export default function Auth() {
               placeholder="Email address"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              onKeyDown={e => e.key === 'Enter' && (IS_PROD ? handleMagicLink() : handlePassword())}
               autoFocus
             />
+            {!IS_PROD && (
+              <input
+                className="input-standalone"
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handlePassword()}
+              />
+            )}
             {error && (
               <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
             )}
             <button
               type="button"
               className="btn-primary"
-              onClick={handleSubmit}
-              disabled={loading || !email.trim()}
-              style={{ opacity: (loading || !email.trim()) ? 0.6 : 1, marginTop: '0.5rem' }}
+              onClick={IS_PROD ? handleMagicLink : handlePassword}
+              disabled={loading || !email.trim() || (!IS_PROD && !password)}
+              style={{ opacity: (loading || !email.trim() || (!IS_PROD && !password)) ? 0.6 : 1, marginTop: '0.5rem' }}
             >
-              {loading ? 'Sending…' : 'Send magic link'}
+              {loading ? 'Please wait…' : IS_PROD ? 'Send magic link' : 'Sign in'}
             </button>
           </div>
 
           <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-            New users will be prompted to set up a profile after clicking the link. By continuing you agree to our{' '}
+            New users will be prompted to set up a profile after signing in. By continuing you agree to our{" "}
             <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.
           </p>
         </div>
