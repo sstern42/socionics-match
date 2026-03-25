@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { getMessages, sendMessage, subscribeToMessages } from '../../lib/messages'
 
-export default function Conversation({ match, currentUserId }) {
+export default function Conversation({ match, currentUserId, hasFeedback }) {
+  const navigate = useNavigate()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -106,6 +108,19 @@ export default function Conversation({ match, currentUserId }) {
         })}
         <div ref={bottomRef} />
       </div>
+
+      {!hasFeedback && messages.length >= 5 && (
+        <div style={{ padding: '0.6rem 1.5rem', borderTop: '1px solid var(--border)', background: 'rgba(154,111,56,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>How is this connection going?</p>
+          <button
+            type="button"
+            onClick={() => navigate(`/feedback/${match.id}`)}
+            style={{ background: 'none', border: '1px solid var(--accent-lt)', borderRadius: 3, padding: '0.3rem 0.75rem', fontSize: '0.75rem', color: 'var(--accent)', cursor: 'pointer', whiteSpace: 'nowrap' }}
+          >
+            Rate it →
+          </button>
+        </div>
+      )}
 
       {/* Input */}
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', background: '#fff' }}>
