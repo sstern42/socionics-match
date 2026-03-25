@@ -18,9 +18,25 @@ export default function Feed() {
   const [connectingId, setConnectingId] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
 
+  // Retry state — handles the race condition where navigate('/feed') fires
+  // before the AuthContext state update from refreshProfile() has propagated.
+  // We auto-retry once silently; only show the error UI if the retry also finds nothing.
+  const [retrying, setRetrying] = useState(false)
+  const [retried, setRetried] = useState(false)
+
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
+
+  // Auto-retry: if we land here with no profile (common after ProfileSetup),
+  // do one silent refresh before surfacing the error state to the user.
+  useEffect(() => {
+    if (!loading && session && !profile && !retried && !retrying) {
+      setRetrying(true)
+      setRetried(true)
+      refreshProfile().finally(() => setRetrying(false))
+    }
+  }, [loading, session, profile, retried, retrying])
 
   useEffect(() => {
     if (profile) {
@@ -71,8 +87,8 @@ export default function Feed() {
     }
   }
 
-  // Still loading auth
-  if (loading) {
+  // Loading: auth initialising OR silently retrying profile after navigation
+  if (loading || retrying) {
     return (
       <Layout>
         <section style={centreStyle}>
@@ -82,8 +98,8 @@ export default function Feed() {
     )
   }
 
-  // Signed in but no profile found
-  if (!loading && session && !profile) {
+  // Profile genuinely not found — only shown after the auto-retry has run
+  if (!loading && !retrying && session && !profile) {
     return (
       <Layout>
         <section style={centreStyle}>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
@@ -6,8 +6,14 @@ import { useAuth } from '../lib/AuthContext'
 import { createProfile, updateRelationPreferences } from '../lib/profile'
 
 export default function ProfileSetup() {
-  const { session, refreshProfile } = useAuth()
+  const { session, profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
+
+  // Guard: if the user already has a profile (e.g. navigated back here, or
+  // refreshed mid-onboarding), send them straight to the feed.
+  useEffect(() => {
+    if (profile) navigate('/feed', { replace: true })
+  }, [profile])
 
   const savedType = sessionStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || 'null')
@@ -27,7 +33,6 @@ export default function ProfileSetup() {
     setLoading(true)
     setError(null)
     try {
-      // Create the profile
       const newProfile = await createProfile({
         authId: session.user.id,
         type,
@@ -35,18 +40,18 @@ export default function ProfileSetup() {
         profileData: { name, age: parseInt(age), bio, location },
       })
 
-      // Update relation preferences on the new profile
+      if (!newProfile) {
+        throw new Error('Profile was not created — check Supabase RLS policies.')
+      }
+
       if (relations.length > 0) {
         await updateRelationPreferences(newProfile.id, relations)
       }
 
-      // Clear sessionStorage
       sessionStorage.removeItem('socion_type')
       sessionStorage.removeItem('socion_confidence')
 
-      // Await profile refresh before navigating so Feed finds the profile
       await refreshProfile()
-
       navigate('/feed')
     } catch (err) {
       setError(err.message)
@@ -84,7 +89,7 @@ export default function ProfileSetup() {
                 rows={4}
                 style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
               />
-              {!type && (
+              {!savedType && (
                 <input
                   className="input-standalone"
                   placeholder="Your Socionics type (e.g. LII)"
