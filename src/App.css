@@ -1,1 +1,7 @@
 /* Component-level overrides */
+
+/* Mobile nav */
+@media (max-width: 600px) {
+  .nav-desktop { display: none !important; }
+  .nav-burger { display: block !important; }
+}
