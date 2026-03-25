@@ -27,7 +27,7 @@ export async function getFeedProfiles({ userType, relationPreferences, currentUs
 export async function getExistingMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
-    .select('user_a_id, user_b_id')
+    .select('id, user_a_id, user_b_id')
     .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
   if (error) throw error
   return data ?? []
