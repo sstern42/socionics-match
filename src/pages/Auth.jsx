@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { signIn, signUp } from '../lib/auth'
-import { getProfile } from '../lib/profile'
 import { useAuth } from '../lib/AuthContext'
 
 export default function Auth() {
@@ -29,14 +28,9 @@ export default function Auth() {
         await signUp(email, password)
         setConfirmSent(true)
       } else {
-        const data = await signIn(email, password)
-        // Check if profile exists to determine where to send them
-        const existingProfile = await getProfile(data.user.id)
-        if (existingProfile) {
-          navigate('/feed')
-        } else {
-          navigate('/profile/setup')
-        }
+        await signIn(email, password)
+        // Navigation is handled by the useEffect watching session + profile
+        // so that AuthContext has fully loaded before Feed mounts
       }
     } catch (err) {
       setError(err.message)
