@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
-import { updateProfileData, updateRelationPreferences } from '../lib/profile'
+import { updateProfileData, updateRelationPreferences, uploadAvatar } from '../lib/profile'
 import { TYPES } from '../data/relations'
 
 export default function ProfileEdit() {
@@ -19,6 +19,8 @@ export default function ProfileEdit() {
   const [type, setType] = useState(profile?.type ?? '')
 
   const [relations, setRelations] = useState(profile?.relation_preferences ?? [])
+  const [avatarFile, setAvatarFile] = useState(null)
+  const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url ?? null)
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
@@ -28,10 +30,15 @@ export default function ProfileEdit() {
     setSaving(true)
     setError(null)
     try {
+      let avatarUrl = undefined
+      if (avatarFile) {
+        avatarUrl = await uploadAvatar(profile.auth_id, avatarFile)
+      }
       await Promise.all([
         updateProfileData(profile.id, {
           profileData: { name, age: parseInt(age), bio, location },
           type: type.toUpperCase(),
+          avatarUrl,
         }),
         updateRelationPreferences(profile.id, relations),
       ])
@@ -42,6 +49,13 @@ export default function ProfileEdit() {
     } finally {
       setSaving(false)
     }
+  }
+
+  function handleFileChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
   }
 
   const typeValid = TYPES.includes(type.toUpperCase())
@@ -59,6 +73,40 @@ export default function ProfileEdit() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                <div style={{
+                  width: 72, height: 72, borderRadius: '50%',
+                  background: 'var(--bg-secondary, #f0ede6)',
+                  border: '1px solid var(--border)',
+                  overflow: 'hidden', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {avatarPreview
+                    ? <img src={avatarPreview} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: '1.5rem', color: 'var(--muted)' }}>{name ? name[0].toUpperCase() : '?'}</span>
+                  }
+                </div>
+                <div>
+                  <label style={{
+                    display: 'inline-block', cursor: 'pointer',
+                    fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
+                    color: 'var(--accent)', border: '1px solid var(--accent-lt)',
+                    padding: '0.4rem 0.9rem', borderRadius: 3,
+                  }}>
+                    {avatarPreview ? 'Change photo' : 'Add photo'}
+                    <input
+                      type="file" accept="image/*" onChange={handleFileChange}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  {avatarPreview && (
+                    <button type="button" onClick={() => { setAvatarFile(null); setAvatarPreview(null) }}
+                      style={{ marginLeft: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                      Remove
+                    </button>
+                  )}
+                </div>
+              </div>
               <input
                 className="input-standalone"
                 placeholder="First name"
