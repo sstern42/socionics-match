@@ -6,18 +6,12 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined)
-  const [profile, setProfile] = useState(undefined) // undefined = not yet loaded
+  const [profile, setProfile] = useState(undefined)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      if (data.session) {
-        loadProfile(data.session.user.id)
-      } else {
-        setProfile(null)
-      }
-    })
-
+    // onAuthStateChange fires immediately with INITIAL_SESSION, giving us the
+    // current session — so getSession() is redundant and creates a second
+    // concurrent loadProfile() call that can race against the first.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       if (session) {
@@ -33,13 +27,12 @@ export function AuthProvider({ children }) {
   async function loadProfile(authId) {
     try {
       const p = await getProfile(authId)
-      setProfile(p) // null if not found, object if found
+      setProfile(p)
     } catch {
       setProfile(null)
     }
   }
 
-  // Returns the freshly loaded profile so callers can await it
   async function refreshProfile() {
     if (!session) return null
     try {
