@@ -92,7 +92,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched }) {
           marginTop: '0.25rem',
         }}
       >
-        {alreadyMatched ? 'Already connected' : 'Connect'}
+        {alreadyMatched ? 'Message →' : 'Connect'}
       </button>
     </div>
   )
