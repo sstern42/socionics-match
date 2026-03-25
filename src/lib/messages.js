@@ -4,7 +4,7 @@ export async function getMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
     .select(`
-      id, relation_type, created_at,
+      id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b,
       user_a:user_a_id ( id, type, profile_data ),
       user_b:user_b_id ( id, type, profile_data )
     `)

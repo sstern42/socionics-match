@@ -5,6 +5,7 @@ import MatchList from '../components/messages/MatchList'
 import Conversation from '../components/messages/Conversation'
 import { useAuth } from '../lib/AuthContext'
 import { getMatches } from '../lib/messages'
+import { supabase } from '../lib/supabase'
 
 export default function Messages() {
   const { session, profile, loading } = useAuth()
@@ -22,7 +23,7 @@ export default function Messages() {
 
   useEffect(() => {
     if (!profile) return
-    getMatches(profile.id).then(data => {
+    getMatches(profile.id).then(async data => {
       setMatches(data)
       // Auto-select from query param e.g. /messages?match=uuid
       const matchId = searchParams.get('match')
@@ -94,7 +95,15 @@ export default function Messages() {
               </button>
             )}
             {selectedMatch ? (
-              <Conversation match={selectedMatch} currentUserId={profile.id} />
+              <Conversation
+                match={selectedMatch}
+                currentUserId={profile.id}
+                hasFeedback={(() => {
+                  const isA = selectedMatch.user_a_id === profile.id
+                  const fb = isA ? selectedMatch.feedback_a : selectedMatch.feedback_b
+                  return !!fb
+                })()}
+              />
             ) : (
               <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <p style={{ color: 'var(--muted)', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.1rem' }}>
