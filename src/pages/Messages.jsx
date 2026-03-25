@@ -60,7 +60,7 @@ export default function Messages() {
         display: 'flex', flexDirection: 'column',
         padding: '0 1.5rem',
       }}>
-        <div style={{
+        <div className="messages-grid" style={{
           flex: 1, display: 'grid',
           gridTemplateColumns: '260px 1fr',
           border: '1px solid var(--border)',

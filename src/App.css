@@ -8,6 +8,7 @@
 
 /* Messages layout */
 @media (max-width: 600px) {
+  .messages-grid { grid-template-columns: 1fr !important; }
   .messages-sidebar.hidden-mobile { display: none !important; }
   .back-btn { display: block !important; }
 }
