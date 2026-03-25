@@ -7,6 +7,7 @@ import { updateProfileData, updateRelationPreferences, updatePurpose, uploadAvat
 import { TYPES } from '../data/relations'
 import { COUNTRIES } from '../data/countries'
 import PurposePicker from '../components/profile/PurposePicker'
+import ProfileCard from '../components/feed/ProfileCard'
 
 export default function ProfileEdit() {
   const { profile, refreshProfile } = useAuth()
@@ -27,6 +28,7 @@ export default function ProfileEdit() {
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   async function handleSave() {
     if (!profile) return
@@ -74,6 +76,13 @@ export default function ProfileEdit() {
               <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
                 Your <em>details</em>
               </h1>
+              <button
+                type="button"
+                onClick={() => setShowPreview(true)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '0.5rem' }}
+              >
+                Preview card →
+              </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -178,6 +187,45 @@ export default function ProfileEdit() {
             </div>
           </div>
         </section>
+
+        {/* Profile preview modal */}
+        {showPreview && (
+          <div
+            onClick={() => setShowPreview(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              background: 'rgba(0,0,0,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '2rem',
+            }}
+          >
+            <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 380 }}>
+              <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '0.75rem', textAlign: 'center' }}>
+                How others see your card
+              </p>
+              <ProfileCard
+                profile={{
+                  profile_data: { name, age: parseInt(age) || null, bio, country },
+                  type,
+                  relation: null,
+                  displayRelation: null,
+                  avatar_url: avatarPreview,
+                }}
+                onConnect={() => {}}
+                alreadyMatched={false}
+                matchId={null}
+                connecting={false}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPreview(false)}
+                style={{ display: 'block', margin: '1rem auto 0', background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 3, padding: '0.5rem 1.5rem', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: '0.78rem', letterSpacing: '0.06em' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
       </Layout>
     )
   }
