@@ -73,7 +73,7 @@ supabase/
 
 ## Intertype relations matrix
 
-The full 16×16 matrix lives in `src/data/relations.js` and is sourced from [socionics.com](http://www.socionics.com/rel/relcht.htm). All 256 cells are validated for symmetry and correct asymmetric inverse pairs (Supervisor/Supervisee, Benefactor/Beneficiary).
+The full 16×16 matrix lives in `src/data/relations.js` and is sourced from [socionicsinsight.com](https://www.socionicsinsight.com/compatibility/matrix/). All 256 cells are validated for symmetry and correct asymmetric inverse pairs (Supervisor/Supervisee, Benefactor/Beneficiary).
 
 ## Build phases
 
