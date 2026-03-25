@@ -3,6 +3,7 @@ import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import Auth from './pages/Auth'
 import ProfileSetup from './pages/ProfileSetup'
+import Feed from './pages/Feed'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile/setup" element={<ProfileSetup />} />
+        <Route path="/feed" element={<Feed />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

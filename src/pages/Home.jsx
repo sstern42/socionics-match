@@ -1,23 +1,27 @@
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
+import { useAuth } from '../lib/AuthContext'
 
 const RELATION_PILLS = [
-  { label: 'Duality',       hi: true },
-  { label: 'Activity',      hi: true },
-  { label: 'Mirror',        hi: false },
-  { label: 'Semi-Dual',     hi: false },
-  { label: 'Kindred',       hi: false },
-  { label: 'Quasi-Identity',hi: false },
-  { label: 'Contrary',      hi: false },
-  { label: 'Conflict',      hi: false },
+  { label: 'Duality',        hi: true },
+  { label: 'Activity',       hi: true },
+  { label: 'Mirror',         hi: false },
+  { label: 'Semi-Dual',      hi: false },
+  { label: 'Kindred',        hi: false },
+  { label: 'Quasi-Identity', hi: false },
+  { label: 'Contrary',       hi: false },
+  { label: 'Conflict',       hi: false },
 ]
 
 export default function Home() {
+  const { session, profile } = useAuth()
+  const ctaPath = session && profile ? '/feed' : '/onboarding'
+  const ctaLabel = session && profile ? 'View your matches' : 'Find your type'
+
   return (
     <Layout>
-      {/* Hero */}
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem 6rem', gap: '1.5rem' }}>
-        <p className="eyebrow fade-up-1">Now building &mdash; Join the beta</p>
+        <p className="eyebrow fade-up-1">Now in beta</p>
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
@@ -30,7 +34,7 @@ export default function Home() {
         </p>
 
         <div className="fade-up-4">
-          <Link to="/onboarding" className="btn-primary">Find your type</Link>
+          <Link to={ctaPath} className="btn-primary">{ctaLabel}</Link>
         </div>
 
         <div className="fade-up-5" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 560 }}>
@@ -40,7 +44,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How it works */}
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
         <p className="section-label">How it works</p>
         <h2 style={{ marginBottom: '3.5rem' }}>
@@ -65,7 +68,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Theory quote */}
       <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,2rem)', fontStyle: 'italic', fontWeight: 400, lineHeight: 1.5, color: 'var(--text)', marginBottom: '1.5rem' }}>

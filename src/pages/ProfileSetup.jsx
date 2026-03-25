@@ -143,7 +143,7 @@ export default function ProfileSetup() {
         <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 400, textAlign: 'center' }}>
           Matching is coming in the next phase. Your profile and type preferences are saved.
         </p>
-        <button className="btn-primary fade-up-4" onClick={() => navigate('/')}>Back to home</button>
+        <button className="btn-primary fade-up-4" onClick={() => navigate('/feed')}>Back to home</button>
       </section>
     </Layout>
   )
