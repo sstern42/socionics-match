@@ -12,7 +12,7 @@ export async function createProfile({ authId, type, typeConfidence, profileData 
       profile_data: profileData,
     })
     .select()
-    .single()
+    .maybeSingle()
   if (error) throw error
   return data
 }
@@ -30,7 +30,7 @@ export async function getProfile(authId) {
     .from('users')
     .select('*')
     .eq('auth_id', authId)
-    .single()
+    .maybeSingle()
   if (error && error.code !== 'PGRST116') throw error
   return data ?? null
 }
