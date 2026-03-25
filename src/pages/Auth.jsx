@@ -1,37 +1,35 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { signIn, signUp } from '../lib/auth'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
 
 export default function Auth() {
-  const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [confirmSent, setConfirmSent] = useState(false)
+  const [sent, setSent] = useState(false)
   const { session, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
-  // Once we have a session, go to feed — Feed handles profile/setup redirect if needed
   useEffect(() => {
     if (authLoading) return
     if (session) navigate('/feed')
   }, [session, authLoading])
 
   async function handleSubmit() {
+    if (!email.trim()) return
     setError(null)
     setLoading(true)
     try {
-      if (mode === 'signup') {
-        await signUp(email, password)
-        setConfirmSent(true)
-      } else {
-        await signIn(email, password)
-        // Navigation is handled by the useEffect watching session + profile
-        // so that AuthContext has fully loaded before Feed mounts
-      }
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: {
+          emailRedirectTo: 'https://socion.app/feed',
+        },
+      })
+      if (error) throw error
+      setSent(true)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -39,20 +37,19 @@ export default function Auth() {
     }
   }
 
-  if (confirmSent) {
+  if (sent) {
     return (
       <Layout>
         <section style={centreStyle}>
           <p className="eyebrow fade-up-1">Check your inbox</p>
           <h1 className="fade-up-2" style={{ fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
-            Confirm your <em>email</em>
+            Magic link <em>sent</em>
           </h1>
           <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 420, textAlign: 'center' }}>
-            We sent a confirmation link to <strong>{email}</strong>.
-            Click it to activate your account, then sign in here.
+            We sent a sign-in link to <strong>{email}</strong>. Click it to access your account — no password needed.
           </p>
-          <button className="btn-ghost fade-up-4" onClick={() => { setConfirmSent(false); setMode('signin') }}>
-            Back to sign in
+          <button className="btn-ghost fade-up-4" onClick={() => { setSent(false); setEmail('') }}>
+            Use a different email
           </button>
         </section>
       </Layout>
@@ -64,10 +61,13 @@ export default function Auth() {
       <section style={centreStyle}>
         <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <p className="eyebrow">{mode === 'signup' ? 'Create account' : 'Welcome back'}</p>
+            <p className="eyebrow">Sign in or create account</p>
             <h1 className="fade-up-2" style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
-              {mode === 'signup' ? <><em>Join</em> Socion</> : <>Sign <em>in</em></>}
+              Welcome to <em>Socion</em>
             </h1>
+            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem' }}>
+              Enter your email and we'll send you a sign-in link.
+            </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -78,14 +78,7 @@ export default function Auth() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-            />
-            <input
-              className="input-standalone"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              autoFocus
             />
             {error && (
               <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
@@ -94,22 +87,16 @@ export default function Auth() {
               type="button"
               className="btn-primary"
               onClick={handleSubmit}
-              disabled={loading || !email || !password}
-              style={{ opacity: loading ? 0.6 : 1, marginTop: '0.5rem' }}
+              disabled={loading || !email.trim()}
+              style={{ opacity: (loading || !email.trim()) ? 0.6 : 1, marginTop: '0.5rem' }}
             >
-              {loading ? 'Please wait…' : mode === 'signup' ? 'Create account' : 'Sign in'}
+              {loading ? 'Sending…' : 'Send magic link'}
             </button>
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--muted)' }}>
-            {mode === 'signup' ? 'Already have an account? ' : 'No account yet? '}
-            <button
-              type="button"
-              onClick={() => { setMode(mode === 'signup' ? 'signin' : 'signup'); setError(null) }}
-              style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.82rem', textDecoration: 'underline' }}
-            >
-              {mode === 'signup' ? 'Sign in' : 'Create one'}
-            </button>
+          <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+            New users will be prompted to set up a profile after clicking the link. By continuing you agree to our{' '}
+            <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.
           </p>
         </div>
       </section>
