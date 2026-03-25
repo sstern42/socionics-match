@@ -31,6 +31,7 @@ export default function TypeSelector({ onConfirm }) {
         {TYPES.map(type => (
           <button
             key={type}
+            type="button"
             onClick={() => setSelected(type)}
             style={{
               padding: '0.85rem 0.5rem',
@@ -54,16 +55,26 @@ export default function TypeSelector({ onConfirm }) {
         ))}
       </div>
 
-      {selected && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
-          <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
-            Selected: <strong style={{ color: 'var(--accent)', fontWeight: 500 }}>{selected} — {TYPE_DESCRIPTIONS[selected]}</strong>
+      <div style={{ minHeight: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+        {selected ? (
+          <>
+            <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
+              Selected: <strong style={{ color: 'var(--accent)', fontWeight: 500 }}>{selected} — {TYPE_DESCRIPTIONS[selected]}</strong>
+            </p>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => onConfirm(selected, { [selected]: 1.0 })}
+            >
+              Confirm {selected}
+            </button>
+          </>
+        ) : (
+          <p style={{ color: 'var(--muted)', fontSize: '0.82rem', fontStyle: 'italic' }}>
+            Select a type above to continue
           </p>
-          <button className="btn-primary" onClick={() => onConfirm(selected, { [selected]: 1.0 })}>
-            Confirm {selected}
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

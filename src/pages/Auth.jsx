@@ -1,16 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { signIn, signUp } from '../lib/auth'
+import { getProfile } from '../lib/profile'
+import { useAuth } from '../lib/AuthContext'
 
 export default function Auth() {
-  const [mode, setMode] = useState('signin') // 'signin' | 'signup'
+  const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [confirmSent, setConfirmSent] = useState(false)
+  const { session, profile } = useAuth()
   const navigate = useNavigate()
+
+  // If already signed in and profile exists, go to feed
+  useEffect(() => {
+    if (session && profile) navigate('/feed')
+    else if (session && profile === null) navigate('/profile/setup')
+  }, [session, profile])
 
   async function handleSubmit() {
     setError(null)
@@ -20,8 +29,14 @@ export default function Auth() {
         await signUp(email, password)
         setConfirmSent(true)
       } else {
-        await signIn(email, password)
-        navigate('/profile/setup')
+        const data = await signIn(email, password)
+        // Check if profile exists to determine where to send them
+        const existingProfile = await getProfile(data.user.id)
+        if (existingProfile) {
+          navigate('/feed')
+        } else {
+          navigate('/profile/setup')
+        }
       }
     } catch (err) {
       setError(err.message)
@@ -40,7 +55,7 @@ export default function Auth() {
           </h1>
           <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 420, textAlign: 'center' }}>
             We sent a confirmation link to <strong>{email}</strong>.
-            Click it to activate your account, then sign in.
+            Click it to activate your account, then sign in here.
           </p>
           <button className="btn-ghost fade-up-4" onClick={() => { setConfirmSent(false); setMode('signin') }}>
             Back to sign in
@@ -82,6 +97,7 @@ export default function Auth() {
               <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
             )}
             <button
+              type="button"
               className="btn-primary"
               onClick={handleSubmit}
               disabled={loading || !email || !password}
@@ -94,6 +110,7 @@ export default function Auth() {
           <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--muted)' }}>
             {mode === 'signup' ? 'Already have an account? ' : 'No account yet? '}
             <button
+              type="button"
               onClick={() => { setMode(mode === 'signup' ? 'signin' : 'signup'); setError(null) }}
               style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '0.82rem', textDecoration: 'underline' }}
             >
@@ -108,10 +125,7 @@ export default function Auth() {
 
 const centreStyle = {
   minHeight: 'calc(100vh - 72px)',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: '4rem 1.5rem',
-  gap: '2rem',
+  display: 'flex', flexDirection: 'column',
+  alignItems: 'center', justifyContent: 'center',
+  padding: '4rem 1.5rem', gap: '2rem',
 }
