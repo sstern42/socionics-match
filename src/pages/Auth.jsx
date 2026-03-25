@@ -11,15 +11,15 @@ export default function Auth() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [confirmSent, setConfirmSent] = useState(false)
-  const { session, profile, loading } = useAuth()
+  const { session, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
   // Only redirect once AuthContext has finished loading
   useEffect(() => {
-    if (loading) return
+    if (authLoading) return
     if (session && profile) navigate('/feed')
     else if (session && profile === null) navigate('/profile/setup')
-  }, [session, profile, loading])
+  }, [session, profile, authLoading])
 
   async function handleSubmit() {
     setError(null)
