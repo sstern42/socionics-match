@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 
 const RELATION_COLOURS = {
@@ -19,13 +20,23 @@ const RELATION_COLOURS = {
   IDENTITY:       { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
 }
 
-export default function ProfileCard({ profile, onConnect, alreadyMatched }) {
+// matchId is the matches.id for an already-connected profile, or null if not yet connected
+export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
+  const navigate = useNavigate()
   const { profile_data, type, relation, location } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
   const bio = profile_data?.bio
   const relInfo = RELATIONS[relation]
   const colours = RELATION_COLOURS[relation] ?? RELATION_COLOURS.IDENTITY
+
+  function handleAction() {
+    if (alreadyMatched && matchId) {
+      navigate(`/messages?match=${matchId}`)
+    } else {
+      onConnect(profile)
+    }
+  }
 
   return (
     <div style={{
@@ -83,16 +94,17 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched }) {
 
       {/* Action */}
       <button
+        type="button"
         className={alreadyMatched ? 'btn-ghost' : 'btn-primary'}
-        onClick={() => onConnect(profile)}
-        disabled={alreadyMatched}
+        onClick={handleAction}
+        disabled={connecting}
         style={{
-          opacity: alreadyMatched ? 0.5 : 1,
-          cursor: alreadyMatched ? 'default' : 'pointer',
+          opacity: connecting ? 0.5 : 1,
+          cursor: connecting ? 'default' : 'pointer',
           marginTop: '0.25rem',
         }}
       >
-        {alreadyMatched ? 'Message →' : 'Connect'}
+        {connecting ? 'Connecting…' : alreadyMatched ? 'Message →' : 'Connect'}
       </button>
     </div>
   )
