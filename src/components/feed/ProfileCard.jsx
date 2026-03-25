@@ -1,23 +1,25 @@
 import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 
+const NEUTRAL = { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
+
 const RELATION_COLOURS = {
   DUAL:           { bg: 'rgba(154,111,56,0.10)', border: 'var(--accent)', text: 'var(--accent)' },
   ACTIVITY:       { bg: 'rgba(154,111,56,0.07)', border: 'var(--accent-lt)', text: 'var(--accent)' },
   MIRROR:         { bg: 'rgba(154,111,56,0.05)', border: 'var(--accent-lt)', text: 'var(--accent)' },
   SEMI_DUAL:      { bg: 'rgba(154,111,56,0.05)', border: 'var(--accent-lt)', text: 'var(--accent)' },
-  KINDRED:        { bg: 'rgba(154,111,56,0.04)', border: 'var(--border)', text: 'var(--muted)' },
-  BUSINESS:       { bg: 'rgba(154,111,56,0.04)', border: 'var(--border)', text: 'var(--muted)' },
-  BENEFACTOR:     { bg: 'rgba(154,111,56,0.04)', border: 'var(--border)', text: 'var(--muted)' },
-  BENEFICIARY:    { bg: 'rgba(154,111,56,0.04)', border: 'var(--border)', text: 'var(--muted)' },
-  QUASI_IDENTITY: { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
-  ILLUSIONARY:    { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
-  CONTRARY:       { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
-  SUPERVISOR:     { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
-  SUPERVISEE:     { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
-  SUPER_EGO:      { bg: 'rgba(180,60,60,0.05)', border: 'rgba(180,60,60,0.3)', text: '#b43c3c' },
-  CONFLICT:       { bg: 'rgba(180,60,60,0.05)', border: 'rgba(180,60,60,0.3)', text: '#b43c3c' },
-  IDENTITY:       { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' },
+  KINDRED:        NEUTRAL,
+  BUSINESS:       NEUTRAL,
+  BENEFACTOR:     NEUTRAL,
+  BENEFICIARY:    NEUTRAL,
+  QUASI_IDENTITY: NEUTRAL,
+  ILLUSIONARY:    NEUTRAL,
+  CONTRARY:       NEUTRAL,
+  SUPERVISOR:     NEUTRAL,
+  SUPERVISEE:     NEUTRAL,
+  SUPER_EGO:      NEUTRAL,
+  CONFLICT:       NEUTRAL,
+  IDENTITY:       NEUTRAL,
 }
 
 // matchId is the matches.id for an already-connected profile, or null if not yet connected
