@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
+import { countryFlag } from '../../data/countries'
 
 const NEUTRAL = { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
 
@@ -25,10 +26,11 @@ const RELATION_COLOURS = {
 // matchId is the matches.id for an already-connected profile, or null if not yet connected
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
-  const { profile_data, type, relation, displayRelation, location } = profile
+  const { profile_data, type, relation, displayRelation } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
   const bio = profile_data?.bio
+  const flag = countryFlag(profile_data?.country)
   // displayRelation = what they are to you (e.g. SUPERVISOR)
   // relation = your role (e.g. SUPERVISEE) — used for connect/filter logic
   const relInfo = RELATIONS[displayRelation ?? relation]
@@ -72,8 +74,8 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
               {name}{age ? `, ${age}` : ''}
             </h3>
-            {location && (
-              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.1rem' }}>{location}</p>
+            {flag && (
+              <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{flag}</p>
             )}
           </div>
         </div>

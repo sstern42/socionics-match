@@ -5,6 +5,7 @@ import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { updateProfileData, updateRelationPreferences, updatePurpose, uploadAvatar } from '../lib/profile'
 import { TYPES } from '../data/relations'
+import { COUNTRIES } from '../data/countries'
 import PurposePicker from '../components/profile/PurposePicker'
 
 export default function ProfileEdit() {
@@ -16,7 +17,7 @@ export default function ProfileEdit() {
   const [name, setName] = useState(profile?.profile_data?.name ?? '')
   const [age, setAge] = useState(profile?.profile_data?.age?.toString() ?? '')
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
-  const [location, setLocation] = useState(profile?.profile_data?.location ?? '')
+  const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
   const [type, setType] = useState(profile?.type ?? '')
 
   const [purposes, setPurposes] = useState(profile?.purpose ?? ['dating'])
@@ -38,7 +39,7 @@ export default function ProfileEdit() {
       }
       await Promise.all([
         updateProfileData(profile.id, {
-          profileData: { name, age: parseInt(age), bio, location },
+          profileData: { name, age: parseInt(age), bio, country },
           type: type.toUpperCase(),
           avatarUrl,
         }),
@@ -125,12 +126,17 @@ export default function ProfileEdit() {
                 value={age}
                 onChange={e => setAge(e.target.value)}
               />
-              <input
+              <select
                 className="input-standalone"
-                placeholder="Location (city, country)"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-              />
+                value={country}
+                onChange={e => setCountry(e.target.value)}
+                style={{ fontFamily: 'var(--sans)' }}
+              >
+                <option value="">Country (optional)</option>
+                {COUNTRIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.name}</option>
+                ))}
+              </select>
               <textarea
                 className="input-standalone"
                 placeholder="A short bio"
