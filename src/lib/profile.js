@@ -17,10 +17,25 @@ export async function createProfile({ authId, type, typeConfidence, profileData 
   return data
 }
 
-export async function updateProfileData(userId, { profileData, type }) {
+export async function uploadAvatar(authId, file) {
+  const ext = file.name.split('.').pop()
+  const path = `${authId}/avatar.${ext}`
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, file, { upsert: true })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+  // Bust cache by appending timestamp
+  return `${data.publicUrl}?t=${Date.now()}`
+}
+
+export async function updateProfileData(userId, { profileData, type, avatarUrl }) {
+  const updates = { profile_data: profileData, type }
+  if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
   const { error } = await supabase
     .from('users')
-    .update({ profile_data: profileData, type })
+    .update(updates)
     .eq('id', userId)
   if (error) throw error
 }
