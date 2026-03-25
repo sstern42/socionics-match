@@ -3,15 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
-import { createProfile } from '../lib/profile'
-
-const STEPS = ['details', 'relations', 'done']
+import { createProfile, updateRelationPreferences } from '../lib/profile'
 
 export default function ProfileSetup() {
   const { session, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
-  // Pull type from sessionStorage if set during onboarding
   const savedType = sessionStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || 'null')
 
@@ -30,16 +27,27 @@ export default function ProfileSetup() {
     setLoading(true)
     setError(null)
     try {
-      await createProfile({
+      // Create the profile
+      const newProfile = await createProfile({
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
         profileData: { name, age: parseInt(age), bio, location },
       })
-      refreshProfile()
-      setStep('done')
+
+      // Update relation preferences on the new profile
+      if (relations.length > 0) {
+        await updateRelationPreferences(newProfile.id, relations)
+      }
+
+      // Clear sessionStorage
       sessionStorage.removeItem('socion_type')
       sessionStorage.removeItem('socion_confidence')
+
+      // Await profile refresh before navigating so Feed finds the profile
+      await refreshProfile()
+
+      navigate('/feed')
     } catch (err) {
       setError(err.message)
     } finally {
@@ -77,13 +85,19 @@ export default function ProfileSetup() {
                 style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
               />
               {!type && (
-                <input className="input-standalone" placeholder="Your Socionics type (e.g. LII)" value={type} onChange={e => setType(e.target.value.toUpperCase())} />
+                <input
+                  className="input-standalone"
+                  placeholder="Your Socionics type (e.g. LII)"
+                  value={type}
+                  onChange={e => setType(e.target.value.toUpperCase())}
+                />
               )}
             </div>
 
             {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
 
             <button
+              type="button"
               className="btn-primary"
               onClick={() => setStep('relations')}
               disabled={!name || !age || !type}
@@ -97,53 +111,37 @@ export default function ProfileSetup() {
     )
   }
 
-  if (step === 'relations') {
-    return (
-      <Layout>
-        <section style={centreStyle}>
-          <div style={{ width: '100%', maxWidth: 640, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <div style={{ textAlign: 'center' }}>
-              <p className="eyebrow">Step 3 of 3</p>
-              <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
-                Which <em>dynamics</em> are you open to?
-              </h1>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem', maxWidth: 460, margin: '0.75rem auto 0' }}>
-                Select the intertype relations you want to match on. You can change these later.
-              </p>
-            </div>
-
-            <RelationPicker selected={relations} onChange={setRelations} />
-
-            {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
-
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-              <button className="btn-ghost" onClick={() => setStep('details')}>Back</button>
-              <button
-                className="btn-primary"
-                onClick={handleSave}
-                disabled={loading || relations.length === 0}
-                style={{ opacity: (loading || relations.length === 0) ? 0.5 : 1 }}
-              >
-                {loading ? 'Saving…' : 'Create profile'}
-              </button>
-            </div>
-          </div>
-        </section>
-      </Layout>
-    )
-  }
-
   return (
     <Layout>
       <section style={centreStyle}>
-        <p className="eyebrow fade-up-1">Profile created</p>
-        <h1 className="fade-up-2" style={{ fontSize: 'clamp(2rem,5vw,4rem)' }}>
-          Welcome to <em>Socion</em>
-        </h1>
-        <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 400, textAlign: 'center' }}>
-          Matching is coming in the next phase. Your profile and type preferences are saved.
-        </p>
-        <button className="btn-primary fade-up-4" onClick={() => navigate('/feed')}>Back to home</button>
+        <div style={{ width: '100%', maxWidth: 640, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          <div style={{ textAlign: 'center' }}>
+            <p className="eyebrow">Step 3 of 3</p>
+            <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
+              Which <em>dynamics</em> are you open to?
+            </h1>
+            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem', maxWidth: 460, margin: '0.75rem auto 0' }}>
+              Select the intertype relations you want to match on. You can change these later.
+            </p>
+          </div>
+
+          <RelationPicker selected={relations} onChange={setRelations} />
+
+          {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
+
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <button type="button" className="btn-ghost" onClick={() => setStep('details')}>Back</button>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleSave}
+              disabled={loading || relations.length === 0}
+              style={{ opacity: (loading || relations.length === 0) ? 0.5 : 1 }}
+            >
+              {loading ? 'Saving…' : 'Create profile'}
+            </button>
+          </div>
+        </div>
       </section>
     </Layout>
   )
