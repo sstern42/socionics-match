@@ -15,20 +15,31 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
   const otherName = match.other.profile_data?.name ?? match.other.type
 
   useEffect(() => {
+    setMessages([])
     setLoading(true)
+
+    let cancelled = false
+
     getMessages(match.id).then(msgs => {
-      setMessages(msgs)
-      setLoading(false)
+      if (!cancelled) {
+        setMessages(msgs)
+        setLoading(false)
+      }
     })
 
     const channel = subscribeToMessages(match.id, newMsg => {
-      setMessages(prev => {
-        if (prev.find(m => m.id === newMsg.id)) return prev
-        return [...prev, newMsg]
-      })
+      if (!cancelled) {
+        setMessages(prev => {
+          if (prev.find(m => m.id === newMsg.id)) return prev
+          return [...prev, newMsg]
+        })
+      }
     })
 
-    return () => { channel.unsubscribe() }
+    return () => {
+      cancelled = true
+      channel.unsubscribe()
+    }
   }, [match.id])
 
   useEffect(() => {
