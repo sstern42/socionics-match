@@ -117,6 +117,7 @@ export default function Layout({ children }) {
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
+            <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
             <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>What's new</Link>
           </div>
         </footer>

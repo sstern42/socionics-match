@@ -5,6 +5,9 @@ const ENTRIES = [
     date: '26 March 2026',
     label: 'Update',
     items: [
+      'Block & report — permanent block with reason reporting available from any conversation',
+      'Cool off — pause messaging and feed visibility for 7 days, lifts automatically',
+      'Terms of service added at socion.app/terms',
       'Google One Tap — sign in or create an account with one click, no email needed',
       'Founder badge — displayed on the feed card for the Socion team',
       'Type badges on feed cards now link to the full type profile on socionicsinsight.com',
