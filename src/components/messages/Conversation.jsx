@@ -87,6 +87,16 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.5, marginTop: '0.15rem' }}>
                 {relInfo.description}
               </p>
+              {relInfo.siSlug && (
+                <a
+                  href={`https://socionicsinsight.com/relations/${relInfo.siSlug}/`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: '0.68rem', color: 'var(--accent)', opacity: 0.7, textDecoration: 'none' }}
+                >
+                  Learn more →
+                </a>
+              )}
             </div>
           )}
         </div>
