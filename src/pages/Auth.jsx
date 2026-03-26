@@ -25,7 +25,7 @@ export default function Auth() {
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
-      setLinkError('Your sign-in link has expired or already been used. Enter your email below to get a new one.')
+      setLinkError('Your sign-in link has expired or already been used. Enter your email again to get a new one.')
       window.history.replaceState(null, '', window.location.pathname)
     }
   }, [])
