@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
@@ -6,6 +6,7 @@ import { signIn } from '../lib/auth'
 import { useAuth } from '../lib/AuthContext'
 
 const IS_PROD = window.location.hostname === 'socion.app'
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -16,6 +17,7 @@ export default function Auth() {
   const [linkError, setLinkError] = useState(null)
   const { session, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const googleButtonRef = useRef(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -29,6 +31,56 @@ export default function Auth() {
       window.history.replaceState(null, '', window.location.pathname)
     }
   }, [])
+
+  useEffect(() => {
+    if (!IS_PROD || !GOOGLE_CLIENT_ID) return
+
+    function initGoogle() {
+      if (!window.google?.accounts?.id) return
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+        auto_select: false,
+      })
+      if (googleButtonRef.current) {
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          theme: 'outline',
+          size: 'large',
+          width: googleButtonRef.current.offsetWidth || 400,
+          text: 'continue_with',
+          shape: 'rectangular',
+        })
+      }
+    }
+
+    if (window.google?.accounts?.id) {
+      initGoogle()
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(interval)
+          initGoogle()
+        }
+      }, 100)
+      return () => clearInterval(interval)
+    }
+  }, [authLoading])
+
+  async function handleGoogleCredential(response) {
+    setError(null)
+    setLoading(true)
+    try {
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: response.credential,
+      })
+      if (error) throw error
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function handleMagicLink() {
     if (!email.trim()) return
@@ -70,7 +122,7 @@ export default function Auth() {
             Magic link <em>sent</em>
           </h1>
           <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 420, textAlign: 'center' }}>
-            We sent a sign-in link to <strong>{email}</strong>. Click it to access your account — no password needed.
+            We sent a sign-in link to <strong>{email}</strong>. Click it within 1 hour to access your account.
           </p>
           <button className="btn-ghost fade-up-4" onClick={() => { setSent(false); setEmail('') }}>
             Use a different email
@@ -89,22 +141,61 @@ export default function Auth() {
             <h1 className="fade-up-2" style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
               Welcome to <em>Socion</em>
             </h1>
-            <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem' }}>
-              {IS_PROD ? "Enter your email and we'll send you a sign-in link." : "Preview environment — use email and password."}
-            </p>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <input
-              className="input-standalone"
-              type="email"
-              placeholder="Email address"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && (IS_PROD ? handleMagicLink() : handlePassword())}
-              autoFocus
-            />
-            {!IS_PROD && (
+          {IS_PROD ? (
+            <>
+              {GOOGLE_CLIENT_ID && (
+                <div ref={googleButtonRef} style={{ width: '100%', minHeight: 44 }} />
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                <span style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>or</span>
+                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <input
+                  className="input-standalone"
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleMagicLink()}
+                  autoFocus
+                />
+                {linkError && (
+                  <p style={{ fontSize: '0.82rem', color: 'var(--accent)', textAlign: 'center', background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.65rem 1rem', lineHeight: 1.6 }}>{linkError}</p>
+                )}
+                {error && (
+                  <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
+                )}
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={handleMagicLink}
+                  disabled={loading || !email.trim()}
+                  style={{ opacity: (loading || !email.trim()) ? 0.6 : 1 }}
+                >
+                  {loading ? 'Please wait…' : 'Send magic link'}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center' }}>
+                Preview environment — use email and password.
+              </p>
+              <input
+                className="input-standalone"
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handlePassword()}
+                autoFocus
+              />
               <input
                 className="input-standalone"
                 type="password"
@@ -113,26 +204,23 @@ export default function Auth() {
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handlePassword()}
               />
-            )}
-            {linkError && (
-              <p style={{ fontSize: '0.82rem', color: 'var(--accent)', textAlign: 'center', background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.65rem 1rem', lineHeight: 1.6 }}>{linkError}</p>
-            )}
-            {error && (
-              <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
-            )}
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={IS_PROD ? handleMagicLink : handlePassword}
-              disabled={loading || !email.trim() || (!IS_PROD && !password)}
-              style={{ opacity: (loading || !email.trim() || (!IS_PROD && !password)) ? 0.6 : 1, marginTop: '0.5rem' }}
-            >
-              {loading ? 'Please wait…' : IS_PROD ? 'Send magic link' : 'Sign in'}
-            </button>
-          </div>
+              {error && (
+                <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
+              )}
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handlePassword}
+                disabled={loading || !email.trim() || !password}
+                style={{ opacity: (loading || !email.trim() || !password) ? 0.6 : 1 }}
+              >
+                {loading ? 'Please wait…' : 'Sign in'}
+              </button>
+            </div>
+          )}
 
           <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-            New users will be prompted to set up a profile after signing in. By continuing you agree to our{" "}
+            New users will be prompted to set up a profile after signing in. By continuing you agree to our{' '}
             <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.
           </p>
         </div>
