@@ -6,15 +6,21 @@ export async function getMatches(userId) {
     .select(`
       id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b,
       user_a:user_a_id ( id, type, profile_data ),
-      user_b:user_b_id ( id, type, profile_data )
+      user_b:user_b_id ( id, type, profile_data ),
+      messages ( content, created_at, sender_id )
     `)
     .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
     .order('created_at', { ascending: false })
   if (error) throw error
-  return (data ?? []).map(m => ({
-    ...m,
-    other: m.user_a.id === userId ? m.user_b : m.user_a,
-  }))
+  return (data ?? []).map(m => {
+    const msgs = m.messages ?? []
+    const lastMsg = msgs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0] ?? null
+    return {
+      ...m,
+      other: m.user_a.id === userId ? m.user_b : m.user_a,
+      lastMessage: lastMsg,
+    }
+  })
 }
 
 export async function getMessages(matchId) {
