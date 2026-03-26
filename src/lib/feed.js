@@ -1,22 +1,29 @@
 import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
+import { getActiveBlocks } from './blocks'
 
 export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 20 }) {
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose')
-    .neq('id', currentUserId)
-    .not('profile_data', 'is', null)
-    .limit(100)
+  const [feedResult, blocks] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose')
+      .neq('id', currentUserId)
+      .not('profile_data', 'is', null)
+      .limit(100),
+    getActiveBlocks(currentUserId),
+  ])
 
-  if (error) throw error
+  if (feedResult.error) throw feedResult.error
 
-  return data
+  const blockedIds = new Set(blocks.map(b =>
+    b.blocker_id === currentUserId ? b.blocked_id : b.blocker_id
+  ))
+
+  return feedResult.data
+    .filter(profile => !blockedIds.has(profile.id))
     .map(profile => ({
       ...profile,
-      // relation = YOUR role (used for filtering against your preferences)
       relation: getRelation(userType, profile.type),
-      // displayRelation = THEIR role relative to you (shown on the card)
       displayRelation: getRelation(profile.type, userType),
     }))
     .filter(profile =>
