@@ -5,7 +5,6 @@ import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { RELATIONS } from '../data/relations'
-
 export default function Feed() {
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
@@ -17,6 +16,7 @@ export default function Feed() {
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [connectingId, setConnectingId] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
+  const [showCard, setShowCard] = useState(false)
 
   const [retrying, setRetrying] = useState(false)
   const [retried, setRetried] = useState(false)
@@ -134,6 +134,37 @@ export default function Feed() {
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
           </p>
+          <button
+            type="button"
+            onClick={() => setShowCard(c => !c)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '0.75rem', padding: 0 }}
+          >
+            {showCard ? 'Hide your card ↑' : 'How you appear to others ↓'}
+          </button>
+          {showCard && (
+            <div style={{ marginTop: '1rem', maxWidth: 340 }}>
+              <ProfileCard
+                profile={{
+                  ...profile,
+                  profile_data: profile.profile_data,
+                  relation: null,
+                  displayRelation: null,
+                }}
+                onConnect={() => {}}
+                alreadyMatched={false}
+                matchId={null}
+                connecting={false}
+              />
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => navigate('/profile/edit')}
+                style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
+              >
+                Edit profile →
+              </button>
+            </div>
+          )}
         </div>
 
         {feedDisplayRelations.length > 1 && (
