@@ -104,23 +104,8 @@ export default function Feed() {
   }
 
   if (!loading && !retrying && session && !profile) {
-    return (
-      <Layout>
-        <section style={centreStyle}>
-          <p className="eyebrow">Profile not found</p>
-          <h2 style={{ fontFamily: 'var(--serif)', fontSize: '2rem', marginTop: '0.5rem' }}>
-            Let's set up your <em>profile</em>
-          </h2>
-          <p style={{ color: 'var(--muted)', maxWidth: 400, textAlign: 'center' }}>
-            We couldn't find your profile. This can happen if setup didn't complete.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button className="btn-ghost" onClick={refreshProfile}>Try again</button>
-            <button className="btn-primary" onClick={() => navigate('/profile/setup')}>Set up profile</button>
-          </div>
-        </section>
-      </Layout>
-    )
+    navigate('/onboarding', { replace: true })
+    return null
   }
 
   // Pills show displayRelation (what they are to you); filter still uses relation (your role)
