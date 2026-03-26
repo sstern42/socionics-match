@@ -115,9 +115,21 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           border: `1px solid ${colours.border}`,
           borderRadius: 4, padding: '0.6rem 0.85rem',
         }}>
-          <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: colours.text, fontWeight: 500 }}>
-            {relInfo.name}
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: colours.text, fontWeight: 500 }}>
+              {relInfo.name}
+            </p>
+            {relInfo.siSlug && (
+              <a
+                href={`https://socionicsinsight.com/relations/${relInfo.siSlug}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.68rem', color: colours.text, opacity: 0.7, textDecoration: 'none', whiteSpace: 'nowrap' }}
+              >
+                Learn more →
+              </a>
+            )}
+          </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>
             {relInfo.description}
           </p>
