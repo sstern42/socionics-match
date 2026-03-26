@@ -20,6 +20,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
       displayRelation: getRelation(profile.type, userType),
     }))
     .filter(profile =>
+      !profile.profile_data?.hidden &&
       profile.relation && relationPreferences.includes(profile.relation) &&
       (userPurpose.length === 0 || (profile.purpose ?? []).some(p => userPurpose.includes(p)))
     )
