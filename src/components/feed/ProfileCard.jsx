@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
@@ -26,6 +27,7 @@ const RELATION_COLOURS = {
 // matchId is the matches.id for an already-connected profile, or null if not yet connected
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
+  const [bioExpanded, setBioExpanded] = useState(false)
   const { profile_data, type, relation, displayRelation } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
@@ -106,11 +108,25 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       )}
 
       {/* Bio */}
-      {bio && (
-        <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.7, fontWeight: 300 }}>
-          {bio.length > 200 ? bio.slice(0, 200) + '…' : bio}
-        </p>
-      )}
+      {bio && (() => {
+        const long = bio.length > 200
+        return (
+          <div>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.7, fontWeight: 300 }}>
+              {long && !bioExpanded ? bio.slice(0, 200) + '…' : bio}
+            </p>
+            {long && (
+              <button
+                type="button"
+                onClick={() => setBioExpanded(e => !e)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', padding: 0, marginTop: '0.25rem', letterSpacing: '0.04em' }}
+              >
+                {bioExpanded ? 'Read less' : 'Read more'}
+              </button>
+            )}
+          </div>
+        )
+      })()}
 
       {/* Action */}
       <button
