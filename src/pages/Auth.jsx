@@ -221,7 +221,9 @@ export default function Auth() {
 
           <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6 }}>
             New users will be prompted to set up a profile after signing in. By continuing you agree to our{' '}
-            <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.
+            <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>
+            {' '}and{' '}
+            <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none' }}>terms of service</a>.
           </p>
         </div>
       </section>
