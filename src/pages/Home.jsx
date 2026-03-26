@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
+
+const IS_PROD = window.location.hostname === 'socion.app'
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
 const RELATION_PILLS = [
   { label: 'Duality',        hi: true },
@@ -17,10 +20,46 @@ const RELATION_PILLS = [
 
 export default function Home() {
   const { session, profile } = useAuth()
+  const navigate = useNavigate()
   const ctaPath = session && profile ? '/feed' : '/onboarding'
   const ctaLabel = session && profile ? 'View your matches' : 'Find your type'
 
   const [stats, setStats] = useState(null)
+
+  // One Tap — fire on home page for logged-out users
+  useEffect(() => {
+    if (!IS_PROD || !GOOGLE_CLIENT_ID || session) return
+
+    async function handleGoogleCredential(response) {
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: response.credential,
+      })
+      if (!error) navigate('/feed')
+    }
+
+    function initOneTap() {
+      if (!window.google?.accounts?.id) return
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleCredential,
+        auto_select: true,
+      })
+      window.google.accounts.id.prompt()
+    }
+
+    if (window.google?.accounts?.id) {
+      initOneTap()
+    } else {
+      const interval = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          clearInterval(interval)
+          initOneTap()
+        }
+      }, 100)
+      return () => clearInterval(interval)
+    }
+  }, [session])
 
   useEffect(() => {
     supabase
