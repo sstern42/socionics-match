@@ -118,7 +118,14 @@ export default function Layout({ children }) {
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
-            <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>What's new</Link>
+            <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
+              onClick={() => localStorage.setItem('socion_changelog_seen', '26 March 2026')}
+            >
+              What's new
+              {localStorage.getItem('socion_changelog_seen') !== '26 March 2026' && (
+                <span style={{ position: 'absolute', top: -3, right: -7, width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+              )}
+            </Link>
           </div>
         </footer>
       </div>
