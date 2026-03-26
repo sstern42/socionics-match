@@ -37,6 +37,14 @@ export default function Feed() {
   // Using profile?.id + loading covers both:
   // - profile arriving after mount (id changes)
   // - profile already in context when mounted (runs immediately on mount)
+  // Redirect to /auth if magic link has expired — preserves hash so Auth can show the message
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
+      navigate('/auth' + hash, { replace: true })
+    }
+  }, [])
+
   const hasFetched = useRef(false)
   useEffect(() => {
     if (!loading && profile && !hasFetched.current) {

@@ -13,6 +13,7 @@ export default function Auth() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
+  const [linkError, setLinkError] = useState(null)
   const { session, loading: authLoading } = useAuth()
   const navigate = useNavigate()
 
@@ -20,6 +21,14 @@ export default function Auth() {
     if (authLoading) return
     if (session) navigate('/feed')
   }, [session, authLoading])
+
+  useEffect(() => {
+    const hash = window.location.hash
+    if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
+      setLinkError('Your sign-in link has expired or already been used. Enter your email below to get a new one.')
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
 
   async function handleMagicLink() {
     if (!email.trim()) return
@@ -104,6 +113,9 @@ export default function Auth() {
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handlePassword()}
               />
+            )}
+            {linkError && (
+              <p style={{ fontSize: '0.82rem', color: 'var(--accent)', textAlign: 'center', background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.65rem 1rem', lineHeight: 1.6 }}>{linkError}</p>
             )}
             {error && (
               <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
