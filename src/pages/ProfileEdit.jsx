@@ -229,7 +229,7 @@ export default function ProfileEdit() {
               </p>
               <ProfileCard
                 profile={{
-                  profile_data: { name, age: parseInt(age) || null, bio, country },
+                  profile_data: { name, age: parseInt(age) || null, gender, bio, country },
                   type,
                   relation: null,
                   displayRelation: null,
