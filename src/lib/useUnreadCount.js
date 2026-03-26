@@ -4,7 +4,12 @@ import { supabase } from './supabase'
 const STORAGE_KEY = 'socion_messages_last_visited'
 
 export function getLastVisited() {
-  return localStorage.getItem(STORAGE_KEY) ?? new Date(0).toISOString()
+  if (!localStorage.getItem(STORAGE_KEY)) {
+    const now = new Date().toISOString()
+    localStorage.setItem(STORAGE_KEY, now)
+    return now
+  }
+  return localStorage.getItem(STORAGE_KEY)
 }
 
 export function markMessagesRead() {
