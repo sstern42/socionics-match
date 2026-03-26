@@ -25,10 +25,25 @@ export default function Home() {
   useEffect(() => {
     supabase
       .from('stats')
-      .select('users, countries, connections, types')
+      .select('users, countries, connections, types, updated_at')
       .eq('id', 1)
       .single()
-      .then(({ data }) => { if (data) setStats(data) })
+      .then(({ data }) => {
+        if (data) {
+          setStats(data)
+          // Refresh if stats are older than 6 hours
+          const age = Date.now() - new Date(data.updated_at).getTime()
+          if (age > 6 * 60 * 60 * 1000) {
+            fetch('https://hetjmvwhyibsxrkkgury.supabase.co/functions/v1/compute-stats', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+            }).then(() => {
+              supabase.from('stats').select('users, countries, connections, types').eq('id', 1).single()
+                .then(({ data: fresh }) => { if (fresh) setStats(fresh) })
+            })
+          }
+        }
+      })
   }, [])
 
   return (
