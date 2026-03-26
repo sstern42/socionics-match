@@ -10,8 +10,12 @@ import PurposePicker from '../components/profile/PurposePicker'
 import ProfileCard from '../components/feed/ProfileCard'
 
 export default function ProfileEdit() {
-  const { profile, refreshProfile } = useAuth()
+  const { profile, refreshProfile, session, loading } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!loading && !session) navigate('/auth', { replace: true })
+  }, [session, loading])
 
   const [step, setStep] = useState('details')
 

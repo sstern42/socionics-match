@@ -42,7 +42,7 @@ export default function Messages() {
     setMobileShowConvo(true)
   }
 
-  if (loading || !profile) {
+  if (loading) {
     return (
       <Layout>
         <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -50,6 +50,11 @@ export default function Messages() {
         </div>
       </Layout>
     )
+  }
+
+  if (!loading && session && !profile) {
+    navigate('/onboarding', { replace: true })
+    return null
   }
 
   return (
