@@ -54,6 +54,8 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
   useEffect(() => {
     if (!sending) inputRef.current?.focus()
   }, [sending])
+
+  async function handleSend() {
     if (!text.trim() || sending) return
     setSending(true)
     try {
@@ -151,7 +153,6 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            disabled={false}
           />
           <button
             className="btn-primary"
