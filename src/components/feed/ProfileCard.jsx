@@ -40,6 +40,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const age = profile_data?.age
   const gender = profile_data?.gender
   const bio = profile_data?.bio
+  const role = profile_data?.role
   const flag = countryFlag(profile_data?.country)
   // displayRelation = what they are to you (e.g. SUPERVISOR)
   // relation = your role (e.g. SUPERVISEE) — used for connect/filter logic
@@ -84,6 +85,17 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
               {name}{age ? `, ${age}` : ''}{gender && gender !== 'Prefer not to say' ? ` · ${gender}` : ''}
             </h3>
+            {role && (
+              <span style={{
+                display: 'inline-block', marginTop: '0.2rem',
+                fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase',
+                fontWeight: 600, color: '#fff',
+                background: role === 'founder' ? '#2c2a22' : 'var(--accent)',
+                padding: '0.15rem 0.5rem', borderRadius: 2,
+              }}>
+                {role}
+              </span>
+            )}
             {flag && (
               <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{flag}</p>
             )}
