@@ -38,6 +38,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const { profile_data, type, relation, displayRelation, purpose } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
+  const gender = profile_data?.gender
   const bio = profile_data?.bio
   const flag = countryFlag(profile_data?.country)
   // displayRelation = what they are to you (e.g. SUPERVISOR)
@@ -81,7 +82,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           </div>
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
-              {name}{age ? `, ${age}` : ''}
+              {name}{age ? `, ${age}` : ''}{gender && gender !== 'Prefer not to say' ? ` · ${gender}` : ''}
             </h3>
             {flag && (
               <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{flag}</p>
