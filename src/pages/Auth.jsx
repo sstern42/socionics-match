@@ -32,15 +32,34 @@ export default function Auth() {
     }
   }, [])
 
+  const nonceRef = useRef(null)
+
+  // Generate a nonce for One Tap — required by Supabase when using auto prompt
+  async function generateNonce() {
+    const array = new Uint8Array(32)
+    crypto.getRandomValues(array)
+    const raw = String.fromCharCode(...array)
+    const base64 = btoa(raw)
+    const encoder = new TextEncoder()
+    const data = encoder.encode(base64)
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    const hashed = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+    return { raw: base64, hashed }
+  }
+
   useEffect(() => {
     if (!IS_PROD || !GOOGLE_CLIENT_ID) return
 
-    function initGoogle() {
+    async function initGoogle() {
       if (!window.google?.accounts?.id) return
+      const { raw, hashed } = await generateNonce()
+      nonceRef.current = raw
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
         auto_select: true,
+        nonce: hashed,
       })
       window.google.accounts.id.prompt()
       if (googleButtonRef.current) {
@@ -50,6 +69,7 @@ export default function Auth() {
           width: googleButtonRef.current.offsetWidth || 400,
           text: 'continue_with',
           shape: 'rectangular',
+          nonce: hashed,
         })
       }
     }
@@ -74,6 +94,7 @@ export default function Auth() {
       const { error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: response.credential,
+        nonce: nonceRef.current,
       })
       if (error) throw error
     } catch (err) {
