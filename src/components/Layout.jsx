@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { signOut } from '../lib/auth'
 
@@ -8,11 +8,12 @@ const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE'
 export default function Layout({ children }) {
   const { session, profile } = useAuth()
   const location = useLocation()
+  const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
 
   async function handleSignOut() {
+    navigate('/', { replace: true })
     await signOut()
-    window.location.href = '/'
   }
 
   function closeMenu() { setMenuOpen(false) }
