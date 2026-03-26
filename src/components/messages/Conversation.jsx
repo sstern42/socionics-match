@@ -44,8 +44,16 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
   }, [match.id])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const wasInputFocused = document.activeElement === inputRef.current
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+    if (wasInputFocused) {
+      inputRef.current?.focus()
+    }
   }, [messages])
+
+  useEffect(() => {
+    if (!sending) inputRef.current?.focus()
+  }, [sending])
 
   async function handleSend() {
     if (!text.trim() || sending) return
@@ -145,7 +153,6 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
             value={text}
             onChange={e => setText(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            disabled={sending}
           />
           <button
             className="btn-primary"
