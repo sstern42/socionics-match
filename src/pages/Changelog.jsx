@@ -2,6 +2,16 @@ import Layout from '../components/Layout'
 
 const ENTRIES = [
   {
+    date: '26 March 2026',
+    label: 'Update',
+    items: [
+      'Purpose pills on feed cards — see at a glance what each person is looking for',
+      'Long bios now expand inline with a Read more toggle',
+      'Profile edit page now redirects correctly when not signed in',
+      'Messaging page no longer hangs if profile data is missing',
+    ],
+  },
+  {
     date: '25 March 2026',
     label: 'Update',
     items: [
