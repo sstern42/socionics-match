@@ -26,6 +26,11 @@ export default function Home() {
 
   const [stats, setStats] = useState(null)
 
+  // Redirect to feed when session is established (handles One Tap sign-in)
+  useEffect(() => {
+    if (session) navigate('/feed')
+  }, [session])
+
   // One Tap — fire on home page for logged-out users
   useEffect(() => {
     if (!IS_PROD || !GOOGLE_CLIENT_ID || session) return
@@ -35,7 +40,11 @@ export default function Home() {
         provider: 'google',
         token: response.credential,
       })
-      if (!error) navigate('/feed')
+      if (error) {
+        console.error('Google sign-in error:', error)
+        navigate('/auth')
+      }
+      // On success AuthContext fires, session updates, redirect useEffect takes over
     }
 
     function initOneTap() {
