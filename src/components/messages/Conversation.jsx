@@ -44,7 +44,11 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
   }, [match.id])
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const wasInputFocused = document.activeElement === inputRef.current
+    bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+    if (wasInputFocused) {
+      inputRef.current?.focus()
+    }
   }, [messages])
 
   async function handleSend() {
