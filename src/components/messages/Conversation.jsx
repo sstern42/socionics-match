@@ -76,7 +76,14 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500 }}>{otherName}</h3>
             <p style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, marginTop: '0.15rem' }}>
-              {match.other.type}
+              <a
+                href={`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ color: 'var(--accent)', textDecoration: 'none' }}
+              >
+                {match.other.type}
+              </a>
             </p>
           </div>
           {relInfo && (

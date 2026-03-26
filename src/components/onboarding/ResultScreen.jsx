@@ -25,6 +25,15 @@ export default function ResultScreen({ distribution, primaryType, onConfirm, onO
         <p className="fade-up-3" style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
           {TYPE_NAMES[primaryType]}
         </p>
+        <a
+          href={`https://socionicsinsight.com/types/${primaryType.toLowerCase()}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fade-up-3"
+          style={{ display: 'inline-block', marginTop: '0.75rem', fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', letterSpacing: '0.06em' }}
+        >
+          Read the full {primaryType} profile →
+        </a>
       </div>
 
       {/* Confidence bars */}

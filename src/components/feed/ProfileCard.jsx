@@ -98,14 +98,20 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             )}
           </div>
         </div>
-        <span style={{
-          fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
-          fontWeight: 500, color: colours.text,
-          background: colours.bg, border: `1px solid ${colours.border}`,
-          padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0,
-        }}>
+        <a
+          href={`https://socionicsinsight.com/types/${type.toLowerCase()}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
+            fontWeight: 500, color: colours.text,
+            background: colours.bg, border: `1px solid ${colours.border}`,
+            padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0,
+            textDecoration: 'none',
+          }}
+        >
           {type}
-        </span>
+        </a>
       </div>
 
       {/* Relation badge */}
