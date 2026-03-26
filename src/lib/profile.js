@@ -56,6 +56,18 @@ export async function updateRelationPreferences(userId, preferences) {
   if (error) throw error
 }
 
+export async function createTypeAssessment({ userId, responses, typeDistribution }) {
+  const { error } = await supabase
+    .from('type_assessments')
+    .insert({
+      user_id: userId,
+      responses,
+      computed_type_distribution: typeDistribution,
+      version: 'slide-1.0',
+    })
+  if (error) console.error('Failed to save type assessment:', error)
+}
+
 export async function getProfile(authId) {
   const { data, error } = await supabase
     .from('users')

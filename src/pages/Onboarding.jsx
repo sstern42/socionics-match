@@ -44,11 +44,13 @@ export default function Onboarding() {
     }
   }
 
-  function handleConfirm(type, distribution) {
+  function handleConfirm(type, distribution, rawAnswers) {
     sessionStorage.setItem('socion_type', type)
     sessionStorage.setItem('socion_confidence', JSON.stringify(distribution))
+    sessionStorage.setItem('socion_answers', JSON.stringify(rawAnswers ?? {}))
     localStorage.setItem('socion_type', type)
     localStorage.setItem('socion_confidence', JSON.stringify(distribution))
+    localStorage.setItem('socion_answers', JSON.stringify(rawAnswers ?? {}))
     if (session) {
       navigate('/profile/setup')
     } else {
@@ -107,12 +109,12 @@ export default function Onboarding() {
           <ResultScreen
             distribution={result.distribution}
             primaryType={result.primaryType}
-            onConfirm={handleConfirm}
+            onConfirm={(type, distribution) => handleConfirm(type, distribution, answers)}
             onOverride={() => setStep('selector')}
           />
         )}
         {step === 'selector' && (
-          <TypeSelector onConfirm={handleConfirm} />
+          <TypeSelector onConfirm={(type, distribution) => handleConfirm(type, distribution, {})} />
         )}
       </section>
     </Layout>
