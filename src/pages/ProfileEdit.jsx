@@ -202,7 +202,13 @@ export default function ProfileEdit() {
               <button
                 type="button"
                 className="btn-primary"
-                onClick={() => setStep('relations')}
+                onClick={() => {
+                  if (parseInt(age) < 18) {
+                    setError('You must be 18 or over to use Socion.')
+                    return
+                  }
+                  setStep('relations')
+                }}
                 disabled={!name || !age || !typeValid}
                 style={{ opacity: (!name || !age || !typeValid) ? 0.5 : 1 }}
               >
