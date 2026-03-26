@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { signOut } from '../lib/auth'
+import { useUnreadCount } from '../lib/useUnreadCount'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
@@ -10,6 +11,12 @@ export default function Layout({ children }) {
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const unread = useUnreadCount(profile?.id)
+
+  useEffect(() => {
+    document.title = unread > 0 ? `(${unread}) Socion` : 'Socion'
+    return () => { document.title = 'Socion' }
+  }, [unread])
 
   async function handleSignOut() {
     navigate('/', { replace: true })
@@ -34,7 +41,13 @@ export default function Layout({ children }) {
             {session && profile ? (
               <>
                 <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
-                <Link to="/messages" style={navStyle(isActive('/messages'))}>Messages</Link>
+                <Link to="/messages" style={navStyle(isActive('/messages'))}>
+                  Messages{unread > 0 && (
+                    <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
+                      {unread > 99 ? '99+' : unread}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/profile/edit" style={navStyle(isActive('/profile/edit'))}>Profile</Link>
                 <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
               </>
@@ -77,7 +90,13 @@ export default function Layout({ children }) {
             {session && profile ? (
               <>
                 <Link to="/feed" onClick={closeMenu} style={mobileNavStyle(isActive('/feed'))}>Matches</Link>
-                <Link to="/messages" onClick={closeMenu} style={mobileNavStyle(isActive('/messages'))}>Messages</Link>
+                <Link to="/messages" onClick={closeMenu} style={mobileNavStyle(isActive('/messages'))}>
+                  Messages{unread > 0 && (
+                    <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
+                      {unread > 99 ? '99+' : unread}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/profile/edit" onClick={closeMenu} style={mobileNavStyle(isActive('/profile/edit'))}>Profile</Link>
                 <button onClick={() => { closeMenu(); handleSignOut() }} style={{ ...mobileNavStyle(false), textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}>
                   Sign out
