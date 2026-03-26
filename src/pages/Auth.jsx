@@ -40,8 +40,9 @@ export default function Auth() {
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,
-        auto_select: false,
+        auto_select: true,
       })
+      window.google.accounts.id.prompt()
       if (googleButtonRef.current) {
         window.google.accounts.id.renderButton(googleButtonRef.current, {
           theme: 'outline',
