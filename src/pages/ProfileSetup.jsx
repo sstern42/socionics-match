@@ -16,9 +16,9 @@ export default function ProfileSetup() {
     if (profile) navigate('/feed', { replace: true })
   }, [profile])
 
-  const savedType = sessionStorage.getItem('socion_type') || ''
-  const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || 'null')
-  const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || "['dating']")
+  const savedType = sessionStorage.getItem('socion_type') || localStorage.getItem('socion_type') || ''
+  const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || localStorage.getItem('socion_confidence') || 'null')
+  const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || localStorage.getItem('socion_purpose') || "['dating']")
 
   const [step, setStep] = useState('details')
   const [name, setName] = useState('')
@@ -54,6 +54,9 @@ export default function ProfileSetup() {
       sessionStorage.removeItem('socion_type')
       sessionStorage.removeItem('socion_confidence')
       sessionStorage.removeItem('socion_purpose')
+      localStorage.removeItem('socion_type')
+      localStorage.removeItem('socion_confidence')
+      localStorage.removeItem('socion_purpose')
 
       await refreshProfile()
       navigate('/feed')
@@ -70,7 +73,7 @@ export default function ProfileSetup() {
         <section style={centreStyle}>
           <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ textAlign: 'center' }}>
-              <p className="eyebrow">Step 2 of 3</p>
+              <p className="eyebrow">Step 3 of 4</p>
               <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
                 Your <em>profile</em>
               </h1>
@@ -135,7 +138,7 @@ export default function ProfileSetup() {
       <section style={centreStyle}>
         <div style={{ width: '100%', maxWidth: 640, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <p className="eyebrow">Step 3 of 3</p>
+            <p className="eyebrow">Step 4 of 4</p>
             <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
               Which <em>dynamics</em> are you open to?
             </h1>

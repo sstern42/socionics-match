@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import EntryChoice from '../components/onboarding/EntryChoice'
@@ -16,12 +16,19 @@ export default function Onboarding() {
 
   const [step, setStep] = useState('purpose')
   const [purposes, setPurposes] = useState([])
+
+  // If user returns via magic link with session + saved onboarding data, skip to profile setup
+  useEffect(() => {
+    if (session && localStorage.getItem('socion_type')) {
+      navigate('/profile/setup', { replace: true })
+    }
+  }, [session])
   const [questionIndex, setQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState({})
   const [result, setResult] = useState(null)
 
   function handlePurposeNext() {
-    sessionStorage.setItem('socion_purpose', JSON.stringify(purposes))
+    localStorage.setItem('socion_purpose', JSON.stringify(purposes))
     setStep('entry')
   }
 
@@ -40,6 +47,8 @@ export default function Onboarding() {
   function handleConfirm(type, distribution) {
     sessionStorage.setItem('socion_type', type)
     sessionStorage.setItem('socion_confidence', JSON.stringify(distribution))
+    localStorage.setItem('socion_type', type)
+    localStorage.setItem('socion_confidence', JSON.stringify(distribution))
     if (session) {
       navigate('/profile/setup')
     } else {
@@ -58,7 +67,7 @@ export default function Onboarding() {
         {step === 'purpose' && (
           <div style={{ width: '100%', maxWidth: 560, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div style={{ textAlign: 'center' }}>
-              <p className="eyebrow">Step 1 of 3</p>
+              <p className="eyebrow">Step 1 of 4</p>
               <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
                 What are you <em>looking for?</em>
               </h1>
