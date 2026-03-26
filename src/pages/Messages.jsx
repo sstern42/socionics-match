@@ -6,6 +6,7 @@ import Conversation from '../components/messages/Conversation'
 import { useAuth } from '../lib/AuthContext'
 import { getMatches } from '../lib/messages'
 import { supabase } from '../lib/supabase'
+import { markMessagesRead } from '../lib/useUnreadCount'
 
 export default function Messages() {
   const { session, profile, loading } = useAuth()
@@ -20,6 +21,10 @@ export default function Messages() {
   useEffect(() => {
     if (!session && !loading) navigate('/auth')
   }, [session, loading])
+
+  useEffect(() => {
+    markMessagesRead()
+  }, [])
 
   useEffect(() => {
     if (!profile) return
