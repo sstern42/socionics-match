@@ -70,6 +70,8 @@ export default function ProfileEdit() {
 
   const typeValid = TYPES.includes(type.toUpperCase())
 
+  if (loading || !session) return null
+
   if (step === 'details') {
     return (
       <Layout>
