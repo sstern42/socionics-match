@@ -49,6 +49,9 @@ export default function Layout({ children }) {
                   )}
                 </Link>
                 <Link to="/profile/edit" style={navStyle(isActive('/profile/edit'))}>Profile</Link>
+                {profile?.profile_data?.role === 'founder' && (
+                  <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
+                )}
                 <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
               </>
             ) : (
