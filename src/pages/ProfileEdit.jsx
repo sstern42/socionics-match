@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
@@ -70,7 +70,13 @@ export default function ProfileEdit() {
 
   const typeValid = TYPES.includes(type.toUpperCase())
 
-  if (loading || !session) return null
+  if (loading || !session) return (
+    <Layout>
+      <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--muted)' }}>Loading…</p>
+      </div>
+    </Layout>
+  )
 
   if (step === 'details') {
     return (
