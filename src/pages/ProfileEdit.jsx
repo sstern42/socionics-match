@@ -21,6 +21,7 @@ export default function ProfileEdit() {
 
   const [name, setName] = useState(profile?.profile_data?.name ?? '')
   const [age, setAge] = useState(profile?.profile_data?.age?.toString() ?? '')
+  const [gender, setGender] = useState(profile?.profile_data?.gender ?? '')
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
   const [type, setType] = useState(profile?.type ?? '')
@@ -45,7 +46,7 @@ export default function ProfileEdit() {
       }
       await Promise.all([
         updateProfileData(profile.id, {
-          profileData: { name, age: parseInt(age), bio, country },
+          profileData: { name, age: parseInt(age), gender, bio, country },
           type: type.toUpperCase(),
           avatarUrl,
         }),
@@ -149,6 +150,17 @@ export default function ProfileEdit() {
               />
               <select
                 className="input-standalone"
+                value={gender}
+                onChange={e => setGender(e.target.value)}
+                style={{ fontFamily: 'var(--sans)' }}
+              >
+                <option value="">Gender (optional)</option>
+                <option value="Man">Man</option>
+                <option value="Woman">Woman</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+              <select
+                className="input-standalone"
                 value={country}
                 onChange={e => setCountry(e.target.value)}
                 style={{ fontFamily: 'var(--sans)' }}
@@ -217,7 +229,7 @@ export default function ProfileEdit() {
               </p>
               <ProfileCard
                 profile={{
-                  profile_data: { name, age: parseInt(age) || null, bio, country },
+                  profile_data: { name, age: parseInt(age) || null, gender, bio, country },
                   type,
                   relation: null,
                   displayRelation: null,
