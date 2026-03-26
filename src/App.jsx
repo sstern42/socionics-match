@@ -6,6 +6,7 @@ import ProfileSetup from './pages/ProfileSetup'
 import ProfileEdit from './pages/ProfileEdit'
 import Feedback from './pages/Feedback'
 import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 import Changelog from './pages/Changelog'
 import Feed from './pages/Feed'
 import Messages from './pages/Messages'
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/profile/edit" element={<ProfileEdit />} />
         <Route path="/feedback/:matchId" element={<Feedback />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
