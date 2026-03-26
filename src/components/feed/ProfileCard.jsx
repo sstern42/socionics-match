@@ -28,7 +28,7 @@ const RELATION_COLOURS = {
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
-  const { profile_data, type, relation, displayRelation } = profile
+  const { profile_data, type, relation, displayRelation, purpose } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
   const bio = profile_data?.bio
@@ -78,6 +78,15 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             </h3>
             {flag && (
               <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{flag}</p>
+            )}
+            {purpose?.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                {purpose.map(p => (
+                  <span key={p} style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.4rem' }}>
+                    {p}
+                  </span>
+                ))}
+              </div>
             )}
           </div>
         </div>
