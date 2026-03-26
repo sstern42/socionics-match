@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
-import { createProfile, updateRelationPreferences } from '../lib/profile'
+import { createProfile, updateRelationPreferences, createTypeAssessment } from '../lib/profile'
 import { COUNTRIES } from '../data/countries'
 
 export default function ProfileSetup() {
@@ -18,6 +18,7 @@ export default function ProfileSetup() {
 
   const savedType = sessionStorage.getItem('socion_type') || localStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || localStorage.getItem('socion_confidence') || 'null')
+  const savedAnswers = JSON.parse(sessionStorage.getItem('socion_answers') || localStorage.getItem('socion_answers') || '{}')
   const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || localStorage.getItem('socion_purpose') || '["dating"]')
 
   const [step, setStep] = useState('details')
@@ -52,11 +53,22 @@ export default function ProfileSetup() {
         await updateRelationPreferences(newProfile.id, relations)
       }
 
+      // Save raw assessment data for research — only if user took the questionnaire
+      if (Object.keys(savedAnswers).length > 0) {
+        await createTypeAssessment({
+          userId: newProfile.id,
+          responses: savedAnswers,
+          typeDistribution: savedConfidence ?? { [type]: 1.0 },
+        })
+      }
+
       sessionStorage.removeItem('socion_type')
       sessionStorage.removeItem('socion_confidence')
+      sessionStorage.removeItem('socion_answers')
       sessionStorage.removeItem('socion_purpose')
       localStorage.removeItem('socion_type')
       localStorage.removeItem('socion_confidence')
+      localStorage.removeItem('socion_answers')
       localStorage.removeItem('socion_purpose')
 
       await refreshProfile()
