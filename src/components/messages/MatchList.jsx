@@ -67,6 +67,6 @@ export default function MatchList({ matches, selectedId, onSelect }) {
             )}
           </button>
         )
-      })}\n    </div>
+      })}</div>
   )
 }
