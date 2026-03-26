@@ -5,9 +5,21 @@ import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { RELATIONS } from '../data/relations'
+
+const BANNER_KEY = 'socion_founder_banner_dismissed'
+
 export default function Feed() {
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
+
+  const [bannerDismissed, setBannerDismissed] = useState(
+    () => localStorage.getItem(BANNER_KEY) === 'true'
+  )
+
+  function dismissBanner() {
+    localStorage.setItem(BANNER_KEY, 'true')
+    setBannerDismissed(true)
+  }
 
   const [profiles, setProfiles] = useState([])
   const [matchedMap, setMatchedMap] = useState({})
@@ -166,6 +178,26 @@ export default function Feed() {
             </div>
           )}
         </div>
+
+        {!bannerDismissed && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
+            background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
+            borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem',
+          }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
+              👋 I'm Spencer, the founder. Connect with me on the feed for feedback, ideas, or just to chat about Socionics.
+            </p>
+            <button
+              type="button"
+              onClick={dismissBanner}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: '0 0.25rem', lineHeight: 1 }}
+              aria-label="Dismiss"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {feedDisplayRelations.length > 1 && (
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
