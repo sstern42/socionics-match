@@ -18,7 +18,7 @@ export default function Privacy() {
           <p>When you create an account and use Socion, we collect:</p>
           <ul>
             <li><strong>Account data</strong> — your email address, used to send you a magic sign-in link (no password is stored)</li>
-            <li><strong>Profile data</strong> — your name, age, location, bio, Socionics type, and profile photo, as you provide them</li>
+            <li><strong>Profile data</strong> — your name, age, gender, location, bio, Socionics type, and profile photo, as you provide them</li>
             <li><strong>Usage data</strong> — the connections you make, messages you send, and feedback ratings you submit</li>
             <li><strong>Analytics data</strong> — page views and navigation patterns via Umami, which is cookieless and does not track individuals across sites</li>
           </ul>

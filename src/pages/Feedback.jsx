@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
+import { RELATIONS } from '../data/relations'
 
 export default function Feedback() {
   const { matchId } = useParams()
@@ -58,11 +59,21 @@ export default function Feedback() {
     }
   }
 
-  if (!match) {
+  if (loading || (session && !match)) {
     return (
       <Layout>
         <section style={centreStyle}>
           <p style={{ color: 'var(--muted)' }}>Loading…</p>
+        </section>
+      </Layout>
+    )
+  }
+
+  if (!session || !match) {
+    return (
+      <Layout>
+        <section style={centreStyle}>
+          <p style={{ color: 'var(--muted)' }}>Connection not found.</p>
         </section>
       </Layout>
     )
@@ -97,7 +108,7 @@ export default function Feedback() {
               How is your connection with <em>{otherName}</em>?
             </h1>
             <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem' }}>
-              Your {match.relation_type.replace('_', '-').toLowerCase()} relation. Your rating helps validate the theory.
+              Your {RELATIONS[match.relation_type]?.name?.toLowerCase() ?? match.relation_type} relation. Your rating helps validate the theory.
             </p>
           </div>
 

@@ -18,7 +18,7 @@ export default function ProfileSetup() {
 
   const savedType = sessionStorage.getItem('socion_type') || localStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || localStorage.getItem('socion_confidence') || 'null')
-  const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || localStorage.getItem('socion_purpose') || "['dating']")
+  const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || localStorage.getItem('socion_purpose') || '["dating"]')
 
   const [step, setStep] = useState('details')
   const [name, setName] = useState('')
