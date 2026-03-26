@@ -27,16 +27,12 @@ export default function Admin() {
     try {
       const [
         { data: users },
+        { data: adminStats },
         { data: matches },
-        { data: messages },
-        { data: blocks },
-        { data: assessments },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at').order('created_at', { ascending: false }),
+        supabase.rpc('get_admin_stats'),
         supabase.from('matches').select('id, relation_type, purpose, created_at, feedback_a, feedback_b').order('created_at', { ascending: false }),
-        supabase.from('messages').select('id, created_at'),
-        supabase.from('blocks').select('id, type, reason, created_at, blocker_id, blocked_id'),
-        supabase.from('type_assessments').select('id, user_id, created_at'),
       ])
 
       // Type distribution
@@ -69,21 +65,22 @@ export default function Admin() {
         }
       }
 
-      // Reports
-      const reports = (blocks ?? []).filter(b => b.type === 'block' && b.reason)
+      const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
       setData({
         users: users ?? [],
         matches: matches ?? [],
-        messages: messages ?? [],
-        blocks: blocks ?? [],
-        assessments: assessments ?? [],
         typeCounts,
         relCounts,
         avgRating,
         ratings,
         purposeCounts,
         reports,
+        totalConnections: adminStats?.connections ?? 0,
+        totalMessages: adminStats?.messages ?? 0,
+        totalAssessments: adminStats?.assessments ?? 0,
+        totalCooloffs: adminStats?.cooloffs ?? 0,
+        totalReports: adminStats?.reports ?? 0,
       })
     } catch (err) {
       setError(err.message)
@@ -113,13 +110,12 @@ export default function Admin() {
     )
   }
 
-  const { users, matches, messages, blocks, assessments, typeCounts, relCounts, avgRating, ratings, purposeCounts, reports } = data
+  const { users, matches, typeCounts, relCounts, avgRating, ratings, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
   const sortedRels = Object.entries(relCounts).sort((a, b) => b[1] - a[1])
   const sortedPurposes = Object.entries(purposeCounts).sort((a, b) => b[1] - a[1])
-  const cooloffs = blocks.filter(b => b.type === 'cooloff')
 
   return (
     <Layout>
@@ -140,13 +136,13 @@ export default function Admin() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
           {[
             { value: users.length, label: 'Members' },
-            { value: matches.length, label: 'Connections' },
-            { value: messages.length, label: 'Messages' },
+            { value: totalConnections, label: 'Connections' },
+            { value: totalMessages, label: 'Messages' },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
-            { value: assessments.length, label: 'Assessments' },
+            { value: totalAssessments, label: 'Assessments' },
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratings.length})` },
-            { value: cooloffs.length, label: 'Cool-offs' },
-            { value: reports.length, label: 'Reports' },
+            { value: totalCooloffs, label: 'Cool-offs' },
+            { value: totalReports, label: 'Reports' },
           ].map(({ value, label }) => (
             <div key={label} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
