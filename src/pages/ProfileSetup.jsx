@@ -23,6 +23,7 @@ export default function ProfileSetup() {
   const [step, setStep] = useState('details')
   const [name, setName] = useState('')
   const [age, setAge] = useState('')
+  const [gender, setGender] = useState('')
   const [bio, setBio] = useState('')
   const [country, setCountry] = useState('')
   const [type, setType] = useState(savedType)
@@ -39,7 +40,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, age: parseInt(age), bio, country },
+        profileData: { name, age: parseInt(age), gender, bio, country },
         purpose: savedPurpose,
       })
 
@@ -87,6 +88,17 @@ export default function ProfileSetup() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input className="input-standalone" placeholder="First name" value={name} onChange={e => setName(e.target.value)} />
               <input className="input-standalone" placeholder="Age" type="number" min="18" max="99" value={age} onChange={e => setAge(e.target.value)} />
+              <select
+                className="input-standalone"
+                value={gender}
+                onChange={e => setGender(e.target.value)}
+                style={{ fontFamily: 'var(--sans)' }}
+              >
+                <option value="">Gender (optional)</option>
+                <option value="Man">Man</option>
+                <option value="Woman">Woman</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
               <select
                 className="input-standalone"
                 value={country}
