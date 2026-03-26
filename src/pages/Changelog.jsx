@@ -7,6 +7,11 @@ const ENTRIES = [
     items: [
       'Purpose pills on feed cards — see at a glance what each person is looking for',
       'Long bios now expand inline with a Read more toggle',
+      'Gender field added to profiles — displayed alongside name and age on cards',
+      'Unread message count — badge on the Messages nav link and browser tab title updates live',
+      'Messages sidebar now shows last message preview and relative timestamp',
+      'Sign out no longer flashes the sign-in page before redirecting home',
+      'Messaging input no longer loses focus when sending or receiving messages',
       'Profile edit page now redirects correctly when not signed in',
       'Messaging page no longer hangs if profile data is missing',
     ],
