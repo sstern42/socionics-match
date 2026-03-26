@@ -10,6 +10,7 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const bottomRef = useRef(null)
+  const inputRef = useRef(null)
 
   const relInfo = RELATIONS[match.relation_type]
   const otherName = match.other.profile_data?.name ?? match.other.type
@@ -53,6 +54,7 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim() })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
       setText('')
+      inputRef.current?.focus()
     } finally {
       setSending(false)
     }
@@ -138,6 +140,7 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
         <div className="field-group">
           <input
             type="text"
+            ref={inputRef}
             placeholder={`Message ${otherName}…`}
             value={text}
             onChange={e => setText(e.target.value)}
