@@ -6,22 +6,22 @@ export const TYPES = [
 ]
 
 export const RELATIONS = {
-  DUAL:           { name: 'Dual',           description: 'Full complementarity. Each type\'s strengths meet the other\'s blind spots.' },
-  ACTIVITY:       { name: 'Activity',       description: 'Energising and stimulating. Can become unstable at close range.' },
-  MIRROR:         { name: 'Mirror',         description: 'Intellectually aligned but prone to mutual criticism.' },
-  IDENTITY:       { name: 'Identity',       description: 'Same type. Comfortable but no complementarity.' },
-  KINDRED:        { name: 'Kindred',        description: 'Similar outlook, minor functional differences.' },
-  SEMI_DUAL:      { name: 'Semi-Dual',      description: 'Partial complementarity. Comfortable but incomplete.' },
-  BUSINESS:       { name: 'Business',       description: 'Productive collaboration, limited personal depth.' },
-  QUASI_IDENTITY: { name: 'Quasi-Identity', description: 'Appear similar, optimise for opposite ends.' },
-  CONFLICT:       { name: 'Conflict',       description: 'Fundamental incompatibility. Draining for both.' },
-  SUPER_EGO:      { name: 'Super-Ego',      description: 'Mutual respect at distance, friction up close.' },
-  CONTRARY:       { name: 'Contrary',       description: 'Alternate views on the same problems.' },
-  BENEFACTOR:     { name: 'Benefactor',     description: 'One-directional support; giver benefits more than receiver.' },
-  BENEFICIARY:    { name: 'Beneficiary',    description: 'Receiving end of Benefactor relation.' },
-  SUPERVISOR:     { name: 'Supervisor',     description: 'One type monitors the other\'s weak points.' },
-  SUPERVISEE:     { name: 'Supervisee',     description: 'Receiving end of Supervision relation.' },
-  ILLUSIONARY:    { name: 'Illusionary',    description: 'Initial attraction gives way to mutual misreading.' },
+  DUAL:           { name: 'Dual',           description: 'Full complementarity. Each type\'s strengths meet the other\'s blind spots.',          siSlug: 'dual' },
+  ACTIVITY:       { name: 'Activity',       description: 'Energising and stimulating. Can become unstable at close range.',                        siSlug: 'activation' },
+  MIRROR:         { name: 'Mirror',         description: 'Intellectually aligned but prone to mutual criticism.',                                  siSlug: 'mirror' },
+  IDENTITY:       { name: 'Identity',       description: 'Same type. Comfortable but no complementarity.',                                         siSlug: 'identity' },
+  KINDRED:        { name: 'Kindred',        description: 'Similar outlook, minor functional differences.',                                         siSlug: 'kindred' },
+  SEMI_DUAL:      { name: 'Semi-Dual',      description: 'Partial complementarity. Comfortable but incomplete.',                                   siSlug: 'semi-dual' },
+  BUSINESS:       { name: 'Business',       description: 'Productive collaboration, limited personal depth.',                                      siSlug: 'business' },
+  QUASI_IDENTITY: { name: 'Quasi-Identity', description: 'Appear similar, optimise for opposite ends.',                                            siSlug: 'quasi-identity' },
+  CONFLICT:       { name: 'Conflict',       description: 'Fundamental incompatibility. Draining for both.',                                        siSlug: 'conflict' },
+  SUPER_EGO:      { name: 'Super-Ego',      description: 'Mutual respect at distance, friction up close.',                                         siSlug: 'super-ego' },
+  CONTRARY:       { name: 'Contrary',       description: 'Alternate views on the same problems.',                                                  siSlug: 'extinguishment' },
+  BENEFACTOR:     { name: 'Benefactor',     description: 'One-directional support; giver benefits more than receiver.',                            siSlug: 'benefaction' },
+  BENEFICIARY:    { name: 'Beneficiary',    description: 'Receiving end of Benefactor relation.',                                                  siSlug: 'benefaction' },
+  SUPERVISOR:     { name: 'Supervisor',     description: 'One type monitors the other\'s weak points.',                                            siSlug: 'supervision' },
+  SUPERVISEE:     { name: 'Supervisee',     description: 'Receiving end of Supervision relation.',                                                 siSlug: 'supervision' },
+  ILLUSIONARY:    { name: 'Illusionary',    description: 'Initial attraction gives way to mutual misreading.',                                     siSlug: 'mirage' },
 }
 
 // Matrix sourced from socionics.com/rel/relcht.htm — validated for symmetry and completeness.
