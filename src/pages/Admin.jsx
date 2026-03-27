@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
@@ -6,6 +6,41 @@ import { supabase } from '../lib/supabase'
 
 // Gate: only profiles with role='founder' can access
 const ADMIN_ROLE = 'founder'
+export const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
+
+function FounderFeedToggle() {
+  const [enabled, setEnabled] = React.useState(
+    () => localStorage.getItem(FOUNDER_FEED_KEY) === 'true'
+  )
+  function toggle() {
+    const next = !enabled
+    localStorage.setItem(FOUNDER_FEED_KEY, String(next))
+    setEnabled(next)
+  }
+  return (
+    <div style={{ ...founderCardStyle, marginBottom: '1.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+        <div>
+          <p style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }}>Founder feed override</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>
+            {enabled ? 'Active — showing all profiles regardless of purpose.' : 'Off — feed filters by your purpose as normal.'}
+          </p>
+        </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flexShrink: 0 }}>
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={toggle}
+            style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
+          />
+          <span style={{ fontSize: '0.82rem', color: 'var(--text)', fontWeight: enabled ? 500 : 400 }}>
+            {enabled ? 'On' : 'Off'}
+          </span>
+        </label>
+      </div>
+    </div>
+  )
+}
 
 export default function Admin() {
   const { profile, loading } = useAuth()
@@ -337,6 +372,9 @@ export default function Admin() {
           </div>
         </div>
 
+        {/* Founder feed override */}
+        <FounderFeedToggle />
+
         {/* Announcement editor */}
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <p style={cardTitleStyle}>Feed announcement</p>
@@ -420,6 +458,13 @@ const centreStyle = {
 const cardStyle = {
   background: '#fff',
   border: '1px solid var(--border)',
+  borderRadius: 4,
+  padding: '1.25rem',
+}
+
+const founderCardStyle = {
+  background: 'rgba(154,111,56,0.04)',
+  border: '1px solid var(--accent-lt)',
   borderRadius: 4,
   padding: '1.25rem',
 }

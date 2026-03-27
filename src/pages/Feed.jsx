@@ -8,6 +8,7 @@ import { RELATIONS } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
 const BANNER_KEY = 'socion_announcement_dismissed_v'
+const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 
 export default function Feed() {
   const { session, profile, loading, refreshProfile } = useAuth()
@@ -99,7 +100,7 @@ export default function Feed() {
         getFeedProfiles({
           userType: profile.type,
           relationPreferences: profile.relation_preferences ?? [],
-          userPurpose: profile.purpose ?? [],
+          userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
           currentUserId: profile.id,
         }),
         getExistingMatches(profile.id),
