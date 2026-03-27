@@ -35,13 +35,23 @@ const PURPOSE_LABELS = {
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
-  const { profile_data, type, relation, displayRelation, purpose } = profile
+  const { profile_data, type, relation, displayRelation, purpose, last_active } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
   const gender = profile_data?.gender
   const bio = profile_data?.bio
   const role = profile_data?.role
   const flag = countryFlag(profile_data?.country)
+
+  const activityLabel = (() => {
+    if (!last_active) return null
+    const diff = Date.now() - new Date(last_active).getTime()
+    const hours = diff / 3600000
+    if (hours < 24) return { label: 'Active today', colour: '#4caf50' }
+    if (hours < 72) return { label: 'Active this week', colour: '#9a6f38' }
+    if (hours < 168) return { label: 'Active this week', colour: '#9a6f38' }
+    return null
+  })()
   // displayRelation = what they are to you (e.g. SUPERVISOR)
   // relation = your role (e.g. SUPERVISEE) — used for connect/filter logic
   const relInfo = RELATIONS[displayRelation ?? relation]
@@ -69,17 +79,28 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{
-            width: 48, height: 48, borderRadius: '50%', flexShrink: 0,
-            background: 'var(--bg-secondary, #f0ede6)',
-            border: '1px solid var(--border)',
-            overflow: 'hidden',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {profile.avatar_url
-              ? <img src={profile.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{name ? name[0].toUpperCase() : '?'}</span>
-            }
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: '50%',
+              background: 'var(--bg-secondary, #f0ede6)',
+              border: '1px solid var(--border)',
+              overflow: 'hidden',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {profile.avatar_url
+                ? <img src={profile.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{name ? name[0].toUpperCase() : '?'}</span>
+              }
+            </div>
+            {activityLabel && (
+              <span title={activityLabel.label} style={{
+                position: 'absolute', bottom: 1, right: 1,
+                width: 10, height: 10, borderRadius: '50%',
+                background: activityLabel.colour,
+                border: '2px solid #fff',
+                display: 'block',
+              }} />
+            )}
           </div>
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>

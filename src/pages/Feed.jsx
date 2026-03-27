@@ -44,6 +44,7 @@ export default function Feed() {
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
+  const [activeOnly, setActiveOnly] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
   const [showCard, setShowCard] = useState(false)
@@ -147,10 +148,11 @@ export default function Feed() {
   }
 
   // Pills show displayRelation (what they are to you); filter still uses relation (your role)
+  const oneWeekAgo = new Date(Date.now() - 7 * 86400000)
   const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
-  const displayed = filterRelation === 'ALL'
-    ? profiles
-    : profiles.filter(p => (p.displayRelation ?? p.relation) === filterRelation)
+  const displayed = profiles
+    .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo) : true)
+    .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
 
   return (
     <Layout>
@@ -227,6 +229,14 @@ export default function Feed() {
                 {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
               </button>
             ))}
+            <button
+              type="button"
+              className={`rel-pill clickable${activeOnly ? ' active' : ''}`}
+              onClick={() => setActiveOnly(v => !v)}
+              style={{ marginLeft: 'auto' }}
+            >
+              {activeOnly ? '● ' : '○ '}Active this week
+            </button>
           </div>
         )}
 

@@ -28,6 +28,10 @@ export function AuthProvider({ children }) {
     try {
       const p = await getProfile(authId)
       setProfile(p)
+      // Update last_active silently — fire and forget
+      if (p?.id) {
+        supabase.from('users').update({ last_active: new Date().toISOString() }).eq('id', p.id).then(() => {})
+      }
     } catch {
       setProfile(null)
     }

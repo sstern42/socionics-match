@@ -2,16 +2,17 @@ import { supabase } from './supabase'
 import { getRelation, getMatchingTypes } from '../data/relations'
 import { getActiveBlocks } from './blocks'
 
-export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200 }) {
+export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 20 }) {
   const compatibleTypes = getMatchingTypes(userType, relationPreferences)
 
   const [feedResult, blocks] = await Promise.all([
     supabase
       .from('users')
-      .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose')
+      .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active')
       .neq('id', currentUserId)
       .not('profile_data', 'is', null)
       .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
+      .order('last_active', { ascending: false, nullsFirst: false })
       .limit(200),
     getActiveBlocks(currentUserId),
   ])
