@@ -65,7 +65,10 @@ export default function ResultScreen({ distribution, primaryType, onConfirm, onO
       </div>
 
       <div className="fade-up-5" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
-        <button className="btn-primary" onClick={() => onConfirm(primaryType, distribution)}>
+        <button className="btn-primary" onClick={() => {
+          window.umami?.track('type-confirmed', { type: primaryType, method: 'assessment' })
+          onConfirm(primaryType, distribution)
+        }}>
           Confirm — I am {primaryType}
         </button>
         <button
