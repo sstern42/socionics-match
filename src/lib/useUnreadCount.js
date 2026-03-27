@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from './supabase'
 
 const STORAGE_KEY = 'socion_messages_last_visited'
+const MATCH_READ_PREFIX = 'socion_read_'
 
 export function getLastVisited() {
   if (!localStorage.getItem(STORAGE_KEY)) {
@@ -14,6 +15,23 @@ export function getLastVisited() {
 
 export function markMessagesRead() {
   localStorage.setItem(STORAGE_KEY, new Date().toISOString())
+}
+
+export function markMatchRead(matchId) {
+  localStorage.setItem(MATCH_READ_PREFIX + matchId, new Date().toISOString())
+}
+
+export function getMatchLastRead(matchId) {
+  return localStorage.getItem(MATCH_READ_PREFIX + matchId) ?? null
+}
+
+export function isMatchUnread(match, currentUserId) {
+  const last = match.lastMessage
+  if (!last) return false
+  if (last.sender_id === currentUserId) return false
+  const lastRead = getMatchLastRead(match.id)
+  if (!lastRead) return true
+  return new Date(last.created_at) > new Date(lastRead)
 }
 
 export function useUnreadCount(userId) {

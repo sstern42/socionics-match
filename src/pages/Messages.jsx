@@ -6,7 +6,7 @@ import Conversation from '../components/messages/Conversation'
 import { useAuth } from '../lib/AuthContext'
 import { getMatches } from '../lib/messages'
 import { supabase } from '../lib/supabase'
-import { markMessagesRead } from '../lib/useUnreadCount'
+import { markMessagesRead, markMatchRead } from '../lib/useUnreadCount'
 
 export default function Messages() {
   const { session, profile, loading } = useAuth()
@@ -34,8 +34,9 @@ export default function Messages() {
       const matchId = searchParams.get('match')
       if (matchId) {
         const m = data.find(m => m.id === matchId)
-        if (m) { setSelectedMatch(m); setMobileShowConvo(true) }
+        if (m) { markMatchRead(m.id); setSelectedMatch(m); setMobileShowConvo(true) }
       } else if (data.length > 0) {
+        markMatchRead(data[0].id)
         setSelectedMatch(data[0])
       }
       setFetching(false)
@@ -43,6 +44,7 @@ export default function Messages() {
   }, [profile])
 
   function handleSelect(match) {
+    markMatchRead(match.id)
     setSelectedMatch(match)
     setMobileShowConvo(true)
   }
@@ -88,7 +90,7 @@ export default function Messages() {
             </div>
             {fetching
               ? <p style={{ padding: '1.5rem', color: 'var(--muted)', fontSize: '0.85rem' }}>Loading…</p>
-              : <MatchList matches={matches} selectedId={selectedMatch?.id} onSelect={handleSelect} />
+              : <MatchList matches={matches} selectedId={selectedMatch?.id} onSelect={handleSelect} currentUserId={profile.id} />
             }
           </div>
 
