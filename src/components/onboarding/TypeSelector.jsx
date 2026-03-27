@@ -64,7 +64,10 @@ export default function TypeSelector({ onConfirm }) {
             <button
               type="button"
               className="btn-primary"
-              onClick={() => onConfirm(selected, { [selected]: 1.0 })}
+              onClick={() => {
+                window.umami?.track('type-confirmed', { type: selected, method: 'manual' })
+                onConfirm(selected, { [selected]: 1.0 })
+              }}
             >
               Confirm {selected}
             </button>
