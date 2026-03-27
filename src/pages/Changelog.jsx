@@ -2,6 +2,19 @@ import Layout from '../components/Layout'
 
 const ENTRIES = [
   {
+    date: '27 March 2026',
+    label: 'Update',
+    items: [
+      'Feed now filters by compatible types server-side — faster and accurate at any scale',
+      'Feed expanded to show up to 200 profiles (was capped at 20)',
+      'PWA support — Socion can now be installed to your home screen on iOS and Android',
+      'Relation labels in messages now show correctly for asymmetric relations — Supervisor, Supervisee, Benefactor, and Beneficiary display from your perspective',
+      'Admin: site-wide feedback analysis — ratings broken down by relation type with written comments',
+      'Admin: editable feed announcement — publish a dismissible banner to all users without a deploy',
+      'Footer updated — links to GitHub (open source), Socionics reference, and spencerstern.com',
+    ],
+  },
+  {
     date: '26 March 2026',
     label: 'Update',
     items: [
