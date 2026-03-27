@@ -67,6 +67,27 @@ export default function Admin() {
 
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
+      // Feedback breakdown by relation type
+      const relRatings = {}
+      const comments = []
+      let feedbackCount = 0
+      for (const m of matches ?? []) {
+        const entries = [
+          m.feedback_a ? { ...m.feedback_a, rel: m.relation_type } : null,
+          m.feedback_b ? { ...m.feedback_b, rel: m.relation_type } : null,
+        ].filter(Boolean)
+        if (entries.length > 0) feedbackCount++
+        for (const f of entries) {
+          if (!relRatings[f.rel]) relRatings[f.rel] = []
+          relRatings[f.rel].push(f.rating)
+          if (f.comment) comments.push({ rel: f.rel, rating: f.rating, comment: f.comment, submitted_at: f.submitted_at })
+        }
+      }
+      const relAvgRatings = Object.entries(relRatings)
+        .map(([rel, rs]) => ({ rel, avg: (rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(1), count: rs.length }))
+        .sort((a, b) => b.avg - a.avg)
+      comments.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))
+
       setData({
         users: users ?? [],
         matches: matches ?? [],
@@ -81,6 +102,9 @@ export default function Admin() {
         totalAssessments: adminStats?.assessments ?? 0,
         totalCooloffs: adminStats?.cooloffs ?? 0,
         totalReports: adminStats?.reports ?? 0,
+        feedbackCount,
+        relAvgRatings,
+        comments,
       })
     } catch (err) {
       setError(err.message)
@@ -110,7 +134,7 @@ export default function Admin() {
     )
   }
 
-  const { users, matches, typeCounts, relCounts, avgRating, ratings, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports } = data
+  const { users, matches, typeCounts, relCounts, avgRating, ratings, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -211,6 +235,58 @@ export default function Admin() {
                     <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>{r.reason}</p>
                     <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
                       {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Feedback analysis */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>
+              Ratings by relation type
+              <span style={{ color: 'var(--muted)', fontWeight: 300, marginLeft: '0.5rem' }}>
+                — {feedbackCount} of {matches.length} connections rated
+              </span>
+            </p>
+            {relAvgRatings.length === 0 ? (
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>No feedback yet.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+                {relAvgRatings.map(({ rel, avg, count }) => (
+                  <div key={rel} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', width: 100, flexShrink: 0, textTransform: 'capitalize' }}>
+                      {rel.replace(/_/g, ' ').toLowerCase()}
+                    </span>
+                    <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2 }}>
+                      <div style={{ height: '100%', width: `${(avg / 5) * 100}%`, background: 'var(--accent)', borderRadius: 2 }} />
+                    </div>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 500, width: 28, textAlign: 'right' }}>{avg}</span>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--muted)', width: 24 }}>×{count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Comments {comments.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none yet</span>}</p>
+            {comments.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 280, overflowY: 'auto' }}>
+                {comments.map((c, i) => (
+                  <div key={i} style={{ fontSize: '0.8rem', borderLeft: '2px solid var(--accent-lt)', paddingLeft: '0.75rem' }}>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.2rem' }}>
+                      <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>
+                        {c.rel.replace(/_/g, ' ').toLowerCase()}
+                      </span>
+                      <span style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>{'★'.repeat(c.rating)}{'☆'.repeat(5 - c.rating)}</span>
+                    </div>
+                    <p style={{ color: 'var(--text)', lineHeight: 1.5 }}>{c.comment}</p>
+                    <p style={{ color: 'var(--muted)', fontSize: '0.68rem', marginTop: '0.2rem' }}>
+                      {new Date(c.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                     </p>
                   </div>
                 ))}
