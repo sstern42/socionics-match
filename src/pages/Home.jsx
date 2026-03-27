@@ -112,6 +112,77 @@ export default function Home() {
         </div>
       </section>
 
+      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: '#fff' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>The feed</p>
+          <h2 style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+            Every profile shows <em>your dynamic</em>
+          </h2>
+          <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto 3.5rem', lineHeight: 1.7 }}>
+            Not just a profile — a named relationship dynamic, its character, and a link to the full theory.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem', pointerEvents: 'none', userSelect: 'none' }}>
+            {[
+              { initial: 'E', name: 'Elena, 27 👩', flag: '🇩🇪', type: 'ESE', purposes: ['Friendship', 'Dating'], rel: 'Dual', relDesc: "Full complementarity. Each type's strengths meet the other's blind spots.", bio: 'Curious about people, loves deep conversations and understanding what makes someone tick.', highlight: true },
+              { initial: 'M', name: 'Marcus, 31 👨', flag: '🇺🇸', type: 'ILE', purposes: ['Networking'], rel: 'Mirror', relDesc: 'Intellectually aligned but prone to mutual criticism.', bio: 'Builder, systems thinker. Looking to connect with people who want to discuss ideas seriously.', highlight: false },
+              { initial: 'S', name: 'Sofia, 24 👩', flag: '🇧🇷', type: 'IEI', purposes: ['Friendship'], rel: 'Activity', relDesc: 'Energising and stimulating. Can become unstable at close range.', bio: 'Into philosophy, literature, and long walks. Looking for people who think carefully about the world.', highlight: false },
+            ].map(({ initial, name, flag, type, purposes, rel, relDesc, bio, highlight }) => (
+              <div key={name} style={{ background: 'var(--bg)', border: `1px solid ${highlight ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 6, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: 300 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#e8e2d9', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--muted)' }}>{initial}</div>
+                    <div>
+                      <p style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 500 }}>{name}</p>
+                      <p style={{ fontSize: '1rem', marginTop: 2 }}>{flag}</p>
+                      <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.3rem' }}>
+                        {purposes.map(p => <span key={p} style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.4rem' }}>{p}</span>)}
+                      </div>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: highlight ? 'var(--accent)' : 'var(--muted)', background: highlight ? 'rgba(154,111,56,0.10)' : 'rgba(100,100,100,0.05)', border: `1px solid ${highlight ? 'var(--accent)' : 'var(--border)'}`, padding: '0.25rem 0.6rem', borderRadius: 3 }}>{type}</span>
+                </div>
+                <div style={{ background: highlight ? 'rgba(154,111,56,0.08)' : 'rgba(100,100,100,0.04)', border: `1px solid ${highlight ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 4, padding: '0.6rem 0.85rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: highlight ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{rel}</p>
+                    <span style={{ fontSize: '0.68rem', color: highlight ? 'var(--accent)' : 'var(--muted)', opacity: 0.7 }}>Learn more →</span>
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem' }}>{relDesc}</p>
+                </div>
+                <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.7, fontWeight: 300, flex: 1 }}>{bio}</p>
+                <div style={{ height: 38, background: 'var(--accent)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff', fontWeight: 500 }}>Connect</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2rem', fontStyle: 'italic' }}>
+            Sample profiles — your feed shows real members whose type produces your selected dynamics.
+          </p>
+        </div>
+      </section>
+
+      <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
+        <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
+        <h2 style={{ textAlign: 'center', marginBottom: '3.5rem' }}>Built differently<br />from the ground up</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '2rem' }}>
+          {[
+            { title: 'Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
+            { title: 'You choose the dynamic', body: 'Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm's.' },
+            { title: 'Four purposes', body: 'Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you're dating or building a product team.' },
+            { title: 'Open source', body: 'The intertype relations matrix is published and auditable. Community trust through transparency, not a proprietary algorithm.' },
+            { title: 'Real data', body: 'Every connection and rating tests the theory at scale. You're part of the first large-scale empirical test of Socionics in the English-speaking world.' },
+            { title: 'Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes.' },
+          ].map(({ title, body }) => (
+            <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
+              <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300 }}>{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,2rem)', fontStyle: 'italic', fontWeight: 400, lineHeight: 1.5, color: 'var(--text)', marginBottom: '1.5rem' }}>
