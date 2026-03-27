@@ -298,19 +298,36 @@ export default function Admin() {
           {/* Relation breakdown */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Connections by relation</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-              {sortedRels.map(([rel, count]) => (
-                <div key={rel} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)', width: 100, flexShrink: 0, textTransform: 'capitalize' }}>
-                    {rel.replace('_', ' ').toLowerCase()}
-                  </span>
-                  <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2 }}>
-                    <div style={{ height: '100%', width: `${(count / totalMatchCount) * 100}%`, background: 'var(--accent-lt)', borderRadius: 2 }} />
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', width: 20, textAlign: 'right' }}>{count}</span>
+            {[
+              {
+                name: 'Symmetric',
+                relations: ['DUAL','ACTIVITY','MIRROR','IDENTITY','KINDRED','SEMI_DUAL','BUSINESS','QUASI_IDENTITY','CONFLICT','SUPER_EGO','CONTRARY','ILLUSIONARY'],
+              },
+              {
+                name: 'Asymmetric',
+                relations: ['SUPERVISOR','SUPERVISEE','BENEFACTOR','BENEFICIARY'],
+              },
+            ].map(({ name, relations }) => (
+              <div key={name} style={{ marginTop: '1rem' }}>
+                <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, marginBottom: '0.4rem' }}>{name}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {relations.map(rel => {
+                    const count = relCounts[rel] ?? 0
+                    return (
+                      <div key={rel} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span style={{ fontSize: '0.72rem', color: count > 0 ? 'var(--muted)' : 'var(--border)', width: 100, flexShrink: 0, textTransform: 'capitalize' }}>
+                          {rel.replace(/_/g, ' ').toLowerCase()}
+                        </span>
+                        <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2 }}>
+                          <div style={{ height: '100%', width: `${totalMatchCount > 0 ? (count / totalMatchCount) * 100 : 0}%`, background: 'var(--accent-lt)', borderRadius: 2, opacity: count > 0 ? 1 : 0 }} />
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: count > 0 ? 'var(--muted)' : 'var(--border)', width: 20, textAlign: 'right' }}>{count}</span>
+                      </div>
+                    )
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
 
