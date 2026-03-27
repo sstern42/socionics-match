@@ -25,6 +25,10 @@ export async function getMatches(userId) {
       displayRelationType: getRelation(other.type, me.type),
       lastMessage: lastMsg,
     }
+  }).sort((a, b) => {
+    const aTime = a.lastMessage?.created_at ?? a.created_at
+    const bTime = b.lastMessage?.created_at ?? b.created_at
+    return new Date(bTime) - new Date(aTime)
   })
 }
 
