@@ -27,7 +27,7 @@ export default function MatchList({ matches, selectedId, onSelect }) {
     <div style={{ display: 'flex', flexDirection: 'column' }}>
       {matches.map(match => {
         const name = match.other.profile_data?.name ?? match.other.type
-        const relName = RELATIONS[match.relation_type]?.name ?? match.relation_type
+        const relName = RELATIONS[match.displayRelationType ?? match.relation_type]?.name ?? match.relation_type
         const isSelected = match.id === selectedId
         const last = match.lastMessage
 

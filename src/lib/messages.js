@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { getRelation } from '../data/relations'
 
 export async function getMatches(userId) {
   const { data, error } = await supabase
@@ -15,9 +16,13 @@ export async function getMatches(userId) {
   return (data ?? []).map(m => {
     const msgs = m.messages ?? []
     const lastMsg = msgs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0] ?? null
+    const other = m.user_a.id === userId ? m.user_b : m.user_a
+    const me = m.user_a.id === userId ? m.user_a : m.user_b
     return {
       ...m,
-      other: m.user_a.id === userId ? m.user_b : m.user_a,
+      other,
+      // What the other person IS to you — use this for all display
+      displayRelationType: getRelation(other.type, me.type),
       lastMessage: lastMsg,
     }
   })
