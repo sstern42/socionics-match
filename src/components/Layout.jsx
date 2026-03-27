@@ -101,6 +101,9 @@ export default function Layout({ children }) {
                   )}
                 </Link>
                 <Link to="/profile/edit" onClick={closeMenu} style={mobileNavStyle(isActive('/profile/edit'))}>Profile</Link>
+                {profile?.profile_data?.role === 'founder' && (
+                  <Link to="/admin" onClick={closeMenu} style={mobileNavStyle(isActive('/admin'))}>Admin</Link>
+                )}
                 <button onClick={() => { closeMenu(); handleSignOut() }} style={{ ...mobileNavStyle(false), textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}>
                   Sign out
                 </button>
