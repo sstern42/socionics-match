@@ -205,23 +205,54 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
             <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.1rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Start the conversation.</p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>You and {otherName} are {relInfo?.name?.toLowerCase() ?? 'connected'}.</p>
           </div>
-        ) : messages.map(msg => {
-          const isMine = msg.sender_id === currentUserId
-          return (
-            <div key={msg.id} style={{
-              alignSelf: isMine ? 'flex-end' : 'flex-start',
-              maxWidth: '70%',
-              background: isMine ? 'var(--accent)' : '#fff',
-              color: isMine ? '#fff' : 'var(--text)',
-              border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
-              borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-              padding: '0.65rem 0.9rem',
-              fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
-            }}>
-              {msg.content}
-            </div>
-          )
-        })}
+        ) : (() => {
+          const now = new Date()
+          const todayStr = now.toDateString()
+          const yesterdayStr = new Date(now - 86400000).toDateString()
+          let lastDateStr = null
+          const items = []
+
+          for (const msg of messages) {
+            const msgDate = new Date(msg.created_at)
+            const msgDateStr = msgDate.toDateString()
+
+            if (msgDateStr !== lastDateStr) {
+              lastDateStr = msgDateStr
+              const label = msgDateStr === todayStr
+                ? 'Today'
+                : msgDateStr === yesterdayStr
+                  ? 'Yesterday'
+                  : msgDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: msgDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined })
+
+              items.push(
+                <div key={`divider-${msg.id}`} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.5rem 0' }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                  <span style={{ fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', flexShrink: 0 }}>{label}</span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                </div>
+              )
+            }
+
+            const isMine = msg.sender_id === currentUserId
+            const timeStr = new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+            items.push(
+              <div key={msg.id} style={{ alignSelf: isMine ? 'flex-end' : 'flex-start', maxWidth: '70%', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                <div style={{
+                  background: isMine ? 'var(--accent)' : '#fff',
+                  color: isMine ? '#fff' : 'var(--text)',
+                  border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
+                  borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                  padding: '0.65rem 0.9rem',
+                  fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
+                }}>
+                  {msg.content}
+                </div>
+                <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>{timeStr}</span>
+              </div>
+            )
+          }
+          return items
+        })()}
         <div ref={bottomRef} />
       </div>
 
