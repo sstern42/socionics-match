@@ -116,7 +116,7 @@ export default function Layout({ children }) {
         </main>
 
         <footer className="site-footer">
-          <p>&copy; {new Date().getFullYear()} Spencer Stern</p>
+          <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern</a></p>
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
