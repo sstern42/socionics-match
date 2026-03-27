@@ -13,6 +13,10 @@ export default function Admin() {
   const [data, setData] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
+  const [announcement, setAnnouncement] = useState('')
+  const [announcementActive, setAnnouncementActive] = useState(false)
+  const [savingAnnouncement, setSavingAnnouncement] = useState(false)
+  const [announcementSaved, setAnnouncementSaved] = useState(false)
 
   useEffect(() => {
     if (loading) return
@@ -28,10 +32,15 @@ export default function Admin() {
       const [
         { data: users },
         { data: adminStats },
+        { data: statsRow },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
+        supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
       ])
+
+      setAnnouncement(statsRow?.announcement ?? '')
+      setAnnouncementActive(statsRow?.announcement_active ?? false)
 
       // Type distribution
       const typeCounts = {}
@@ -92,6 +101,14 @@ export default function Admin() {
     } finally {
       setFetching(false)
     }
+  }
+
+  async function saveAnnouncement() {
+    setSavingAnnouncement(true)
+    await supabase.from('stats').update({ announcement, announcement_active: announcementActive }).eq('id', 1)
+    setSavingAnnouncement(false)
+    setAnnouncementSaved(true)
+    setTimeout(() => setAnnouncementSaved(false), 2500)
   }
 
   if (loading || fetching) {
@@ -273,6 +290,41 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Announcement editor */}
+        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+          <p style={cardTitleStyle}>Feed announcement</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
+            Shown as a dismissible banner on the feed. Each unique message shows once per user.
+          </p>
+          <textarea
+            value={announcement}
+            onChange={e => { setAnnouncement(e.target.value); setAnnouncementSaved(false) }}
+            rows={3}
+            style={{ width: '100%', fontFamily: 'var(--sans)', fontSize: '0.88rem', lineHeight: 1.6, padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: 4, resize: 'vertical', boxSizing: 'border-box', background: 'var(--bg)' }}
+            placeholder="e.g. I'm Spencer, the founder. Connect with me on the feed for feedback or just to chat about Socionics."
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={announcementActive}
+                onChange={e => setAnnouncementActive(e.target.checked)}
+                style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
+              />
+              Active (visible on feed)
+            </label>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={saveAnnouncement}
+              disabled={savingAnnouncement}
+              style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingAnnouncement ? 0.5 : 1 }}
+            >
+              {savingAnnouncement ? 'Saving…' : announcementSaved ? '✓ Saved' : 'Save'}
+            </button>
           </div>
         </div>
 
