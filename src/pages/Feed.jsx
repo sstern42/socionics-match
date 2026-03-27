@@ -45,6 +45,7 @@ export default function Feed() {
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [activeOnly, setActiveOnly] = useState(false)
+  const [withPhotos, setWithPhotos] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
   const [showCard, setShowCard] = useState(false)
@@ -152,6 +153,7 @@ export default function Feed() {
   const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = profiles
     .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo) : true)
+    .filter(p => withPhotos ? !!p.avatar_url : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
 
   return (
@@ -220,23 +222,37 @@ export default function Feed() {
         )}
 
         {feedDisplayRelations.length > 1 && (
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
-            <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
-              All ({profiles.length})
-            </button>
-            {feedDisplayRelations.map(rel => (
-              <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
-                {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
+            {/* Relation filter row */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
+                All ({profiles.length})
               </button>
-            ))}
-            <button
-              type="button"
-              className={`rel-pill clickable${activeOnly ? ' active' : ''}`}
-              onClick={() => setActiveOnly(v => !v)}
-              style={{ marginLeft: 'auto' }}
-            >
-              {activeOnly ? '● ' : '○ '}Active this week
-            </button>
+              {feedDisplayRelations.map(rel => (
+                <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
+                  {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
+                </button>
+              ))}
+            </div>
+            {/* Attribute toggle row */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={`rel-pill clickable${withPhotos ? ' active' : ''}`}
+                onClick={() => setWithPhotos(v => !v)}
+                style={{ fontSize: '0.7rem' }}
+              >
+                {withPhotos ? '✓ ' : ''}With photos
+              </button>
+              <button
+                type="button"
+                className={`rel-pill clickable${activeOnly ? ' active' : ''}`}
+                onClick={() => setActiveOnly(v => !v)}
+                style={{ fontSize: '0.7rem' }}
+              >
+                {activeOnly ? '✓ ' : ''}Active this week
+              </button>
+            </div>
           </div>
         )}
 
