@@ -16,6 +16,14 @@ export default function Feed() {
   const [announcement, setAnnouncement] = useState(null)
   const [bannerDismissed, setBannerDismissed] = useState(false)
 
+  function announcementKey(text) {
+    try {
+      return BANNER_KEY + btoa(encodeURIComponent(text)).slice(0, 8)
+    } catch {
+      return BANNER_KEY + text.length
+    }
+  }
+
   useEffect(() => {
     supabase
       .from('stats')
@@ -25,17 +33,14 @@ export default function Feed() {
       .then(({ data }) => {
         if (data?.announcement_active && data?.announcement) {
           setAnnouncement(data.announcement)
-          // Use announcement text as part of key so new announcements re-show
-          const key = BANNER_KEY + btoa(data.announcement).slice(0, 8)
-          setBannerDismissed(localStorage.getItem(key) === 'true')
+          setBannerDismissed(localStorage.getItem(announcementKey(data.announcement)) === 'true')
         }
       })
   }, [])
 
   function dismissBanner() {
     if (!announcement) return
-    const key = BANNER_KEY + btoa(announcement).slice(0, 8)
-    localStorage.setItem(key, 'true')
+    localStorage.setItem(announcementKey(announcement), 'true')
     setBannerDismissed(true)
   }
 
