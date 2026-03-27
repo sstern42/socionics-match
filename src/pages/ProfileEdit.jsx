@@ -136,7 +136,7 @@ export default function ProfileEdit() {
               </div>
               <input
                 className="input-standalone"
-                placeholder="First name"
+                placeholder="First name or alias"
                 value={name}
                 onChange={e => setName(e.target.value)}
               />
