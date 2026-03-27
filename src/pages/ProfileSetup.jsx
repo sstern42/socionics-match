@@ -42,7 +42,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, age: parseInt(age), gender, bio, country, anonymous },
+        profileData: { name: name.trim().replace(/^\w/, c => c.toUpperCase()), age: parseInt(age), gender, bio, country, anonymous },
         purpose: savedPurpose,
       })
 
