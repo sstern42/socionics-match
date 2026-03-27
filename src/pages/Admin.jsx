@@ -266,20 +266,33 @@ export default function Admin() {
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          {/* Type distribution */}
+          {/* Type distribution by quadra */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Type distribution</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-              {sortedTypes.map(([type, count]) => (
-                <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36, flexShrink: 0 }}>{type}</span>
-                  <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2 }}>
-                    <div style={{ height: '100%', width: `${(count / users.length) * 100}%`, background: 'var(--accent)', borderRadius: 2 }} />
-                  </div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', width: 20, textAlign: 'right' }}>{count}</span>
+            {[
+              { name: 'Alpha', colour: '#BA7517', types: ['ILE', 'SEI', 'ESE', 'LII'] },
+              { name: 'Beta',  colour: '#791F1F', types: ['EIE', 'LSI', 'SLE', 'IEI'] },
+              { name: 'Gamma', colour: '#0F6E56', types: ['SEE', 'ILI', 'LIE', 'ESI'] },
+              { name: 'Delta', colour: '#185FA5', types: ['LSE', 'EII', 'IEE', 'SLI'] },
+            ].map(({ name, colour, types }) => (
+              <div key={name} style={{ marginTop: '1rem' }}>
+                <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: colour, fontWeight: 500, marginBottom: '0.4rem' }}>{name}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  {types.map(type => {
+                    const count = typeCounts[type] ?? 0
+                    return (
+                      <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 500, color: count > 0 ? colour : 'var(--border)', width: 36, flexShrink: 0 }}>{type}</span>
+                        <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2 }}>
+                          <div style={{ height: '100%', width: `${users.length > 0 ? (count / users.length) * 100 : 0}%`, background: colour, borderRadius: 2, opacity: count > 0 ? 1 : 0 }} />
+                        </div>
+                        <span style={{ fontSize: '0.75rem', color: count > 0 ? 'var(--muted)' : 'var(--border)', width: 20, textAlign: 'right' }}>{count}</span>
+                      </div>
+                    )
+                  })}
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
 
           {/* Relation breakdown */}
