@@ -33,4 +33,20 @@
       "purpose": "maskable"
     }
   ]
+  "screenshots": [
+  {
+    "src": "/screenshot-feed.png",
+    "sizes": "390x844",
+    "type": "image/png",
+    "form_factor": "narrow",
+    "label": "Match feed"
+  },
+  {
+    "src": "/screenshot-messages.png",
+    "sizes": "390x844",
+    "type": "image/png",
+    "form_factor": "narrow",
+    "label": "Messages"
+  }
+]
 }
