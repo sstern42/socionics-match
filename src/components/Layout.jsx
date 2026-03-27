@@ -115,22 +115,25 @@ export default function Layout({ children }) {
           {children}
         </main>
 
-        <footer className="site-footer">
-          <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern</a></p>
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
-            <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
-            <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
-            <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
-            <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
-              onClick={() => localStorage.setItem('socion_changelog_seen', '26 March 2026')}
-            >
-              What's new
-              {localStorage.getItem('socion_changelog_seen') !== '26 March 2026' && (
-                <span style={{ position: 'absolute', top: -3, right: -7, width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
-              )}
-            </Link>
-          </div>
-        </footer>
+       <footer className="site-footer">
+  <div>
+    <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved.</p>
+    <p style={{ marginTop: '0.2rem' }}>Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern</a></p>
+  </div>
+  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+    <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
+    <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
+    <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
+    <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
+      onClick={() => localStorage.setItem('socion_changelog_seen', '26 March 2026')}
+    >
+      What's new
+      {localStorage.getItem('socion_changelog_seen') !== '26 March 2026' && (
+        <span style={{ position: 'absolute', top: -3, right: -7, width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+      )}
+    </Link>
+  </div>
+</footer>
       </div>
     </>
   )
