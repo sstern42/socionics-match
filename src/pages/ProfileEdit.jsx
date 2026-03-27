@@ -47,7 +47,7 @@ export default function ProfileEdit() {
       }
       await Promise.all([
         updateProfileData(profile.id, {
-          profileData: { name, age: parseInt(age), gender, bio, country, anonymous },
+          profileData: { name: name.trim().replace(/^\w/, c => c.toUpperCase()), age: parseInt(age), gender, bio, country, anonymous },
           type: type.toUpperCase(),
           avatarUrl,
         }),
