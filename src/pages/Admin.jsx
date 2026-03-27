@@ -249,7 +249,7 @@ export default function Admin() {
             <p style={cardTitleStyle}>
               Ratings by relation type
               <span style={{ color: 'var(--muted)', fontWeight: 300, marginLeft: '0.5rem' }}>
-                — {feedbackCount} of {matches.length} connections rated
+                — {feedbackCount} of {matches.length} site-wide connections rated
               </span>
             </p>
             {relAvgRatings.length === 0 ? (
