@@ -28,11 +28,9 @@ export default function Admin() {
       const [
         { data: users },
         { data: adminStats },
-        { data: matches },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
-        supabase.from('matches').select('id, relation_type, purpose, created_at, feedback_a, feedback_b').order('created_at', { ascending: false }),
       ])
 
       // Type distribution
@@ -41,21 +39,25 @@ export default function Admin() {
         typeCounts[u.type] = (typeCounts[u.type] ?? 0) + 1
       }
 
-      // Relation type breakdown
-      const relCounts = {}
-      for (const m of matches ?? []) {
-        relCounts[m.relation_type] = (relCounts[m.relation_type] ?? 0) + 1
-      }
+      // All match/feedback data from SECURITY DEFINER RPC (bypasses RLS — truly site-wide)
+      const relCounts = adminStats?.rel_counts ?? {}
+      const totalMatchCount = adminStats?.total_matches ?? 0
+      const feedbackCount = adminStats?.feedback_count ?? 0
 
-      // Feedback ratings
-      const ratings = []
-      for (const m of matches ?? []) {
-        if (m.feedback_a?.rating) ratings.push(m.feedback_a.rating)
-        if (m.feedback_b?.rating) ratings.push(m.feedback_b.rating)
-      }
-      const avgRating = ratings.length > 0
-        ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1)
+      const relAvgRatings = (adminStats?.rel_ratings ?? [])
+        .map(r => ({ rel: r.rel, avg: parseFloat(r.avg).toFixed(1), count: r.count }))
+
+      const comments = (adminStats?.comments ?? [])
+        .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))
+
+      // Overall avg rating
+      const allRatings = (adminStats?.rel_ratings ?? []).flatMap(r =>
+        Array(parseInt(r.count)).fill(parseFloat(r.avg))
+      )
+      const avgRating = allRatings.length > 0
+        ? (allRatings.reduce((a, b) => a + b, 0) / allRatings.length).toFixed(1)
         : null
+      const ratingsCount = (adminStats?.rel_ratings ?? []).reduce((s, r) => s + parseInt(r.count), 0)
 
       // Purpose breakdown
       const purposeCounts = {}
@@ -67,34 +69,13 @@ export default function Admin() {
 
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
-      // Feedback breakdown by relation type
-      const relRatings = {}
-      const comments = []
-      let feedbackCount = 0
-      for (const m of matches ?? []) {
-        const entries = [
-          m.feedback_a ? { ...m.feedback_a, rel: m.relation_type } : null,
-          m.feedback_b ? { ...m.feedback_b, rel: m.relation_type } : null,
-        ].filter(Boolean)
-        if (entries.length > 0) feedbackCount++
-        for (const f of entries) {
-          if (!relRatings[f.rel]) relRatings[f.rel] = []
-          relRatings[f.rel].push(f.rating)
-          if (f.comment) comments.push({ rel: f.rel, rating: f.rating, comment: f.comment, submitted_at: f.submitted_at })
-        }
-      }
-      const relAvgRatings = Object.entries(relRatings)
-        .map(([rel, rs]) => ({ rel, avg: (rs.reduce((a, b) => a + b, 0) / rs.length).toFixed(1), count: rs.length }))
-        .sort((a, b) => b.avg - a.avg)
-      comments.sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))
-
       setData({
         users: users ?? [],
-        matches: matches ?? [],
+        totalMatchCount,
         typeCounts,
         relCounts,
         avgRating,
-        ratings,
+        ratingsCount,
         purposeCounts,
         reports,
         totalConnections: adminStats?.connections ?? 0,
@@ -134,7 +115,7 @@ export default function Admin() {
     )
   }
 
-  const { users, matches, typeCounts, relCounts, avgRating, ratings, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments } = data
+  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -164,7 +145,7 @@ export default function Admin() {
             { value: totalMessages, label: 'Messages' },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
             { value: totalAssessments, label: 'Assessments' },
-            { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratings.length})` },
+            { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
             { value: totalCooloffs, label: 'Cool-offs' },
             { value: totalReports, label: 'Reports' },
           ].map(({ value, label }) => (
@@ -202,7 +183,7 @@ export default function Admin() {
                     {rel.replace('_', ' ').toLowerCase()}
                   </span>
                   <div style={{ flex: 1, height: 4, background: 'var(--border)', borderRadius: 2 }}>
-                    <div style={{ height: '100%', width: `${(count / matches.length) * 100}%`, background: 'var(--accent-lt)', borderRadius: 2 }} />
+                    <div style={{ height: '100%', width: `${(count / totalMatchCount) * 100}%`, background: 'var(--accent-lt)', borderRadius: 2 }} />
                   </div>
                   <span style={{ fontSize: '0.75rem', color: 'var(--muted)', width: 20, textAlign: 'right' }}>{count}</span>
                 </div>
@@ -249,7 +230,7 @@ export default function Admin() {
             <p style={cardTitleStyle}>
               Ratings by relation type
               <span style={{ color: 'var(--muted)', fontWeight: 300, marginLeft: '0.5rem' }}>
-                — {feedbackCount} of {matches.length} site-wide connections rated
+                — {feedbackCount} of {totalMatchCount} site-wide connections rated
               </span>
             </p>
             {relAvgRatings.length === 0 ? (
