@@ -143,6 +143,7 @@ export default function ProfileSetup() {
                   <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Your type and relation are always shown. Name, age, photo, and location are visible as you choose — anonymous mode adds a 🔒 badge so others know you prefer privacy.</p>
                 </div>
               </label>
+              {!savedType && (
                 <input
                   className="input-standalone"
                   placeholder="Your Socionics type (e.g. LII)"
