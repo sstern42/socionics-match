@@ -42,6 +42,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const gender = profile_data?.gender
   const bio = profile_data?.bio
   const role = profile_data?.role
+  const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[gender]
   const flag = countryFlag(profile_data?.country)
 
   const activityLabel = (() => {
@@ -142,7 +143,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           )}
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
-              {name}{age ? `, ${age}` : ''}{gender && gender !== 'Prefer not to say' ? ` · ${gender}` : ''}
+              {name}{age ? `, ${age}` : ''}{genderEmoji ? ` ${genderEmoji}` : ''}
             </h3>
             {role && (
               <span style={{

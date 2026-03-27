@@ -343,7 +343,7 @@ export default function Admin() {
                   <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
                     {u.profile_data?.name ?? '—'}
                     {u.profile_data?.age ? `, ${u.profile_data.age}` : ''}
-                    {u.profile_data?.gender && u.profile_data.gender !== 'Prefer not to say' ? ` · ${u.profile_data.gender}` : ''}
+                    {u.profile_data?.gender && u.profile_data.gender !== 'Prefer not to say' ? ` ${{ Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[u.profile_data.gender] ?? ''}` : ''}
                   </span>
                   {u.profile_data?.country && (
                     <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{u.profile_data.country}</span>
