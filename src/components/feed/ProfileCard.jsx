@@ -35,6 +35,7 @@ const PURPOSE_LABELS = {
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
+  const [photoModal, setPhotoModal] = useState(false)
   const { profile_data, type, relation, displayRelation, purpose, last_active } = profile
   const name = profile_data?.name ?? 'Unknown'
   const age = profile_data?.age
@@ -80,13 +81,17 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{
-              width: 48, height: 48, borderRadius: '50%',
-              background: 'var(--bg-secondary, #f0ede6)',
-              border: '1px solid var(--border)',
-              overflow: 'hidden',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
+            <div
+              onClick={() => profile.avatar_url && setPhotoModal(true)}
+              style={{
+                width: 48, height: 48, borderRadius: '50%',
+                background: 'var(--bg-secondary, #f0ede6)',
+                border: '1px solid var(--border)',
+                overflow: 'hidden',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: profile.avatar_url ? 'zoom-in' : 'default',
+              }}
+            >
               {profile.avatar_url
                 ? <img src={profile.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{name ? name[0].toUpperCase() : '?'}</span>
@@ -102,6 +107,39 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
               }} />
             )}
           </div>
+
+          {/* Photo modal */}
+          {photoModal && profile.avatar_url && (
+            <div
+              onClick={() => setPhotoModal(false)}
+              style={{
+                position: 'fixed', inset: 0, zIndex: 1000,
+                background: 'rgba(0,0,0,0.85)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'zoom-out',
+              }}
+            >
+              <img
+                src={profile.avatar_url}
+                alt={name}
+                style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }}
+                onClick={e => e.stopPropagation()}
+              />
+              <button
+                type="button"
+                onClick={() => setPhotoModal(false)}
+                style={{
+                  position: 'fixed', top: '1.5rem', right: '1.5rem',
+                  background: 'rgba(255,255,255,0.15)', border: 'none',
+                  borderRadius: '50%', width: 36, height: 36,
+                  color: '#fff', fontSize: '1.2rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                ×
+              </button>
+            </div>
+          )}
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
               {name}{age ? `, ${age}` : ''}{gender && gender !== 'Prefer not to say' ? ` · ${gender}` : ''}
