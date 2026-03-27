@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { getRelation, getMatchingTypes } from '../data/relations'
 import { getActiveBlocks } from './blocks'
 
-export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 20 }) {
+export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200 }) {
   const compatibleTypes = getMatchingTypes(userType, relationPreferences)
 
   const [feedResult, blocks] = await Promise.all([
