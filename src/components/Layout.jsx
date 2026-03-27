@@ -13,6 +13,17 @@ export default function Layout({ children }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
 
+  const [dark, setDark] = useState(() => {
+    const stored = localStorage.getItem('socion_theme')
+    if (stored) return stored === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+    localStorage.setItem('socion_theme', dark ? 'dark' : 'light')
+  }, [dark])
+
   useEffect(() => {
     document.title = unread > 0 ? `(${unread}) Socion` : 'Socion'
     return () => { document.title = 'Socion' }
@@ -52,6 +63,14 @@ export default function Layout({ children }) {
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setDark(d => !d)}
+                  title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', padding: '0 0.1rem', lineHeight: 1 }}
+                >
+                  {dark ? '☀' : '☽'}
+                </button>
                 <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
               </>
             ) : (
@@ -104,6 +123,13 @@ export default function Layout({ children }) {
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" onClick={closeMenu} style={mobileNavStyle(isActive('/admin'))}>Admin</Link>
                 )}
+                <button
+                  type="button"
+                  onClick={() => setDark(d => !d)}
+                  style={{ ...mobileNavStyle(false), textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}
+                >
+                  {dark ? '☀ Light mode' : '☽ Dark mode'}
+                </button>
                 <button onClick={() => { closeMenu(); handleSignOut() }} style={{ ...mobileNavStyle(false), textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}>
                   Sign out
                 </button>
