@@ -214,7 +214,11 @@ export default function Feed() {
             borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem',
           }}>
             <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
-              👋 {announcement}
+              👋 {announcement.split(/(https?:\/\/[^\s]+|discord\.gg\/[^\s]+)/g).map((part, i) =>
+                /^https?:\/\/|^discord\.gg\//.test(part)
+                  ? <a key={i} href={part.startsWith('http') ? part : `https://${part}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{part}</a>
+                  : part
+              )}
             </p>
             <button
               type="button"
