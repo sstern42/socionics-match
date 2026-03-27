@@ -42,6 +42,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const gender = profile_data?.gender
   const bio = profile_data?.bio
   const role = profile_data?.role
+  const isAnonymous = profile_data?.anonymous ?? false
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[gender]
   const flag = countryFlag(profile_data?.country)
 
@@ -154,6 +155,16 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
                 padding: '0.15rem 0.5rem', borderRadius: 2,
               }}>
                 {role}
+              </span>
+            )}
+            {isAnonymous && (
+              <span title="This person prefers to stay anonymous" style={{
+                display: 'inline-block', marginTop: '0.2rem',
+                fontSize: '0.6rem', letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--muted)', border: '1px solid var(--border)',
+                padding: '0.15rem 0.5rem', borderRadius: 2,
+              }}>
+                🔒 Anonymous
               </span>
             )}
             {flag && (

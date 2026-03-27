@@ -24,6 +24,7 @@ export default function ProfileEdit() {
   const [gender, setGender] = useState(profile?.profile_data?.gender ?? '')
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
+  const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
   const [type, setType] = useState(profile?.type ?? '')
 
   const [purposes, setPurposes] = useState(profile?.purpose ?? ['dating'])
@@ -46,7 +47,7 @@ export default function ProfileEdit() {
       }
       await Promise.all([
         updateProfileData(profile.id, {
-          profileData: { name, age: parseInt(age), gender, bio, country },
+          profileData: { name, age: parseInt(age), gender, bio, country, anonymous },
           type: type.toUpperCase(),
           avatarUrl,
         }),
@@ -135,7 +136,7 @@ export default function ProfileEdit() {
               </div>
               <input
                 className="input-standalone"
-                placeholder="First name"
+                placeholder="First name or alias"
                 value={name}
                 onChange={e => setName(e.target.value)}
               />
@@ -178,6 +179,18 @@ export default function ProfileEdit() {
                 rows={4}
                 style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
               />
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
+                <input
+                  type="checkbox"
+                  checked={anonymous}
+                  onChange={e => setAnonymous(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                />
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔒 Anonymous mode</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Your type and relation are always shown. Name, age, photo, and location are visible as you choose — anonymous mode adds a 🔒 badge so others know you prefer privacy.</p>
+                </div>
+              </label>
               <div>
                 <input
                   className="input-standalone"
