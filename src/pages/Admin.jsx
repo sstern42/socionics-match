@@ -211,8 +211,21 @@ export default function Admin() {
 
         {/* Headline stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+          {/* Members — with today's delta */}
+          {(() => {
+            const todayStr = new Date().toDateString()
+            const todayCount = users.filter(u => new Date(u.created_at).toDateString() === todayStr).length
+            return (
+              <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{users.length}</div>
+                {todayCount > 0 && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{todayCount} today</div>
+                )}
+                <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.2rem' }}>Members</div>
+              </div>
+            )
+          })()}
           {[
-            { value: users.length, label: 'Members' },
             { value: totalConnections, label: 'Connections' },
             { value: totalMessages, label: 'Messages' },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
