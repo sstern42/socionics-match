@@ -27,6 +27,7 @@ export default function ProfileSetup() {
   const [gender, setGender] = useState('')
   const [bio, setBio] = useState('')
   const [country, setCountry] = useState('')
+  const [anonymous, setAnonymous] = useState(false)
   const [type, setType] = useState(savedType)
   const [relations, setRelations] = useState([])
   const [error, setError] = useState(null)
@@ -41,7 +42,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, age: parseInt(age), gender, bio, country },
+        profileData: { name, age: parseInt(age), gender, bio, country, anonymous },
         purpose: savedPurpose,
       })
 
@@ -98,7 +99,7 @@ export default function ProfileSetup() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <input className="input-standalone" placeholder="First name" value={name} onChange={e => setName(e.target.value)} />
+              <input className="input-standalone" placeholder="First name or alias" value={name} onChange={e => setName(e.target.value)} />
               <input className="input-standalone" placeholder="Age" type="number" min="18" max="99" value={age} onChange={e => setAge(e.target.value)} />
               <select
                 className="input-standalone"
@@ -130,7 +131,18 @@ export default function ProfileSetup() {
                 rows={4}
                 style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
               />
-              {!savedType && (
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
+                <input
+                  type="checkbox"
+                  checked={anonymous}
+                  onChange={e => setAnonymous(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                />
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔒 Anonymous mode</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Your type and relation are always shown. Name, age, photo, and location are visible as you choose — anonymous mode adds a 🔒 badge so others know you prefer privacy.</p>
+                </div>
+              </label>
                 <input
                   className="input-standalone"
                   placeholder="Your Socionics type (e.g. LII)"
