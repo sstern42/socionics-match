@@ -29,6 +29,7 @@ export default function Onboarding() {
 
   function handlePurposeNext() {
     localStorage.setItem('socion_purpose', JSON.stringify(purposes))
+    window.umami?.track('onboarding-started', { purposes: purposes.join(',') })
     setStep('entry')
   }
 
@@ -40,6 +41,7 @@ export default function Onboarding() {
     } else {
       const computed = computeTypeDistribution(newAnswers)
       setResult(computed)
+      window.umami?.track('assessment-completed', { topType: Object.entries(computed).sort((a,b) => b[1]-a[1])[0]?.[0] ?? '' })
       setStep('result')
     }
   }

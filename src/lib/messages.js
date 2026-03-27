@@ -45,6 +45,7 @@ export async function sendMessage({ matchId, senderId, content }) {
     .select()
     .single()
   if (error) throw error
+  window.umami?.track('message-sent')
   return data
 }
 

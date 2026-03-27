@@ -54,5 +54,6 @@ export async function createMatch({ userAId, userBId, relationType, purpose = 'd
     .select()
     .single()
   if (error) throw error
+  window.umami?.track('connection-made', { relationType, purpose })
   return data
 }
