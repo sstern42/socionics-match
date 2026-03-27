@@ -32,13 +32,24 @@ body {
   display: grid;
   grid-template-columns: repeat(4,1fr);
   grid-template-rows: repeat(4,1fr);
-  pointer-events: none; z-index: 0; opacity: 0.055;
+  pointer-events: none; z-index: 0; opacity: 0.13;
 }
 .type-grid span {
   display: flex; align-items: center; justify-content: center;
   font-family: var(--sans);
   font-size: clamp(1.8rem,4vw,3.5rem);
   font-weight: 500; letter-spacing: 0.12em; color: var(--accent);
+  animation: typePulse 8s ease-in-out infinite;
+}
+.type-grid span:nth-child(2n)   { animation-delay: -2s; }
+.type-grid span:nth-child(3n)   { animation-delay: -4s; }
+.type-grid span:nth-child(4n)   { animation-delay: -6s; }
+.type-grid span:nth-child(5n)   { animation-delay: -1s; }
+.type-grid span:nth-child(7n)   { animation-delay: -3s; }
+
+@keyframes typePulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.06); }
 }
 
 body::after {

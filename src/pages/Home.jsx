@@ -169,11 +169,11 @@ export default function Home() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '2rem' }}>
           {[
             { title: 'Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
-            { title: 'You choose the dynamic', body: 'Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm's.' },
-            { title: 'Four purposes', body: 'Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you're dating or building a product team.' },
+            { title: 'You choose the dynamic', body: 'Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm’s.' },
+            { title: 'Four purposes', body: 'Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you’re dating or building a product team.' },
             { title: 'Open source', body: 'The intertype relations matrix is published and auditable. Community trust through transparency, not a proprietary algorithm.' },
-            { title: 'Real data', body: 'Every connection and rating tests the theory at scale. You're part of the first large-scale empirical test of Socionics in the English-speaking world.' },
-            { title: 'Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes.' },
+            { title: 'Real data', body: 'Every connection and rating tests the theory at scale. You’re part of the first large-scale empirical test of Socionics in the English-speaking world.' },
+            { title: 'Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you’re on the feed in minutes.' },
           ].map(({ title, body }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
               <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
