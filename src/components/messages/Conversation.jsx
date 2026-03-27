@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { getMessages, sendMessage, subscribeToMessages } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
+import { markMatchRead } from '../../lib/useUnreadCount'
 
 export default function Conversation({ match, currentUserId, hasFeedback }) {
   const navigate = useNavigate()
@@ -35,11 +36,12 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
     setLoading(true)
     let cancelled = false
     getMessages(match.id).then(msgs => {
-      if (!cancelled) { setMessages(msgs); setLoading(false) }
+      if (!cancelled) { setMessages(msgs); setLoading(false); markMatchRead(match.id) }
     })
     const channel = subscribeToMessages(match.id, newMsg => {
       if (!cancelled) {
         setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+        markMatchRead(match.id)
       }
     })
     return () => { cancelled = true; channel.unsubscribe() }
