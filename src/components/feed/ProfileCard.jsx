@@ -78,6 +78,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       flexDirection: 'column',
       gap: '1rem',
       transition: 'border-color 0.2s',
+      minHeight: 300,
     }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
@@ -226,7 +227,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       )}
 
       {/* Bio */}
-      {bio && (() => {
+      {bio ? (() => {
         const long = bio.length > 200
         return (
           <div>
@@ -244,7 +245,12 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             )}
           </div>
         )
-      })()}
+      })() : (
+        <p style={{ fontSize: '0.82rem', color: 'var(--border)', fontStyle: 'italic', fontWeight: 300 }}>No bio yet.</p>
+      )}
+
+      {/* Spacer — pushes Connect button to bottom */}
+      <div style={{ flex: 1 }} />
 
       {/* Action */}
       <button
