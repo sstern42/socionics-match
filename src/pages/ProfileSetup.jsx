@@ -42,7 +42,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name: name.trim().replace(/^\w/, c => c.toUpperCase()), age: parseInt(age), gender, bio, country, anonymous },
+        profileData: { name, age: parseInt(age), gender, bio, country, anonymous },
         purpose: savedPurpose,
       })
 
@@ -73,6 +73,7 @@ export default function ProfileSetup() {
       localStorage.removeItem('socion_purpose')
 
       await refreshProfile()
+      window.umami?.track('signup-completed', { type, purpose: savedPurpose?.join(',') ?? '' })
       navigate('/feed')
     } catch (err) {
       setError(err.message)

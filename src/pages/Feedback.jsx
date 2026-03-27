@@ -51,6 +51,7 @@ export default function Feedback() {
         .update({ [field]: { rating, comment: comment.trim() || null, submitted_at: new Date().toISOString() } })
         .eq('id', matchId)
       if (error) throw error
+      window.umami?.track('feedback-submitted', { rating, relationType: match.relation_type })
       navigate('/messages')
     } catch (err) {
       setError(err.message)
