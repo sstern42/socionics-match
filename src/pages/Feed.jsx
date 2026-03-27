@@ -5,19 +5,37 @@ import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { RELATIONS } from '../data/relations'
+import { supabase } from '../lib/supabase'
 
-const BANNER_KEY = 'socion_founder_banner_dismissed'
+const BANNER_KEY = 'socion_announcement_dismissed_v'
 
 export default function Feed() {
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
-  const [bannerDismissed, setBannerDismissed] = useState(
-    () => localStorage.getItem(BANNER_KEY) === 'true'
-  )
+  const [announcement, setAnnouncement] = useState(null)
+  const [bannerDismissed, setBannerDismissed] = useState(false)
+
+  useEffect(() => {
+    supabase
+      .from('stats')
+      .select('announcement, announcement_active')
+      .eq('id', 1)
+      .single()
+      .then(({ data }) => {
+        if (data?.announcement_active && data?.announcement) {
+          setAnnouncement(data.announcement)
+          // Use announcement text as part of key so new announcements re-show
+          const key = BANNER_KEY + btoa(data.announcement).slice(0, 8)
+          setBannerDismissed(localStorage.getItem(key) === 'true')
+        }
+      })
+  }, [])
 
   function dismissBanner() {
-    localStorage.setItem(BANNER_KEY, 'true')
+    if (!announcement) return
+    const key = BANNER_KEY + btoa(announcement).slice(0, 8)
+    localStorage.setItem(key, 'true')
     setBannerDismissed(true)
   }
 
@@ -179,14 +197,14 @@ export default function Feed() {
           )}
         </div>
 
-        {!bannerDismissed && (
+        {announcement && !bannerDismissed && (
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
             background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
             borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem',
           }}>
             <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
-              👋 I'm Spencer, the founder. Connect with me on the feed for feedback, ideas, or just to chat about Socionics.
+              👋 {announcement}
             </p>
             <button
               type="button"
