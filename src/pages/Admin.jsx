@@ -78,6 +78,25 @@ export default function Admin() {
 
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
+      // Daily member growth chart
+      const dayCounts = {}
+      for (const u of users ?? []) {
+        const day = new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+        dayCounts[day] = (dayCounts[day] ?? 0) + 1
+      }
+      // Build cumulative series sorted by date
+      const sortedDays = (users ?? [])
+        .map(u => new Date(u.created_at).toDateString())
+        .filter((v, i, a) => a.indexOf(v) === i)
+        .sort((a, b) => new Date(a) - new Date(b))
+      let cumulative = 0
+      const growthData = sortedDays.map(d => {
+        const label = new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+        const count = (users ?? []).filter(u => new Date(u.created_at).toDateString() === d).length
+        cumulative += count
+        return { label, count, total: cumulative }
+      })
+
       setData({
         users: users ?? [],
         totalMatchCount,
@@ -95,6 +114,7 @@ export default function Admin() {
         feedbackCount,
         relAvgRatings,
         comments,
+        growthData,
       })
     } catch (err) {
       setError(err.message)
@@ -132,7 +152,7 @@ export default function Admin() {
     )
   }
 
-  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments } = data
+  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -172,6 +192,30 @@ export default function Admin() {
             </div>
           ))}
         </div>
+
+
+        {/* Member growth chart */}
+        {growthData.length > 0 && (
+          <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+            <p style={cardTitleStyle}>Member growth</p>
+            <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'flex-end', gap: '6px', height: 80 }}>
+              {growthData.map(({ label, total }, i) => {
+                const max = growthData[growthData.length - 1].total
+                const barH = Math.max(4, Math.round((total / max) * 80))
+                return (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                    <span style={{ fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 500 }}>{total}</span>
+                    <div
+                      title={`${label}: ${total} members`}
+                      style={{ width: '100%', height: barH, background: i === growthData.length - 1 ? 'var(--accent)' : 'var(--accent-lt)', borderRadius: '2px 2px 0 0' }}
+                    />
+                    <span style={{ fontSize: '0.6rem', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center' }}>{label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
           {/* Type distribution */}
