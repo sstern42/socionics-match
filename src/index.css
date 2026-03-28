@@ -225,14 +225,11 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   30% { opacity: 1; transform: translateY(-3px); }
 }
 
-/* Hide Ko-fi widget on messages page to avoid covering the input */
-body.messages-page .kofi-widget-overlay {
-  display: none !important;
-}
-
-/* Hide Ko-fi widget on messages page — targets actual injected element */
-body.messages-page [id^="kofi-widget-overlay"],
-body.messages-page .floatingchat-container-wrap,
-body.messages-page .floatingchat-container-wrap-mobi {
-  display: none !important;
+/* On messages page, hide Ko-fi widget on mobile only */
+@media (max-width: 700px) {
+  body.messages-page [id^="kofi-widget-overlay"],
+  body.messages-page .floatingchat-container-wrap,
+  body.messages-page .floatingchat-container-wrap-mobi {
+    display: none !important;
+  }
 }
