@@ -8,6 +8,7 @@ import { getMatches } from '../lib/messages'
 import { supabase } from '../lib/supabase'
 import { markMessagesRead, markMatchRead } from '../lib/useUnreadCount'
 import NotificationPrompt from '../components/messages/NotificationPrompt'
+import PushModal from '../components/messages/PushModal'
 
 export default function Messages() {
   const { session, profile, loading } = useAuth()
@@ -72,6 +73,7 @@ export default function Messages() {
 
   return (
     <Layout hideFooter noScroll>
+      <PushModal userId={profile?.id} />
       <div style={{
         flex: 1,
         display: 'flex',
