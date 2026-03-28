@@ -25,7 +25,7 @@ export default function Home() {
   useEffect(() => {
     supabase
       .from('stats')
-      .select('users, countries, connections, types, updated_at')
+      .select('users, countries, connections, types, messages, updated_at')
       .eq('id', 1)
       .single()
       .then(({ data }) => {
@@ -38,7 +38,7 @@ export default function Home() {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
             }).then(() => {
-              supabase.from('stats').select('users, countries, connections, types').eq('id', 1).single()
+              supabase.from('stats').select('users, countries, connections, types, messages').eq('id', 1).single()
                 .then(({ data: fresh }) => { if (fresh) setStats(fresh) })
             })
           }
@@ -77,6 +77,7 @@ export default function Home() {
               { value: stats.users, label: 'members' },
               { value: stats.countries, label: 'countries' },
               { value: stats.connections, label: 'connections' },
+              { value: stats.messages, label: 'messages sent' },
               { value: stats.types, label: 'types represented' },
             ].map(({ value, label }) => (
               <div key={label} style={{ textAlign: 'center' }}>
