@@ -4,6 +4,7 @@ import { RELATIONS } from '../../data/relations'
 import { getMessages, sendMessage, subscribeToMessages } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
 import { markMatchRead } from '../../lib/useUnreadCount'
+import { supabase } from '../../lib/supabase'
 
 export default function Conversation({ match, currentUserId, hasFeedback, onBack }) {
   const navigate = useNavigate()
@@ -20,7 +21,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [activeBlock, setActiveBlock] = useState(null)
   const [replyTo, setReplyTo] = useState(null) // { id, content, sender_id }
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
+  const [otherTyping, setOtherTyping] = useState(false)
   const longPressTimer = useRef(null)
+  const typingTimer = useRef(null)
+  const presenceChannel = useRef(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const menuRef = useRef(null)
@@ -47,7 +51,25 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         markMatchRead(match.id)
       }
     })
-    return () => { cancelled = true; channel.unsubscribe() }
+
+    // Presence channel for typing indicator
+    presenceChannel.current = supabase.channel(`typing:${match.id}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.current.presenceState()
+        const others = Object.values(state).flat().filter((p) => p.user_id !== currentUserId)
+        setOtherTyping(others.some(p => p.typing))
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await presenceChannel.current.track({ user_id: currentUserId, typing: false })
+        }
+      })
+
+    return () => {
+      cancelled = true
+      channel.unsubscribe()
+      presenceChannel.current?.unsubscribe()
+    }
   }, [match.id])
 
   useEffect(() => {
@@ -74,6 +96,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setSending(true)
     const replyToId = replyTo?.id ?? null
     setReplyTo(null)
+    clearTimeout(typingTimer.current)
+    presenceChannel.current?.track({ user_id: currentUserId, typing: false })
     try {
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim(), replyToId })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
@@ -383,6 +407,21 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       {/* Input — disabled during cool off or block */}
       <div style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
+        {otherTyping && (
+          <div style={{ padding: '0.4rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontStyle: 'italic' }}>{otherName} is typing</span>
+            <span style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+              {[0, 1, 2].map(i => (
+                <span key={i} style={{
+                  width: 4, height: 4, borderRadius: '50%',
+                  background: 'var(--muted)',
+                  display: 'inline-block',
+                  animation: `typingDot 1.2s ${i * 0.2}s infinite ease-in-out`,
+                }} />
+              ))}
+            </span>
+          </div>
+        )}
         {replyTo && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
             <div style={{ flex: 1, borderLeft: '2px solid var(--accent)', paddingLeft: '0.5rem' }}>
@@ -417,7 +456,15 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               ref={inputRef}
               placeholder={`Message ${otherName}…`}
               value={text}
-              onChange={e => setText(e.target.value)}
+              onChange={e => {
+                setText(e.target.value)
+                // Broadcast typing state
+                presenceChannel.current?.track({ user_id: currentUserId, typing: true })
+                clearTimeout(typingTimer.current)
+                typingTimer.current = setTimeout(() => {
+                  presenceChannel.current?.track({ user_id: currentUserId, typing: false })
+                }, 2000)
+              }}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
             />
             <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, opacity: (!text.trim() || sending) ? 0.5 : 1 }}>
