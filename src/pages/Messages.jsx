@@ -66,18 +66,17 @@ export default function Messages() {
   }
 
   return (
-    <Layout hideFooter>
+    <Layout hideFooter noScroll>
       <div style={{
-        position: 'fixed',
-        top: 72,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        minHeight: 0,
       }}>
-        <div style={{ maxWidth: 900, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column', padding: '0 1.5rem', height: '100%', boxSizing: 'border-box' }}>
+        <div style={{ maxWidth: 900, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column', padding: '0 1.5rem', minHeight: 0, boxSizing: 'border-box' }}
+          className="messages-outer"
+        >
         <div className="messages-grid" style={{
           flex: 1, display: 'grid',
           gridTemplateColumns: '260px 1fr',
@@ -85,7 +84,7 @@ export default function Messages() {
           borderTop: 'none',
           background: '#fff',
           overflow: 'hidden',
-          height: '100%',
+          minHeight: 0,
         }}>
           {/* Sidebar */}
           <div style={{
