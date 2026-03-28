@@ -51,6 +51,8 @@ export default function Feed() {
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [activeOnly, setActiveOnly] = useState(false)
+  const [activeToday, setActiveToday] = useState(false)
+  const [onlineNow, setOnlineNow] = useState(false)
   const [withPhotos, setWithPhotos] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
@@ -58,20 +60,10 @@ export default function Feed() {
 
   const [retrying, setRetrying] = useState(false)
   const [retried, setRetried] = useState(false)
-  const [onlineCount, setOnlineCount] = useState(null)
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
-
-  useEffect(() => {
-    const since = new Date(Date.now() - 15 * 60 * 1000).toISOString()
-    supabase
-      .from('users')
-      .select('id', { count: 'exact', head: true })
-      .gte('last_active', since)
-      .then(({ count }) => { if (count !== null) setOnlineCount(count) })
-  }, [])
 
   useEffect(() => {
     if (!loading && session && !profile && !retried && !retrying) {
@@ -166,8 +158,12 @@ export default function Feed() {
 
   // Pills show displayRelation (what they are to you); filter still uses relation (your role)
   const oneWeekAgo = new Date(Date.now() - 7 * 86400000)
+  const oneDayAgo = new Date(Date.now() - 86400000)
+  const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
   const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = profiles
+    .filter(p => onlineNow ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo) : true)
+    .filter(p => activeToday ? (p.last_active && new Date(p.last_active) > oneDayAgo) : true)
     .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo) : true)
     .filter(p => withPhotos ? !!p.avatar_url : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
@@ -183,12 +179,6 @@ export default function Feed() {
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
-            {onlineCount !== null && onlineCount > 0 && (
-              <span style={{ marginLeft: '0.75rem', color: 'var(--accent)' }}>
-                <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
-                {onlineCount} online now
-              </span>
-            )}
           </p>
           <button
             type="button"
@@ -260,8 +250,8 @@ export default function Feed() {
                 </button>
               ))}
             </div>
-            {/* Attribute toggle row */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Attribute toggle row — divider separates from relation pills */}
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
                 className={`rel-pill clickable${withPhotos ? ' active' : ''}`}
@@ -273,10 +263,27 @@ export default function Feed() {
               <button
                 type="button"
                 className={`rel-pill clickable${activeOnly ? ' active' : ''}`}
-                onClick={() => setActiveOnly(v => !v)}
+                onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }}
                 style={{ fontSize: '0.7rem' }}
               >
                 {activeOnly ? '✓ ' : ''}Active this week
+              </button>
+              <button
+                type="button"
+                className={`rel-pill clickable${activeToday ? ' active' : ''}`}
+                onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }}
+                style={{ fontSize: '0.7rem' }}
+              >
+                {activeToday ? '✓ ' : ''}Active today
+              </button>
+              <button
+                type="button"
+                className={`rel-pill clickable${onlineNow ? ' active' : ''}`}
+                onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }}
+                style={{ fontSize: '0.7rem' }}
+              >
+                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
+                {onlineNow ? '✓ ' : ''}Online now
               </button>
             </div>
           </div>
