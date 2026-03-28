@@ -219,3 +219,8 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
 }
 
 
+
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-3px); }
+}
