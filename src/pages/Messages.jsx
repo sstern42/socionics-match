@@ -98,7 +98,7 @@ export default function Messages() {
 
           {/* Conversation panel */}
           <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {mobileShowConvo && (
+            {selectedMatch && (
               <button
                 onClick={() => setMobileShowConvo(false)}
                 style={{ background: 'none', border: 'none', color: 'var(--accent)', padding: '0.75rem 1rem', textAlign: 'left', cursor: 'pointer', fontSize: '0.82rem', borderBottom: '1px solid var(--border)' }}
