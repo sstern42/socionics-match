@@ -49,9 +49,10 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const activityLabel = (() => {
     if (!last_active) return null
     const diff = Date.now() - new Date(last_active).getTime()
+    const mins = diff / 60000
     const hours = diff / 3600000
-    if (hours < 24) return { label: 'Active today', colour: '#4caf50' }
-    if (hours < 72) return { label: 'Active this week', colour: '#9a6f38' }
+    if (mins < 15) return { label: 'Online now', colour: '#4caf50' }
+    if (hours < 24) return { label: 'Active today', colour: '#f5a623' }
     if (hours < 168) return { label: 'Active this week', colour: '#9a6f38' }
     return null
   })()
