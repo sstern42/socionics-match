@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { signOut } from '../lib/auth'
 import { useUnreadCount } from '../lib/useUnreadCount'
+import IOSInstallBanner from './IOSInstallBanner'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
@@ -113,6 +114,8 @@ export default function Layout({ children }) {
             )}
           </nav>
         )}
+
+        <IOSInstallBanner />
 
         <main style={{ flex: 1 }}>
           {children}
