@@ -111,6 +111,13 @@ export default function Admin() {
         }
       }
 
+      // Country breakdown
+      const countryCounts = {}
+      for (const u of users ?? []) {
+        const c = u.profile_data?.country
+        if (c) countryCounts[c] = (countryCounts[c] ?? 0) + 1
+      }
+
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
       // Daily member growth chart
@@ -140,6 +147,7 @@ export default function Admin() {
         avgRating,
         ratingsCount,
         purposeCounts,
+        countryCounts,
         reports,
         totalConnections: adminStats?.connections ?? 0,
         totalMessages: adminStats?.messages ?? 0,
@@ -187,12 +195,13 @@ export default function Admin() {
     )
   }
 
-  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData } = data
+  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
   const sortedRels = Object.entries(relCounts).sort((a, b) => b[1] - a[1])
   const sortedPurposes = Object.entries(purposeCounts).sort((a, b) => b[1] - a[1])
+  const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1])
 
   return (
     <Layout>
@@ -331,7 +340,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
           {/* Purpose breakdown */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Purpose breakdown</p>
@@ -339,6 +348,21 @@ export default function Admin() {
               {sortedPurposes.map(([purpose, count]) => (
                 <div key={purpose} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.82rem', color: 'var(--text)', textTransform: 'capitalize' }}>{purpose}</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500 }}>{count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Country breakdown */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Members by country</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+              {sortedCountries.length === 0 ? (
+                <p style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>No country data yet.</p>
+              ) : sortedCountries.map(([country, count]) => (
+                <div key={country} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text)' }}>{country}</span>
                   <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500 }}>{count}</span>
                 </div>
               ))}
