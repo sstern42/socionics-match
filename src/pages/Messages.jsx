@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext'
 import { getMatches } from '../lib/messages'
 import { supabase } from '../lib/supabase'
 import { markMessagesRead, markMatchRead } from '../lib/useUnreadCount'
+import NotificationPrompt from '../components/messages/NotificationPrompt'
 
 export default function Messages() {
   const { session, profile, loading } = useAuth()
@@ -88,6 +89,7 @@ export default function Messages() {
             <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
               <p className="eyebrow">Connections</p>
             </div>
+            <NotificationPrompt userId={profile?.id} />
             {fetching
               ? <p style={{ padding: '1.5rem', color: 'var(--muted)', fontSize: '0.85rem' }}>Loading…</p>
               : <MatchList matches={matches} selectedId={selectedMatch?.id} onSelect={handleSelect} currentUserId={profile.id} />
