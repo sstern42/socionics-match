@@ -25,6 +25,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const longPressTimer = useRef(null)
   const typingTimer = useRef(null)
   const presenceChannel = useRef(null)
+  const tabId = useRef(Math.random().toString(36).slice(2))
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const menuRef = useRef(null)
@@ -53,19 +54,18 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     })
 
     // Unique ID for this browser tab — used to exclude self from typing indicator
-    const tabId = Math.random().toString(36).slice(2)
 
     // Presence channel for typing indicator
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.current.presenceState()
         const allPresences = Object.values(state).flat()
-        const others = allPresences.filter(p => p.tab_id !== tabId)
+        const others = allPresences.filter(p => p.tab_id !== tabId.current)
         setOtherTyping(others.some(p => p.typing))
       })
       .subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
-          await presenceChannel.current.track({ tab_id: tabId, user_id: currentUserId, typing: false })
+          await presenceChannel.current.track({ tab_id: tabId.current, user_id: currentUserId, typing: false })
         }
       })
 
@@ -101,7 +101,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     const replyToId = replyTo?.id ?? null
     setReplyTo(null)
     clearTimeout(typingTimer.current)
-    presenceChannel.current?.track({ tab_id: tabId, user_id: currentUserId, typing: false })
+    presenceChannel.current?.track({ tab_id: tabId.current, user_id: currentUserId, typing: false })
     try {
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim(), replyToId })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
@@ -463,10 +463,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               onChange={e => {
                 setText(e.target.value)
                 // Broadcast typing state
-                presenceChannel.current?.track({ tab_id: tabId, user_id: currentUserId, typing: true })
+                presenceChannel.current?.track({ tab_id: tabId.current, user_id: currentUserId, typing: true })
                 clearTimeout(typingTimer.current)
                 typingTimer.current = setTimeout(() => {
-                  presenceChannel.current?.track({ tab_id: tabId, user_id: currentUserId, typing: false })
+                  presenceChannel.current?.track({ tab_id: tabId.current, user_id: currentUserId, typing: false })
                 }, 2000)
               }}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
