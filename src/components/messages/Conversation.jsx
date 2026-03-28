@@ -5,7 +5,7 @@ import { getMessages, sendMessage, subscribeToMessages } from '../../lib/message
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
 import { markMatchRead } from '../../lib/useUnreadCount'
 
-export default function Conversation({ match, currentUserId, hasFeedback }) {
+export default function Conversation({ match, currentUserId, hasFeedback, onBack }) {
   const navigate = useNavigate()
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
@@ -126,8 +126,56 @@ export default function Conversation({ match, currentUserId, hasFeedback }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
-      <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', background: '#fff' }}>
+
+      {/* Mobile header — compact nav bar */}
+      <div className="convo-header-mobile show-mobile">
+        {onBack && (
+          <button className="convo-back-btn" onClick={onBack} aria-label="Back">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="11,4 6,9 11,14"/>
+            </svg>
+          </button>
+        )}
+        <span className="convo-header-name">{otherName}</span>
+        <div className="convo-header-meta">
+          <a
+            href={`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`}
+            target="_blank" rel="noopener noreferrer"
+            style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}
+          >
+            {match.other.type}
+          </a>
+          {relInfo && (
+            <span style={{ fontSize: '0.68rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>· {relInfo.name}</span>
+          )}
+          {/* ··· menu — mobile */}
+          <div style={{ position: 'relative' }} ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen(o => !o)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1.1rem', padding: '0.25rem 0.25rem 0.25rem 0.5rem', lineHeight: 1 }}
+              aria-label="Options"
+            >
+              ···
+            </button>
+            {menuOpen && (
+              <div style={{ position: 'absolute', right: 0, top: '100%', background: '#fff', border: '1px solid var(--border)', borderRadius: 4, minWidth: 160, zIndex: 50, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
+                {isCoolingOff && iBlockedThem ? (
+                  <button type="button" onClick={handleLiftBlock} style={menuItemStyle}>Lift cool-off</button>
+                ) : !activeBlock ? (
+                  <>
+                    <button type="button" onClick={() => { setModal('cooloff'); setMenuOpen(false) }} style={menuItemStyle}>Cool off (7 days)</button>
+                    <button type="button" onClick={() => { setModal('block'); setMenuOpen(false) }} style={{ ...menuItemStyle, color: '#c0392b' }}>Block & report</button>
+                  </>
+                ) : null}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop header */}
+      <div className="hidden-mobile" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500 }}>{otherName}</h3>
