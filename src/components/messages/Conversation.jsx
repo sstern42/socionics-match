@@ -55,19 +55,14 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
     // Unique ID for this browser tab — used to exclude self from typing indicator
 
-    // Presence channel for typing indicator
+    // Typing indicator via broadcast (more reliable than presence for transient state)
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
-      .on('presence', { event: 'sync' }, () => {
-        const state = presenceChannel.current.presenceState()
-        const allPresences = Object.values(state).flat()
-        const others = allPresences.filter(p => p.tab_id !== tabId.current)
-        setOtherTyping(others.some(p => p.typing))
-      })
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') {
-          await presenceChannel.current.track({ tab_id: tabId.current, user_id: currentUserId, typing: false })
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (payload.tab_id !== tabId.current) {
+          setOtherTyping(payload.typing === true)
         }
       })
+      .subscribe()
 
     return () => {
       cancelled = true
@@ -101,7 +96,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     const replyToId = replyTo?.id ?? null
     setReplyTo(null)
     clearTimeout(typingTimer.current)
-    presenceChannel.current?.track({ tab_id: tabId.current, user_id: currentUserId, typing: false })
+    presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
     try {
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim(), replyToId })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
@@ -463,10 +458,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               onChange={e => {
                 setText(e.target.value)
                 // Broadcast typing state
-                presenceChannel.current?.track({ tab_id: tabId.current, user_id: currentUserId, typing: true })
+                presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: true } })
                 clearTimeout(typingTimer.current)
                 typingTimer.current = setTimeout(() => {
-                  presenceChannel.current?.track({ tab_id: tabId.current, user_id: currentUserId, typing: false })
+                  presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
                 }, 2000)
               }}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
