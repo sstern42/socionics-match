@@ -8,11 +8,6 @@ import { useAuth } from '../lib/AuthContext'
 const IS_PROD = window.location.hostname === 'socion.app'
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-function isIOSStandalone() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent) &&
-    (window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches)
-}
-
 export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -94,18 +89,14 @@ export default function Auth() {
     if (!email.trim()) return
     setError(null)
     setLoading(true)
-    const useOtp = isIOSStandalone()
     try {
-      const options = useOtp
-        ? { shouldCreateUser: true }
-        : { emailRedirectTo: `${window.location.origin}/feed` }
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options,
+        options: { shouldCreateUser: true },
       })
       if (error) throw error
       setSent(true)
-      setOtpMode(useOtp)
+      setOtpMode(true)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -149,53 +140,37 @@ export default function Auth() {
       <Layout>
         <section style={centreStyle}>
           <p className="eyebrow fade-up-1">Check your inbox</p>
-          {otpMode ? (
-            <>
-              <h1 className="fade-up-2" style={{ fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
-                Enter your <em>code</em>
-              </h1>
-              <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 420, textAlign: 'center' }}>
-                We sent a 6-digit code to <strong>{email}</strong>. Enter it below to sign in.
-              </p>
-              <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <input
-                  className="input-standalone"
-                  type="number"
-                  placeholder="6-digit code"
-                  value={otpCode}
-                  onChange={e => setOtpCode(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleVerifyOtp()}
-                  autoFocus
-                  style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.2em' }}
-                />
-                {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={handleVerifyOtp}
-                  disabled={verifying || otpCode.length < 6}
-                  style={{ opacity: (verifying || otpCode.length < 6) ? 0.6 : 1 }}
-                >
-                  {verifying ? 'Verifying…' : 'Sign in'}
-                </button>
-              </div>
-              <button className="btn-ghost fade-up-4" onClick={() => { setSent(false); setOtpCode(''); setEmail('') }}>
-                Use a different email
-              </button>
-            </>
-          ) : (
-            <>
-              <h1 className="fade-up-2" style={{ fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
-                Magic link <em>sent</em>
-              </h1>
-              <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 420, textAlign: 'center' }}>
-                We sent a sign-in link to <strong>{email}</strong>. Click it within 1 hour to access your account.
-              </p>
-              <button className="btn-ghost fade-up-4" onClick={() => { setSent(false); setEmail('') }}>
-                Use a different email
-              </button>
-            </>
-          )}
+          <h1 className="fade-up-2" style={{ fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
+            Enter your <em>code</em>
+          </h1>
+          <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 420, textAlign: 'center' }}>
+            We sent a 6-digit code to <strong>{email}</strong>. Enter it below to sign in.
+          </p>
+          <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <input
+              className="input-standalone"
+              type="number"
+              placeholder="6-digit code"
+              value={otpCode}
+              onChange={e => setOtpCode(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleVerifyOtp()}
+              autoFocus
+              style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.2em' }}
+            />
+            {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleVerifyOtp}
+              disabled={verifying || otpCode.length < 6}
+              style={{ opacity: (verifying || otpCode.length < 6) ? 0.6 : 1 }}
+            >
+              {verifying ? 'Verifying…' : 'Sign in'}
+            </button>
+          </div>
+          <button className="btn-ghost fade-up-4" onClick={() => { setSent(false); setOtpCode(''); setEmail('') }}>
+            Use a different email
+          </button>
         </section>
       </Layout>
     )
@@ -247,7 +222,7 @@ export default function Auth() {
                   disabled={loading || !email.trim()}
                   style={{ opacity: (loading || !email.trim()) ? 0.6 : 1 }}
                 >
-                  {loading ? 'Please wait…' : 'Send magic link'}
+                  {loading ? 'Please wait…' : 'Send code'}
                 </button>
               </div>
             </>
