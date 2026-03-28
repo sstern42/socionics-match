@@ -73,7 +73,17 @@ export default function ProfileSetup() {
       localStorage.removeItem('socion_purpose')
 
       await refreshProfile()
-      window.umami?.track('signup-completed', { type, purpose: savedPurpose?.join(',') ?? '' })
+
+      // Track signup — retry until Umami is ready (defer loading means it may not be available immediately)
+      const trackSignup = () => {
+        if (window.umami) {
+          window.umami.track('signup-completed', { type, purpose: savedPurpose?.join(',') ?? '' })
+        } else {
+          setTimeout(trackSignup, 500)
+        }
+      }
+      trackSignup()
+
       navigate('/feed')
     } catch (err) {
       setError(err.message)
