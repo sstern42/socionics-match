@@ -143,3 +143,68 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   .step { border-right: none; border-bottom: 1px solid var(--border); }
   .step:last-child { border-bottom: none; }
 }
+
+/* Mobile utility */
+.show-mobile { display: none; }
+.hidden-mobile { display: revert; }
+
+@media (max-width: 700px) {
+  .show-mobile { display: revert; }
+  .hidden-mobile { display: none !important; }
+
+  /* Messages — single column, full viewport height */
+  .messages-grid {
+    grid-template-columns: 1fr !important;
+    height: calc(100dvh - 60px) !important;
+  }
+
+  /* Sidebar fills full width when visible */
+  .messages-sidebar {
+    border-right: none !important;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  /* Compact mobile conversation header */
+  .convo-header-mobile {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+    height: 52px;
+    min-height: 52px;
+    border-bottom: 1px solid var(--border);
+    background: #fff;
+    flex-shrink: 0;
+  }
+
+  .convo-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--accent);
+    padding: 0.5rem 0.5rem 0.5rem 0;
+    flex-shrink: 0;
+  }
+
+  .convo-header-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+
+  .convo-header-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+  }
+}
