@@ -21,7 +21,6 @@ export async function getMatches(userId) {
     return {
       ...m,
       other,
-      // What the other person IS to you — use this for all display
       displayRelationType: getRelation(other.type, me.type),
       lastMessage: lastMsg,
     }
@@ -35,18 +34,18 @@ export async function getMatches(userId) {
 export async function getMessages(matchId) {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, sender_id, content, created_at')
+    .select('id, sender_id, content, created_at, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
     .eq('match_id', matchId)
     .order('created_at', { ascending: true })
   if (error) throw error
   return data ?? []
 }
 
-export async function sendMessage({ matchId, senderId, content }) {
+export async function sendMessage({ matchId, senderId, content, replyToId = null }) {
   const { data, error } = await supabase
     .from('messages')
-    .insert({ match_id: matchId, sender_id: senderId, content })
-    .select()
+    .insert({ match_id: matchId, sender_id: senderId, content, reply_to_id: replyToId })
+    .select('id, sender_id, content, created_at, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
     .single()
   if (error) throw error
   window.umami?.track('message-sent')
