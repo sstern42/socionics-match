@@ -5,6 +5,7 @@ const ENTRIES = [
     date: '28 March 2026',
     label: 'Update',
     items: [
+      'Sign-in now uses a 6-digit code instead of a magic link — more secure and works on any device including iPhone PWA',
       'Push notifications — get notified instantly when you receive a message, on any device',
       'Multi-device push — each device subscribes independently; mobile takes priority when both are active',
       'New connection push — push notification fires when someone connects with you, alongside the existing email',
@@ -18,9 +19,13 @@ const ENTRIES = [
       'Messages redesigned — fixed viewport layout on both desktop and mobile, no outer page scroll',
       'Mobile messages full width — conversation fills the screen edge to edge',
       'iOS install prompt — "Add to Home Screen" nudge for Safari users on iPhone and iPad',
+      'Feed activity indicators updated — green for online now, amber for active today, brown for active this week',
+      'Feed filters — Online now, Active today, and Active this week filters added with a divider separating them from relation filters',
+      'Online now count shown on the feed — see how many members are active in the last 15 minutes',
       'Messages sent now shown on the home page stats',
       'Admin dashboard now shows member breakdown by country',
       'Feed purpose filtering moved server-side — faster and more accurate at scale',
+      'Duplicate match prevention — database constraint ensures two users can only connect once',
     ],
   },
   {
