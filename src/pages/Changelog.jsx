@@ -2,6 +2,21 @@ import Layout from '../components/Layout'
 
 const ENTRIES = [
   {
+    date: '28 March 2026',
+    label: 'Update',
+    items: [
+      'Push notifications — get notified instantly when you receive a message, on any device',
+      'Multi-device push — each device subscribes independently; mobile takes priority when both are active',
+      'Notification settings — manage email and push preferences separately in Profile → Notifications',
+      'Profile split into three pages — Details, Dynamics, and Notifications, each with its own save',
+      'Email notifications now respect opt-out — turn off in profile settings',
+      'Email suppressed automatically when push notifications are active on your device',
+      'iOS install prompt — "Add to Home Screen" nudge for Safari users on iPhone and iPad',
+      'Mobile messages redesigned — full-screen conversation with compact header and back navigation',
+      'Messages back button now always visible when a conversation is open on mobile',
+    ],
+  },
+  {
   date: '27 March 2026',
   label: 'Update',
   items: [
