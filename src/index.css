@@ -158,7 +158,16 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
     height: 100% !important;
   }
 
-  /* Sidebar fills full width when visible */
+  .messages-outer {
+    padding: 0 !important;
+  }
+
+  .messages-grid {
+    border-left: none !important;
+    border-right: none !important;
+  }
+
+    /* Sidebar fills full width when visible */
   .messages-sidebar {
     border-right: none !important;
     height: 100%;
@@ -208,3 +217,5 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
     flex-shrink: 0;
   }
 }
+
+
