@@ -229,3 +229,10 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
 body.messages-page .kofi-widget-overlay {
   display: none !important;
 }
+
+/* Hide Ko-fi widget on messages page — targets actual injected element */
+body.messages-page [id^="kofi-widget-overlay"],
+body.messages-page .floatingchat-container-wrap,
+body.messages-page .floatingchat-container-wrap-mobi {
+  display: none !important;
+}
