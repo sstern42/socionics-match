@@ -18,6 +18,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [blockError, setBlockError] = useState(null)
   const [blocking, setBlocking] = useState(false)
   const [activeBlock, setActiveBlock] = useState(null)
+  const [replyTo, setReplyTo] = useState(null) // { id, content, sender_id }
+  const [hoveredMsgId, setHoveredMsgId] = useState(null)
+  const longPressTimer = useRef(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const menuRef = useRef(null)
@@ -69,8 +72,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   async function handleSend() {
     if (!text.trim() || sending) return
     setSending(true)
+    const replyToId = replyTo?.id ?? null
+    setReplyTo(null)
     try {
-      const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim() })
+      const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim(), replyToId })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
       setText('')
       inputRef.current?.focus()
@@ -285,17 +290,78 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
             const isMine = msg.sender_id === currentUserId
             const timeStr = new Date(msg.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+            const quotedMsg = msg.reply_to
+            const showReplyBtn = hoveredMsgId === msg.id && !activeBlock
+
+            function startLongPress(msg) {
+              longPressTimer.current = setTimeout(() => {
+                setReplyTo({ id: msg.id, content: msg.content, sender_id: msg.sender_id })
+                setHoveredMsgId(null)
+              }, 500)
+            }
+            function cancelLongPress() {
+              clearTimeout(longPressTimer.current)
+            }
+
             items.push(
-              <div key={msg.id} style={{ alignSelf: isMine ? 'flex-end' : 'flex-start', maxWidth: '70%', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                <div style={{
-                  background: isMine ? 'var(--accent)' : '#fff',
-                  color: isMine ? '#fff' : 'var(--text)',
-                  border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
-                  borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-                  padding: '0.65rem 0.9rem',
-                  fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
-                }}>
-                  {msg.content}
+              <div
+                key={msg.id}
+                style={{ alignSelf: isMine ? 'flex-end' : 'flex-start', maxWidth: '70%', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}
+                onMouseEnter={() => !activeBlock && setHoveredMsgId(msg.id)}
+                onMouseLeave={() => setHoveredMsgId(null)}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexDirection: isMine ? 'row-reverse' : 'row' }}>
+                  <div
+                    onClick={() => !activeBlock && setReplyTo({ id: msg.id, content: msg.content, sender_id: msg.sender_id })}
+                    onTouchStart={() => startLongPress(msg)}
+                    onTouchEnd={cancelLongPress}
+                    onTouchMove={cancelLongPress}
+                    style={{
+                      background: isMine ? 'var(--accent)' : '#fff',
+                      color: isMine ? '#fff' : 'var(--text)',
+                      border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
+                      borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
+                      padding: '0.65rem 0.9rem',
+                      fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
+                      cursor: activeBlock ? 'default' : 'pointer',
+                    }}
+                  >
+                    {quotedMsg && (
+                      <div style={{
+                        borderLeft: `2px solid ${isMine ? 'rgba(255,255,255,0.5)' : 'var(--accent-lt)'}`,
+                        paddingLeft: '0.5rem',
+                        marginBottom: '0.5rem',
+                        opacity: 0.8,
+                      }}>
+                        <p style={{ fontSize: '0.75rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--muted)', marginBottom: '0.1rem', fontWeight: 500 }}>
+                          {quotedMsg.sender_id === currentUserId ? 'You' : otherName}
+                        </p>
+                        <p style={{ fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
+                          {quotedMsg.content}
+                        </p>
+                      </div>
+                    )}
+                    {msg.content}
+                  </div>
+                  {/* Reply icon — visible on hover (desktop) */}
+                  <button
+                    type="button"
+                    onClick={() => setReplyTo({ id: msg.id, content: msg.content, sender_id: msg.sender_id })}
+                    aria-label="Reply"
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--muted)', padding: '0.25rem', lineHeight: 1,
+                      opacity: showReplyBtn ? 1 : 0,
+                      transition: 'opacity 0.15s',
+                      flexShrink: 0,
+                      pointerEvents: showReplyBtn ? 'auto' : 'none',
+                    }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="4,3 1,6 4,9"/>
+                      <path d="M1 6h7a5 5 0 0 1 5 5v1"/>
+                    </svg>
+                  </button>
                 </div>
                 <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>{timeStr}</span>
               </div>
@@ -316,7 +382,30 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       )}
 
       {/* Input — disabled during cool off or block */}
-      <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid var(--border)', background: '#fff' }}>
+      <div style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
+        {replyTo && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+            <div style={{ flex: 1, borderLeft: '2px solid var(--accent)', paddingLeft: '0.5rem' }}>
+              <p style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.1rem' }}>
+                {replyTo.sender_id === currentUserId ? 'You' : otherName}
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 300 }}>
+                {replyTo.content}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReplyTo(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
+              aria-label="Cancel reply"
+            >
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
+              </svg>
+            </button>
+          </div>
+        )}
+        <div style={{ padding: '1rem 1.5rem' }}>
         {activeBlock ? (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', textAlign: 'center', padding: '0.5rem 0' }}>
             Messaging is paused for this conversation.
@@ -336,6 +425,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             </button>
           </div>
         )}
+      </div>
       </div>
 
       {/* Cool off modal */}
