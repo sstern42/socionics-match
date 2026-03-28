@@ -7,7 +7,7 @@ import IOSInstallBanner from './IOSInstallBanner'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
-export default function Layout({ children }) {
+export default function Layout({ children, hideFooter = false }) {
   const { session, profile } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -121,6 +121,7 @@ export default function Layout({ children }) {
           {children}
         </main>
 
+        {!hideFooter && (
         <footer className="site-footer">
           <div>
             <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved.</p>
@@ -142,6 +143,7 @@ export default function Layout({ children }) {
             </Link>
           </div>
         </footer>
+        )}
       </div>
     </>
   )
