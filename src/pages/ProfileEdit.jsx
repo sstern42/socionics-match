@@ -25,6 +25,7 @@ export default function ProfileEdit() {
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
   const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
+  const [emailNotifications, setEmailNotifications] = useState(profile?.profile_data?.email_notifications ?? true)
   const [type, setType] = useState(profile?.type ?? '')
 
   const [purposes, setPurposes] = useState(profile?.purpose ?? ['dating'])
@@ -47,7 +48,7 @@ export default function ProfileEdit() {
       }
       await Promise.all([
         updateProfileData(profile.id, {
-          profileData: { name: name.trim().replace(/^\w/, c => c.toUpperCase()), age: parseInt(age), gender, bio, country, anonymous },
+          profileData: { name: name.trim().replace(/^\w/, c => c.toUpperCase()), age: parseInt(age), gender, bio, country, anonymous, email_notifications: emailNotifications },
           type: type.toUpperCase(),
           avatarUrl,
         }),
@@ -189,6 +190,18 @@ export default function ProfileEdit() {
                 <div>
                   <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔒 Anonymous mode</p>
                   <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Your type and relation are always shown. Name, age, photo, and location are visible as you choose — anonymous mode adds a 🔒 badge so others know you prefer privacy.</p>
+                </div>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: emailNotifications ? 'transparent' : 'rgba(154,111,56,0.05)' }}>
+                <input
+                  type="checkbox"
+                  checked={emailNotifications}
+                  onChange={e => setEmailNotifications(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                />
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>✉️ Email notifications</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Receive an email when you get a new message. Turn this off if you prefer push notifications only.</p>
                 </div>
               </label>
               <div>
