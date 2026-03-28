@@ -56,9 +56,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.current.presenceState()
-        console.log('[typing] presence sync:', JSON.stringify(state))
+        const myRef = presenceChannel.current.presenceState()[currentUserId]?.[0]?.presence_ref
         const others = Object.values(state).flat().filter((p) => p.user_id !== currentUserId)
-        console.log('[typing] others:', others)
+        console.log('[typing] currentUserId:', currentUserId, 'others:', others)
         setOtherTyping(others.some(p => p.typing))
       })
       .on('presence', { event: 'join' }, ({ newPresences }) => {
