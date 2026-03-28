@@ -4,6 +4,8 @@ import Onboarding from './pages/Onboarding'
 import Auth from './pages/Auth'
 import ProfileSetup from './pages/ProfileSetup'
 import ProfileEdit from './pages/ProfileEdit'
+import ProfileDynamics from './pages/ProfileDynamics'
+import ProfileNotifications from './pages/ProfileNotifications'
 import Feedback from './pages/Feedback'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
@@ -23,6 +25,8 @@ export default function App() {
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile/setup" element={<ProfileSetup />} />
         <Route path="/profile/edit" element={<ProfileEdit />} />
+        <Route path="/profile/dynamics" element={<ProfileDynamics />} />
+        <Route path="/profile/notifications" element={<ProfileNotifications />} />
         <Route path="/feedback/:matchId" element={<Feedback />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
