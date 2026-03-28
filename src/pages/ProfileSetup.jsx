@@ -75,16 +75,18 @@ export default function ProfileSetup() {
       await refreshProfile()
 
       // Track signup — retry until Umami is ready (defer loading means it may not be available immediately)
-      const trackSignup = () => {
+      const trackSignup = (attempts = 0) => {
         if (window.umami) {
           window.umami.track('signup-completed', { type, purpose: savedPurpose?.join(',') ?? '' })
+          navigate('/feed')
+        } else if (attempts < 10) {
+          setTimeout(() => trackSignup(attempts + 1), 500)
         } else {
-          setTimeout(trackSignup, 500)
+          // Umami never loaded — navigate anyway
+          navigate('/feed')
         }
       }
       trackSignup()
-
-      navigate('/feed')
     } catch (err) {
       setError(err.message)
     } finally {
