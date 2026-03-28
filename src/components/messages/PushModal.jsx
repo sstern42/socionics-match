@@ -18,6 +18,7 @@ export default function PushModal({ userId }) {
 
   function dismiss() {
     localStorage.setItem(STORAGE_KEY, '1')
+    window.umami?.track('push-modal-dismissed')
     setVisible(false)
   }
 
@@ -25,6 +26,7 @@ export default function PushModal({ userId }) {
     setLoading(true)
     await subscribe()
     setLoading(false)
+    window.umami?.track('push-notifications-enabled')
     dismiss()
   }
 
