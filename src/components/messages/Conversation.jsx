@@ -52,13 +52,14 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       }
     })
 
+    const myRef = { current: null }
+
     // Presence channel for typing indicator
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
       .on('presence', { event: 'sync' }, () => {
         const state = presenceChannel.current.presenceState()
-        const myRef = presenceChannel.current.presenceState()[currentUserId]?.[0]?.presence_ref
-        const others = Object.values(state).flat().filter((p) => p.user_id !== currentUserId)
-        console.log('[typing] currentUserId:', currentUserId, 'others:', others)
+        const allPresences = Object.values(state).flat()
+        const others = allPresences.filter(p => p.presence_ref !== myRef.current)
         setOtherTyping(others.some(p => p.typing))
       })
       .on('presence', { event: 'join' }, ({ newPresences }) => {
@@ -67,7 +68,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       .subscribe(async (status) => {
         console.log('[typing] channel status:', status)
         if (status === 'SUBSCRIBED') {
-          await presenceChannel.current.track({ user_id: currentUserId, typing: false })
+          const result = await presenceChannel.current.track({ user_id: currentUserId, typing: false })
+          // Capture our own presence_ref so we can exclude ourselves in sync
+          const state = presenceChannel.current.presenceState()
+          const myPresences = Object.values(state).flat().filter(p => p.user_id === currentUserId)
+          if (myPresences.length > 0) myRef.current = myPresences[0].presence_ref
         }
       })
 
