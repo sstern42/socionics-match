@@ -85,7 +85,7 @@ export default function Messages() {
           <div style={{
             borderRight: '1px solid var(--border)',
             overflowY: 'auto',
-          }} className={mobileShowConvo ? 'messages-sidebar hidden-mobile' : 'messages-sidebar'}>
+          }} className={`messages-sidebar${mobileShowConvo ? ' hidden-mobile' : ''}`}>
             <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)' }}>
               <p className="eyebrow">Connections</p>
             </div>
@@ -97,20 +97,12 @@ export default function Messages() {
           </div>
 
           {/* Conversation panel */}
-          <div style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            {selectedMatch && (
-              <button
-                onClick={() => setMobileShowConvo(false)}
-                style={{ background: 'none', border: 'none', color: 'var(--accent)', padding: '0.75rem 1rem', textAlign: 'left', cursor: 'pointer', fontSize: '0.82rem', borderBottom: '1px solid var(--border)' }}
-                className="back-btn show-mobile"
-              >
-                ← Back
-              </button>
-            )}
+          <div className={`messages-convo${!mobileShowConvo ? ' hidden-mobile' : ''}`} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {selectedMatch ? (
               <Conversation
                 match={selectedMatch}
                 currentUserId={profile.id}
+                onBack={() => setMobileShowConvo(false)}
                 hasFeedback={(() => {
                   const isA = selectedMatch.user_a_id === profile.id
                   const fb = isA ? selectedMatch.feedback_a : selectedMatch.feedback_b
