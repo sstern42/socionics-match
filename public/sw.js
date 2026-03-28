@@ -1,4 +1,4 @@
-const CACHE = 'socion-v1'
+const CACHE = 'socion-v2'
 
 const SHELL = [
   '/',
@@ -43,5 +43,45 @@ self.addEventListener('fetch', event => {
         // Offline fallback — serve cached shell
         return caches.match('/index.html')
       })
+  )
+})
+
+// Push notification received
+self.addEventListener('push', event => {
+  const data = event.data?.json() ?? {}
+
+  event.waitUntil(
+    // Don't show notification if the app is already open and visible
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      const appVisible = clientList.some(c => c.visibilityState === 'visible')
+      if (appVisible) return
+
+      return self.registration.showNotification(data.title ?? 'New message', {
+        body: data.body ?? 'You have a new message on Socion',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        data: { url: data.url ?? '/messages' },
+        tag: data.tag ?? 'socion-message',
+        renotify: true,
+      })
+    })
+  )
+})
+
+// Notification clicked — open or focus the app
+self.addEventListener('notificationclick', event => {
+  event.notification.close()
+  const url = event.notification.data?.url ?? '/messages'
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(url)
+          return client.focus()
+        }
+      }
+      if (clients.openWindow) return clients.openWindow(url)
+    })
   )
 })
