@@ -58,10 +58,20 @@ export default function Feed() {
 
   const [retrying, setRetrying] = useState(false)
   const [retried, setRetried] = useState(false)
+  const [onlineCount, setOnlineCount] = useState(null)
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
+
+  useEffect(() => {
+    const since = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+    supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .gte('last_active', since)
+      .then(({ count }) => { if (count !== null) setOnlineCount(count) })
+  }, [])
 
   useEffect(() => {
     if (!loading && session && !profile && !retried && !retrying) {
@@ -173,6 +183,12 @@ export default function Feed() {
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
+            {onlineCount !== null && onlineCount > 0 && (
+              <span style={{ marginLeft: '0.75rem', color: 'var(--accent)' }}>
+                <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
+                {onlineCount} online now
+              </span>
+            )}
           </p>
           <button
             type="button"
