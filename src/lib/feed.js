@@ -16,7 +16,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     .limit(200)
 
   if (userPurpose.length > 0) {
-    query = query.ov('purpose', userPurpose)
+    query = query.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
   }
 
   const [feedResult, blocks] = await Promise.all([
