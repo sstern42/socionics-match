@@ -224,3 +224,8 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30% { opacity: 1; transform: translateY(-3px); }
 }
+
+/* Hide Ko-fi widget on messages page to avoid covering the input */
+body.messages-page .kofi-widget-overlay {
+  display: none !important;
+}

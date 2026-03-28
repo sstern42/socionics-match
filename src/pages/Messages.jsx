@@ -26,7 +26,11 @@ export default function Messages() {
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
-    return () => { document.body.style.overflow = '' }
+    document.body.classList.add('messages-page')
+    return () => {
+      document.body.style.overflow = ''
+      document.body.classList.remove('messages-page')
+    }
   }, [])
 
   useEffect(() => {
