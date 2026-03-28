@@ -5,15 +5,22 @@ import { getActiveBlocks } from './blocks'
 export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200 }) {
   const compatibleTypes = getMatchingTypes(userType, relationPreferences)
 
+  // Build query — purpose overlap filter applied server-side when userPurpose is set
+  let query = supabase
+    .from('users')
+    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active')
+    .neq('id', currentUserId)
+    .not('profile_data', 'is', null)
+    .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
+    .order('last_active', { ascending: false, nullsFirst: false })
+    .limit(200)
+
+  if (userPurpose.length > 0) {
+    query = query.ov('purpose', userPurpose)
+  }
+
   const [feedResult, blocks] = await Promise.all([
-    supabase
-      .from('users')
-      .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active')
-      .neq('id', currentUserId)
-      .not('profile_data', 'is', null)
-      .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
-      .order('last_active', { ascending: false, nullsFirst: false })
-      .limit(200),
+    query,
     getActiveBlocks(currentUserId),
   ])
 
@@ -32,8 +39,8 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     }))
     .filter(profile =>
       !profile.profile_data?.hidden &&
-      profile.relation && relationPreferences.includes(profile.relation) &&
-      (userPurpose.length === 0 || (profile.purpose ?? []).some(p => userPurpose.includes(p)))
+      profile.relation && relationPreferences.includes(profile.relation)
+      // purpose filter now handled server-side
     )
     .slice(0, limit)
 }
