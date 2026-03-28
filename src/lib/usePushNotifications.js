@@ -28,6 +28,11 @@ export function usePushNotifications(userId) {
     )
   }, [userId, supported])
 
+  async function getAuthUid() {
+    const { data: { session } } = await supabase.auth.getSession()
+    return session?.user?.id ?? null
+  }
+
   async function subscribe() {
     if (!supported || !userId || !VAPID_PUBLIC_KEY) return
 
@@ -42,12 +47,18 @@ export function usePushNotifications(userId) {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       })
 
-      await supabase
+      // Use auth UID directly to guarantee RLS match
+      const authUid = await getAuthUid()
+      if (!authUid) throw new Error('No auth session')
+
+      const { error } = await supabase
         .from('push_subscriptions')
         .upsert(
-          { user_id: userId, subscription: sub.toJSON(), updated_at: new Date().toISOString() },
+          { user_id: authUid, subscription: sub.toJSON(), updated_at: new Date().toISOString() },
           { onConflict: 'user_id' }
         )
+
+      if (error) throw error
 
       setSubscribed(true)
     } catch (err) {
@@ -59,12 +70,15 @@ export function usePushNotifications(userId) {
     if (!supported) return
     const reg = await navigator.serviceWorker.ready
     const sub = await reg.pushManager.getSubscription()
+    const authUid = await getAuthUid()
     if (sub) {
       await sub.unsubscribe()
-      await supabase
-        .from('push_subscriptions')
-        .delete()
-        .eq('user_id', userId)
+      if (authUid) {
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('user_id', authUid)
+      }
     }
     setSubscribed(false)
   }
