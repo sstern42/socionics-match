@@ -10,6 +10,20 @@ function urlBase64ToUint8Array(base64String) {
   return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)))
 }
 
+function getDeviceHint() {
+  const ua = navigator.userAgent
+  if (/iphone|ipad|ipod/i.test(ua)) return 'ios'
+  if (/android/i.test(ua)) return 'android'
+  if (/macintosh/i.test(ua)) return 'mac'
+  if (/windows/i.test(ua)) return 'windows'
+  return 'other'
+}
+
+async function getAuthUid() {
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.user?.id ?? null
+}
+
 export function usePushNotifications(userId) {
   const supported =
     'serviceWorker' in navigator &&
@@ -28,11 +42,6 @@ export function usePushNotifications(userId) {
     )
   }, [userId, supported])
 
-  async function getAuthUid() {
-    const { data: { session } } = await supabase.auth.getSession()
-    return session?.user?.id ?? null
-  }
-
   async function subscribe() {
     if (!supported || !userId || !VAPID_PUBLIC_KEY) return
 
@@ -47,19 +56,23 @@ export function usePushNotifications(userId) {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       })
 
-      // Use auth UID directly to guarantee RLS match
       const authUid = await getAuthUid()
       if (!authUid) throw new Error('No auth session')
 
+      // Upsert by endpoint — one row per device
       const { error } = await supabase
         .from('push_subscriptions')
         .upsert(
-          { user_id: authUid, subscription: sub.toJSON(), updated_at: new Date().toISOString() },
-          { onConflict: 'user_id' }
+          {
+            user_id: authUid,
+            subscription: sub.toJSON(),
+            device_hint: getDeviceHint(),
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'endpoint' }
         )
 
       if (error) throw error
-
       setSubscribed(true)
     } catch (err) {
       console.error('Push subscribe failed:', err)
@@ -70,15 +83,14 @@ export function usePushNotifications(userId) {
     if (!supported) return
     const reg = await navigator.serviceWorker.ready
     const sub = await reg.pushManager.getSubscription()
-    const authUid = await getAuthUid()
     if (sub) {
+      const endpoint = sub.endpoint
       await sub.unsubscribe()
-      if (authUid) {
-        await supabase
-          .from('push_subscriptions')
-          .delete()
-          .eq('user_id', authUid)
-      }
+      // Delete only this device's row by endpoint
+      await supabase
+        .from('push_subscriptions')
+        .delete()
+        .eq('endpoint', endpoint)
     }
     setSubscribed(false)
   }
