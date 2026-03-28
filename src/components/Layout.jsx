@@ -7,7 +7,7 @@ import IOSInstallBanner from './IOSInstallBanner'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
-export default function Layout({ children, hideFooter = false }) {
+export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -33,7 +33,7 @@ export default function Layout({ children, hideFooter = false }) {
       <div className="type-grid" aria-hidden="true">
         {TYPES.map(t => <span key={t}>{t}</span>)}
       </div>
-      <div className="page">
+      <div className="page" style={noScroll ? { height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' } : undefined}>
         <header className="site-header">
           <Link className="wordmark" to="/" onClick={closeMenu}>Socion</Link>
 
@@ -117,7 +117,7 @@ export default function Layout({ children, hideFooter = false }) {
 
         <IOSInstallBanner />
 
-        <main style={{ flex: 1 }}>
+        <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
 
