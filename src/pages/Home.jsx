@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem 6rem', gap: '1.5rem' }}>
-        <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : 'Live'}</p>
+        <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
@@ -85,8 +85,6 @@ export default function Home() {
         {stats && (
           <div className="fade-up-5" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
             {[
-              { value: stats.users, label: 'members' },
-              { value: stats.countries, label: 'countries' },
               { value: stats.connections, label: 'connections' },
               { value: stats.messages, label: 'messages sent' },
               { value: stats.types, label: 'types represented' },
