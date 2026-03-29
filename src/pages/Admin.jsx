@@ -159,6 +159,7 @@ export default function Admin() {
         totalMessages: adminStats?.messages ?? 0,
         totalAssessments: adminStats?.assessments ?? 0,
         totalCooloffs: adminStats?.cooloffs ?? 0,
+        authUsers: adminStats?.auth_users ?? 0,
         totalReports: adminStats?.reports ?? 0,
         active7d: adminStats?.active_7d ?? 0,
         inactive: adminStats?.inactive ?? 0,
@@ -204,7 +205,7 @@ export default function Admin() {
     )
   }
 
-  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
+  const { users, authUsers, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -229,6 +230,12 @@ export default function Admin() {
 
         {/* Headline stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 100%), 1fr))', gap: '0.75rem', marginBottom: '2.5rem' }}>
+          {/* Auth signups */}
+          <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{authUsers}</div>
+            <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>Sign-ups</div>
+          </div>
+
           {/* Members — with today's delta */}
           {(() => {
             const todayStr = new Date().toDateString()
