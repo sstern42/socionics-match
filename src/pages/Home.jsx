@@ -81,24 +81,25 @@ function TestimonialsCarousel() {
       {TESTIMONIALS.length > 1 && (
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {TESTIMONIALS.map((_, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => goTo(i)}
-            aria-label={`Testimonial ${i + 1}`}
-            style={{
-              width: i === active ? 20 : 8,
-              height: 8,
-              borderRadius: 4,
-              background: i === active ? 'var(--accent)' : 'var(--border)',
-              border: 'none',
-              cursor: 'pointer',
-              padding: 0,
-              transition: 'width 0.3s, background 0.3s',
-            }}
-          />
-        ))}
-      </div>
+            <button
+              key={i}
+              type="button"
+              onClick={() => goTo(i)}
+              aria-label={`Testimonial ${i + 1}`}
+              style={{
+                width: i === active ? 20 : 8,
+                height: 8,
+                borderRadius: 4,
+                background: i === active ? 'var(--accent)' : 'var(--border)',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                transition: 'width 0.3s, background 0.3s',
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
