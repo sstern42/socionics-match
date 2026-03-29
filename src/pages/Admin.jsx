@@ -208,7 +208,7 @@ export default function Admin() {
 
   return (
     <Layout hideFooter>
-      <section style={{ maxWidth: 960, margin: '0 auto', padding: '3rem 1.5rem' }}>
+      <section style={{ width: '100%', maxWidth: 960, margin: '0 auto', padding: 'clamp(1.25rem, 4vw, 3rem) clamp(0.75rem, 3vw, 1.5rem)', boxSizing: 'border-box' }}>
         <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <p className="eyebrow">Admin</p>
