@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { updateProfileData, uploadAvatar } from '../lib/profile'
+import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { TYPES } from '../data/relations'
 import { COUNTRIES } from '../data/countries'
 import ProfileCard from '../components/feed/ProfileCard'
@@ -73,14 +74,13 @@ export default function ProfileEdit() {
     setDeleting(true)
     setDeleteError(null)
     try {
-      const { supabase } = await import('../lib/supabase')
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       const token = currentSession?.access_token
       if (!token) throw new Error('No session token — please sign in again')
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`
+      const url = `${supabaseUrl}/functions/v1/delete-account`
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${token}`, 'apikey': supabaseKey, 'Content-Type': 'application/json' },
       })
       const text = await res.text()
       let json = {}
