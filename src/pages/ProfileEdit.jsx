@@ -73,16 +73,12 @@ export default function ProfileEdit() {
     setDeleting(true)
     setDeleteError(null)
     try {
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json.error ?? 'Deletion failed')
-      // Sign out locally — auth state will clear, router sends to /
-      await import('../lib/supabase').then(m => m.supabase.auth.signOut())
+      const { supabase } = await import('../lib/supabase')
+      const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' })
+      if (error) throw error
+      await supabase.auth.signOut()
     } catch (err) {
-      setDeleteError(err.message)
+      setDeleteError(err.message ?? JSON.stringify(err))
       setDeleting(false)
     }
   }
