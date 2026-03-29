@@ -154,6 +154,9 @@ export default function Admin() {
         totalAssessments: adminStats?.assessments ?? 0,
         totalCooloffs: adminStats?.cooloffs ?? 0,
         totalReports: adminStats?.reports ?? 0,
+        active7d: adminStats?.active_7d ?? 0,
+        inactive: adminStats?.inactive ?? 0,
+        messagingActive: adminStats?.messaging_active ?? 0,
         feedbackCount,
         relAvgRatings,
         comments,
@@ -195,7 +198,7 @@ export default function Admin() {
     )
   }
 
-  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData } = data
+  const { users, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -242,6 +245,9 @@ export default function Admin() {
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
             { value: totalCooloffs, label: 'Cool-offs' },
             { value: totalReports, label: 'Reports' },
+            { value: active7d, label: 'Active 7d' },
+            { value: inactive, label: 'Inactive 7d+' },
+            { value: messagingActive, label: 'Messaging 7d' },
           ].map(({ value, label }) => (
             <div key={label} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
