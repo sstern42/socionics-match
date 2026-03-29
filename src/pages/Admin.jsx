@@ -464,21 +464,22 @@ export default function Admin() {
                 : 'Exclude this device from Umami analytics tracking.'}
             </p>
           </div>
-          {trackingExcluded ? (
-            <span style={{ fontSize: '0.78rem', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>✓ Excluded</span>
-          ) : (
-            <button
-              type="button"
-              className="btn-ghost"
-              style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
-              onClick={() => {
+          <button
+            type="button"
+            className="btn-ghost"
+            style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
+            onClick={() => {
+              if (trackingExcluded) {
+                localStorage.removeItem('umami.disabled')
+                setTrackingExcluded(false)
+              } else {
                 localStorage.setItem('umami.disabled', '1')
                 setTrackingExcluded(true)
-              }}
-            >
-              Exclude this device
-            </button>
-          )}
+              }
+            }}
+          >
+            {trackingExcluded ? '✓ Excluded — re-enable?' : 'Exclude this device'}
+          </button>
         </div>
 
         {/* Announcement editor */}
