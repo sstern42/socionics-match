@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
+import { RELATIONS } from '../data/relations'
 
 const RELATION_PILLS = [
-  { label: 'Duality',        hi: true },
-  { label: 'Activity',       hi: true },
-  { label: 'Mirror',         hi: false },
-  { label: 'Semi-Dual',      hi: false },
-  { label: 'Kindred',        hi: false },
-  { label: 'Quasi-Identity', hi: false },
-  { label: 'Contrary',       hi: false },
-  { label: 'Conflict',       hi: false },
+  { label: 'Dual',           key: 'DUAL' },
+  { label: 'Activity',       key: 'ACTIVITY' },
+  { label: 'Mirror',         key: 'MIRROR' },
+  { label: 'Semi-Dual',      key: 'SEMI_DUAL' },
+  { label: 'Kindred',        key: 'KINDRED' },
+  { label: 'Quasi-Identity', key: 'QUASI_IDENTITY' },
+  { label: 'Contrary',       key: 'CONTRARY' },
+  { label: 'Conflict',       key: 'CONFLICT' },
 ]
 
 export default function Home() {
@@ -21,6 +22,7 @@ export default function Home() {
   const ctaLabel = session && profile ? 'View your matches' : 'Find your type'
 
   const [stats, setStats] = useState(null)
+  const [selectedPill, setSelectedPill] = useState(null)
 
   useEffect(() => {
     supabase
@@ -76,10 +78,30 @@ export default function Home() {
           Free &nbsp;·&nbsp; No app store &nbsp;·&nbsp; Works on any device
         </p>
 
-        <div className="fade-up-5" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 560 }}>
-          {RELATION_PILLS.map(({ label, hi }) => (
-            <span key={label} className={`rel-pill${hi ? ' active' : ''}`}>{label}</span>
-          ))}
+        <div className="fade-up-5" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', maxWidth: 560 }}>
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {RELATION_PILLS.map(({ label, key }) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setSelectedPill(selectedPill === key ? null : key)}
+                className={`rel-pill clickable${selectedPill === key ? ' active' : ''}`}
+              >{label}</button>
+            ))}
+          </div>
+          {selectedPill && RELATIONS[selectedPill] && (
+            <div style={{
+              background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)',
+              borderRadius: 4, padding: '0.65rem 1rem', maxWidth: 420, textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.3rem' }}>
+                {RELATIONS[selectedPill].name}
+              </p>
+              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+                {RELATIONS[selectedPill].description}
+              </p>
+            </div>
+          )}
         </div>
 
         {stats && (
