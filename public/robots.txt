@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /feed
+Disallow: /messages
+Disallow: /profile
+Disallow: /onboarding
+Disallow: /auth
+
+Sitemap: https://socion.app/sitemap.xml
