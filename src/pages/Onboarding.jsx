@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import EntryChoice from '../components/onboarding/EntryChoice'
 import TypeSelector from '../components/onboarding/TypeSelector'
@@ -13,8 +13,9 @@ import { useAuth } from '../lib/AuthContext'
 export default function Onboarding() {
   const { session } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
-  const [step, setStep] = useState('purpose')
+  const [step, setStep] = useState(() => searchParams.get('know') === '1' ? 'selector' : 'purpose')
   const [purposes, setPurposes] = useState([])
 
   // If user returns via magic link with session + saved onboarding data, skip to profile setup
