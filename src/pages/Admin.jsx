@@ -51,12 +51,18 @@ export default function Admin() {
   const [announcement, setAnnouncement] = useState('')
   const [announcementActive, setAnnouncementActive] = useState(false)
   const [savingAnnouncement, setSavingAnnouncement] = useState(false)
+  const [trackingExcluded, setTrackingExcluded] = useState(() => localStorage.getItem('umami.disabled') === '1')
   const [announcementSaved, setAnnouncementSaved] = useState(false)
 
   useEffect(() => {
     if (loading) return
     if (!profile) { navigate('/auth', { replace: true }); return }
     if (profile.profile_data?.role !== ADMIN_ROLE) { navigate('/', { replace: true }); return }
+    // ?exclude=1 sets the Umami opt-out flag — visit this URL on any device to exclude it from analytics
+    if (new URLSearchParams(window.location.search).get('exclude') === '1') {
+      localStorage.setItem('umami.disabled', '1')
+      window.history.replaceState(null, '', '/admin')
+    }
     loadData()
   }, [loading, profile])
 
@@ -447,6 +453,33 @@ export default function Admin() {
 
         {/* Founder feed override */}
         <FounderFeedToggle />
+
+        {/* Analytics exclusion */}
+        <div style={{ ...cardStyle, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <div>
+            <p style={cardTitleStyle}>Analytics exclusion</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
+              {trackingExcluded
+                ? 'This device is excluded from Umami analytics.'
+                : 'Exclude this device from Umami analytics tracking.'}
+            </p>
+          </div>
+          {trackingExcluded ? (
+            <span style={{ fontSize: '0.78rem', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>✓ Excluded</span>
+          ) : (
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
+              onClick={() => {
+                localStorage.setItem('umami.disabled', '1')
+                setTrackingExcluded(true)
+              }}
+            >
+              Exclude this device
+            </button>
+          )}
+        </div>
 
         {/* Announcement editor */}
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
