@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 
 const DISMISSED_KEY = 'socion_ios_install_dismissed'
 
-function isIOS() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+function isIOSSafari() {
+  const ua = navigator.userAgent
+  if (!/iphone|ipad|ipod/i.test(ua)) return false
+  return /safari/i.test(ua) && !/CriOS|FxiOS|OPiOS|EdgiOS/i.test(ua)
 }
 
 function isInStandaloneMode() {
@@ -15,7 +17,7 @@ export default function IOSInstallBanner() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    if (isIOS() && !isInStandaloneMode() && !localStorage.getItem(DISMISSED_KEY)) {
+    if (isIOSSafari() && !isInStandaloneMode() && !localStorage.getItem(DISMISSED_KEY)) {
       setVisible(true)
     }
   }, [])
