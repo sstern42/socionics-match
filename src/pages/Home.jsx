@@ -165,9 +165,20 @@ export default function Home() {
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2rem', fontStyle: 'italic' }}>
-            Sample profiles — your feed shows real members whose type produces your selected dynamics.
-          </p>
+          <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <p style={{ fontSize: '0.95rem', color: 'var(--muted)', maxWidth: 420, lineHeight: 1.7 }}>
+              Your feed shows real members whose type produces your selected dynamics.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              {!session && (
+                <>
+                  <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+                  <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
+                </>
+              )}
+              {session && profile && <Link to="/feed" className="btn-primary">View your matches →</Link>}
+            </div>
+          </div>
         </div>
       </section>
 
@@ -200,6 +211,21 @@ export default function Home() {
             Developed in the 1970s on Jungian foundations, Socionics maps 16 specific dynamics between every type pair.
             Socion is built for the English-language Socionics community &mdash; and designed to generate real data on whether the theory holds at scale.
           </p>
+
+          <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', color: 'var(--text)' }}>
+              Ready to find your dynamic?
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              {!session && (
+                <>
+                  <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+                  <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
+                </>
+              )}
+              {session && profile && <Link to="/feed" className="btn-primary">View your matches →</Link>}
+            </div>
+          </div>
         </div>
       </section>
     </Layout>
