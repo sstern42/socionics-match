@@ -10,6 +10,9 @@ const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE'
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile } = useAuth()
   const location = useLocation()
+  const isFounder = profile?.profile_data?.role === 'founder'
+  const isAdmin = location.pathname === '/admin'
+  const isMessages = location.pathname.startsWith('/messages')
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
@@ -117,6 +120,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <IOSInstallBanner />
 
+        {!isFounder && !isAdmin && !isMessages && (
+          <KofiWidget />
+        )}
+
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
@@ -146,6 +153,29 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       </div>
     </>
   )
+}
+
+function KofiWidget() {
+  useEffect(() => {
+    if (document.getElementById('kofi-script')) return
+    const script = document.createElement('script')
+    script.id = 'kofi-script'
+    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'
+    script.onload = () => {
+      window.kofiWidgetOverlay?.draw('socion', {
+        'type': 'floating-chat',
+        'floating-chat.donateButton.text': 'Support',
+        'floating-chat.donateButton.background-color': '#9a6f38',
+        'floating-chat.donateButton.text-color': '#ffffff',
+      })
+    }
+    document.body.appendChild(script)
+    return () => {
+      document.getElementById('kofi-script')?.remove()
+      document.querySelector('.kofi-overlay')?.remove()
+    }
+  }, [])
+  return null
 }
 
 const navStyle = (active) => ({

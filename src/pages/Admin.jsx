@@ -179,7 +179,7 @@ export default function Admin() {
 
   if (loading || fetching) {
     return (
-      <Layout>
+      <Layout hideFooter>
         <section style={centreStyle}>
           <p style={{ color: 'var(--muted)' }}>Loading…</p>
         </section>
@@ -189,7 +189,7 @@ export default function Admin() {
 
   if (error) {
     return (
-      <Layout>
+      <Layout hideFooter>
         <section style={centreStyle}>
           <p style={{ color: '#c0392b' }}>{error}</p>
           <button className="btn-ghost" onClick={loadData}>Retry</button>
@@ -207,7 +207,7 @@ export default function Admin() {
   const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1])
 
   return (
-    <Layout>
+    <Layout hideFooter>
       <section style={{ maxWidth: 960, margin: '0 auto', padding: '3rem 1.5rem' }}>
         <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
