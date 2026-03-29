@@ -75,11 +75,13 @@ export default function Admin() {
         { data: adminStats },
         { data: statsRow },
         { data: incompleteData },
+        { data: memberEmailsData },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
         supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
+        supabase.rpc('get_member_emails'),
       ])
 
       setAnnouncement(statsRow?.announcement ?? '')
@@ -163,6 +165,7 @@ export default function Admin() {
         totalCooloffs: adminStats?.cooloffs ?? 0,
         authUsers: adminStats?.auth_users ?? 0,
         incompleteSignups: incompleteData ?? [],
+        memberEmails: memberEmailsData ?? [],
         totalReports: adminStats?.reports ?? 0,
         active7d: adminStats?.active_7d ?? 0,
         inactive: adminStats?.inactive ?? 0,
@@ -208,7 +211,7 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, incompleteSignups, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
+  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -590,6 +593,53 @@ export default function Admin() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Member emails export */}
+        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <p style={cardTitleStyle}>
+                Member emails
+                <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {memberEmails.length} completed profiles</span>
+              </p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
+                All users who completed onboarding.
+              </p>
+            </div>
+            {memberEmails.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  onClick={() => {
+                    const emails = memberEmails.map(u => u.email).join('\n')
+                    navigator.clipboard.writeText(emails)
+                  }}
+                >
+                  Copy emails
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  onClick={() => {
+                    const csv = 'email,name,type,joined\n' + memberEmails.map(u =>
+                      `${u.email},${u.name ?? ''},${u.type},${new Date(u.created_at).toISOString().split('T')[0]}`
+                    ).join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const a = document.createElement('a')
+                    a.href = URL.createObjectURL(blob)
+                    a.download = `socion-members-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                  }}
+                >
+                  Export CSV
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Recent signups */}
