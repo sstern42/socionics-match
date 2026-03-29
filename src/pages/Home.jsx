@@ -61,8 +61,15 @@ export default function Home() {
           This app puts that theory in your hands.
         </p>
 
-        <div className="fade-up-4">
-          <Link to={ctaPath} className="btn-primary">{ctaLabel}</Link>
+        <div className="fade-up-4" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {session && profile ? (
+            <Link to="/feed" className="btn-primary">View your matches</Link>
+          ) : (
+            <>
+              <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+              <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
+            </>
+          )}
         </div>
 
         <div className="fade-up-5" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 560 }}>

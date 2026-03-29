@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import EntryChoice from '../components/onboarding/EntryChoice'
 import TypeSelector from '../components/onboarding/TypeSelector'
@@ -13,7 +13,9 @@ import { useAuth } from '../lib/AuthContext'
 export default function Onboarding() {
   const { session } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
+  const knowsType = searchParams.get('know') === '1'
   const [step, setStep] = useState('purpose')
   const [purposes, setPurposes] = useState([])
 
@@ -30,7 +32,7 @@ export default function Onboarding() {
   function handlePurposeNext() {
     localStorage.setItem('socion_purpose', JSON.stringify(purposes))
     window.umami?.track('onboarding-started', { purposes: purposes.join(',') })
-    setStep('entry')
+    setStep(knowsType ? 'selector' : 'entry')
   }
 
   function handleAnswer(questionId, choice) {
