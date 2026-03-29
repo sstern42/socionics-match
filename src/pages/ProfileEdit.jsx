@@ -80,7 +80,7 @@ export default function ProfileEdit() {
       const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer ${token}`, 'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
       })
       const text = await res.text()
       let json = {}
