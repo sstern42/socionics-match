@@ -74,10 +74,12 @@ export default function Admin() {
         { data: users },
         { data: adminStats },
         { data: statsRow },
+        { data: incompleteData },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
         supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
+        supabase.rpc('get_incomplete_signups'),
       ])
 
       setAnnouncement(statsRow?.announcement ?? '')
@@ -160,6 +162,7 @@ export default function Admin() {
         totalAssessments: adminStats?.assessments ?? 0,
         totalCooloffs: adminStats?.cooloffs ?? 0,
         authUsers: adminStats?.auth_users ?? 0,
+        incompleteSignups: incompleteData ?? [],
         totalReports: adminStats?.reports ?? 0,
         active7d: adminStats?.active_7d ?? 0,
         inactive: adminStats?.inactive ?? 0,
@@ -205,7 +208,7 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
+  const { users, authUsers, incompleteSignups, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -522,6 +525,71 @@ export default function Admin() {
               {savingAnnouncement ? 'Saving…' : announcementSaved ? '✓ Saved' : 'Save'}
             </button>
           </div>
+        </div>
+
+        {/* Incomplete signups — authed but no profile */}
+        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <p style={cardTitleStyle}>
+                Incomplete sign-ups
+                <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— last 7 days</span>
+              </p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
+                Authenticated but never completed onboarding.
+              </p>
+            </div>
+            {incompleteSignups.length > 0 && (
+              <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  onClick={() => {
+                    const emails = incompleteSignups.map(u => u.email).join('\n')
+                    navigator.clipboard.writeText(emails)
+                  }}
+                >
+                  Copy emails
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  onClick={() => {
+                    const csv = 'email,signed_up\n' + incompleteSignups.map(u =>
+                      `${u.email},${new Date(u.created_at).toISOString().split('T')[0]}`
+                    ).join('\n')
+                    const blob = new Blob([csv], { type: 'text/csv' })
+                    const a = document.createElement('a')
+                    a.href = URL.createObjectURL(blob)
+                    a.download = `socion-incomplete-signups-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                  }}
+                >
+                  Export CSV
+                </button>
+              </div>
+            )}
+          </div>
+          {incompleteSignups.length === 0 ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '1rem' }}>None in the last 7 days.</p>
+          ) : (
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {incompleteSignups.map((u, i) => (
+                <div key={u.id} style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '0.55rem 0',
+                  borderBottom: i < incompleteSignups.length - 1 ? '1px solid var(--border)' : 'none',
+                }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{u.email}</span>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, marginLeft: '1rem' }}>
+                    {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent signups */}
