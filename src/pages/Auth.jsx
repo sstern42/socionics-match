@@ -7,6 +7,7 @@ import { useAuth } from '../lib/AuthContext'
 
 const IS_PROD = window.location.hostname === 'socion.app'
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+const PENDING_EMAIL_KEY = 'socion_pending_email'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
@@ -30,8 +31,10 @@ export default function Auth() {
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
-      setLinkError('Your sign-in link has expired or already been used. Enter your email again to get a new one.')
+      setLinkError('otp_expired')
       window.history.replaceState(null, '', window.location.pathname)
+      const savedEmail = localStorage.getItem(PENDING_EMAIL_KEY)
+      if (savedEmail) setEmail(savedEmail)
     }
   }, [])
 
@@ -95,6 +98,7 @@ export default function Auth() {
         options: { shouldCreateUser: true },
       })
       if (error) throw error
+      localStorage.setItem(PENDING_EMAIL_KEY, email.trim())
       setSent(true)
       setOtpMode(true)
     } catch (err) {
@@ -115,6 +119,7 @@ export default function Auth() {
         type: 'email',
       })
       if (error) throw error
+      localStorage.removeItem(PENDING_EMAIL_KEY)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -209,8 +214,23 @@ export default function Auth() {
                   onKeyDown={e => e.key === 'Enter' && handleMagicLink()}
                   autoFocus
                 />
-                {linkError && (
-                  <p style={{ fontSize: '0.82rem', color: 'var(--accent)', textAlign: 'center', background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.65rem 1rem', lineHeight: 1.6 }}>{linkError}</p>
+                {linkError === 'otp_expired' && (
+                  <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <p style={{ fontSize: '0.82rem', color: 'var(--accent)', lineHeight: 1.6, margin: 0 }}>
+                      That sign-in link has expired.{email ? ` Send a new code to ` : ' Enter your email to get a new code.'}<strong>{email || ''}</strong>{email ? '?' : ''}
+                    </p>
+                    {email && (
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        onClick={() => { setLinkError(null); handleMagicLink() }}
+                        disabled={loading}
+                        style={{ fontSize: '0.82rem', padding: '0.4rem 0.75rem', opacity: loading ? 0.6 : 1 }}
+                      >
+                        {loading ? 'Sending…' : 'Send new code →'}
+                      </button>
+                    )}
+                  </div>
                 )}
                 {error && (
                   <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
