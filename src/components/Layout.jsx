@@ -120,9 +120,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <IOSInstallBanner />
 
-        {!isFounder && !isAdmin && !isMessages && (
-          <KofiWidget />
-        )}
+        <KofiWidget visible={!isFounder && !isAdmin && !isMessages} />
 
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {children}
@@ -155,26 +153,36 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   )
 }
 
-function KofiWidget() {
+function KofiWidget({ visible }) {
   useEffect(() => {
-    if (document.getElementById('kofi-script')) return
-    const script = document.createElement('script')
-    script.id = 'kofi-script'
-    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'
-    script.onload = () => {
-      window.kofiWidgetOverlay?.draw('socion', {
-        'type': 'floating-chat',
-        'floating-chat.donateButton.text': 'Support',
-        'floating-chat.donateButton.background-color': '#9a6f38',
-        'floating-chat.donateButton.text-color': '#ffffff',
-      })
-    }
-    document.body.appendChild(script)
-    return () => {
-      document.getElementById('kofi-script')?.remove()
-      document.querySelector('.kofi-overlay')?.remove()
+    if (!document.getElementById('kofi-script')) {
+      const script = document.createElement('script')
+      script.id = 'kofi-script'
+      script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'
+      script.onload = () => {
+        window.kofiWidgetOverlay?.draw('socion', {
+          'type': 'floating-chat',
+          'floating-chat.donateButton.text': 'Support',
+          'floating-chat.donateButton.background-color': '#9a6f38',
+          'floating-chat.donateButton.text-color': '#ffffff',
+        })
+      }
+      document.body.appendChild(script)
     }
   }, [])
+
+  useEffect(() => {
+    const hide = () => {
+      const el = document.getElementById('kofi-overlay-btn') ??
+                 document.querySelector('[id^="kofi"]') ??
+                 document.querySelector('.floatingChat')
+      if (el) el.style.display = visible ? '' : 'none'
+    }
+    hide()
+    const t = setTimeout(hide, 300)
+    return () => clearTimeout(t)
+  }, [visible])
+
   return null
 }
 
