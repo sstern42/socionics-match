@@ -15,7 +15,8 @@ export default function Onboarding() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [step, setStep] = useState(() => searchParams.get('know') === '1' ? 'selector' : 'purpose')
+  const knowsType = searchParams.get('know') === '1'
+  const [step, setStep] = useState('purpose')
   const [purposes, setPurposes] = useState([])
 
   // If user returns via magic link with session + saved onboarding data, skip to profile setup
@@ -31,7 +32,7 @@ export default function Onboarding() {
   function handlePurposeNext() {
     localStorage.setItem('socion_purpose', JSON.stringify(purposes))
     window.umami?.track('onboarding-started', { purposes: purposes.join(',') })
-    setStep('entry')
+    setStep(knowsType ? 'selector' : 'entry')
   }
 
   function handleAnswer(questionId, choice) {
