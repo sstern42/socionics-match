@@ -24,6 +24,10 @@ export default function ProfileEdit() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState(null)
 
   const typeValid = TYPES.includes(type.toUpperCase())
 
@@ -62,6 +66,25 @@ export default function ProfileEdit() {
     if (!file) return
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  async function handleDeleteAccount() {
+    if (deleteConfirm !== 'DELETE') return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? 'Deletion failed')
+      // Sign out locally — auth state will clear, router sends to /
+      await import('../lib/supabase').then(m => m.supabase.auth.signOut())
+    } catch (err) {
+      setDeleteError(err.message)
+      setDeleting(false)
+    }
   }
 
   if (loading || !session) return (
@@ -139,6 +162,52 @@ export default function ProfileEdit() {
           </div>
         </div>
       </section>
+
+      <div style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
+          <button
+            type="button"
+            onClick={() => { setShowDeleteModal(true); setDeleteConfirm(''); setDeleteError(null) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--muted)', letterSpacing: '0.04em', textDecoration: 'underline', textDecorationColor: 'rgba(0,0,0,0.2)' }}
+          >
+            Delete account
+          </button>
+        </div>
+
+      {showDeleteModal && (
+        <div onClick={() => !deleting && setShowDeleteModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '2rem', width: '100%', maxWidth: 380, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text)', margin: 0 }}>Delete your account?</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+              This permanently deletes your profile, matches, and messages. There is no undo.
+            </p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text)', margin: 0 }}>
+              Type <strong>DELETE</strong> to confirm:
+            </p>
+            <input
+              className="input-standalone"
+              placeholder="DELETE"
+              value={deleteConfirm}
+              onChange={e => setDeleteConfirm(e.target.value.toUpperCase())}
+              onKeyDown={e => e.key === 'Enter' && deleteConfirm === 'DELETE' && handleDeleteAccount()}
+              autoFocus
+              disabled={deleting}
+              style={{ fontFamily: 'var(--mono, monospace)', letterSpacing: '0.1em' }}
+            />
+            {deleteError && <p style={{ fontSize: '0.82rem', color: '#c0392b', margin: 0 }}>{deleteError}</p>}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button type="button" className="btn-ghost" onClick={() => setShowDeleteModal(false)} disabled={deleting}>Cancel</button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={deleting || deleteConfirm !== 'DELETE'}
+                style={{ background: '#c0392b', color: '#fff', border: 'none', borderRadius: 3, padding: '0.5rem 1.25rem', fontSize: '0.85rem', fontWeight: 500, cursor: deleteConfirm === 'DELETE' && !deleting ? 'pointer' : 'not-allowed', opacity: (deleting || deleteConfirm !== 'DELETE') ? 0.5 : 1 }}
+              >
+                {deleting ? 'Deleting…' : 'Delete account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showPreview && (
         <div onClick={() => setShowPreview(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
