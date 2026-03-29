@@ -87,6 +87,7 @@ export default function ProfileEdit() {
       try { json = JSON.parse(text) } catch { /* non-JSON response */ }
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}: ${text}`)
       await supabase.auth.signOut()
+      navigate('/')
     } catch (err) {
       setDeleteError(err.message ?? JSON.stringify(err))
       setDeleting(false)
