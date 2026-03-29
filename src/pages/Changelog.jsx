@@ -1,6 +1,21 @@
 import Layout from '../components/Layout'
 
-const ENTRIES = [
+export const ENTRIES = [
+  {
+    date: '29 March 2026',
+    label: 'Update',
+    items: [
+      'Account deletion — delete your account permanently from Profile → Details, with confirmation step. All data, matches, and messages are removed.',
+      'Sign-in link expired — if your OTP link expires, your email is pre-filled automatically and a one-tap resend button appears',
+      'iOS install prompt — now correctly shown only in Safari, where Add to Home Screen is supported',
+      'Spread the word — share button on the feed opens the native share sheet on mobile or copies the link on desktop',
+      'Admin: sign-ups vs members — see account creations alongside completed profiles to track onboarding drop-off',
+      'Admin: active 7d, inactive 7d+, and messaging 7d stat cards added',
+      'Admin: mobile layout fixed — stat cards, grids, and padding all responsive on small screens',
+      'Admin: analytics exclusion toggle — exclude your device from Umami tracking directly in the dashboard',
+      'Discord live-stats: three notification types — new sign-up, profile complete, and new connection (with type pair)',
+    ],
+  },
   {
     date: '28 March 2026',
     label: 'Update',
