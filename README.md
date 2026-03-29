@@ -1,17 +1,28 @@
 # Socion
 
-Socionics-based matching. [socion.app](https://socion.app)
+**Match by personality type, not algorithm.** → [socion.app](https://socion.app)
 
-Match by intertype relation, not algorithm. Socionics maps 16 named relationship dynamics between every personality type. Socion puts that theory in users' hands — you choose the dynamic, the system shows you who fits.
+Socionics maps 16 named relationship dynamics between every pair of the 16 personality types. Socion puts that theory in your hands — you pick the dynamic, the app shows you who fits.
+
+- **Dual** — natural complementarity, each fills the other's blind spots
+- **Mirror** — intellectually aligned, prone to mutual challenge  
+- **Activity** — energising and stimulating at a distance  
+- ...and 13 further named dynamics, each with a distinct character
+
+Not a black box. The matching logic is in [](src/data/relations.js) — open and auditable.
+
+**[Try it at socion.app →](https://socion.app)**
+
+---
 
 ## How it works
 
-1. Complete a type questionnaire or enter your type directly
-2. Select which intertype dynamics you want to match on (Dual, Mirror, Activity, or any of the 16)
-3. Browse profiles whose type produces your chosen relation
+1. Enter your Socionics type (or complete the onboarding questionnaire)
+2. Choose which intertype dynamics you want to match on
+3. Browse profiles whose type produces your chosen relation with yours
 4. Connect and message
 
-The matching logic is in [`src/data/relations.js`](src/data/relations.js) — fully open and auditable.
+The theory makes falsifiable predictions — the app is designed to test them at scale.
 
 ## Stack
 
@@ -19,7 +30,7 @@ The matching logic is in [`src/data/relations.js`](src/data/relations.js) — fu
 - **Backend/DB**: Supabase (Postgres, Auth, Realtime)
 - **Hosting**: Netlify (auto-deploy from GitHub)
 - **Domain**: socion.app → Netlify via Cloudflare CNAME
-- **Auth**: Google One Tap + magic link fallback
+- **Auth**: Google One Tap + OTP code (email)
 - **Email**: Resend
 - **Analytics**: Umami (cookieless)
 
@@ -178,7 +189,7 @@ Two-tier system:
 - **Phase 3** ✅ Matching feed with relation filtering
 - **Phase 4** ✅ Messaging + realtime
 - **Phase 5** ✅ Launch — socion.app live, repo public
-- **Phase 5+** ✅ Google One Tap, block/report, admin dashboard, OG tags, SI deep links, type assessment recording, gender, purpose display, unread counts
+- **Phase 5+** ✅ Google One Tap, OTP auth, block/report, admin dashboard, push notifications, reply threading, typing indicators, PWA manifest, Discord integration, account deletion
 
 ## Related
 
