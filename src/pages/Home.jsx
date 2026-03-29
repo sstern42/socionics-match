@@ -50,17 +50,15 @@ export default function Home() {
 
   return (
     <Layout>
-      <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem 6rem', gap: '1.5rem' }}>
+      <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(3rem,8vw,6rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
         <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
         </h1>
 
-        <p className="fade-up-3" style={{ fontSize: 'clamp(1rem,2.2vw,1.2rem)', color: 'var(--muted)', maxWidth: 520, lineHeight: 1.75 }}>
-          Socionics maps 16 named relationship dynamics between every personality type &mdash;
-          not just compatible or incompatible, but characterised dynamics each with a predictable pattern.
-          This app puts that theory in your hands.
+        <p className="fade-up-3" style={{ fontSize: 'clamp(1rem,2.2vw,1.2rem)', color: 'var(--muted)', maxWidth: 480, lineHeight: 1.75 }}>
+          Socionics maps 16 named dynamics between every type pair. You choose the dynamic — the app shows you who fits.
         </p>
 
         <div className="fade-up-4" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
