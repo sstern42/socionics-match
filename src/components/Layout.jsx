@@ -10,9 +10,6 @@ const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE'
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile } = useAuth()
   const location = useLocation()
-  const isFounder = profile?.profile_data?.role === 'founder'
-  const isAdmin = location.pathname === '/admin'
-  const isMessages = location.pathname.startsWith('/messages')
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
@@ -120,7 +117,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <IOSInstallBanner />
 
-        <KofiWidget visible={!isFounder && !isAdmin && !isMessages} />
+        <KofiWidget />
 
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {children}
@@ -153,36 +150,22 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   )
 }
 
-function KofiWidget({ visible }) {
+function KofiWidget() {
   useEffect(() => {
-    if (!document.getElementById('kofi-script')) {
-      const script = document.createElement('script')
-      script.id = 'kofi-script'
-      script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'
-      script.onload = () => {
-        window.kofiWidgetOverlay?.draw('socion', {
-          'type': 'floating-chat',
-          'floating-chat.donateButton.text': 'Support',
-          'floating-chat.donateButton.background-color': '#9a6f38',
-          'floating-chat.donateButton.text-color': '#ffffff',
-        })
-      }
-      document.body.appendChild(script)
+    if (document.getElementById('kofi-script')) return
+    const script = document.createElement('script')
+    script.id = 'kofi-script'
+    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'
+    script.onload = () => {
+      window.kofiWidgetOverlay?.draw('socion', {
+        'type': 'floating-chat',
+        'floating-chat.donateButton.text': 'Support',
+        'floating-chat.donateButton.background-color': '#9a6f38',
+        'floating-chat.donateButton.text-color': '#ffffff',
+      })
     }
+    document.body.appendChild(script)
   }, [])
-
-  useEffect(() => {
-    const hide = () => {
-      const el = document.getElementById('kofi-overlay-btn') ??
-                 document.querySelector('[id^="kofi"]') ??
-                 document.querySelector('.floatingChat')
-      if (el) el.style.display = visible ? '' : 'none'
-    }
-    hide()
-    const t = setTimeout(hide, 300)
-    return () => clearTimeout(t)
-  }, [visible])
-
   return null
 }
 
