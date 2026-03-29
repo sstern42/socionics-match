@@ -74,8 +74,18 @@ export default function ProfileEdit() {
     setDeleteError(null)
     try {
       const { supabase } = await import('../lib/supabase')
-      const { error } = await supabase.functions.invoke('delete-account', { method: 'POST' })
-      if (error) throw error
+      const { data: { session: currentSession } } = await supabase.auth.getSession()
+      const token = currentSession?.access_token
+      if (!token) throw new Error('No session token — please sign in again')
+      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      })
+      const text = await res.text()
+      let json = {}
+      try { json = JSON.parse(text) } catch { /* non-JSON response */ }
+      if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}: ${text}`)
       await supabase.auth.signOut()
     } catch (err) {
       setDeleteError(err.message ?? JSON.stringify(err))
