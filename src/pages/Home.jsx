@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
@@ -15,6 +15,123 @@ const RELATION_PILLS = [
   { label: 'Contrary',       key: 'CONTRARY' },
   { label: 'Conflict',       key: 'CONFLICT' },
 ]
+
+const TESTIMONIALS = [
+  {
+    name: 'Joy, 28',
+    type: 'EIE',
+    relation: 'Semi-Dual',
+    gender: 'female',
+    avatar: null,
+    quote: "I wasn't expecting to find someone I'd actually want to talk to. The relation type showed immediately — it made sense before we even exchanged a word.",
+  },
+  {
+    name: 'Marcus, 31',
+    type: 'ILE',
+    relation: 'Mirror',
+    gender: 'male',
+    avatar: null,
+    quote: "Finally a matching app where I understand why I'm being shown someone. The theory isn't a gimmick — it shows up in conversation within the first few messages.",
+  },
+  {
+    name: 'Anya, 21',
+    type: 'LSI',
+    relation: 'Kindred',
+    gender: 'female',
+    avatar: null,
+    quote: "I know my type well and wanted to meet people who take this seriously. Everyone on here does. That alone makes it worth it.",
+  },
+  {
+    name: 'P, 22',
+    type: 'SLE',
+    relation: 'Supervisor',
+    gender: 'male',
+    avatar: null,
+    quote: "The relation label on the card tells you more than a compatibility score ever could. You know what you're walking into.",
+  },
+  {
+    name: 'Reg, 24',
+    type: 'ESE',
+    relation: 'Dual',
+    gender: 'male',
+    avatar: null,
+    quote: "Met my Dual on here. The dynamic was exactly what the theory describes. Still talking every day.",
+  },
+]
+
+function Avatar({ gender, avatar, name }) {
+  if (avatar) return <img src={avatar} alt={name} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+  const initials = name.split(',')[0].trim()[0]
+  const bg = gender === 'female' ? '#f0e8f8' : '#e8f0f8'
+  const color = gender === 'female' ? '#7b4f9e' : '#4f6f9e'
+  return (
+    <div style={{ width: 52, height: 52, borderRadius: '50%', background: bg, border: `1px solid ${color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.25rem', color, flexShrink: 0 }}>
+      {initials}
+    </div>
+  )
+}
+
+function TestimonialsCarousel() {
+  const [active, setActive] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const timer = useRef(null)
+
+  useEffect(() => {
+    if (paused) return
+    timer.current = setInterval(() => {
+      setActive(a => (a + 1) % TESTIMONIALS.length)
+    }, 4000)
+    return () => clearInterval(timer.current)
+  }, [paused])
+
+  function goTo(i) {
+    setPaused(true)
+    setActive(i)
+    clearInterval(timer.current)
+    timer.current = setTimeout(() => setPaused(false), 8000)
+  }
+
+  const t = TESTIMONIALS[active]
+
+  return (
+    <div style={{ maxWidth: 620, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.75rem' }}>
+      <p className="eyebrow">What members say</p>
+
+      <div style={{ minHeight: 160, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
+        <Avatar gender={t.gender} avatar={t.avatar} name={t.name} />
+        <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1rem,2.5vw,1.25rem)', fontStyle: 'italic', lineHeight: 1.7, color: 'var(--text)', margin: 0, maxWidth: 520 }}>
+          &ldquo;{t.quote}&rdquo;
+        </blockquote>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <span style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text)' }}>{t.name}</span>
+          <span style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent-lt)', padding: '0.15rem 0.5rem', borderRadius: 2 }}>{t.type}</span>
+          <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{t.relation}</span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        {TESTIMONIALS.map((_, i) => (
+          <button
+            key={i}
+            type="button"
+            onClick={() => goTo(i)}
+            aria-label={`Testimonial ${i + 1}`}
+            style={{
+              width: i === active ? 20 : 8,
+              height: 8,
+              borderRadius: 4,
+              background: i === active ? 'var(--accent)' : 'var(--border)',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              transition: 'width 0.3s, background 0.3s',
+            }}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
 
 export default function Home() {
   const { session, profile } = useAuth()
@@ -202,6 +319,10 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      <section style={{ padding: '5rem 2rem', background: 'var(--surface, #f7f4ef)' }}>
+        <TestimonialsCarousel />
       </section>
 
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
