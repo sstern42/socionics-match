@@ -160,18 +160,20 @@ export default function ProfileEdit() {
               {saving ? 'Saving…' : 'Save details'}
             </button>
           </div>
+
+          <div style={{ marginTop: '0.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => { setShowDeleteModal(true); setDeleteConfirm(''); setDeleteError(null) }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: 'var(--muted)', letterSpacing: '0.02em', textDecoration: 'underline', textUnderlineOffset: 3 }}
+            >
+              Delete account
+            </button>
+          </div>
         </div>
       </section>
 
-      <div style={{ marginTop: '1rem', paddingTop: '1.5rem', borderTop: '1px solid var(--border)' }}>
-          <button
-            type="button"
-            onClick={() => { setShowDeleteModal(true); setDeleteConfirm(''); setDeleteError(null) }}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--muted)', letterSpacing: '0.04em', textDecoration: 'underline', textDecorationColor: 'rgba(0,0,0,0.2)' }}
-          >
-            Delete account
-          </button>
-        </div>
+
 
       {showDeleteModal && (
         <div onClick={() => !deleting && setShowDeleteModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
