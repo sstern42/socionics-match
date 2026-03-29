@@ -222,7 +222,7 @@ export default function Admin() {
         </div>
 
         {/* Headline stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 100%), 1fr))', gap: '0.75rem', marginBottom: '2.5rem' }}>
           {/* Members — with today's delta */}
           {(() => {
             const todayStr = new Date().toDateString()
@@ -280,7 +280,7 @@ export default function Admin() {
           </div>
         )}
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           {/* Type distribution by quadra */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Type distribution</p>
@@ -346,7 +346,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           {/* Purpose breakdown */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Purpose breakdown</p>
@@ -394,7 +394,7 @@ export default function Admin() {
         </div>
 
         {/* Feedback analysis */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           <div style={cardStyle}>
             <p style={cardTitleStyle}>
               Ratings by relation type
