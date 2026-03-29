@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '4rem 2rem 6rem', gap: '1.5rem' }}>
-        <p className="eyebrow fade-up-1">Live</p>
+        <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : 'Live'}</p>
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
@@ -71,6 +71,10 @@ export default function Home() {
             </>
           )}
         </div>
+
+        <p className="fade-up-4" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '-0.5rem' }}>
+          Free &nbsp;·&nbsp; No app store &nbsp;·&nbsp; Works on any device
+        </p>
 
         <div className="fade-up-5" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center', maxWidth: 560 }}>
           {RELATION_PILLS.map(({ label, hi }) => (
