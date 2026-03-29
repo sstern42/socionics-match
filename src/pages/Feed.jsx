@@ -16,6 +16,9 @@ export default function Feed() {
 
   const [announcement, setAnnouncement] = useState(null)
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const [memberCount, setMemberCount] = useState(null)
+  const [shareState, setShareState] = useState('idle') // idle | copied
+  const [shareDismissed, setShareDismissed] = useState(() => localStorage.getItem('socion_share_dismissed') === '1')
 
   function announcementKey(text) {
     try {
@@ -28,7 +31,7 @@ export default function Feed() {
   useEffect(() => {
     supabase
       .from('stats')
-      .select('announcement, announcement_active')
+      .select('announcement, announcement_active, users')
       .eq('id', 1)
       .single()
       .then(({ data }) => {
@@ -36,6 +39,7 @@ export default function Feed() {
           setAnnouncement(data.announcement)
           setBannerDismissed(localStorage.getItem(announcementKey(data.announcement)) === 'true')
         }
+        if (data?.users) setMemberCount(data.users)
       })
   }, [])
 
@@ -45,7 +49,26 @@ export default function Feed() {
     setBannerDismissed(true)
   }
 
+  function handleShare() {
+    const url = 'https://socion.app'
+    const text = `Match by Socionics type, not algorithm — ${memberCount ? memberCount + ' members' : 'growing fast'}`
+    if (navigator.share) {
+      navigator.share({ title: 'Socion', text, url }).catch(() => {})
+    } else {
+      navigator.clipboard.writeText(url).then(() => {
+        setShareState('copied')
+        setTimeout(() => setShareState('idle'), 2500)
+      })
+    }
+  }
+
+  function dismissShare() {
+    localStorage.setItem('socion_share_dismissed', '1')
+    setShareDismissed(true)
+  }
+
   const [profiles, setProfiles] = useState([])
+
   const [matchedMap, setMatchedMap] = useState({})
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState(null)
@@ -234,6 +257,37 @@ export default function Feed() {
             >
               ×
             </button>
+          </div>
+        )}
+
+        {!shareDismissed && (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+            border: '1px solid var(--border)', borderRadius: 4,
+            padding: '0.65rem 1rem', marginBottom: '1.5rem',
+            background: 'transparent',
+          }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
+              Know someone who'd be into this?{memberCount ? ` We're ${memberCount} members.` : ''} Spread the word.
+            </p>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="btn-ghost"
+                style={{ fontSize: '0.78rem', padding: '0.35rem 0.85rem', whiteSpace: 'nowrap' }}
+              >
+                {shareState === 'copied' ? 'Link copied ✓' : navigator.share ? 'Share →' : 'Copy link'}
+              </button>
+              <button
+                type="button"
+                onClick={dismissShare}
+                aria-label="Dismiss"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', padding: '0 0.1rem', lineHeight: 1 }}
+              >
+                ×
+              </button>
+            </div>
           </div>
         )}
 
