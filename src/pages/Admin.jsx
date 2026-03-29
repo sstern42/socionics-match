@@ -346,7 +346,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           {/* Purpose breakdown */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Purpose breakdown</p>
