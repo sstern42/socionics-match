@@ -453,36 +453,40 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           </p>
         ) : (
           <>
-            <div className="field-group" style={{ alignItems: 'flex-end' }}>
-            <textarea
-              ref={inputRef}
-              placeholder={`Message ${otherName}…`}
-              value={text}
-              rows={1}
-              onChange={e => {
-                setText(e.target.value)
-                // Auto-resize
-                e.target.style.height = 'auto'
-                e.target.style.height = `${e.target.scrollHeight}px`
-                // Broadcast typing state
-                presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: true } })
-                clearTimeout(typingTimer.current)
-                typingTimer.current = setTimeout(() => {
-                  presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
-                }, 2000)
-              }}
-              onKeyDown={e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                  handleSend()
-                }
-              }}
-              style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: '0.92rem', fontWeight: 300, color: 'var(--text)', background: '#fff', border: 'none', outline: 'none', padding: '0.9rem 1.25rem', maxHeight: '8rem' }}
-            />
-            <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, opacity: (!text.trim() || sending) ? 0.5 : 1 }}>
-              Send
-            </button>
-          </div>
+            <div
+              style={{ display: 'flex', alignItems: 'flex-end', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', background: '#fff', transition: 'border-color 0.2s' }}
+              onFocusCapture={e => e.currentTarget.style.borderColor = 'var(--accent)'}
+              onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border)'}
+            >
+              <textarea
+                ref={inputRef}
+                placeholder={`Message ${otherName}…`}
+                value={text}
+                rows={1}
+                onChange={e => {
+                  setText(e.target.value)
+                  // Auto-resize
+                  e.target.style.height = 'auto'
+                  e.target.style.height = `${e.target.scrollHeight}px`
+                  // Broadcast typing state
+                  presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: true } })
+                  clearTimeout(typingTimer.current)
+                  typingTimer.current = setTimeout(() => {
+                    presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
+                  }, 2000)
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSend()
+                  }
+                }}
+                style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: '0.92rem', fontWeight: 300, color: 'var(--text)', background: 'transparent', border: 'none', outline: 'none', padding: '0.9rem 1.25rem', maxHeight: '8rem' }}
+              />
+              <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, alignSelf: 'stretch', opacity: (!text.trim() || sending) ? 0.5 : 1 }}>
+                Send
+              </button>
+            </div>
           {text && (
             <p style={{ fontSize: '0.68rem', color: 'var(--muted)', textAlign: 'right', margin: '0.25rem 0.5rem 0', letterSpacing: '0.02em' }}>
               Shift + Enter for new line
