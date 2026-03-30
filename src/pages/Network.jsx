@@ -159,43 +159,16 @@ export default function Network() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: matches, error: matchErr } = await supabase
-          .from('matches')
-          .select(`
-            id, relation_type, feedback_a, feedback_b,
-            user_a:user_a_id(type),
-            user_b:user_b_id(type),
-            messages(id)
-          `)
+        const { data, error: rpcErr } = await supabase.rpc('get_network_data')
+        if (rpcErr) throw rpcErr
 
-        if (matchErr) throw matchErr
-
-        const edgeMap = {}
-        for (const match of matches ?? []) {
-          const typeA = match.user_a?.type
-          const typeB = match.user_b?.type
-          if (!typeA || !typeB) continue
-
-          const key = [typeA, typeB].sort().join('--')
-          if (!edgeMap[key]) {
-            edgeMap[key] = {
-              source: [typeA, typeB].sort()[0],
-              target: [typeA, typeB].sort()[1],
-              relation: match.relation_type,
-              count: 0, messages: 0, ratings: [],
-            }
-          }
-          edgeMap[key].count++
-          edgeMap[key].messages += match.messages?.length ?? 0
-          const ratings = [match.feedback_a?.rating, match.feedback_b?.rating].filter(Boolean)
-          edgeMap[key].ratings.push(...ratings)
-        }
-
-        const edges = Object.values(edgeMap).map(e => ({
-          ...e,
-          avgRating: e.ratings.length > 0
-            ? e.ratings.reduce((a, b) => a + b, 0) / e.ratings.length
-            : null,
+        const edges = (data ?? []).map(row => ({
+          source: row.type_a,
+          target: row.type_b,
+          relation: row.relation_type,
+          count: Number(row.connection_count),
+          messages: Number(row.message_count),
+          avgRating: row.avg_rating ? Number(row.avg_rating) : null,
         }))
 
         const nodeStats = {}
@@ -209,10 +182,11 @@ export default function Network() {
 
         const maxConn = Math.max(...Object.values(nodeStats).map(n => n.connections), 1)
         const maxCount = Math.max(...edges.map(e => e.count), 1)
+        const totalConnections = edges.reduce((s, e) => s + e.count, 0)
 
         setGraphData({ edges, nodeStats, maxConn, maxCount })
         setStats({
-          totalConnections: matches?.length ?? 0,
+          totalConnections,
           totalEdges: edges.length,
           typesActive: TYPES.filter(t => nodeStats[t].connections > 0).length,
         })
