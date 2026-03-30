@@ -152,7 +152,7 @@ export default function Feedback() {
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b' }}>{error}</p>}
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
-            <button type="button" className="btn-ghost" onClick={() => navigate('/messages')}>
+            <button type="button" className="btn-ghost" onClick={() => { window.umami?.track('feedback-skipped', { relationType: match.relation_type }); navigate('/messages') }}>
               Skip
             </button>
             <button
