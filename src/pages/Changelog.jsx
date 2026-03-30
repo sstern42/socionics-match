@@ -2,6 +2,17 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '30 March 2026',
+    label: 'Update',
+    items: [
+      'Connect with message — a message is now required to connect with someone. Write your introduction before the connection is created',
+      'Connection question — set a custom question in Profile → Details that people see before connecting with you. Falls back to a generic prompt if not set',
+      'Dynamics page — each relation now shows the matching type in brackets, e.g. Dual (ESE), so you know exactly who you\'d be matched with',
+      'Message box — the compose area now grows as you type. Shift + Enter inserts a new line, Enter sends',
+      'Multi-line messages — line breaks in sent messages are now preserved in the conversation view',
+    ],
+  },
+  {
     date: '29 March 2026',
     label: 'Update',
     items: [
