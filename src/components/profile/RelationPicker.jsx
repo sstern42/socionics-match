@@ -24,6 +24,15 @@ const RELATION_GROUPS = [
   },
 ]
 
+// For asymmetric relations, the MATRIX value describes your role (e.g. BENEFACTOR = you benefit them).
+// To show who fills that role *toward you*, we look up the inverse relation.
+const PARTNER_RELATION_LOOKUP = {
+  BENEFACTOR:  'BENEFICIARY',
+  BENEFICIARY: 'BENEFACTOR',
+  SUPERVISOR:  'SUPERVISEE',
+  SUPERVISEE:  'SUPERVISOR',
+}
+
 export default function RelationPicker({ selected, onChange, userType }) {
   function toggle(rel) {
     if (selected.includes(rel)) {
@@ -80,7 +89,8 @@ export default function RelationPicker({ selected, onChange, userType }) {
                   <div style={{ fontWeight: isSelected ? 500 : 300, color: isSelected ? 'var(--accent)' : 'var(--text)', fontSize: '0.88rem', letterSpacing: '0.04em' }}>
                     {info.name}
                     {userType && (() => {
-                      const partnerType = Object.entries(MATRIX[userType] ?? {}).find(([, r]) => r === rel)?.[0]
+                      const lookupRel = PARTNER_RELATION_LOOKUP[rel] ?? rel
+                      const partnerType = Object.entries(MATRIX[userType] ?? {}).find(([, r]) => r === lookupRel)?.[0]
                       return partnerType ? <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.3em' }}>({partnerType})</span> : null
                     })()}
                   </div>
