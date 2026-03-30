@@ -477,7 +477,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   handleSend()
                 }
               }}
-              style={{ resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', maxHeight: '8rem' }}
+              style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: '0.92rem', fontWeight: 300, color: 'var(--text)', background: '#fff', border: 'none', outline: 'none', padding: '0.9rem 1.25rem', maxHeight: '8rem' }}
             />
             <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, opacity: (!text.trim() || sending) ? 0.5 : 1 }}>
               Send
