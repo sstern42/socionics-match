@@ -325,7 +325,7 @@ export default function Home() {
             { title: '✨ Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you’re on the feed in minutes.' },
             { title: '🕵️ Browse anonymously', body: 'Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, photo, and location stay hidden until you choose to reveal them.' },
             { title: '🔔 Push notifications', body: 'Get notified the moment someone messages or connects with you. Works on mobile and desktop, no app store required.' },
-            .map(({ title, body }) => (
+          ].map(({ title, body }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
               <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300 }}>{body}</p>
