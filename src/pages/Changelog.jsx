@@ -17,6 +17,8 @@ export const ENTRIES = [
       'Bio hint — bio is visible even in anonymous mode; keep it vague if you prefer privacy',
       'Push notifications fixed — multi-device delivery now works correctly across all subscriptions',
       'Privacy policy and terms updated — account self-deletion, push notifications, Google sign-in, and MailerLite all documented',
+      'Network page — socion.app/network plots every connection between member types. Edge thickness shows volume, colour shows average rating. Refresh to see the latest data',
+      'Homepage features section updated — anonymous mode and push notifications added as feature tiles',
     ],
   },
   {
