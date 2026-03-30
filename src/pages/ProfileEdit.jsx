@@ -14,7 +14,7 @@ export default function ProfileEdit() {
   const navigate = useNavigate()
 
   const [name, setName] = useState(profile?.profile_data?.name ?? '')
-  const [age, setAge] = useState(profile?.profile_data?.age?.toString() ?? '')
+  const [dob, setDob] = useState(profile?.profile_data?.dob ?? '')
   const [gender, setGender] = useState(profile?.profile_data?.gender ?? '')
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
@@ -35,7 +35,10 @@ export default function ProfileEdit() {
 
   async function handleSave() {
     if (!profile) return
-    if (parseInt(age) < 18) { setError('You must be 18 or over to use Socion.'); return }
+    if (dob) {
+      const age = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000))
+      if (age < 18) { setError('You must be 18 or over to use Socion.'); return }
+    }
     setSaving(true)
     setError(null)
     try {
@@ -44,7 +47,7 @@ export default function ProfileEdit() {
       await updateProfileData(profile.id, {
         profileData: {
           name: name.trim().replace(/^\w/, c => c.toUpperCase()),
-          age: parseInt(age),
+          dob: dob || null,
           gender,
           bio,
           country,
@@ -136,7 +139,18 @@ export default function ProfileEdit() {
               </div>
             </div>
             <input className="input-standalone" placeholder="First name or alias" value={name} onChange={e => setName(e.target.value)} />
-            <input className="input-standalone" placeholder="Age" type="number" min="18" max="99" value={age} onChange={e => setAge(e.target.value)} />
+            <div>
+              <input
+                className="input-standalone"
+                type="date"
+                value={dob}
+                max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                onChange={e => setDob(e.target.value)}
+              />
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                Date of birth — only your age is shown on your card, never your DOB.
+              </p>
+            </div>
             <select className="input-standalone" value={gender} onChange={e => setGender(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
               <option value="">Gender (optional)</option>
               <option value="Man">Man</option>
@@ -165,7 +179,7 @@ export default function ProfileEdit() {
               <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
               <div>
                 <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔒 Anonymous mode</p>
-                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Your type and relation are always shown. Name, age, photo, and location are visible as you choose.</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🔒 badge shows on your card so others know you prefer privacy.</p>
               </div>
             </label>
             <div>
@@ -178,7 +192,7 @@ export default function ProfileEdit() {
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate('/feed')}>Cancel</button>
-            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !age || !typeValid} style={{ opacity: (saving || !name || !age || !typeValid) ? 0.5 : 1 }}>
+            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !dob || !typeValid} style={{ opacity: (saving || !name || !dob || !typeValid) ? 0.5 : 1 }}>
               {saving ? 'Saving…' : 'Save details'}
             </button>
           </div>
@@ -237,7 +251,7 @@ export default function ProfileEdit() {
         <div onClick={() => setShowPreview(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
           <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 380 }}>
             <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '0.75rem', textAlign: 'center' }}>How others see your card</p>
-            <ProfileCard profile={{ profile_data: { name, age: parseInt(age) || null, gender, bio, country }, type, relation: null, displayRelation: null, avatar_url: avatarPreview }} onConnect={() => {}} alreadyMatched={false} matchId={null} connecting={false} />
+            <ProfileCard profile={{ profile_data: { name, dob: dob || null, gender, bio, country }, type, relation: null, displayRelation: null, avatar_url: avatarPreview }} onConnect={() => {}} alreadyMatched={false} matchId={null} connecting={false} />
             <button type="button" onClick={() => setShowPreview(false)} style={{ display: 'block', margin: '1rem auto 0', background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 3, padding: '0.5rem 1.5rem', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: '0.78rem', letterSpacing: '0.06em' }}>Close</button>
           </div>
         </div>
