@@ -19,6 +19,7 @@ export default function ProfileEdit() {
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
   const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
+  const [connectionQuestion, setConnectionQuestion] = useState(profile?.profile_data?.connection_question ?? '')
   const [type, setType] = useState(profile?.type ?? '')
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url ?? null)
@@ -48,6 +49,7 @@ export default function ProfileEdit() {
           bio,
           country,
           anonymous,
+          connection_question: connectionQuestion.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
         },
         type: type.toUpperCase(),
@@ -146,6 +148,19 @@ export default function ProfileEdit() {
               {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
             </select>
             <textarea className="input-standalone" placeholder="A short bio" value={bio} onChange={e => setBio(e.target.value)} rows={4} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
+            <div>
+              <textarea
+                className="input-standalone"
+                placeholder={`Connection question (optional) — shown to people before they connect with you, e.g. "What's a book that changed how you see the world?"`}
+                value={connectionQuestion}
+                onChange={e => setConnectionQuestion(e.target.value.slice(0, 120))}
+                rows={2}
+                style={{ resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
+              />
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem', textAlign: 'right' }}>
+                {connectionQuestion.length}/120
+              </p>
+            </div>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
               <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
               <div>
