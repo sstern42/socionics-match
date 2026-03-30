@@ -350,6 +350,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       padding: '0.65rem 0.9rem',
                       fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
                       whiteSpace: 'pre-wrap',
+                      width: 'fit-content',
                       cursor: activeBlock ? 'default' : 'pointer',
                     }}
                   >
