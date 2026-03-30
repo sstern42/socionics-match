@@ -78,6 +78,7 @@ export default function Feed() {
   const [activeToday, setActiveToday] = useState(false)
   const [onlineNow, setOnlineNow] = useState(false)
   const [withPhotos, setWithPhotos] = useState(false)
+  const [excludeAnon, setExcludeAnon] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [connectPrompt, setConnectPrompt] = useState(null) // { targetProfile }
   const [connectMessage, setConnectMessage] = useState('')
@@ -208,6 +209,7 @@ export default function Feed() {
     .filter(p => activeToday ? (p.last_active && new Date(p.last_active) > oneDayAgo) : true)
     .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo) : true)
     .filter(p => withPhotos ? !!p.avatar_url : true)
+    .filter(p => excludeAnon ? !p.profile_data?.anonymous : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
 
   return (
@@ -332,6 +334,14 @@ export default function Feed() {
                 style={{ fontSize: '0.7rem' }}
               >
                 {withPhotos ? '✓ ' : ''}With photos
+              </button>
+              <button
+                type="button"
+                className={`rel-pill clickable${excludeAnon ? ' active' : ''}`}
+                onClick={() => setExcludeAnon(v => !v)}
+                style={{ fontSize: '0.7rem' }}
+              >
+                {excludeAnon ? '✓ ' : ''}Known users only
               </button>
               <button
                 type="button"
