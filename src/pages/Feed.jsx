@@ -173,7 +173,9 @@ export default function Feed() {
         content: connectMessage.trim(),
       })
       setMatchedMap(prev => ({ ...prev, [targetProfile.id]: newMatch.id }))
-      setJustConnected(targetProfile.profile_data?.name ?? targetProfile.type)
+      const isAnon = targetProfile.profile_data?.anonymous ?? false
+      const displayName = isAnon ? 'Anonymous' : (targetProfile.profile_data?.name ?? targetProfile.type)
+      setJustConnected(displayName)
       setTimeout(() => setJustConnected(null), 3000)
       setConnectPrompt(null)
       setConnectMessage('')
@@ -416,6 +418,8 @@ export default function Feed() {
 
       {connectPrompt && (() => {
         const { targetProfile } = connectPrompt
+        const isAnon = targetProfile.profile_data?.anonymous ?? false
+        const targetName = isAnon ? 'Anonymous' : (targetProfile.profile_data?.name ?? targetProfile.type)
         const question = targetProfile.profile_data?.connection_question
         const label = question || 'Introduce yourself — what brings you to Socion?'
         const isConnecting = connectingId === targetProfile.id
@@ -430,7 +434,7 @@ export default function Feed() {
             >
               <div>
                 <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>
-                  Connecting with {targetProfile.profile_data?.name ?? targetProfile.type}
+                  Connecting with {targetName}
                 </p>
                 <p style={{ fontSize: '0.95rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
                   {label}
