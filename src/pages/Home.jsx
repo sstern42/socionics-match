@@ -18,7 +18,7 @@ const RELATION_PILLS = [
 
 const TESTIMONIALS = [
   {
-    name: 'Intrion, 18',
+    name: 'Intrion',
     type: 'ILE',
     relation: null,
     gender: 'male',
