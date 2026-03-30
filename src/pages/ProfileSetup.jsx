@@ -164,7 +164,7 @@ export default function ProfileSetup() {
                 />
                 <div>
                   <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔒 Anonymous mode</p>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🔒 badge shows on your card so others know you prefer privacy.</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🔒 badge shows on your card. You can turn this off at any time to reveal your details.</p>
                 </div>
               </label>
               {!savedType && (
