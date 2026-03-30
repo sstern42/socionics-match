@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
+import { sendMessage } from '../lib/messages'
 import { RELATIONS } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
@@ -78,6 +79,9 @@ export default function Feed() {
   const [onlineNow, setOnlineNow] = useState(false)
   const [withPhotos, setWithPhotos] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
+  const [connectPrompt, setConnectPrompt] = useState(null) // { targetProfile }
+  const [connectMessage, setConnectMessage] = useState('')
+  const [connectError, setConnectError] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
   const [showCard, setShowCard] = useState(false)
 
@@ -145,20 +149,35 @@ export default function Feed() {
     }
   }
 
-  async function handleConnect(targetProfile) {
-    if (!profile) return
+  function handleConnect(targetProfile) {
+    setConnectPrompt({ targetProfile })
+    setConnectMessage('')
+    setConnectError(null)
+  }
+
+  async function handleConnectSubmit() {
+    if (!profile || !connectPrompt) return
+    const { targetProfile } = connectPrompt
     setConnectingId(targetProfile.id)
+    setConnectError(null)
     try {
       const newMatch = await createMatch({
         userAId: profile.id,
         userBId: targetProfile.id,
         relationType: targetProfile.relation,
       })
+      await sendMessage({
+        matchId: newMatch.id,
+        senderId: profile.id,
+        content: connectMessage.trim(),
+      })
       setMatchedMap(prev => ({ ...prev, [targetProfile.id]: newMatch.id }))
       setJustConnected(targetProfile.profile_data?.name ?? targetProfile.type)
       setTimeout(() => setJustConnected(null), 3000)
+      setConnectPrompt(null)
+      setConnectMessage('')
     } catch (err) {
-      setError(err.message)
+      setConnectError(err.message)
     } finally {
       setConnectingId(null)
     }
@@ -384,6 +403,67 @@ export default function Feed() {
           </div>
         )}
       </section>
+
+      {connectPrompt && (() => {
+        const { targetProfile } = connectPrompt
+        const question = targetProfile.profile_data?.connection_question
+        const label = question || 'Introduce yourself — what brings you to Socion?'
+        const isConnecting = connectingId === targetProfile.id
+        return (
+          <div
+            onClick={() => !isConnecting && (setConnectPrompt(null), setConnectMessage(''))}
+            style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
+          >
+            <div
+              onClick={e => e.stopPropagation()}
+              style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}
+            >
+              <div>
+                <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>
+                  Connecting with {targetProfile.profile_data?.name ?? targetProfile.type}
+                </p>
+                <p style={{ fontSize: '0.95rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
+                  {label}
+                </p>
+              </div>
+              <textarea
+                className="input-standalone"
+                placeholder="Write your message…"
+                value={connectMessage}
+                onChange={e => setConnectMessage(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && e.ctrlKey && connectMessage.trim().length >= 10 && handleConnectSubmit()}
+                rows={4}
+                autoFocus
+                disabled={isConnecting}
+                style={{ resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
+              />
+              {connectError && <p style={{ fontSize: '0.82rem', color: '#c0392b', margin: 0 }}>{connectError}</p>}
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => { setConnectPrompt(null); setConnectMessage('') }}
+                  disabled={isConnecting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={handleConnectSubmit}
+                  disabled={isConnecting || connectMessage.trim().length < 10}
+                  style={{ opacity: (isConnecting || connectMessage.trim().length < 10) ? 0.5 : 1 }}
+                >
+                  {isConnecting ? 'Connecting…' : 'Send & connect'}
+                </button>
+              </div>
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', margin: 0 }}>
+                Ctrl + Enter to send
+              </p>
+            </div>
+          </div>
+        )
+      })()}
     </Layout>
   )
 }
