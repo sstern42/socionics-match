@@ -33,6 +33,14 @@ const TESTIMONIALS = [
     avatar: null,
     quote: "Finally a place to connect with people who are as serious about Socionics as you are — and the app shows you the nature of each relation before you even say hello. A refreshing initiative. I hope it helps bring Socionics west.",
   },
+  {
+    name: 'Memes',
+    type: 'EIE',
+    relation: null,
+    gender: 'female',
+    avatar: null,
+    quote: "Clear, convenient, curated. A chance worth taking.",
+  },
   // Add more testimonials here as you collect them with permission
 ]
 
