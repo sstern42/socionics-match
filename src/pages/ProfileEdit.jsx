@@ -151,7 +151,7 @@ export default function ProfileEdit() {
             <div>
               <textarea
                 className="input-standalone"
-                placeholder="Connection question (optional) — shown to people before they connect with you, e.g. "What's a book that changed how you see the world?""
+                placeholder={`Connection question (optional) — shown to people before they connect with you, e.g. "What's a book that changed how you see the world?"`}
                 value={connectionQuestion}
                 onChange={e => setConnectionQuestion(e.target.value.slice(0, 120))}
                 rows={2}
