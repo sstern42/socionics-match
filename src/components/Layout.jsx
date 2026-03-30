@@ -127,8 +127,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         {!hideFooter && (
         <footer className="site-footer">
           <div>
-            <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved.</p>
-            <p style={{ marginTop: '0.2rem' }}>Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern</a></p>
+            <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern</a></p>
           </div>
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
