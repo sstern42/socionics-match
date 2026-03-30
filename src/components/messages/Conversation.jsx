@@ -101,7 +101,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim(), replyToId })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
       setText('')
-      inputRef.current?.focus()
+      if (inputRef.current) {
+        inputRef.current.style.height = 'auto'
+        inputRef.current.focus()
+      }
     } finally {
       setSending(false)
     }
@@ -450,13 +453,17 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           </p>
         ) : (
           <div className="field-group">
-            <input
-              type="text"
+          <div className="field-group" style={{ alignItems: 'flex-end' }}>
+            <textarea
               ref={inputRef}
               placeholder={`Message ${otherName}…`}
               value={text}
+              rows={1}
               onChange={e => {
                 setText(e.target.value)
+                // Auto-resize
+                e.target.style.height = 'auto'
+                e.target.style.height = `${e.target.scrollHeight}px`
                 // Broadcast typing state
                 presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: true } })
                 clearTimeout(typingTimer.current)
@@ -464,12 +471,23 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
                 }, 2000)
               }}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSend()
+                }
+              }}
+              style={{ resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', maxHeight: '8rem' }}
             />
             <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, opacity: (!text.trim() || sending) ? 0.5 : 1 }}>
               Send
             </button>
           </div>
+          {text && (
+            <p style={{ fontSize: '0.68rem', color: 'var(--muted)', textAlign: 'right', margin: '0.25rem 0.5rem 0', letterSpacing: '0.02em' }}>
+              Shift + Enter for new line
+            </p>
+          )}
         )}
       </div>
       </div>
