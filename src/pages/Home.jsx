@@ -18,12 +18,20 @@ const RELATION_PILLS = [
 
 const TESTIMONIALS = [
   {
-    name: 'Intrion, 18',
+    name: 'Intrion',
     type: 'ILE',
     relation: null,
     gender: 'male',
     avatar: null,
     quote: "An innovative experiment and tool in one — real utility, real potential.",
+  },
+  {
+    name: 'Lena',
+    type: 'ILE',
+    relation: null,
+    gender: 'female',
+    avatar: null,
+    quote: "Finally a place to connect with people who are as serious about Socionics as you are — and the app shows you the nature of each relation before you even say hello. A refreshing initiative. I hope it helps bring Socionics west.",
   },
   // Add more testimonials here as you collect them with permission
 ]
