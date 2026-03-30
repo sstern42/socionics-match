@@ -161,7 +161,12 @@ export default function ProfileEdit() {
               <option value="">Country (optional)</option>
               {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
             </select>
-            <textarea className="input-standalone" placeholder="A short bio" value={bio} onChange={e => setBio(e.target.value)} rows={4} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
+            <div>
+              <textarea className="input-standalone" placeholder="A short bio (optional)" value={bio} onChange={e => setBio(e.target.value)} rows={4} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                Visible to other users even in anonymous mode — keep it vague if you prefer privacy.
+              </p>
+            </div>
             <div>
               <textarea
                 className="input-standalone"

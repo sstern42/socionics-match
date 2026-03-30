@@ -147,14 +147,19 @@ export default function ProfileSetup() {
                   <option key={c.code} value={c.code}>{c.name}</option>
                 ))}
               </select>
-              <textarea
-                className="input-standalone"
-                placeholder="A short bio — how you'd describe yourself to a stranger"
-                value={bio}
-                onChange={e => setBio(e.target.value)}
-                rows={4}
-                style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
-              />
+              <div>
+                <textarea
+                  className="input-standalone"
+                  placeholder="A short bio — how you'd describe yourself to a stranger (optional)"
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
+                  rows={4}
+                  style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
+                />
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                  Visible to other users even in anonymous mode — keep it vague if you prefer privacy.
+                </p>
+              </div>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
                 <input
                   type="checkbox"
