@@ -60,7 +60,7 @@ export default function ProfileDynamics() {
           </div>
           <div>
             <p style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.75rem' }}>Dynamics</p>
-            <RelationPicker selected={relations} onChange={setRelations} />
+            <RelationPicker selected={relations} onChange={setRelations} userType={profile?.type} />
           </div>
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}

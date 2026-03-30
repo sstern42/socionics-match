@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
-import { signIn } from '../lib/auth'
 import { useAuth } from '../lib/AuthContext'
 
 const IS_PROD = window.location.hostname === 'socion.app'
@@ -11,7 +10,6 @@ const PENDING_EMAIL_KEY = 'socion_pending_email'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
@@ -127,19 +125,6 @@ export default function Auth() {
     }
   }
 
-  async function handlePassword() {
-    if (!email.trim() || !password) return
-    setError(null)
-    setLoading(true)
-    try {
-      await signIn(email.trim(), password)
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   if (sent) {
     return (
       <Layout>
@@ -192,96 +177,60 @@ export default function Auth() {
             </h1>
           </div>
 
-          {IS_PROD ? (
-            <>
-              {GOOGLE_CLIENT_ID && (
+          <>
+            {IS_PROD && GOOGLE_CLIENT_ID && (
+              <>
                 <div ref={googleButtonRef} style={{ width: '100%', minHeight: 44 }} />
-              )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>or</span>
+                  <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                </div>
+              </>
+            )}
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                <span style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>or</span>
-                <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <input
-                  className="input-standalone"
-                  type="email"
-                  placeholder="Email address"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && handleMagicLink()}
-                  autoFocus
-                />
-                {linkError === 'otp_expired' && (
-                  <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <p style={{ fontSize: '0.82rem', color: 'var(--accent)', lineHeight: 1.6, margin: 0 }}>
-                      That sign-in link has expired.{email ? ` Send a new code to ` : ' Enter your email to get a new code.'}<strong>{email || ''}</strong>{email ? '?' : ''}
-                    </p>
-                    {email && (
-                      <button
-                        type="button"
-                        className="btn-ghost"
-                        onClick={() => { setLinkError(null); handleMagicLink() }}
-                        disabled={loading}
-                        style={{ fontSize: '0.82rem', padding: '0.4rem 0.75rem', opacity: loading ? 0.6 : 1 }}
-                      >
-                        {loading ? 'Sending…' : 'Send new code →'}
-                      </button>
-                    )}
-                  </div>
-                )}
-                {error && (
-                  <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
-                )}
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={handleMagicLink}
-                  disabled={loading || !email.trim()}
-                  style={{ opacity: (loading || !email.trim()) ? 0.6 : 1 }}
-                >
-                  {loading ? 'Please wait…' : 'Send code'}
-                </button>
-              </div>
-            </>
-          ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center' }}>
-                Preview environment — use email and password.
-              </p>
               <input
                 className="input-standalone"
                 type="email"
                 placeholder="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handlePassword()}
+                onKeyDown={e => e.key === 'Enter' && handleMagicLink()}
                 autoFocus
               />
-              <input
-                className="input-standalone"
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handlePassword()}
-              />
+              {linkError === 'otp_expired' && (
+                <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--accent)', lineHeight: 1.6, margin: 0 }}>
+                    That sign-in link has expired.{email ? ` Send a new code to ` : ' Enter your email to get a new code.'}<strong>{email || ''}</strong>{email ? '?' : ''}
+                  </p>
+                  {email && (
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => { setLinkError(null); handleMagicLink() }}
+                      disabled={loading}
+                      style={{ fontSize: '0.82rem', padding: '0.4rem 0.75rem', opacity: loading ? 0.6 : 1 }}
+                    >
+                      {loading ? 'Sending…' : 'Send new code →'}
+                    </button>
+                  )}
+                </div>
+              )}
               {error && (
                 <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
               )}
               <button
                 type="button"
-                className="btn-primary"
-                onClick={handlePassword}
-                disabled={loading || !email.trim() || !password}
-                style={{ opacity: (loading || !email.trim() || !password) ? 0.6 : 1 }}
+                className="btn-ghost"
+                onClick={handleMagicLink}
+                disabled={loading || !email.trim()}
+                style={{ opacity: (loading || !email.trim()) ? 0.6 : 1 }}
               >
-                {loading ? 'Please wait…' : 'Sign in'}
+                {loading ? 'Please wait…' : 'Send code'}
               </button>
             </div>
-          )}
+          </>
 
           <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6 }}>
             New users will be prompted to set up a profile after signing in. By continuing you agree to our{' '}
