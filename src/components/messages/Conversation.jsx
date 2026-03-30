@@ -452,8 +452,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             Messaging is paused for this conversation.
           </p>
         ) : (
-          <div className="field-group">
-          <div className="field-group" style={{ alignItems: 'flex-end' }}>
+          <>
+            <div className="field-group" style={{ alignItems: 'flex-end' }}>
             <textarea
               ref={inputRef}
               placeholder={`Message ${otherName}…`}
@@ -488,6 +488,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               Shift + Enter for new line
             </p>
           )}
+          </>
         )}
       </div>
       </div>
