@@ -332,7 +332,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             items.push(
               <div
                 key={msg.id}
-                style={{ alignSelf: isMine ? 'flex-end' : 'flex-start', maxWidth: '70%', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}
+                style={{ alignSelf: isMine ? 'flex-end' : 'flex-start', maxWidth: '70%', width: 'fit-content', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}
                 onMouseEnter={() => !activeBlock && setHoveredMsgId(msg.id)}
                 onMouseLeave={() => setHoveredMsgId(null)}
               >
