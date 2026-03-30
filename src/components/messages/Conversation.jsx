@@ -31,7 +31,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const menuRef = useRef(null)
 
   const relInfo = RELATIONS[match.displayRelationType ?? match.relation_type]
-  const otherName = match.other.profile_data?.name ?? match.other.type
+  const isOtherAnonymous = match.other.profile_data?.anonymous ?? false
+  const otherName = isOtherAnonymous ? 'Anonymous' : (match.other.profile_data?.name ?? match.other.type)
   const otherUserId = match.other.id
 
   // Load active block between these two users
