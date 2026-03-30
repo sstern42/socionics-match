@@ -10,7 +10,7 @@ export default function Terms() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 26 March 2026</p>
+          <p style={metaStyle}>Last updated: 30 March 2026</p>
 
           <p>These terms govern your use of Socion, operated by Spencer Stern, London, UK. By creating an account you agree to these terms. If you do not agree, do not use the service.</p>
 
@@ -41,7 +41,7 @@ export default function Terms() {
           <p>Socion provides tools to cool off from or block other users. Reports submitted through the block feature are reviewed by the operator at our discretion. We do not guarantee a specific response time or outcome for any report. Where a report indicates a serious violation of these terms, we reserve the right to suspend or remove the reported account.</p>
 
           <h2>6. Account termination</h2>
-          <p>We reserve the right to suspend or terminate any account at any time, with or without notice, if we believe a user has violated these terms or is using the service in a manner that is harmful to other users or the platform. You may delete your account at any time by contacting us at <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@socion.app</a>.</p>
+          <p>We reserve the right to suspend or terminate any account at any time, with or without notice, if we believe a user has violated these terms or is using the service in a manner that is harmful to other users or the platform. You may delete your account and all associated data at any time directly in the app via Profile → Details → Delete account. Deletion is permanent and immediate.</p>
 
           <h2>7. Disclaimer and limitation of liability</h2>
           <p>Socion is provided on an "as is" basis. We make no warranties about the availability, accuracy, or suitability of the service. We are not responsible for the conduct of users on or off the platform. To the fullest extent permitted by law, our liability to you for any claim arising from your use of Socion is limited to the amount you have paid us in the twelve months preceding the claim — which, since the service is currently free, is zero.</p>

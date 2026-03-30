@@ -10,16 +10,17 @@ export default function Privacy() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 25 March 2026</p>
+          <p style={metaStyle}>Last updated: 30 March 2026</p>
 
           <p>Socion is operated by Spencer Stern, London, UK. This policy explains what personal data we collect, how we use it, and your rights under UK GDPR.</p>
 
           <h2>What we collect</h2>
           <p>When you create an account and use Socion, we collect:</p>
           <ul>
-            <li><strong>Account data</strong> — your email address, used to send you a magic sign-in link (no password is stored)</li>
-            <li><strong>Profile data</strong> — your name, age, gender, location, bio, Socionics type, and profile photo, as you provide them</li>
+            <li><strong>Account data</strong> — your email address, used to send you a one-time sign-in code (no password is stored)</li>
+            <li><strong>Profile data</strong> — your name, age, gender, location, bio, Socionics type, profile photo, and optional connection question, as you provide them</li>
             <li><strong>Usage data</strong> — the connections you make, messages you send, and feedback ratings you submit</li>
+            <li><strong>Push notification tokens</strong> — if you enable push notifications, your device's push subscription endpoint is stored to deliver notifications</li>
             <li><strong>Analytics data</strong> — page views and navigation patterns via Umami, which is cookieless and does not track individuals across sites</li>
           </ul>
 
@@ -29,13 +30,13 @@ export default function Privacy() {
             <li>To display your profile to other users in the matching feed</li>
             <li>To match you with profiles based on intertype relations</li>
             <li>To deliver messages between connected users</li>
-            <li>To send email notifications about new connections and messages (via Resend)</li>
+            <li>To send email and push notifications about new connections and messages</li>
             <li>To aggregate anonymised feedback data for research into Socionics intertype relations</li>
           </ul>
           <p>We do not sell your data. We do not use your data for advertising.</p>
 
           <h2>Who can see your data</h2>
-          <p>Your profile (name, age, location, bio, type, and photo) is visible to other signed-in users of Socion. Your email address is never displayed to other users.</p>
+          <p>Your profile (name, age, location, bio, type, photo, and connection question if set) is visible to other signed-in users of Socion. Your email address is never displayed to other users.</p>
           <p>Messages are visible to both participants in a conversation. As the platform operator, Spencer Stern has administrative access to message content for moderation purposes.</p>
 
           <h2>Third-party services</h2>
@@ -44,14 +45,16 @@ export default function Privacy() {
             <li><strong>Supabase</strong> — database, authentication, and file storage (EU West, Ireland)</li>
             <li><strong>Netlify</strong> — hosting and deployment</li>
             <li><strong>Resend</strong> — transactional email delivery</li>
+            <li><strong>Google</strong> — optional one-tap sign-in via Google Identity Services</li>
+            <li><strong>MailerLite</strong> — member update emails (news.socion.app sending domain)</li>
             <li><strong>Umami</strong> — cookieless, privacy-first analytics</li>
           </ul>
 
           <h2>Data retention</h2>
-          <p>Your data is retained for as long as your account is active. If you delete your account, your profile, messages, and matches are deleted. Anonymised, aggregated research data may be retained.</p>
+          <p>Your data is retained for as long as your account is active. If you delete your account, your profile, messages, matches, and push subscriptions are permanently deleted. Anonymised, aggregated research data may be retained.</p>
 
           <h2>Your rights</h2>
-          <p>Under UK GDPR you have the right to access, correct, or delete your personal data. You can update your profile at any time via the Profile page. To request full deletion of your account and data, email <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)' }}>hello@socion.app</a>.</p>
+          <p>Under UK GDPR you have the right to access, correct, or delete your personal data. You can update your profile at any time via the Profile page. You can permanently delete your account and all associated data directly in the app via Profile → Details → Delete account. For any other data requests, contact <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)' }}>hello@socion.app</a>.</p>
 
           <h2>Cookies</h2>
           <p>Socion does not use cookies for tracking or advertising. Supabase Auth uses a session token stored in your browser's local storage to keep you signed in.</p>
