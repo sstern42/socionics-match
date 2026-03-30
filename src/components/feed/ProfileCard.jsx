@@ -108,7 +108,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             >
               {displayAvatar
                 ? <img src={displayAvatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{isAnonymous ? '🔒' : (name ? name[0].toUpperCase() : '?')}</span>
+                : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{isAnonymous ? '🕵️' : (name ? name[0].toUpperCase() : '?')}</span>
               }
             </div>
             {activityLabel && (
@@ -176,7 +176,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
                 color: 'var(--muted)', border: '1px solid var(--border)',
                 padding: '0.15rem 0.5rem', borderRadius: 2,
               }}>
-                🔒 Anonymous
+                🕵️ Anonymous
               </span>
             )}
             {displayFlag && (
