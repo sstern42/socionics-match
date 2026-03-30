@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
-import * as d3 from 'd3'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 
@@ -32,18 +31,134 @@ function ratingColour(avgRating) {
   return '#e74c3c'
 }
 
+// Simple force simulation without D3
+function useForceSimulation(nodes, edges, width, height) {
+  const posRef = useRef({})
+  const velRef = useRef({})
+  const frameRef = useRef(null)
+  const [positions, setPositions] = useState({})
+
+  useEffect(() => {
+    if (!nodes.length || !width) return
+
+    // Initialise positions in a circle
+    const cx = width / 2, cy = height / 2, r = Math.min(width, height) * 0.35
+    nodes.forEach((n, i) => {
+      const angle = (i / nodes.length) * 2 * Math.PI
+      posRef.current[n.id] = posRef.current[n.id] || {
+        x: cx + r * Math.cos(angle),
+        y: cy + r * Math.sin(angle),
+      }
+      velRef.current[n.id] = velRef.current[n.id] || { vx: 0, vy: 0 }
+    })
+
+    let alpha = 1
+    const DAMPING = 0.85
+    const REPULSION = 3000
+    const ATTRACTION = 0.04
+    const REST_LENGTH = 120
+    const CENTER_FORCE = 0.01
+
+    function tick() {
+      if (alpha < 0.005) return
+      alpha *= 0.98
+
+      const ids = nodes.map(n => n.id)
+
+      // Repulsion between all pairs
+      for (let i = 0; i < ids.length; i++) {
+        for (let j = i + 1; j < ids.length; j++) {
+          const a = posRef.current[ids[i]]
+          const b = posRef.current[ids[j]]
+          const dx = b.x - a.x
+          const dy = b.y - a.y
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1
+          const force = (REPULSION / (dist * dist)) * alpha
+          const fx = (dx / dist) * force
+          const fy = (dy / dist) * force
+          velRef.current[ids[i]].vx -= fx
+          velRef.current[ids[i]].vy -= fy
+          velRef.current[ids[j]].vx += fx
+          velRef.current[ids[j]].vy += fy
+        }
+      }
+
+      // Attraction along edges
+      for (const edge of edges) {
+        const a = posRef.current[edge.source]
+        const b = posRef.current[edge.target]
+        if (!a || !b) continue
+        const dx = b.x - a.x
+        const dy = b.y - a.y
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1
+        const force = (dist - REST_LENGTH) * ATTRACTION * alpha
+        const fx = (dx / dist) * force
+        const fy = (dy / dist) * force
+        velRef.current[edge.source].vx += fx
+        velRef.current[edge.source].vy += fy
+        velRef.current[edge.target].vx -= fx
+        velRef.current[edge.target].vy -= fy
+      }
+
+      // Centering force
+      for (const id of ids) {
+        const p = posRef.current[id]
+        velRef.current[id].vx += (cx - p.x) * CENTER_FORCE * alpha
+        velRef.current[id].vy += (cy - p.y) * CENTER_FORCE * alpha
+      }
+
+      // Update positions
+      for (const id of ids) {
+        const p = posRef.current[id]
+        const v = velRef.current[id]
+        v.vx *= DAMPING
+        v.vy *= DAMPING
+        p.x = Math.max(24, Math.min(width - 24, p.x + v.vx))
+        p.y = Math.max(24, Math.min(height - 24, p.y + v.vy))
+      }
+
+      setPositions({ ...posRef.current })
+      frameRef.current = requestAnimationFrame(tick)
+    }
+
+    frameRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frameRef.current)
+  }, [nodes.length, edges.length, width, height])
+
+  const dragNode = useCallback((id, x, y) => {
+    posRef.current[id] = { x, y }
+    velRef.current[id] = { vx: 0, vy: 0 }
+    setPositions({ ...posRef.current })
+  }, [])
+
+  return { positions, dragNode }
+}
+
 export default function Network() {
   const svgRef = useRef(null)
+  const containerRef = useRef(null)
+  const [width, setWidth] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [graphData, setGraphData] = useState(null)
   const [tooltip, setTooltip] = useState(null)
   const [stats, setStats] = useState(null)
+  const [dragging, setDragging] = useState(null)
+  const HEIGHT = 560
+
+  useEffect(() => {
+    if (!containerRef.current) return
+    const obs = new ResizeObserver(entries => {
+      setWidth(entries[0].contentRect.width)
+    })
+    obs.observe(containerRef.current)
+    setWidth(containerRef.current.clientWidth)
+    return () => obs.disconnect()
+  }, [])
 
   useEffect(() => {
     async function fetchData() {
       try {
-        // Fetch all matches with user types and message counts
         const { data: matches, error: matchErr } = await supabase
           .from('matches')
           .select(`
@@ -55,34 +170,24 @@ export default function Network() {
 
         if (matchErr) throw matchErr
 
-        // Aggregate by type pair (canonical — alphabetical order)
         const edgeMap = {}
-
         for (const match of matches ?? []) {
           const typeA = match.user_a?.type
           const typeB = match.user_b?.type
-          if (!typeA || !typeB || typeA === typeB) continue
+          if (!typeA || !typeB) continue
 
           const key = [typeA, typeB].sort().join('--')
-
           if (!edgeMap[key]) {
             edgeMap[key] = {
-              typeA: [typeA, typeB].sort()[0],
-              typeB: [typeA, typeB].sort()[1],
+              source: [typeA, typeB].sort()[0],
+              target: [typeA, typeB].sort()[1],
               relation: match.relation_type,
-              count: 0,
-              messages: 0,
-              ratings: [],
+              count: 0, messages: 0, ratings: [],
             }
           }
-
           edgeMap[key].count++
           edgeMap[key].messages += match.messages?.length ?? 0
-
-          const ratings = [
-            match.feedback_a?.rating,
-            match.feedback_b?.rating,
-          ].filter(Boolean)
+          const ratings = [match.feedback_a?.rating, match.feedback_b?.rating].filter(Boolean)
           edgeMap[key].ratings.push(...ratings)
         }
 
@@ -93,17 +198,19 @@ export default function Network() {
             : null,
         }))
 
-        // Node stats
         const nodeStats = {}
         for (const type of TYPES) {
-          const typeEdges = edges.filter(e => e.typeA === type || e.typeB === type)
+          const te = edges.filter(e => e.source === type || e.target === type)
           nodeStats[type] = {
-            connections: typeEdges.reduce((s, e) => s + e.count, 0),
-            messages: typeEdges.reduce((s, e) => s + e.messages, 0),
+            connections: te.reduce((s, e) => s + e.count, 0),
+            messages: te.reduce((s, e) => s + e.messages, 0),
           }
         }
 
-        setGraphData({ edges, nodeStats })
+        const maxConn = Math.max(...Object.values(nodeStats).map(n => n.connections), 1)
+        const maxCount = Math.max(...edges.map(e => e.count), 1)
+
+        setGraphData({ edges, nodeStats, maxConn, maxCount })
         setStats({
           totalConnections: matches?.length ?? 0,
           totalEdges: edges.length,
@@ -115,141 +222,48 @@ export default function Network() {
         setLoading(false)
       }
     }
-
     fetchData()
   }, [])
 
+  const nodes = TYPES.map(id => ({ id }))
+  const edges = graphData?.edges ?? []
+
+  const { positions, dragNode } = useForceSimulation(
+    graphData ? nodes : [],
+    edges,
+    width,
+    HEIGHT
+  )
+
+  // Drag handling
+  function handleMouseDown(e, id) {
+    e.preventDefault()
+    setDragging(id)
+  }
+
   useEffect(() => {
-    if (!graphData || !svgRef.current) return
+    function onMove(e) {
+      if (!dragging || !svgRef.current) return
+      const rect = svgRef.current.getBoundingClientRect()
+      const x = (e.clientX ?? e.touches?.[0]?.clientX) - rect.left
+      const y = (e.clientY ?? e.touches?.[0]?.clientY) - rect.top
+      dragNode(dragging, x, y)
+    }
+    function onUp() { setDragging(null) }
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onUp)
+    window.addEventListener('touchmove', onMove)
+    window.addEventListener('touchend', onUp)
+    return () => {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('mouseup', onUp)
+      window.removeEventListener('touchmove', onMove)
+      window.removeEventListener('touchend', onUp)
+    }
+  }, [dragging, dragNode])
 
-    const { edges, nodeStats } = graphData
-    const width = svgRef.current.clientWidth || 800
-    const height = 560
-
-    d3.select(svgRef.current).selectAll('*').remove()
-
-    const svg = d3.select(svgRef.current)
-      .attr('viewBox', `0 0 ${width} ${height}`)
-      .attr('width', '100%')
-      .attr('height', height)
-
-    const defs = svg.append('defs')
-    defs.append('marker')
-      .attr('id', 'arrow')
-      .attr('viewBox', '0 -5 10 10')
-      .attr('refX', 20)
-      .attr('markerWidth', 4)
-      .attr('markerHeight', 4)
-      .attr('orient', 'auto')
-      .append('path')
-      .attr('d', 'M0,-5L10,0L0,5')
-      .attr('fill', '#ccc')
-
-    const nodes = TYPES.map(id => ({
-      id,
-      connections: nodeStats[id]?.connections ?? 0,
-      messages: nodeStats[id]?.messages ?? 0,
-    }))
-
-    const links = edges.map(e => ({
-      source: e.typeA,
-      target: e.typeB,
-      count: e.count,
-      messages: e.messages,
-      avgRating: e.avgRating,
-      relation: e.relation,
-    }))
-
-    const maxCount = d3.max(links, d => d.count) || 1
-    const maxMessages = d3.max(links, d => d.messages) || 1
-
-    const simulation = d3.forceSimulation(nodes)
-      .force('link', d3.forceLink(links).id(d => d.id).distance(110))
-      .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide(36))
-
-    const link = svg.append('g')
-      .selectAll('line')
-      .data(links)
-      .join('line')
-      .attr('stroke', d => ratingColour(d.avgRating))
-      .attr('stroke-width', d => 1 + (d.count / maxCount) * 5)
-      .attr('stroke-opacity', 0.7)
-      .style('cursor', 'pointer')
-      .on('mouseenter', (event, d) => {
-        setTooltip({
-          x: event.clientX,
-          y: event.clientY,
-          content: {
-            pair: `${d.source.id} × ${d.target.id}`,
-            relation: d.relation?.replace('_', '-') ?? '?',
-            connections: d.count,
-            messages: d.messages,
-            avgRating: d.avgRating ? d.avgRating.toFixed(1) : 'No ratings yet',
-          }
-        })
-      })
-      .on('mouseleave', () => setTooltip(null))
-
-    const node = svg.append('g')
-      .selectAll('g')
-      .data(nodes)
-      .join('g')
-      .style('cursor', 'pointer')
-      .call(d3.drag()
-        .on('start', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart()
-          d.fx = d.x; d.fy = d.y
-        })
-        .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y })
-        .on('end', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0)
-          d.fx = null; d.fy = null
-        })
-      )
-      .on('mouseenter', (event, d) => {
-        setTooltip({
-          x: event.clientX,
-          y: event.clientY,
-          content: {
-            type: d.id,
-            quadra: QUADRA_LABELS[d.id],
-            connections: d.connections,
-            messages: d.messages,
-          }
-        })
-      })
-      .on('mouseleave', () => setTooltip(null))
-
-    node.append('circle')
-      .attr('r', d => 14 + (d.connections / (d3.max(nodes, n => n.connections) || 1)) * 10)
-      .attr('fill', d => QUADRA_COLOURS[d.id] + '22')
-      .attr('stroke', d => QUADRA_COLOURS[d.id])
-      .attr('stroke-width', 2)
-
-    node.append('text')
-      .text(d => d.id)
-      .attr('text-anchor', 'middle')
-      .attr('dy', '0.35em')
-      .attr('font-size', '0.72rem')
-      .attr('font-family', 'var(--mono, monospace)')
-      .attr('font-weight', 600)
-      .attr('fill', d => QUADRA_COLOURS[d.id])
-      .style('pointer-events', 'none')
-
-    simulation.on('tick', () => {
-      link
-        .attr('x1', d => d.source.x)
-        .attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x)
-        .attr('y2', d => d.target.y)
-
-      node.attr('transform', d => `translate(${d.x},${d.y})`)
-    })
-
-    return () => simulation.stop()
-  }, [graphData])
+  const maxCount = graphData?.maxCount ?? 1
+  const maxConn = graphData?.maxConn ?? 1
 
   return (
     <Layout>
@@ -282,7 +296,7 @@ export default function Network() {
           </div>
         )}
 
-        <div style={{ position: 'relative', background: '#fff', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+        <div ref={containerRef} style={{ position: 'relative', background: '#fff', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
           {loading && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', zIndex: 2 }}>
               <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>Loading network data…</p>
@@ -293,19 +307,87 @@ export default function Network() {
               <p style={{ color: '#c0392b', fontSize: '0.88rem' }}>{error}</p>
             </div>
           )}
-          <svg ref={svgRef} style={{ display: 'block', width: '100%' }} />
+          <svg
+            ref={svgRef}
+            style={{ display: 'block', width: '100%', height: HEIGHT, cursor: dragging ? 'grabbing' : 'default' }}
+            viewBox={`0 0 ${width || 800} ${HEIGHT}`}
+          >
+            {/* Edges */}
+            {width > 0 && edges.map(edge => {
+              const src = positions[edge.source]
+              const tgt = positions[edge.target]
+              if (!src || !tgt) return null
+              return (
+                <line
+                  key={`${edge.source}--${edge.target}`}
+                  x1={src.x} y1={src.y}
+                  x2={tgt.x} y2={tgt.y}
+                  stroke={ratingColour(edge.avgRating)}
+                  strokeWidth={1 + (edge.count / maxCount) * 5}
+                  strokeOpacity={0.65}
+                  style={{ cursor: 'pointer' }}
+                  onMouseEnter={e => setTooltip({
+                    x: e.clientX, y: e.clientY,
+                    edge: { ...edge }
+                  })}
+                  onMouseLeave={() => setTooltip(null)}
+                />
+              )
+            })}
+
+            {/* Nodes */}
+            {width > 0 && TYPES.map(id => {
+              const pos = positions[id]
+              if (!pos) return null
+              const conn = graphData?.nodeStats[id]?.connections ?? 0
+              const r = 14 + (conn / maxConn) * 10
+              const colour = QUADRA_COLOURS[id]
+              return (
+                <g
+                  key={id}
+                  transform={`translate(${pos.x},${pos.y})`}
+                  style={{ cursor: dragging === id ? 'grabbing' : 'grab' }}
+                  onMouseDown={e => handleMouseDown(e, id)}
+                  onTouchStart={e => handleMouseDown(e, id)}
+                  onMouseEnter={e => setTooltip({
+                    x: e.clientX, y: e.clientY,
+                    node: { id, conn, messages: graphData?.nodeStats[id]?.messages ?? 0 }
+                  })}
+                  onMouseLeave={() => setTooltip(null)}
+                >
+                  <circle
+                    r={r}
+                    fill={colour + '22'}
+                    stroke={colour}
+                    strokeWidth={2}
+                  />
+                  <text
+                    textAnchor="middle"
+                    dy="0.35em"
+                    fontSize="0.68rem"
+                    fontFamily="var(--mono, monospace)"
+                    fontWeight={600}
+                    fill={colour}
+                    style={{ pointerEvents: 'none', userSelect: 'none' }}
+                  >
+                    {id}
+                  </text>
+                </g>
+              )
+            })}
+          </svg>
         </div>
 
         {/* Legend */}
-        <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
             <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Rating</span>
             {[
               { colour: '#2ecc71', label: '4.5+' },
               { colour: '#9a6f38', label: '3.5–4.5' },
               { colour: '#f39c12', label: '2.5–3.5' },
               { colour: '#e74c3c', label: 'Below 2.5' },
-              { colour: '#d4c9b8', label: 'Not yet rated' },
+              { colour: '#d4c9b8', label: 'Unrated' },
             ].map(({ colour, label }) => (
               <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                 <div style={{ width: 24, height: 3, background: colour, borderRadius: 2 }} />
@@ -329,14 +411,15 @@ export default function Network() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', marginTop: '2rem', lineHeight: 1.6 }}>
-          Data is anonymised and aggregated by type pair. No individual profiles are shown. Updated in real time as members connect and rate.
+          Data is anonymised and aggregated by type pair. No individual profiles are shown.
         </p>
       </section>
 
+      {/* Tooltip */}
       {tooltip && (
         <div style={{
           position: 'fixed',
-          left: tooltip.x + 12,
+          left: tooltip.x + 14,
           top: tooltip.y - 10,
           background: '#fff',
           border: '1px solid var(--border)',
@@ -347,23 +430,25 @@ export default function Network() {
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           pointerEvents: 'none',
           zIndex: 1000,
-          maxWidth: 200,
+          maxWidth: 210,
         }}>
-          {tooltip.content.type ? (
+          {tooltip.node ? (
             <>
-              <p style={{ fontWeight: 600, marginBottom: '0.3rem' }}>{tooltip.content.type} <span style={{ fontWeight: 300, color: 'var(--muted)' }}>· {tooltip.content.quadra}</span></p>
-              <p style={{ color: 'var(--muted)' }}>{tooltip.content.connections} connections</p>
-              <p style={{ color: 'var(--muted)' }}>{tooltip.content.messages} messages</p>
+              <p style={{ fontWeight: 600, marginBottom: '0.3rem' }}>
+                {tooltip.node.id} <span style={{ fontWeight: 300, color: 'var(--muted)' }}>· {QUADRA_LABELS[tooltip.node.id]}</span>
+              </p>
+              <p style={{ color: 'var(--muted)' }}>{tooltip.node.conn} connections</p>
+              <p style={{ color: 'var(--muted)' }}>{tooltip.node.messages} messages</p>
             </>
-          ) : (
+          ) : tooltip.edge ? (
             <>
-              <p style={{ fontWeight: 600, marginBottom: '0.3rem' }}>{tooltip.content.pair}</p>
-              <p style={{ color: 'var(--muted)', textTransform: 'uppercase', fontSize: '0.68rem', letterSpacing: '0.08em' }}>{tooltip.content.relation}</p>
-              <p style={{ color: 'var(--muted)', marginTop: '0.3rem' }}>{tooltip.content.connections} connection{tooltip.content.connections !== 1 ? 's' : ''}</p>
-              <p style={{ color: 'var(--muted)' }}>{tooltip.content.messages} messages</p>
-              <p style={{ color: 'var(--muted)' }}>Avg rating: {tooltip.content.avgRating}</p>
+              <p style={{ fontWeight: 600, marginBottom: '0.2rem' }}>{tooltip.edge.source} × {tooltip.edge.target}</p>
+              <p style={{ color: 'var(--muted)', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tooltip.edge.relation?.replace(/_/g, '-') ?? '?'}</p>
+              <p style={{ color: 'var(--muted)', marginTop: '0.3rem' }}>{tooltip.edge.count} connection{tooltip.edge.count !== 1 ? 's' : ''}</p>
+              <p style={{ color: 'var(--muted)' }}>{tooltip.edge.messages} messages</p>
+              <p style={{ color: 'var(--muted)' }}>Avg rating: {tooltip.edge.avgRating ? tooltip.edge.avgRating.toFixed(1) : 'No ratings yet'}</p>
             </>
-          )}
+          ) : null}
         </div>
       )}
     </Layout>
