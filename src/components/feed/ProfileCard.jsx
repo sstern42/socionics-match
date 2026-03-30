@@ -38,13 +38,23 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const [photoModal, setPhotoModal] = useState(false)
   const { profile_data, type, relation, displayRelation, purpose, last_active } = profile
   const name = profile_data?.name ?? 'Unknown'
-  const age = profile_data?.age
+  const dob = profile_data?.dob
+  const age = dob
+    ? Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000))
+    : null
   const gender = profile_data?.gender
   const bio = profile_data?.bio
   const role = profile_data?.role
   const isAnonymous = profile_data?.anonymous ?? false
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[gender]
   const flag = countryFlag(profile_data?.country)
+
+  // Apply anonymous mode — hide personal details
+  const displayName = isAnonymous ? 'Anonymous' : name
+  const displayAge = isAnonymous ? null : age
+  const displayGenderEmoji = isAnonymous ? null : genderEmoji
+  const displayFlag = isAnonymous ? null : flag
+  const displayAvatar = isAnonymous ? null : profile.avatar_url
 
   const activityLabel = (() => {
     if (!last_active) return null
@@ -86,19 +96,19 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ position: 'relative', flexShrink: 0 }}>
             <div
-              onClick={() => profile.avatar_url && setPhotoModal(true)}
+              onClick={() => displayAvatar && setPhotoModal(true)}
               style={{
                 width: 48, height: 48, borderRadius: '50%',
                 background: 'var(--bg-secondary, #f0ede6)',
                 border: '1px solid var(--border)',
                 overflow: 'hidden',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: profile.avatar_url ? 'zoom-in' : 'default',
+                cursor: displayAvatar ? 'zoom-in' : 'default',
               }}
             >
-              {profile.avatar_url
-                ? <img src={profile.avatar_url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{name ? name[0].toUpperCase() : '?'}</span>
+              {displayAvatar
+                ? <img src={displayAvatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '1.1rem', color: 'var(--muted)', fontFamily: 'var(--serif)' }}>{isAnonymous ? '🔒' : (name ? name[0].toUpperCase() : '?')}</span>
               }
             </div>
             {activityLabel && (
@@ -113,7 +123,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           </div>
 
           {/* Photo modal */}
-          {photoModal && profile.avatar_url && (
+          {photoModal && displayAvatar && (
             <div
               onClick={() => setPhotoModal(false)}
               style={{
@@ -124,8 +134,8 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
               }}
             >
               <img
-                src={profile.avatar_url}
-                alt={name}
+                src={displayAvatar}
+                alt={displayName}
                 style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }}
                 onClick={e => e.stopPropagation()}
               />
@@ -146,7 +156,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           )}
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
-              {name}{age ? `, ${age}` : ''}{genderEmoji ? ` ${genderEmoji}` : ''}
+              {displayName}{displayAge ? `, ${displayAge}` : ''}{displayGenderEmoji ? ` ${displayGenderEmoji}` : ''}
             </h3>
             {role && (
               <span style={{
@@ -169,8 +179,8 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
                 🔒 Anonymous
               </span>
             )}
-            {flag && (
-              <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{flag}</p>
+            {displayFlag && (
+              <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{displayFlag}</p>
             )}
             {purpose?.length > 0 && (
               <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
