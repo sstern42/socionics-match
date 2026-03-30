@@ -120,8 +120,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <IOSInstallBanner />
 
-        <KofiWidget />
-
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
           {children}
         </main>
@@ -135,6 +133,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>GitHub</a>
+            <a href="https://ko-fi.com/socion" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Support ☕</a>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
             <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
@@ -151,25 +150,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       </div>
     </>
   )
-}
-
-function KofiWidget() {
-  useEffect(() => {
-    if (document.getElementById('kofi-script')) return
-    const script = document.createElement('script')
-    script.id = 'kofi-script'
-    script.src = 'https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'
-    script.onload = () => {
-      window.kofiWidgetOverlay?.draw('socion', {
-        'type': 'floating-chat',
-        'floating-chat.donateButton.text': 'Support',
-        'floating-chat.donateButton.background-color': '#9a6f38',
-        'floating-chat.donateButton.text-color': '#ffffff',
-      })
-    }
-    document.body.appendChild(script)
-  }, [])
-  return null
 }
 
 const navStyle = (active) => ({
