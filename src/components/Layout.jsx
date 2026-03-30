@@ -59,6 +59,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : (
               <Link to="/auth" style={navStyle(false)}>Sign in</Link>
             )}
+            <Link to="/network" style={{ ...navStyle(isActive('/network')), fontSize: '0.72rem', letterSpacing: '0.06em' }}>Network</Link>
           </nav>
 
           {/* Mobile burger */}
@@ -113,6 +114,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : (
               <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
             )}
+            <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
           </nav>
         )}
 
