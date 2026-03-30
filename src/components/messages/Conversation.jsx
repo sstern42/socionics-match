@@ -349,6 +349,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
                       padding: '0.65rem 0.9rem',
                       fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
+                      whiteSpace: 'pre-wrap',
                       cursor: activeBlock ? 'default' : 'pointer',
                     }}
                   >
