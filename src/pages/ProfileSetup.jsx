@@ -203,7 +203,7 @@ export default function ProfileSetup() {
             </p>
           </div>
 
-          <RelationPicker selected={relations} onChange={setRelations} />
+          <RelationPicker selected={relations} onChange={setRelations} userType={type} />
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
 
