@@ -23,7 +23,7 @@ export default function ProfileSetup() {
 
   const [step, setStep] = useState('details')
   const [name, setName] = useState('')
-  const [age, setAge] = useState('')
+  const [dob, setDob] = useState('')
   const [gender, setGender] = useState('')
   const [bio, setBio] = useState('')
   const [country, setCountry] = useState('')
@@ -42,7 +42,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, age: parseInt(age), gender, bio, country, anonymous },
+        profileData: { name, dob: dob || null, gender, bio, country, anonymous },
         purpose: savedPurpose,
       })
 
@@ -113,7 +113,18 @@ export default function ProfileSetup() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <input className="input-standalone" placeholder="First name or alias" value={name} onChange={e => setName(e.target.value)} />
-              <input className="input-standalone" placeholder="Age" type="number" min="18" max="99" value={age} onChange={e => setAge(e.target.value)} />
+              <div>
+                <input
+                  className="input-standalone"
+                  type="date"
+                  value={dob}
+                  max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
+                  onChange={e => setDob(e.target.value)}
+                />
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                  Date of birth — only your age is shown on your card, never your DOB.
+                </p>
+              </div>
               <select
                 className="input-standalone"
                 value={gender}
@@ -136,14 +147,19 @@ export default function ProfileSetup() {
                   <option key={c.code} value={c.code}>{c.name}</option>
                 ))}
               </select>
-              <textarea
-                className="input-standalone"
-                placeholder="A short bio — how you'd describe yourself to a stranger"
-                value={bio}
-                onChange={e => setBio(e.target.value)}
-                rows={4}
-                style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
-              />
+              <div>
+                <textarea
+                  className="input-standalone"
+                  placeholder="A short bio — how you'd describe yourself to a stranger (optional)"
+                  value={bio}
+                  onChange={e => setBio(e.target.value)}
+                  rows={4}
+                  style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
+                />
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                  Visible to other users even in anonymous mode — keep it vague if you prefer privacy.
+                </p>
+              </div>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
                 <input
                   type="checkbox"
@@ -152,8 +168,8 @@ export default function ProfileSetup() {
                   style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
                 />
                 <div>
-                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔒 Anonymous mode</p>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Your type and relation are always shown. Name, age, photo, and location are visible as you choose — anonymous mode adds a 🔒 badge so others know you prefer privacy.</p>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🕵️ Anonymous mode</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🕵️ badge shows on your card. You can turn this off at any time to reveal your details.</p>
                 </div>
               </label>
               {!savedType && (
@@ -172,14 +188,17 @@ export default function ProfileSetup() {
               type="button"
               className="btn-primary"
               onClick={() => {
-                if (parseInt(age) < 18) {
-                  setError('You must be 18 or over to use Socion.')
-                  return
+                if (dob) {
+                  const age = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000))
+                  if (age < 18) {
+                    setError('You must be 18 or over to use Socion.')
+                    return
+                  }
                 }
                 setStep('relations')
               }}
-              disabled={!name || !age || !type}
-              style={{ opacity: (!name || !age || !type) ? 0.5 : 1 }}
+              disabled={!name || !dob || !type}
+              style={{ opacity: (!name || !dob || !type) ? 0.5 : 1 }}
             >
               Next — choose your dynamics
             </button>
