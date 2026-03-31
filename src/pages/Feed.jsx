@@ -162,10 +162,14 @@ export default function Feed() {
     setConnectingId(targetProfile.id)
     setConnectError(null)
     try {
+      const sharedPurpose = (profile.purpose ?? []).find(p => (targetProfile.purpose ?? []).includes(p))
+        ?? (profile.purpose ?? [])[0]
+        ?? 'dating'
       const newMatch = await createMatch({
         userAId: profile.id,
         userBId: targetProfile.id,
         relationType: targetProfile.relation,
+        purpose: sharedPurpose.toLowerCase(),
       })
       await sendMessage({
         matchId: newMatch.id,
