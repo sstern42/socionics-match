@@ -5,6 +5,7 @@ export const ENTRIES = [
     date: '31 March 2026',
     label: 'Update',
     items: [
+      'Connect modal — character counter counts down to zero as you type. Send & connect unlocks automatically at 10 characters',
       'Network graph — fullscreen mode now available on all devices, not just mobile. Button sits top-right of the graph',
       'Network graph — Spread button resets nodes to a wider circle and restarts the simulation. Disabled while the simulation is still settling',
       'Network graph — touch-action disabled on the SVG so dragging nodes on mobile no longer triggers page scroll',
