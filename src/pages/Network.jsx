@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 
 const TYPES = [
   'ILE', 'SEI', 'ESE', 'LII',
@@ -228,6 +230,8 @@ export default function Network() {
 
   const nodes = TYPES.map(id => ({ id }))
   const edges = graphData?.edges ?? []
+
+  const { session, profile } = useAuth()
 
   const { positions, dragNode, spread, settled } = useForceSimulation(
     graphData ? nodes : [],
@@ -467,6 +471,18 @@ export default function Network() {
         <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', marginTop: '2rem', lineHeight: 1.6 }}>
           Data is anonymised and aggregated by type pair. No individual profiles are shown.
         </p>
+
+        {!session && (
+          <div style={{ textAlign: 'center', marginTop: '3rem', padding: '2rem', borderTop: '1px solid var(--border)' }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.1rem,2.5vw,1.4rem)', marginBottom: '1rem', color: 'var(--text)' }}>
+              Want to see where your type sits in this network?
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+              <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+              <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Tooltip */}
