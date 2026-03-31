@@ -176,6 +176,15 @@ export default function Home() {
           )}
         </div>
 
+        {!session && (
+          <p className="fade-up-4" style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '-0.25rem' }}>
+            New to Socionics?{' '}
+            <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Start here →
+            </a>
+          </p>
+        )}
+
         <p className="fade-up-4" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '-0.5rem' }}>
           Free &nbsp;·&nbsp; No app store &nbsp;·&nbsp; Works on any device
         </p>
@@ -209,6 +218,7 @@ export default function Home() {
         {stats && (
           <div className="fade-up-5" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
             {[
+              { value: stats.users, label: 'members' },
               { value: stats.connections, label: 'connections' },
               { value: stats.messages, label: 'messages sent' },
               { value: stats.types, label: 'types represented' },
@@ -243,6 +253,18 @@ export default function Home() {
             <h3>Match with purpose</h3>
             <p>Dating, friendship, networking, and team building. A Dual is a Dual whether you&rsquo;re dating or building a team.</p>
           </div>
+        </div>
+      </section>
+
+      <section style={{ borderTop: '1px solid var(--border)', padding: '4rem 2rem', textAlign: 'center', background: 'var(--surface, #f7f4ef)' }}>
+        <div style={{ maxWidth: 600, margin: '0 auto' }}>
+          <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', fontStyle: 'italic', fontWeight: 400, lineHeight: 1.6, color: 'var(--text)', marginBottom: '1rem' }}>
+            &ldquo;Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations. The unit of analysis is the dyad, not the person.&rdquo;
+          </blockquote>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.8 }}>
+            Developed in the 1970s on Jungian foundations, Socionics maps 16 specific dynamics between every type pair.{' '}
+            <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>New to Socionics? Start here →</a>
+          </p>
         </div>
       </section>
 
@@ -329,12 +351,9 @@ export default function Home() {
             { title: '🔍 Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
             { title: '🎯 You choose the dynamic', body: 'Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm’s.' },
             { title: '🤝 Four purposes', body: 'Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you’re dating or building a product team.' },
-            { title: '📖 Open source', body: 'The intertype relations matrix is published and auditable. Community trust through transparency, not a proprietary algorithm.' },
             { title: '📊 Real data', body: 'Every connection and rating tests the theory at scale. You’re part of the first large-scale empirical test of Socionics in the English-speaking world.' },
-            { title: '✨ Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you’re on the feed in minutes.' },
             { title: '🕵️ Browse anonymously', body: 'Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, photo, and location stay hidden until you choose to reveal them.' },
-            { title: '🔔 Push notifications', body: 'Get notified the moment someone messages or connects with you. Works on mobile and desktop, no app store required.' },
-            { title: '💬 Real conversations', body: 'Every connection starts with a message. No silent matches — you have to say something to connect.' },
+            { title: '✨ Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you’re on the feed in minutes.' },
           ].map(({ title, body }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
               <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
@@ -346,27 +365,17 @@ export default function Home() {
 
       <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3vw,2rem)', fontStyle: 'italic', fontWeight: 400, lineHeight: 1.5, color: 'var(--text)', marginBottom: '1.5rem' }}>
-            &ldquo;Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations. The unit of analysis is the dyad, not the person.&rdquo;
-          </blockquote>
-          <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-            Developed in the 1970s on Jungian foundations, Socionics maps 16 specific dynamics between every type pair.
-            Socion is built for the English-language Socionics community &mdash; and designed to generate real data on whether the theory holds at scale.
+          <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', color: 'var(--text)', marginBottom: '1.5rem' }}>
+            Ready to find your dynamic?
           </p>
-
-          <div style={{ marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-            <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', color: 'var(--text)' }}>
-              Ready to find your dynamic?
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {!session && (
-                <>
-                  <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
-                  <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
-                </>
-              )}
-              {session && profile && <Link to="/feed" className="btn-primary">View your matches →</Link>}
-            </div>
+          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {!session && (
+              <>
+                <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+                <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
+              </>
+            )}
+            {session && profile && <Link to="/feed" className="btn-primary">View your matches →</Link>}
           </div>
         </div>
       </section>
