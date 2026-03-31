@@ -16,3 +16,12 @@
   .messages-sidebar { display: block !important; }
   .back-btn.show-mobile { display: none !important; }
 }
+
+.network-fullscreen-btn {
+  display: none;
+}
+@media (max-width: 768px) {
+  .network-fullscreen-btn {
+    display: flex;
+  }
+}
