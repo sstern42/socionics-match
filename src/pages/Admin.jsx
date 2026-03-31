@@ -149,6 +149,9 @@ export default function Admin() {
         return { label, count, total: cumulative }
       })
 
+      const anonCount = (users ?? []).filter(u => u.profile_data?.anonymous === true).length
+      const knownCount = (users ?? []).length - anonCount
+
       setData({
         users: users ?? [],
         totalMatchCount,
@@ -170,6 +173,8 @@ export default function Admin() {
         active7d: adminStats?.active_7d ?? 0,
         inactive: adminStats?.inactive ?? 0,
         messagingActive: adminStats?.messaging_active ?? 0,
+        anonCount,
+        knownCount,
         feedbackCount,
         relAvgRatings,
         comments,
@@ -211,7 +216,7 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive } = data
+  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -262,8 +267,6 @@ export default function Admin() {
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
             { value: totalAssessments, label: 'Assessments' },
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
-            { value: totalCooloffs, label: 'Cool-offs' },
-            { value: totalReports, label: 'Reports' },
             { value: active7d, label: 'Active 7d' },
             { value: inactive, label: 'Inactive 7d+' },
             { value: messagingActive, label: 'Messaging 7d' },
@@ -273,6 +276,22 @@ export default function Admin() {
               <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>{label}</div>
             </div>
           ))}
+
+          {/* Cool-offs / Reports combined */}
+          <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>
+              {totalCooloffs} <span style={{ color: 'var(--border)', fontWeight: 300 }}>/</span> {totalReports}
+            </div>
+            <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>Cool-offs / Reports</div>
+          </div>
+
+          {/* Anon : Known */}
+          <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
+            <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>
+              {anonCount} <span style={{ color: 'var(--border)', fontWeight: 300 }}>:</span> {knownCount}
+            </div>
+            <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>Anon : Known</div>
+          </div>
         </div>
 
 
@@ -659,8 +678,16 @@ export default function Admin() {
                     {u.profile_data?.age ? `, ${u.profile_data.age}` : ''}
                     {u.profile_data?.gender && u.profile_data.gender !== 'Prefer not to say' ? ` ${{ Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[u.profile_data.gender] ?? ''}` : ''}
                   </span>
+                  {u.profile_data?.dob && (() => {
+                    const dob = new Date(u.profile_data.dob)
+                    const age = Math.floor((Date.now() - dob) / (365.25 * 24 * 60 * 60 * 1000))
+                    return <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{age}y</span>
+                  })()}
                   {u.profile_data?.country && (
                     <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{u.profile_data.country}</span>
+                  )}
+                  {u.profile_data?.anonymous === true && (
+                    <span style={{ fontSize: '0.62rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.35rem' }}>Anon</span>
                   )}
                   <div style={{ display: 'flex', gap: '0.3rem' }}>
                     {(u.purpose ?? []).map(p => (
