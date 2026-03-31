@@ -36,6 +36,7 @@ function useForceSimulation(nodes, edges, width, height) {
   const posRef = useRef({})
   const velRef = useRef({})
   const frameRef = useRef(null)
+  const alphaRef = useRef(1)
   const [positions, setPositions] = useState({})
 
   useEffect(() => {
@@ -52,7 +53,7 @@ function useForceSimulation(nodes, edges, width, height) {
       velRef.current[n.id] = velRef.current[n.id] || { vx: 0, vy: 0 }
     })
 
-    let alpha = 1
+    alphaRef.current = 1
     const DAMPING = 0.85
     const REPULSION = 3000
     const ATTRACTION = 0.04
@@ -60,8 +61,8 @@ function useForceSimulation(nodes, edges, width, height) {
     const CENTER_FORCE = 0.01
 
     function tick() {
-      if (alpha < 0.005) return
-      alpha *= 0.98
+      if (alphaRef.current < 0.005) return
+      alphaRef.current *= 0.98
 
       const ids = nodes.map(n => n.id)
 
@@ -73,7 +74,7 @@ function useForceSimulation(nodes, edges, width, height) {
           const dx = b.x - a.x
           const dy = b.y - a.y
           const dist = Math.sqrt(dx * dx + dy * dy) || 1
-          const force = (REPULSION / (dist * dist)) * alpha
+          const force = (REPULSION / (dist * dist)) * alphaRef.current
           const fx = (dx / dist) * force
           const fy = (dy / dist) * force
           velRef.current[ids[i]].vx -= fx
@@ -91,7 +92,7 @@ function useForceSimulation(nodes, edges, width, height) {
         const dx = b.x - a.x
         const dy = b.y - a.y
         const dist = Math.sqrt(dx * dx + dy * dy) || 1
-        const force = (dist - REST_LENGTH) * ATTRACTION * alpha
+        const force = (dist - REST_LENGTH) * ATTRACTION * alphaRef.current
         const fx = (dx / dist) * force
         const fy = (dy / dist) * force
         velRef.current[edge.source].vx += fx
@@ -103,8 +104,8 @@ function useForceSimulation(nodes, edges, width, height) {
       // Centering force
       for (const id of ids) {
         const p = posRef.current[id]
-        velRef.current[id].vx += (cx - p.x) * CENTER_FORCE * alpha
-        velRef.current[id].vy += (cy - p.y) * CENTER_FORCE * alpha
+        velRef.current[id].vx += (cx - p.x) * CENTER_FORCE * alphaRef.current
+        velRef.current[id].vy += (cy - p.y) * CENTER_FORCE * alphaRef.current
       }
 
       // Update positions
@@ -131,7 +132,23 @@ function useForceSimulation(nodes, edges, width, height) {
     setPositions({ ...posRef.current })
   }, [])
 
-  return { positions, dragNode }
+  const spread = useCallback(() => {
+    if (!width || !nodes.length) return
+    const cx = width / 2, cy = height / 2
+    const r = Math.min(width, height) * 0.44
+    nodes.forEach((n, i) => {
+      const angle = (i / nodes.length) * 2 * Math.PI
+      posRef.current[n.id] = {
+        x: cx + r * Math.cos(angle),
+        y: cy + r * Math.sin(angle),
+      }
+      velRef.current[n.id] = { vx: 0, vy: 0 }
+    })
+    alphaRef.current = 1
+    setPositions({ ...posRef.current })
+  }, [nodes, width, height])
+
+  return { positions, dragNode, spread }
 }
 
 export default function Network() {
@@ -209,7 +226,7 @@ export default function Network() {
   const nodes = TYPES.map(id => ({ id }))
   const edges = graphData?.edges ?? []
 
-  const { positions, dragNode } = useForceSimulation(
+  const { positions, dragNode, spread } = useForceSimulation(
     graphData ? nodes : [],
     edges,
     width,
@@ -287,6 +304,26 @@ export default function Network() {
             border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
           }}
         >
+          {/* Spread button */}
+          <button
+            type="button"
+            onClick={spread}
+            title="Spread nodes"
+            style={{
+              position: 'absolute', top: 10, right: fullscreen ? 80 : 110, zIndex: 10,
+              background: 'rgba(255,255,255,0.92)', border: '1px solid var(--border)',
+              borderRadius: 4, padding: '0.35rem 0.6rem',
+              cursor: 'pointer', fontSize: '0.75rem',
+              color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.3rem',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+            Spread
+          </button>
+
           {/* Fullscreen toggle button */}
           <button
             type="button"
