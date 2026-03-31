@@ -18,5 +18,5 @@
 }
 
 .network-fullscreen-btn {
-  display: none;
+  display: flex;
 }
