@@ -455,6 +455,11 @@ export default function Feed() {
                 disabled={isConnecting}
                 style={{ resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
               />
+              {connectMessage.trim().length < 10 && (
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', margin: 0, textAlign: 'right' }}>
+                  {10 - connectMessage.trim().length} more character{10 - connectMessage.trim().length !== 1 ? 's' : ''} to unlock Send
+                </p>
+              )}
               {connectError && <p style={{ fontSize: '0.82rem', color: '#c0392b', margin: 0 }}>{connectError}</p>}
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button
