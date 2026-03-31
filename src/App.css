@@ -20,8 +20,3 @@
 .network-fullscreen-btn {
   display: none;
 }
-@media (max-width: 768px) {
-  .network-fullscreen-btn {
-    display: flex;
-  }
-}
