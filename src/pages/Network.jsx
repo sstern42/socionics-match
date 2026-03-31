@@ -481,6 +481,12 @@ export default function Network() {
               <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
               <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
             </div>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>
+              Not ready to join yet?{' '}
+              <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                Join the Discord →
+              </a>
+            </p>
           </div>
         )}
       </section>

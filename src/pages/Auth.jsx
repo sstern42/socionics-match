@@ -238,6 +238,13 @@ export default function Auth() {
             {' '}and{' '}
             <a href="/terms" style={{ color: 'var(--accent)', textDecoration: 'none' }}>terms of service</a>.
           </p>
+
+          <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)' }}>
+            Not ready to join yet?{' '}
+            <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Join the Discord →
+            </a>
+          </p>
         </div>
       </section>
     </Layout>
