@@ -78,6 +78,7 @@ export default function ProfileEdit() {
     if (deleteConfirm !== 'DELETE') return
     setDeleting(true)
     setDeleteError(null)
+    window.umami?.track('delete-account-confirmed')
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       const token = currentSession?.access_token
@@ -91,6 +92,7 @@ export default function ProfileEdit() {
       let json = {}
       try { json = JSON.parse(text) } catch { /* non-JSON response */ }
       if (!res.ok) throw new Error(json.error ?? `HTTP ${res.status}: ${text}`)
+      window.umami?.track('delete-account-completed')
       await supabase.auth.signOut()
       navigate('/')
     } catch (err) {
@@ -205,7 +207,7 @@ export default function ProfileEdit() {
           <div style={{ marginTop: '0.5rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
             <button
               type="button"
-              onClick={() => { setShowDeleteModal(true); setDeleteConfirm(''); setDeleteError(null) }}
+              onClick={() => { setShowDeleteModal(true); setDeleteConfirm(''); setDeleteError(null); window.umami?.track('delete-account-modal-opened') }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.82rem', color: 'var(--muted)', letterSpacing: '0.02em', textDecoration: 'underline', textUnderlineOffset: 3 }}
             >
               Delete account
