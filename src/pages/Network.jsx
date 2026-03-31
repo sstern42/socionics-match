@@ -38,6 +38,7 @@ function useForceSimulation(nodes, edges, width, height) {
   const frameRef = useRef(null)
   const alphaRef = useRef(1)
   const [positions, setPositions] = useState({})
+  const [settled, setSettled] = useState(false)
 
   useEffect(() => {
     if (!nodes.length || !width) return
@@ -54,6 +55,7 @@ function useForceSimulation(nodes, edges, width, height) {
     })
 
     alphaRef.current = 1
+    setSettled(false)
     const DAMPING = 0.85
     const REPULSION = 3000
     const ATTRACTION = 0.04
@@ -61,7 +63,7 @@ function useForceSimulation(nodes, edges, width, height) {
     const CENTER_FORCE = 0.01
 
     function tick() {
-      if (alphaRef.current < 0.005) return
+      if (alphaRef.current < 0.005) { setSettled(true); return }
       alphaRef.current *= 0.98
 
       const ids = nodes.map(n => n.id)
@@ -145,10 +147,11 @@ function useForceSimulation(nodes, edges, width, height) {
       velRef.current[n.id] = { vx: 0, vy: 0 }
     })
     alphaRef.current = 1
+    setSettled(false)
     setPositions({ ...posRef.current })
   }, [nodes, width, height])
 
-  return { positions, dragNode, spread }
+  return { positions, dragNode, spread, settled }
 }
 
 export default function Network() {
@@ -226,7 +229,7 @@ export default function Network() {
   const nodes = TYPES.map(id => ({ id }))
   const edges = graphData?.edges ?? []
 
-  const { positions, dragNode, spread } = useForceSimulation(
+  const { positions, dragNode, spread, settled } = useForceSimulation(
     graphData ? nodes : [],
     edges,
     width,
@@ -308,14 +311,17 @@ export default function Network() {
           <button
             type="button"
             onClick={spread}
-            title="Spread nodes"
+            disabled={!settled}
+            title={settled ? 'Spread nodes' : 'Settling…'}
             style={{
               position: 'absolute', top: 10, right: fullscreen ? 80 : 110, zIndex: 10,
               background: 'rgba(255,255,255,0.92)', border: '1px solid var(--border)',
               borderRadius: 4, padding: '0.35rem 0.6rem',
-              cursor: 'pointer', fontSize: '0.75rem',
-              color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '0.3rem',
+              cursor: settled ? 'pointer' : 'default', fontSize: '0.75rem',
+              color: settled ? 'var(--muted)' : 'var(--border)',
+              display: 'flex', alignItems: 'center', gap: '0.3rem',
               backdropFilter: 'blur(4px)',
+              opacity: settled ? 1 : 0.45,
             }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
