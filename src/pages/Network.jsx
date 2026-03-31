@@ -144,7 +144,14 @@ export default function Network() {
   const [tooltip, setTooltip] = useState(null)
   const [stats, setStats] = useState(null)
   const [dragging, setDragging] = useState(null)
-  const HEIGHT = 560
+  const [fullscreen, setFullscreen] = useState(false)
+  const HEIGHT = fullscreen ? (window.innerHeight - 0) : 560
+
+  // Lock body scroll in fullscreen
+  useEffect(() => {
+    document.body.style.overflow = fullscreen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [fullscreen])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -206,7 +213,7 @@ export default function Network() {
     graphData ? nodes : [],
     edges,
     width,
-    HEIGHT
+    fullscreen ? window.innerHeight : HEIGHT
   )
 
   // Drag handling
@@ -270,7 +277,37 @@ export default function Network() {
           </div>
         )}
 
-        <div ref={containerRef} style={{ position: 'relative', background: '#fff', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
+        <div
+          ref={containerRef}
+          style={fullscreen ? {
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: '#fff', overflow: 'hidden',
+          } : {
+            position: 'relative', background: '#fff',
+            border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
+          }}
+        >
+          {/* Fullscreen toggle button */}
+          <button
+            type="button"
+            onClick={() => setFullscreen(f => !f)}
+            title={fullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            className="network-fullscreen-btn"
+            style={{
+              position: 'absolute', top: 10, right: 10, zIndex: 10,
+              background: 'rgba(255,255,255,0.92)', border: '1px solid var(--border)',
+              borderRadius: 4, padding: '0.35rem 0.6rem',
+              cursor: 'pointer', fontSize: '0.75rem',
+              color: 'var(--muted)', alignItems: 'center', gap: '0.3rem',
+              backdropFilter: 'blur(4px)',
+            }}
+          >
+            {fullscreen ? (
+              <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg> Exit</>
+            ) : (
+              <><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg> Fullscreen</>
+            )}
+          </button>
           {loading && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', zIndex: 2 }}>
               <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>Loading network data…</p>
@@ -283,8 +320,8 @@ export default function Network() {
           )}
           <svg
             ref={svgRef}
-            style={{ display: 'block', width: '100%', height: HEIGHT, cursor: dragging ? 'grabbing' : 'default' }}
-            viewBox={`0 0 ${width || 800} ${HEIGHT}`}
+            style={{ display: 'block', width: '100%', height: fullscreen ? '100vh' : HEIGHT, cursor: dragging ? 'grabbing' : 'default', touchAction: 'none' }}
+            viewBox={`0 0 ${width || 800} ${fullscreen ? window.innerHeight : HEIGHT}`}
           >
             {/* Edges */}
             {width > 0 && edges.map(edge => {
