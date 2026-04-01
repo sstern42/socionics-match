@@ -352,7 +352,7 @@ export default function Home() {
             { title: '🎯 You choose the dynamic', body: 'Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm’s.' },
             { title: '🤝 Four purposes', body: 'Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you’re dating or building a product team.' },
             { title: '📊 Real data', body: 'Every connection and rating tests the theory at scale. You’re part of the first large-scale empirical test of Socionics in the English-speaking world.' },
-            { title: '🕵️ Browse anonymously', body: 'Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, photo, and location stay hidden until you choose to reveal them.' },
+            { title: '🕵️ Browse anonymously', body: 'Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them.' },
             { title: '✨ Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you’re on the feed in minutes.' },
           ].map(({ title, body }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
