@@ -267,4 +267,4 @@ export default function ProfileEdit() {
   )
 }
 
-const centreStyle = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '5.5rem 1.5rem 4rem', gap: '2rem' }
+const centreStyle = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'calc(72px + 2rem) 1.5rem 4rem', gap: '2rem' }
