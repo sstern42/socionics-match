@@ -132,7 +132,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>GitHub</a>
-            <a href="https://ko-fi.com/socion" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Support ☕</a>
+            <a href="https://ko-fi.com/socion" target="_blank" rel="noopener noreferrer" 
+              style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>
+              Support Socion ☕
+            </a>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
             <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
