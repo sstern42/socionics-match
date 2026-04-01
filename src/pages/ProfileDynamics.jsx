@@ -89,6 +89,6 @@ const centreStyle = {
   flexDirection: 'column', 
   alignItems: 'center', 
   justifyContent: 'flex-start',  // was 'center'
-  padding: '2rem 1.5rem 4rem', 
+  padding: '2rem 1.5rem 6rem', 
   gap: '2rem' 
 }
