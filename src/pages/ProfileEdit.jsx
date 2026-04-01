@@ -102,7 +102,7 @@ export default function ProfileEdit() {
   }
 
   if (loading || !session) return (
-    <Layout>
+    <Layout noScroll hideFooter>
       <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: 'var(--muted)' }}>Loading…</p>
       </div>
@@ -110,7 +110,7 @@ export default function ProfileEdit() {
   )
 
   return (
-    <Layout>
+    <Layout noScroll hideFooter>
       <section style={centreStyle}>
         <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           <div style={{ textAlign: 'center' }}>
