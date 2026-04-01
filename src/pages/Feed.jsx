@@ -187,7 +187,7 @@ export default function Feed() {
 
   if (loading || retrying) {
     return (
-      <Layout noScroll>
+      <Layout noScroll hideFooter>
         <section style={centreStyle}>
           <p style={{ color: 'var(--muted)' }}>Loading…</p>
         </section>
@@ -213,7 +213,7 @@ export default function Feed() {
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
 
   return (
-    <Layout noScroll>
+    <Layout noScroll hideFooter>
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem' }}>
 
         <div style={{ marginBottom: '2.5rem' }}>
