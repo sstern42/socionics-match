@@ -179,9 +179,13 @@ export default function Home() {
         {!session && (
           <p className="fade-up-4" style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '-0.25rem' }}>
             New to Socionics?{' '}
-            <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-              Start here →
-            </a>
+              <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                Start here →
+              </a>
+        {' '}&nbsp;·&nbsp;{' '}
+        <Link to="/network" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+          Browse the network →
+        </Link>
           </p>
         )}
 
