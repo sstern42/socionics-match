@@ -101,11 +101,6 @@ export default function Feed() {
     }
   }, [loading, session, profile, retried, retrying])
 
-  // Run loadFeed when profile is available.
-  // Using profile?.id + loading covers both:
-  // - profile arriving after mount (id changes)
-  // - profile already in context when mounted (runs immediately on mount)
-  // Redirect to /auth if magic link has expired — preserves hash so Auth can show the message
   useEffect(() => {
     const hash = window.location.hash
     if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
@@ -192,7 +187,7 @@ export default function Feed() {
 
   if (loading || retrying) {
     return (
-      <Layout>
+      <Layout noScroll hideFooter>
         <section style={centreStyle}>
           <p style={{ color: 'var(--muted)' }}>Loading…</p>
         </section>
@@ -205,7 +200,6 @@ export default function Feed() {
     return null
   }
 
-  // Pills show displayRelation (what they are to you); filter still uses relation (your role)
   const oneWeekAgo = new Date(Date.now() - 7 * 86400000)
   const oneDayAgo = new Date(Date.now() - 86400000)
   const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
@@ -219,7 +213,7 @@ export default function Feed() {
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
 
   return (
-    <Layout>
+    <Layout noScroll hideFooter>
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem' }}>
 
         <div style={{ marginBottom: '2.5rem' }}>
@@ -320,7 +314,6 @@ export default function Feed() {
 
         {feedDisplayRelations.length > 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
-            {/* Relation filter row */}
             <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
                 All ({profiles.length})
@@ -331,7 +324,6 @@ export default function Feed() {
                 </button>
               ))}
             </div>
-            {/* Attribute toggle row — divider separates from relation pills */}
             <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
