@@ -137,4 +137,4 @@ export default function ProfileNotifications() {
   )
 }
 
-const centreStyle = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'calc(72px + 2rem) 1.5rem 4rem', gap: '2rem' }
+const centreStyle = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'calc(72px + env(safe-area-inset-top) + 2rem) 1.5rem 4rem', gap: '2rem' }
