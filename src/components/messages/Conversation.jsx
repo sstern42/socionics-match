@@ -23,8 +23,31 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleting, setDeleting] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [editText, setEditText] = useState('')
+  const [saving, setSaving] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
   const longPressTimer = useRef(null)
+
+  async function editMessage(msgId) {
+    if (!editText.trim()) return
+    setSaving(true)
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .update({ content: editText.trim(), edited: true })
+        .eq('id', msgId)
+      if (error) throw error
+      setMessages(prev => prev.map(m => m.id === msgId ? { ...m, content: editText.trim(), edited: true } : m))
+      setEditingId(null)
+      setEditText('')
+      window.umami?.track('message-edited')
+    } catch (err) {
+      console.error('Edit failed:', err)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   async function deleteMessage(msgId) {
     setDeleting(true)
@@ -389,7 +412,21 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                         </p>
                       </div>
                     )}
-                    {msg.content}
+                    {editingId === msg.id ? (
+                      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: 180 }}>
+                        <textarea
+                          value={editText}
+                          onChange={e => setEditText(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); editMessage(msg.id) } if (e.key === 'Escape') { setEditingId(null); setEditText('') } }}
+                          autoFocus
+                          style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 6, padding: '0.4rem 0.6rem', fontSize: '0.9rem', color: '#fff', resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.5, minHeight: 60 }}
+                        />
+                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                          <button type="button" onClick={() => editMessage(msg.id)} disabled={saving || !editText.trim()} style={{ background: '#fff', color: 'var(--accent)', border: 'none', borderRadius: 4, padding: '0.2rem 0.6rem', fontSize: '0.7rem', fontWeight: 500, cursor: 'pointer', opacity: (saving || !editText.trim()) ? 0.6 : 1 }}>{saving ? '…' : 'Save'}</button>
+                          <button type="button" onClick={() => { setEditingId(null); setEditText('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', padding: '0.2rem' }}>Cancel</button>
+                        </div>
+                      </div>
+                    ) : msg.content}
                   </div>
                   {/* Reply icon — visible on hover (desktop) */}
                   <button
@@ -410,6 +447,18 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       <path d="M1 6h7a5 5 0 0 1 5 5v1"/>
                     </svg>
                   </button>
+                  {isMine && msg.id === lastMineId && showReplyBtn && !deleteConfirmId && (
+                    <button
+                      type="button"
+                      onClick={() => { setEditingId(msg.id); setEditText(msg.content) }}
+                      aria-label="Edit message"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/>
+                      </svg>
+                    </button>
+                  )}
                   {isMine && msg.id === lastMineId && showReplyBtn && (
                     deleteConfirmId === msg.id ? (
                       <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
@@ -444,7 +493,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     )
                   )}
                 </div>
-                <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>{timeStr}</span>
+                <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>{timeStr}{msg.edited ? ' · edited' : ''}</span>
               </div>
             )
           }
