@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { getMessages, sendMessage, subscribeToMessages } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
-import { markMatchRead } from '../../lib/useUnreadCount'
+import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
 import { supabase } from '../../lib/supabase'
 
 export default function Conversation({ match, currentUserId, hasFeedback, onBack }) {
@@ -85,7 +85,14 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setLoading(true)
     let cancelled = false
     getMessages(match.id).then(msgs => {
-      if (!cancelled) { setMessages(msgs); setLoading(false); markMatchRead(match.id) }
+      if (!cancelled) {
+        setMessages(msgs)
+        setLoading(false)
+        markMatchRead(match.id)
+        const lastVisited = getLastVisited()
+        const unreadInChat = msgs.filter(m => m.sender_id !== currentUserId && new Date(m.created_at) > new Date(lastVisited)).length
+        subtractUnread(unreadInChat)
+      }
     })
     const channel = subscribeToMessages(match.id, newMsg => {
       if (!cancelled) {
