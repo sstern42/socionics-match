@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
@@ -19,6 +19,8 @@ export default function Auth() {
   const [linkError, setLinkError] = useState(null)
   const { session, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const incomingType = searchParams.get('type')
   const googleButtonRef = useRef(null)
 
   useEffect(() => {
@@ -171,9 +173,9 @@ export default function Auth() {
       <section style={centreStyle}>
         <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <p className="eyebrow">Sign in or create account</p>
+            <p className="eyebrow">{incomingType ? `You're an ${incomingType}` : 'Sign in or create account'}</p>
             <h1 className="fade-up-2" style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
-              Welcome to <em>Socion</em>
+              {incomingType ? <>Sign in to find your <em>matches</em></> : <>Welcome to <em>Socion</em></>}
             </h1>
           </div>
 

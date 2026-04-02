@@ -58,7 +58,7 @@ export default function Onboarding() {
     if (session) {
       navigate('/profile/setup')
     } else {
-      navigate('/auth')
+      navigate(`/auth?type=${encodeURIComponent(type)}`)
     }
   }
 
