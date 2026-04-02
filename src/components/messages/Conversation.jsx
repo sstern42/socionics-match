@@ -21,8 +21,25 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [activeBlock, setActiveBlock] = useState(null)
   const [replyTo, setReplyTo] = useState(null) // { id, content, sender_id }
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
+  const [deleting, setDeleting] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
   const longPressTimer = useRef(null)
+
+  async function deleteMessage(msgId) {
+    setDeleting(true)
+    try {
+      const { error } = await supabase.from('messages').delete().eq('id', msgId)
+      if (error) throw error
+      setMessages(prev => prev.filter(m => m.id !== msgId))
+      setDeleteConfirmId(null)
+      window.umami?.track('message-deleted')
+    } catch (err) {
+      console.error('Delete failed:', err)
+    } finally {
+      setDeleting(false)
+    }
+  }
   const typingTimer = useRef(null)
   const presenceChannel = useRef(null)
   const tabId = useRef(Math.random().toString(36).slice(2))
@@ -294,6 +311,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           let lastDateStr = null
           const items = []
 
+          const lastMineId = [...messages].reverse().find(m => m.sender_id === currentUserId)?.id
+
           for (const msg of messages) {
             const msgDate = new Date(msg.created_at)
             const msgDateStr = msgDate.toDateString()
@@ -391,6 +410,39 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       <path d="M1 6h7a5 5 0 0 1 5 5v1"/>
                     </svg>
                   </button>
+                  {isMine && msg.id === lastMineId && showReplyBtn && (
+                    deleteConfirmId === msg.id ? (
+                      <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+                        <button
+                          type="button"
+                          onClick={() => deleteMessage(msg.id)}
+                          disabled={deleting}
+                          style={{ background: '#c0392b', color: '#fff', border: 'none', borderRadius: 4, padding: '0.2rem 0.5rem', fontSize: '0.68rem', cursor: 'pointer', opacity: deleting ? 0.6 : 1 }}
+                        >
+                          {deleting ? '…' : 'Delete'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirmId(null)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem', padding: '0.2rem' }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmId(msg.id)}
+                        aria-label="Delete message"
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/>
+                          <line x1="6" y1="6" x2="6" y2="10"/><line x1="8" y1="6" x2="8" y2="10"/>
+                        </svg>
+                      </button>
+                    )
+                  )}
                 </div>
                 <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>{timeStr}</span>
               </div>
