@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Support from './pages/Support'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import Auth from './pages/Auth'
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/changelog" element={<Changelog />} />
+        <Route path="/support" element={<Support />} />
         <Route path="/network" element={<Network />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
