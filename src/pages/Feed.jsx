@@ -19,7 +19,6 @@ export default function Feed() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [memberCount, setMemberCount] = useState(null)
   const [shareState, setShareState] = useState('idle') // idle | copied
-  const [shareDismissed, setShareDismissed] = useState(() => localStorage.getItem('socion_share_dismissed') === '1')
 
   function announcementKey(text) {
     try {
@@ -53,6 +52,7 @@ export default function Feed() {
   function handleShare() {
     const url = 'https://socion.app'
     const text = `Match by Socionics type, not algorithm — ${memberCount ? memberCount + ' members' : 'growing fast'}`
+    window.umami?.track('feed-share-clicked', { method: navigator.share ? 'native' : 'clipboard' })
     if (navigator.share) {
       navigator.share({ title: 'Socion', text, url }).catch(() => {})
     } else {
@@ -63,10 +63,6 @@ export default function Feed() {
     }
   }
 
-  function dismissShare() {
-    localStorage.setItem('socion_share_dismissed', '1')
-    setShareDismissed(true)
-  }
 
   const [profiles, setProfiles] = useState([])
 
@@ -290,36 +286,6 @@ export default function Feed() {
           </div>
         )}
 
-        {!shareDismissed && (
-          <div style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
-            border: '1px solid var(--border)', borderRadius: 4,
-            padding: '0.65rem 1rem', marginBottom: '1.5rem',
-            background: 'transparent',
-          }}>
-            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-              Know someone who'd be into this?{memberCount ? ` We're ${memberCount} members.` : ''} Spread the word.
-            </p>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
-              <button
-                type="button"
-                onClick={handleShare}
-                className="btn-ghost"
-                style={{ fontSize: '0.78rem', padding: '0.35rem 0.85rem', whiteSpace: 'nowrap' }}
-              >
-                {shareState === 'copied' ? 'Link copied ✓' : navigator.share ? 'Share →' : 'Copy link'}
-              </button>
-              <button
-                type="button"
-                onClick={dismissShare}
-                aria-label="Dismiss"
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', padding: '0 0.1rem', lineHeight: 1 }}
-              >
-                ×
-              </button>
-            </div>
-          </div>
-        )}
 
         {feedDisplayRelations.length > 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
@@ -427,15 +393,40 @@ export default function Feed() {
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-            {displayed.map(p => (
-              <ProfileCard
-                key={p.id}
-                profile={p}
-                onConnect={handleConnect}
-                alreadyMatched={p.id in matchedMap}
-                matchId={matchedMap[p.id] ?? null}
-                connecting={connectingId === p.id}
-              />
+            {displayed.map((p, i) => (
+              <>
+                <ProfileCard
+                  key={p.id}
+                  profile={p}
+                  onConnect={handleConnect}
+                  alreadyMatched={p.id in matchedMap}
+                  matchId={matchedMap[p.id] ?? null}
+                  connecting={connectingId === p.id}
+                />
+                {i === 4 && (
+                  <div key="share-nudge" style={{
+                    border: '1px solid var(--border)', borderRadius: 6,
+                    padding: '1.25rem 1.25rem',
+                    display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.85rem',
+                    background: 'transparent',
+                  }}>
+                    <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
+                      Know someone who'd be into this?
+                    </p>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
+                      {memberCount ? `${memberCount} members and growing.` : 'Growing every day.'} Spread the word and help us find the missing types.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="btn-ghost"
+                      style={{ fontSize: '0.78rem', padding: '0.35rem 0.85rem', alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+                    >
+                      {shareState === 'copied' ? 'Link copied ✓' : navigator.share ? 'Share →' : 'Copy link'}
+                    </button>
+                  </div>
+                )}
+              </>
             ))}
           </div>
         )}
