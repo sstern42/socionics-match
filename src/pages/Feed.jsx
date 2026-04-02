@@ -74,6 +74,7 @@ export default function Feed() {
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
+  const [filterLocation, setFilterLocation] = useState('anywhere')
   const [activeOnly, setActiveOnly] = useState(false)
   const [activeToday, setActiveToday] = useState(false)
   const [onlineNow, setOnlineNow] = useState(false)
@@ -211,6 +212,14 @@ export default function Feed() {
     .filter(p => withPhotos ? !!p.avatar_url : true)
     .filter(p => excludeAnon ? !p.profile_data?.anonymous : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
+    .filter(p => {
+      if (filterLocation === 'anywhere') return true
+      const myCountry = profile?.profile_data?.country
+      const myCity = profile?.profile_data?.city?.toLowerCase().trim()
+      if (filterLocation === 'same_country') return p.profile_data?.country === myCountry
+      if (filterLocation === 'same_city') return myCity && p.profile_data?.city?.toLowerCase().trim() === myCity && p.profile_data?.country === myCountry
+      return true
+    })
 
   return (
     <Layout noScroll hideFooter>
@@ -365,6 +374,26 @@ export default function Feed() {
               >
                 <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
                 {onlineNow ? '✓ ' : ''}Online now
+              </button>
+            </div>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button type="button"
+                className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`}
+                onClick={() => setFilterLocation('anywhere')}
+                style={{ fontSize: '0.7rem' }}>
+                🌍 Anywhere
+              </button>
+              <button type="button"
+                className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`}
+                onClick={() => setFilterLocation('same_country')}
+                style={{ fontSize: '0.7rem' }}>
+                {filterLocation === 'same_country' ? '✓ ' : ''}Same country
+              </button>
+              <button type="button"
+                className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`}
+                onClick={() => setFilterLocation('same_city')}
+                style={{ fontSize: '0.7rem' }}>
+                {filterLocation === 'same_city' ? '✓ ' : ''}Same city
               </button>
             </div>
           </div>

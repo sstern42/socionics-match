@@ -27,6 +27,7 @@ export default function ProfileSetup() {
   const [gender, setGender] = useState('')
   const [bio, setBio] = useState('')
   const [country, setCountry] = useState('')
+  const [city, setCity] = useState('')
   const [anonymous, setAnonymous] = useState(false)
   const [type, setType] = useState(savedType)
   const [relations, setRelations] = useState([])
@@ -42,7 +43,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, dob: dob || null, gender, bio, country, anonymous },
+        profileData: { name, dob: dob || null, gender, bio, country, city: city.trim(), anonymous },
         purpose: savedPurpose,
       })
 
@@ -147,6 +148,19 @@ export default function ProfileSetup() {
                   <option key={c.code} value={c.code}>{c.name}</option>
                 ))}
               </select>
+              <div>
+                <input
+                  className="input-standalone"
+                  type="text"
+                  placeholder="City (optional) — e.g. London, not Greater London"
+                  value={city}
+                  onChange={e => setCity(e.target.value)}
+                  style={{ fontFamily: 'var(--sans)' }}
+                />
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                  Helps others know whether meeting up is realistic. Only your city is shown — never a postcode.
+                </p>
+              </div>
               <div>
                 <textarea
                   className="input-standalone"

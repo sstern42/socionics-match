@@ -18,6 +18,7 @@ export default function ProfileEdit() {
   const [gender, setGender] = useState(profile?.profile_data?.gender ?? '')
   const [bio, setBio] = useState(profile?.profile_data?.bio ?? '')
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
+  const [city, setCity] = useState(profile?.profile_data?.city ?? '')
   const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
   const [connectionQuestion, setConnectionQuestion] = useState(profile?.profile_data?.connection_question ?? '')
   const [type, setType] = useState(profile?.type ?? '')
@@ -51,6 +52,7 @@ export default function ProfileEdit() {
           gender,
           bio,
           country,
+          city: city.trim(),
           anonymous,
           connection_question: connectionQuestion.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
@@ -163,6 +165,19 @@ export default function ProfileEdit() {
               <option value="">Country (optional)</option>
               {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
             </select>
+            <div>
+              <input
+                className="input-standalone"
+                type="text"
+                placeholder="City (optional) — e.g. London, not Greater London"
+                value={city}
+                onChange={e => setCity(e.target.value)}
+                style={{ fontFamily: 'var(--sans)' }}
+              />
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                Helps others know whether meeting up is realistic. Only your city is shown — never a postcode.
+              </p>
+            </div>
             <div>
               <textarea className="input-standalone" placeholder="A short bio (optional)" value={bio} onChange={e => setBio(e.target.value)} rows={4} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
