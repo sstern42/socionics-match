@@ -34,7 +34,7 @@ export async function getMatches(userId) {
 export async function getMessages(matchId) {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, sender_id, content, created_at, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
+    .select('id, sender_id, content, created_at, edited, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
     .eq('match_id', matchId)
     .order('created_at', { ascending: true })
   if (error) throw error
@@ -45,7 +45,7 @@ export async function sendMessage({ matchId, senderId, content, replyToId = null
   const { data, error } = await supabase
     .from('messages')
     .insert({ match_id: matchId, sender_id: senderId, content, reply_to_id: replyToId })
-    .select('id, sender_id, content, created_at, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
+    .select('id, sender_id, content, created_at, edited, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
     .single()
   if (error) throw error
   window.umami?.track('message-sent')
