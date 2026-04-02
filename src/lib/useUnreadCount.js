@@ -20,7 +20,10 @@ export function markMessagesRead() {
 
 export function markMatchRead(matchId) {
   localStorage.setItem(MATCH_READ_PREFIX + matchId, new Date().toISOString())
-  window.dispatchEvent(new Event('socion-messages-read'))
+}
+
+export function subtractUnread(n) {
+  if (n > 0) window.dispatchEvent(new CustomEvent('socion-subtract-unread', { detail: { n } }))
 }
 
 export function getMatchLastRead(matchId) {
@@ -70,11 +73,14 @@ export function useUnreadCount(userId) {
       .subscribe()
 
     function handleRead() { setCount(0) }
+    function handleSubtract(e) { setCount(c => Math.max(0, c - e.detail.n)) }
     window.addEventListener('socion-messages-read', handleRead)
+    window.addEventListener('socion-subtract-unread', handleSubtract)
 
     return () => {
       channelRef.current?.unsubscribe()
       window.removeEventListener('socion-messages-read', handleRead)
+      window.removeEventListener('socion-subtract-unread', handleSubtract)
     }
   }, [userId])
 
