@@ -14,7 +14,7 @@ export default function Support() {
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-          It costs around <strong>£19 a month</strong> to run — hosting, database, email delivery, and the domain. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly coffee helps cover it and keeps the project independent.
+          It costs around <strong>£19 a month</strong> to run — hosting, database, email delivery, and the domain. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
         </p>
 
         <div style={{
@@ -36,14 +36,14 @@ export default function Support() {
           >
             ☕ Support on Ko-fi
           </a>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>One-time or monthly. Cancel any time.</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>One-time tip or monthly. Cancel any time.</p>
         </div>
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>Other ways to help</h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-              Not in a position to tip? That's completely fine. Sharing Socion with someone whose type is missing from the network is genuinely more valuable at this stage. We're currently looking for <strong>SEE</strong> — if you know one, send them over.
+              Not in a position to tip? That's completely fine. Sharing Socion with someone who'd be into it is genuinely more valuable at this stage — the network compounds with every new member.
             </p>
           </div>
 
