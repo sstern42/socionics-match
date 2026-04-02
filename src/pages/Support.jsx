@@ -81,6 +81,8 @@ export default function Support() {
         <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7 }}>
             Socion is built and maintained by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Spencer Stern</a> — independently, without funding or a team. Questions or feedback: <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@socion.app</a>
+            {' · '}
+            <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Join the Discord</a>
           </p>
         </div>
       </section>
