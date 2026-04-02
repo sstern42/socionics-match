@@ -61,6 +61,7 @@ export default function Support() {
                 ['Hosting (Netlify)', 'Free tier'],
                 ['Database (Supabase)', 'Free tier'],
                 ['Email delivery (Resend)', '$20/mo (~£16)'],
+                ['Email newsletter (MailerLite)', 'Free tier'],
                 ['Cloudflare', 'Free tier'],
                 ['Domain — socion.app', '£33/yr (~£2.75/mo)'],
               ].map(([item, cost]) => (
