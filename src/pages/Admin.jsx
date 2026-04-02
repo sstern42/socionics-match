@@ -606,7 +606,7 @@ export default function Admin() {
                 }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{u.email}</span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, marginLeft: '1rem' }}>
-                    {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(u.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
               ))}
@@ -696,7 +696,7 @@ export default function Admin() {
                   </div>
                 </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>
-                  {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(u.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
             ))}
