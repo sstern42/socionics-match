@@ -385,23 +385,58 @@ export default function Admin() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          {/* Purpose breakdown */}
+          {/* Purpose breakdown — pie chart */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Purpose breakdown</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
-              {sortedPurposes.map(([purpose, count]) => (
-                <div key={purpose} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text)', textTransform: 'capitalize' }}>{purpose}</span>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500 }}>{count}</span>
+            {(() => {
+              const total = sortedPurposes.reduce((s, [, c]) => s + c, 0)
+              const colours = { dating: '#BA7517', friendship: '#0F6E56', networking: '#185FA5', team: '#791F1F' }
+              const COLOURS = ['#BA7517', '#0F6E56', '#185FA5', '#791F1F']
+              let cumAngle = -Math.PI / 2
+              const slices = sortedPurposes.map(([p, c], i) => {
+                const frac = total ? c / total : 0
+                const start = cumAngle
+                cumAngle += frac * 2 * Math.PI
+                return { p, c, frac, start, end: cumAngle, colour: colours[p] ?? COLOURS[i % COLOURS.length] }
+              })
+              const arc = (cx, cy, r, start, end) => {
+                if (end - start >= 2 * Math.PI - 0.001) {
+                  return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z`
+                }
+                const x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start)
+                const x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end)
+                const large = end - start > Math.PI ? 1 : 0
+                return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`
+              }
+              return (
+                <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', marginTop: '1rem' }}>
+                  <svg width="90" height="90" viewBox="0 0 90 90" style={{ flexShrink: 0 }}>
+                    {slices.map(s => (
+                      <path key={s.p} d={arc(45, 45, 42, s.start, s.end)} fill={s.colour} />
+                    ))}
+                    <circle cx="45" cy="45" r="22" fill="var(--bg, #FAF9F6)" />
+                    <text x="45" y="49" textAnchor="middle" fontSize="13" fontWeight="500" fill="var(--text, #333)">{total}</text>
+                  </svg>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', flex: 1 }}>
+                    {slices.map(s => (
+                      <div key={s.p} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.colour, flexShrink: 0, display: 'inline-block' }} />
+                          <span style={{ fontSize: '0.78rem', color: 'var(--text)', textTransform: 'capitalize' }}>{s.p}</span>
+                        </div>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{s.c} <span style={{ color: 'var(--accent)', fontWeight: 500 }}>({Math.round(s.frac * 100)}%)</span></span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+              )
+            })()}
           </div>
 
-          {/* Country breakdown */}
+          {/* Country breakdown — scrollable */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Members by country</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+            <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {sortedCountries.length === 0 ? (
                 <p style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>No country data yet.</p>
               ) : sortedCountries.map(([country, count]) => (
