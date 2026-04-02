@@ -14,7 +14,7 @@ export default function Support() {
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-          It costs around <strong>£19 a month</strong> to run — hosting, database, email delivery, and the domain. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
+          It costs around <strong>£3 a month</strong> to run — hosting, database, email delivery, and the domain. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
         </p>
 
         <div style={{
@@ -60,7 +60,7 @@ export default function Support() {
               {[
                 ['Hosting (Netlify)', 'Free tier'],
                 ['Database (Supabase)', 'Free tier'],
-                ['Email delivery (Resend)', '$20/mo (~£16)'],
+                ['Email delivery (Resend)', 'Free tier'],
                 ['Email newsletter (MailerLite)', 'Free tier'],
                 ['Cloudflare', 'Free tier'],
                 ['Domain — socion.app', '£33/yr (~£2.75/mo)'],
@@ -72,7 +72,7 @@ export default function Support() {
               ))}
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.5rem 0' }}>
                 <span style={{ color: 'var(--text)', fontWeight: 500 }}>Total</span>
-                <span style={{ color: 'var(--accent)', fontWeight: 500 }}>~$23/mo (~£19)</span>
+                <span style={{ color: 'var(--accent)', fontWeight: 500 }}>£33/yr (~$3.50/mo)</span>
               </div>
             </div>
           </div>
