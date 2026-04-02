@@ -10,6 +10,8 @@ export const ENTRIES = [
       'Location filters — filter the feed by Anywhere, Same country, or Same city',
       'Share nudge — moved from a dismissible banner at the top of the feed to a card inline between profiles. Always visible, no dismiss needed',
       'Sign-in page — now shows your type result ("You\'re an ILI") after completing the quiz, so the context carries through to the auth wall',
+      'Filters panel — the feed\'s secondary filters (profile, activity, location) are now collapsed behind a single Filters button with a badge count when active. Relation pills unchanged',
+      'Support page — socion.app/support explains what the app costs to run and links to Ko-fi. Linked from the footer',
     ],
   },
   {
