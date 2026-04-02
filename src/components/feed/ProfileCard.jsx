@@ -179,8 +179,10 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
                 🕵️ Anonymous
               </span>
             )}
-            {displayFlag && (
-              <p style={{ fontSize: '1rem', marginTop: '0.1rem', lineHeight: 1 }}>{displayFlag}</p>
+            {(displayFlag || (!isAnonymous && profile_data?.city)) && (
+              <p style={{ fontSize: '0.82rem', marginTop: '0.15rem', lineHeight: 1.4, color: 'var(--muted)' }}>
+                {displayFlag}{displayFlag && !isAnonymous && profile_data?.city ? ' ' : ''}{!isAnonymous && profile_data?.city ? profile_data.city : ''}
+              </p>
             )}
             {purpose?.length > 0 && (
               <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
