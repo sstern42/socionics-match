@@ -20,6 +20,7 @@ export function markMessagesRead() {
 
 export function markMatchRead(matchId) {
   localStorage.setItem(MATCH_READ_PREFIX + matchId, new Date().toISOString())
+  window.dispatchEvent(new Event('socion-messages-read'))
 }
 
 export function getMatchLastRead(matchId) {
