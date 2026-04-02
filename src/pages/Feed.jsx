@@ -47,6 +47,7 @@ export default function Feed() {
     if (!announcement) return
     localStorage.setItem(announcementKey(announcement), 'true')
     setBannerDismissed(true)
+    window.umami?.track('announcement-dismissed')
   }
 
   function handleShare() {
