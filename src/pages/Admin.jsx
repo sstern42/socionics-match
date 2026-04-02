@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
+import { COUNTRIES } from '../data/countries'
 
 // Gate: only profiles with role='founder' can access
 const ADMIN_ROLE = 'founder'
 export const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
+const COUNTRY_NAME = Object.fromEntries(COUNTRIES.map(c => [c.code, c.name]))
 
 function FounderFeedToggle() {
   const [enabled, setEnabled] = React.useState(
@@ -436,12 +438,12 @@ export default function Admin() {
           {/* Country breakdown — scrollable */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Members by country</p>
-            <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', paddingRight: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {sortedCountries.length === 0 ? (
                 <p style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>No country data yet.</p>
               ) : sortedCountries.map(([country, count]) => (
                 <div key={country} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.82rem', color: 'var(--text)' }}>{country}</span>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text)' }}>{COUNTRY_NAME[country] ?? country}</span>
                   <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500 }}>{count}</span>
                 </div>
               ))}
