@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { signOut } from '../lib/auth'
-import { useUnreadCount } from '../lib/useUnreadCount'
+import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import IOSInstallBanner from './IOSInstallBanner'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 
@@ -43,7 +43,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             {session && profile ? (
               <>
                 <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
-                <Link to="/messages" style={navStyle(isActive('/messages'))}>
+                <Link to="/messages" onClick={markMessagesRead} style={navStyle(isActive('/messages'))}>
                   Messages{unread > 0 && (
                     <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
                       {unread > 99 ? '99+' : unread}
@@ -96,7 +96,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             {session && profile ? (
               <>
                 <Link to="/feed" onClick={closeMenu} style={mobileNavStyle(isActive('/feed'))}>Matches</Link>
-                <Link to="/messages" onClick={closeMenu} style={mobileNavStyle(isActive('/messages'))}>
+                <Link to="/messages" onClick={() => { closeMenu(); markMessagesRead() }} style={mobileNavStyle(isActive('/messages'))}>
                   Messages{unread > 0 && (
                     <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
                       {unread > 99 ? '99+' : unread}
@@ -132,8 +132,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com">Socionics reference &rarr;</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>GitHub</a>
-            <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord</a>
-            <Link to="/support" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Support Socion ☕</Link>
+            <a href="https://ko-fi.com/socion" target="_blank" rel="noopener noreferrer" 
+              style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>
+              Support Socion ☕
+            </a>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
             <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
