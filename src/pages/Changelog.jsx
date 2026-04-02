@@ -8,6 +8,8 @@ export const ENTRIES = [
       'City field — add your city in Profile → Details so others can see whether meeting up is realistic. Only your city is shown, never a postcode or exact location',
       'Location on cards — city appears alongside your country flag on feed cards',
       'Location filters — filter the feed by Anywhere, Same country, or Same city',
+      'Share nudge — moved from a dismissible banner at the top of the feed to a card inline between profiles. Always visible, no dismiss needed',
+      'Sign-in page — now shows your type result ("You\'re an ILI") after completing the quiz, so the context carries through to the auth wall',
     ],
   },
   {
