@@ -52,6 +52,7 @@ export default function Feed() {
   function handleShare() {
     const url = 'https://socion.app'
     const text = `Match by Socionics type, not algorithm — ${memberCount ? memberCount + ' members' : 'growing fast'}`
+    window.umami?.track('feed-share-clicked', { method: navigator.share ? 'native' : 'clipboard' })
     if (navigator.share) {
       navigator.share({ title: 'Socion', text, url }).catch(() => {})
     } else {
