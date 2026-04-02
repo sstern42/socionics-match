@@ -2,6 +2,15 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '2 April 2026',
+    label: 'Update',
+    items: [
+      'City field — add your city in Profile → Details so others can see whether meeting up is realistic. Only your city is shown, never a postcode or exact location',
+      'Location on cards — city appears alongside your country flag on feed cards',
+      'Location filters — filter the feed by Anywhere, Same country, or Same city',
+    ],
+  },
+  {
     date: '31 March 2026',
     label: 'Update',
     items: [
