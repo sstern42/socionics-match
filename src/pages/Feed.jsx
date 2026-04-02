@@ -70,6 +70,7 @@ export default function Feed() {
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
+  const [showFilters, setShowFilters] = useState(false)
   const [filterLocation, setFilterLocation] = useState('anywhere')
   const [activeOnly, setActiveOnly] = useState(false)
   const [activeToday, setActiveToday] = useState(false)
@@ -299,69 +300,74 @@ export default function Feed() {
                 </button>
               ))}
             </div>
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className={`rel-pill clickable${withPhotos ? ' active' : ''}`}
-                onClick={() => setWithPhotos(v => !v)}
-                style={{ fontSize: '0.7rem' }}
-              >
-                {withPhotos ? '✓ ' : ''}With photos
-              </button>
-              <button
-                type="button"
-                className={`rel-pill clickable${excludeAnon ? ' active' : ''}`}
-                onClick={() => setExcludeAnon(v => !v)}
-                style={{ fontSize: '0.7rem' }}
-              >
-                {excludeAnon ? '✓ ' : ''}Known users only
-              </button>
-              <button
-                type="button"
-                className={`rel-pill clickable${activeOnly ? ' active' : ''}`}
-                onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }}
-                style={{ fontSize: '0.7rem' }}
-              >
-                {activeOnly ? '✓ ' : ''}Active this week
-              </button>
-              <button
-                type="button"
-                className={`rel-pill clickable${activeToday ? ' active' : ''}`}
-                onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }}
-                style={{ fontSize: '0.7rem' }}
-              >
-                {activeToday ? '✓ ' : ''}Active today
-              </button>
-              <button
-                type="button"
-                className={`rel-pill clickable${onlineNow ? ' active' : ''}`}
-                onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }}
-                style={{ fontSize: '0.7rem' }}
-              >
-                <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
-                {onlineNow ? '✓ ' : ''}Online now
-              </button>
-            </div>
-            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button type="button"
-                className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`}
-                onClick={() => setFilterLocation('anywhere')}
-                style={{ fontSize: '0.7rem' }}>
-                🌍 Anywhere
-              </button>
-              <button type="button"
-                className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`}
-                onClick={() => setFilterLocation('same_country')}
-                style={{ fontSize: '0.7rem' }}>
-                {filterLocation === 'same_country' ? '✓ ' : ''}Same country
-              </button>
-              <button type="button"
-                className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`}
-                onClick={() => setFilterLocation('same_city')}
-                style={{ fontSize: '0.7rem' }}>
-                {filterLocation === 'same_city' ? '✓ ' : ''}Same city
-              </button>
-            </div>
+            {(() => {
+              const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, filterLocation !== 'anywhere'].filter(Boolean).length
+              return (
+                <>
+                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className={`rel-pill clickable${showFilters || activeCount > 0 ? ' active' : ''}`}
+                      onClick={() => setShowFilters(v => !v)}
+                      style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                      Filters
+                      {activeCount > 0 && (
+                        <span style={{ background: 'var(--accent)', color: '#fff', fontSize: '0.6rem', fontWeight: 600, padding: '0.05rem 0.35rem', borderRadius: 10, lineHeight: 1.6 }}>{activeCount}</span>
+                      )}
+                    </button>
+                    {activeCount > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere') }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  {showFilters && (
+                    <div style={{ border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
+                      <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                        <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>
+                            {withPhotos ? '✓ ' : ''}With photos
+                          </button>
+                          <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>
+                            {excludeAnon ? '✓ ' : ''}Known users only
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                        <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Activity</p>
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>
+                            {activeOnly ? '✓ ' : ''}This week
+                          </button>
+                          <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>
+                            {activeToday ? '✓ ' : ''}Today
+                          </button>
+                          <button type="button" className={`rel-pill clickable${onlineNow ? ' active' : ''}`} onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }} style={{ fontSize: '0.7rem' }}>
+                            <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
+                            {onlineNow ? '✓ ' : ''}Online now
+                          </button>
+                        </div>
+                      </div>
+                      <div style={{ padding: '0.65rem 0.85rem' }}>
+                        <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Location</p>
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>🌍 Anywhere</button>
+                          <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '✓ ' : ''}Same country</button>
+                          <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '✓ ' : ''}Same city</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
           </div>
         )}
 
