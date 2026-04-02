@@ -413,7 +413,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       </div>
                     )}
                     {editingId === msg.id ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: 180 }}>
+                      <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: 180 }}>
                         <textarea
                           value={editText}
                           onChange={e => setEditText(e.target.value)}
