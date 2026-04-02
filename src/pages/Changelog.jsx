@@ -12,6 +12,8 @@ export const ENTRIES = [
       'Sign-in page — now shows your type result ("You\'re an ILI") after completing the quiz, so the context carries through to the auth wall',
       'Filters panel — the feed\'s secondary filters (profile, activity, location) are now collapsed behind a single Filters button with a badge count when active. Relation pills unchanged',
       'Support page — socion.app/support explains what the app costs to run and links to Ko-fi. Linked from the footer',
+      'Delete last message — hover your last sent message to reveal a trash icon. Tap once to confirm, tap again to delete. Removes the message for both sides',
+      'Edit last message — pencil icon appears alongside delete on your last sent message. Tap to edit inline, Enter to save, Escape to cancel. A subtle "· edited" label appears on the timestamp',
     ],
   },
   {
