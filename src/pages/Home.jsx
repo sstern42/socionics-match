@@ -273,6 +273,8 @@ export default function Home() {
         </div>
       </section>
 
+      {!session && <EmailCapture />}
+
       <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: '#fff' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>The feed</p>
@@ -338,8 +340,6 @@ export default function Home() {
       <section style={{ padding: '5rem 2rem', background: 'var(--surface, #f7f4ef)' }}>
         <TestimonialsCarousel />
       </section>
-
-      {!session && <EmailCapture />}
 
 
 
