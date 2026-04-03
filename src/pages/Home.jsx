@@ -341,14 +341,7 @@ export default function Home() {
 
       {!session && <EmailCapture />}
 
-      <section style={{ borderTop: '1px solid var(--border)', padding: '2.5rem 2rem', textAlign: 'center', background: '#fff' }}>
-        <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>
-          Not ready to join yet? Come and talk Socionics first.{' '}
-          <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
-            Join the Discord →
-          </a>
-        </p>
-      </section>
+
 
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
         <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
