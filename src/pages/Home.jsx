@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 import { RELATIONS } from '../data/relations'
+import EmailCapture from '../components/EmailCapture'
 
 const RELATION_PILLS = [
   { label: 'Dual',           key: 'DUAL' },
@@ -338,14 +339,9 @@ export default function Home() {
         <TestimonialsCarousel />
       </section>
 
-      <section style={{ borderTop: '1px solid var(--border)', padding: '2.5rem 2rem', textAlign: 'center', background: '#fff' }}>
-        <p style={{ fontSize: '0.88rem', color: 'var(--muted)' }}>
-          Not ready to join yet? Come and talk Socionics first.{' '}
-          <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 500 }}>
-            Join the Discord →
-          </a>
-        </p>
-      </section>
+      {!session && <EmailCapture />}
+
+
 
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
         <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
@@ -353,11 +349,11 @@ export default function Home() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '2rem' }}>
           {[
             { title: '🔍 Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
-            { title: '🎯 You choose the dynamic', body: 'Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm’s.' },
-            { title: '🤝 Four purposes', body: 'Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you’re dating or building a product team.' },
-            { title: '📊 Real data', body: 'Every connection and rating tests the theory at scale. You’re part of the first large-scale empirical test of Socionics in the English-speaking world.' },
-            { title: '🕵️ Browse anonymously', body: 'Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them.' },
-            { title: '✨ Free to join', body: 'No app store. No subscription. Browser-based and installable as a PWA. Sign up and you’re on the feed in minutes.' },
+            { title: '🎯 You choose the dynamic', body: "Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm's." },
+            { title: '🤝 Four purposes', body: "Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you're dating or building a product team." },
+            { title: '📊 Real data', body: "Every connection and rating tests the theory at scale. You're part of the first large-scale empirical test of Socionics in the English-speaking world." },
+            { title: '🕵️ Browse anonymously', body: "Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them." },
+            { title: '✨ Free to join', body: "No app store. No subscription. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes." },
           ].map(({ title, body }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
               <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
