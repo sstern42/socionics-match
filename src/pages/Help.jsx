@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 
@@ -200,6 +201,15 @@ function FAQItem({ q, a, isNotifications }) {
 }
 
 export default function Help() {
+  const { hash } = useLocation()
+
+  useEffect(() => {
+    if (hash) {
+      const el = document.getElementById(hash.replace('#', ''))
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100)
+    }
+  }, [hash])
+
   return (
     <Layout>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem 6rem' }}>
@@ -213,7 +223,7 @@ export default function Help() {
         </p>
 
         {FAQS.map(({ section, items }) => (
-          <div key={section} style={{ marginBottom: '2.5rem' }}>
+          <div key={section} id={section === 'The app' ? 'notifications' : undefined} style={{ marginBottom: '2.5rem' }}>
             <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.25rem' }}>
               {section}
             </p>
