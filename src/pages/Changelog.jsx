@@ -6,7 +6,9 @@ export const ENTRIES = [
     label: 'Update',
     items: [
       'Help & FAQ — a ? button fixed to the bottom right of every page opens a full FAQ covering matching, relations, account settings, safety, and push notification troubleshooting by device',
-      'In-app reference sheets — tapping a type badge or relation \'Learn more \' now opens the Socionics Insight page inside Socion rather than a new tab. Works in both the feed and messages',
+      'In-app reference sheets — tapping a type badge or relation \'Learn more →\' now opens the Socionics Insight page inside Socion rather than a new tab. Works in both the feed and messages',
+      'Live profile preview — Profile → Details now shows a live card that updates in real time as you edit your details',
+      'Hide activity status — new toggle in Profile → Details to stop others seeing when you were last active. You won\'t appear in Online now or Active today filters while this is on',
       'Onboarding — a one-line note at the start of onboarding now tells you that a sign-in step is coming at the end, so there are no surprises',
       'Member growth chart — replaced the bar chart with a line graph with visible data points',
       'Admin dashboard — sign-ups, connections, and messages now show a +N today delta alongside the total',
