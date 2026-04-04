@@ -199,6 +199,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           href={`https://socionicsinsight.com/types/${type.toLowerCase()}/`}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => window.umami?.track('si-link-type', { type })}
           style={{
             fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
             fontWeight: 500, color: colours.text,
@@ -227,6 +228,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
                 href={`https://socionicsinsight.com/relations/${relInfo.siSlug}/`}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => window.umami?.track('si-link-relation', { relation: relInfo.siSlug })}
                 style={{ fontSize: '0.68rem', color: colours.text, opacity: 0.7, textDecoration: 'none', whiteSpace: 'nowrap' }}
               >
                 Learn more →
