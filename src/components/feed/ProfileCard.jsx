@@ -32,11 +32,68 @@ const PURPOSE_LABELS = {
 }
 
 // matchId is the matches.id for an already-connected profile, or null if not yet connected
+
+function SIWebview({ url, onClose }) {
+  if (!url) return null
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: '12px 12px 0 0',
+          height: '85vh',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Header bar */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0.75rem 1rem',
+          borderBottom: '1px solid var(--border)',
+          flexShrink: 0,
+        }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+            socionicsinsight.com
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: '1.1rem', color: 'var(--muted)', padding: '0.25rem 0.5rem',
+              lineHeight: 1, flexShrink: 0,
+            }}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        {/* iframe */}
+        <iframe
+          src={url}
+          title="Socionics Insight"
+          style={{ flex: 1, border: 'none', width: '100%' }}
+          loading="lazy"
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
   const [photoModal, setPhotoModal] = useState(false)
   const { profile_data, type, relation, displayRelation, purpose, last_active } = profile
+  const [webviewUrl, setWebviewUrl] = useState(null)
   const name = profile_data?.name ?? 'Unknown'
   const dob = profile_data?.dob
   const age = dob
@@ -195,21 +252,18 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             )}
           </div>
         </div>
-        <a
-          href={`https://socionicsinsight.com/types/${type.toLowerCase()}/`}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => window.umami?.track('si-link-type', { type })}
+        <button
+          onClick={() => { window.umami?.track('si-link-type', { type }); setWebviewUrl(`https://socionicsinsight.com/types/${type.toLowerCase()}/`) }}
           style={{
             fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
             fontWeight: 500, color: colours.text,
             background: colours.bg, border: `1px solid ${colours.border}`,
             padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0,
-            textDecoration: 'none',
+            textDecoration: 'none', cursor: 'pointer',
           }}
         >
           {type}
-        </a>
+        </button>
       </div>
 
       {/* Relation badge */}
@@ -224,15 +278,12 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
               {relInfo.name}
             </p>
             {relInfo.siSlug && (
-              <a
-                href={`https://socionicsinsight.com/relations/${relInfo.siSlug}/`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => window.umami?.track('si-link-relation', { relation: relInfo.siSlug })}
-                style={{ fontSize: '0.68rem', color: colours.text, opacity: 0.7, textDecoration: 'none', whiteSpace: 'nowrap' }}
+              <button
+                onClick={() => { window.umami?.track('si-link-relation', { relation: relInfo.siSlug }); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }}
+                style={{ fontSize: '0.68rem', color: colours.text, opacity: 0.7, background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap', padding: 0 }}
               >
                 Learn more →
-              </a>
+              </button>
             )}
           </div>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>
@@ -282,5 +333,6 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
         {connecting ? 'Connecting…' : alreadyMatched ? 'Message →' : 'Connect'}
       </button>
     </div>
+    <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
   )
 }
