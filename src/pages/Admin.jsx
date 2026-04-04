@@ -314,26 +314,46 @@ export default function Admin() {
         {/* Member growth chart */}
         {growthData.length > 0 && (() => {
           const visibleData = growthData.slice(-30)
+          const W = 580, H = 110, padL = 28, padR = 12, padT = 18, padB = 24
+          const minVal = 0
+          const maxVal = visibleData[visibleData.length - 1].total
+          const xStep = visibleData.length > 1 ? (W - padL - padR) / (visibleData.length - 1) : W - padL - padR
+          const toX = i => padL + i * xStep
+          const toY = v => padT + (H - padT - padB) * (1 - v / maxVal)
+          const points = visibleData.map((d, i) => ({ x: toX(i), y: toY(d.total), ...d }))
+          const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+          const areaD = pathD + ` L${points[points.length-1].x.toFixed(1)},${(H-padB).toFixed(1)} L${points[0].x.toFixed(1)},${(H-padB).toFixed(1)} Z`
+          // Show labels: first, last, and every ~5th
+          const showLabel = i => i === 0 || i === points.length - 1 || i % Math.max(1, Math.floor(points.length / 6)) === 0
           return (
           <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
             <p style={cardTitleStyle}>Member growth {growthData.length > 30 && <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>— last 30 days</span>}</p>
             <div style={{ marginTop: '1.25rem', overflowX: 'auto' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: 80, minWidth: `${visibleData.length * 36}px` }}>
-                {visibleData.map(({ label, total }, i) => {
-                  const max = visibleData[visibleData.length - 1].total
-                  const barH = Math.max(4, Math.round((total / max) * 80))
-                  return (
-                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
-                      <span style={{ fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 500 }}>{total}</span>
-                      <div
-                        title={`${label}: ${total} members`}
-                        style={{ width: '100%', height: barH, background: i === visibleData.length - 1 ? 'var(--accent)' : 'var(--accent-lt)', borderRadius: '2px 2px 0 0' }}
-                      />
-                      <span style={{ fontSize: '0.6rem', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center' }}>{label}</span>
-                    </div>
-                  )
-                })}
-              </div>
+              <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', minWidth: `${Math.max(visibleData.length * 28, 300)}px` }}>
+                <defs>
+                  <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
+                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                {/* Area fill */}
+                <path d={areaD} fill="url(#growthGrad)" />
+                {/* Line */}
+                <path d={pathD} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                {/* Data points + labels */}
+                {points.map((p, i) => (
+                  <g key={i}>
+                    <circle cx={p.x} cy={p.y} r="3.5" fill="var(--accent)" stroke="#fff" strokeWidth="1.5" />
+                    <title>{p.label}: {p.total} members</title>
+                    {/* Value label above point */}
+                    <text x={p.x} y={p.y - 7} textAnchor="middle" fontSize="8" fill="var(--accent)" fontWeight="500">{p.total}</text>
+                    {/* Date label below */}
+                    {showLabel(i) && (
+                      <text x={p.x} y={H - 4} textAnchor="middle" fontSize="8" fill="var(--muted)">{p.label}</text>
+                    )}
+                  </g>
+                ))}
+              </svg>
             </div>
           </div>
           )
