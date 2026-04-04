@@ -80,6 +80,9 @@ export default function Onboarding() {
               <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.75rem' }}>
                 Select everything that applies. You can change this later.
               </p>
+              <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.4rem', opacity: 0.75 }}>
+                You'll sign in with Google or email at the end to save your profile.
+              </p>
             </div>
             <PurposePicker selected={purposes} onChange={setPurposes} />
             <div style={{ display: 'flex', justifyContent: 'center' }}>
