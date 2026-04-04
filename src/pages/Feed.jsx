@@ -412,12 +412,16 @@ export default function Feed() {
                 />
                 {i === 4 && (
                   <div key="share-nudge" style={{
-                    border: '1px solid var(--border)', borderRadius: 6,
-                    padding: '1.25rem 1.25rem',
+                    border: '1px solid var(--accent)',
+                    borderRadius: 6,
+                    padding: '1.5rem',
                     display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.85rem',
-                    background: 'transparent',
+                    background: 'rgba(154,111,56,0.06)',
                   }}>
-                    <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
+                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, margin: 0 }}>
+                      Spread the word
+                    </p>
+                    <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
                       Know someone who'd be into this?
                     </p>
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
@@ -426,10 +430,10 @@ export default function Feed() {
                     <button
                       type="button"
                       onClick={handleShare}
-                      className="btn-ghost"
-                      style={{ fontSize: '0.78rem', padding: '0.35rem 0.85rem', alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
+                      className="btn-primary"
+                      style={{ fontSize: '0.78rem', padding: '0.45rem 1rem', alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
                     >
-                      {shareState === 'copied' ? 'Link copied ✓' : navigator.share ? 'Share →' : 'Copy link'}
+                      {shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'}
                     </button>
                   </div>
                 )}
