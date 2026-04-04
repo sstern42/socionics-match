@@ -437,6 +437,66 @@ export default function Feed() {
                     </button>
                   </div>
                 )}
+
+                {i === 9 && (
+                  <div key="discord-nudge" style={{
+                    border: '1px solid var(--accent)',
+                    borderRadius: 6,
+                    padding: '1.5rem',
+                    display: 'flex', flexDirection: 'column', gap: '0.85rem',
+                    background: 'rgba(154,111,56,0.06)',
+                  }}>
+                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, margin: 0 }}>
+                      Community
+                    </p>
+                    <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
+                      Chat beyond the app
+                    </p>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
+                      Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community.
+                    </p>
+                    <a
+                      href="https://discord.gg/328KxsDKdr"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary"
+                      onClick={() => window.umami?.track('feed-discord-clicked')}
+                      style={{ fontSize: '0.78rem', padding: '0.45rem 1rem', alignSelf: 'flex-start', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block' }}
+                    >
+                      Join Discord →
+                    </a>
+                  </div>
+                )}
+
+                {i === 14 && (
+                  <div key="kofi-nudge" style={{
+                    border: '1px solid var(--accent)',
+                    borderRadius: 6,
+                    padding: '1.5rem',
+                    display: 'flex', flexDirection: 'column', gap: '0.85rem',
+                    background: 'rgba(154,111,56,0.06)',
+                  }}>
+                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, margin: 0 }}>
+                      Support Socion
+                    </p>
+                    <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
+                      Socion is free and will stay that way
+                    </p>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
+                      No algorithm, no premium tier. If it's been useful, a one-time tip helps cover the running costs.
+                    </p>
+                    <a
+                      href="https://ko-fi.com/socion"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary"
+                      onClick={() => window.umami?.track('feed-kofi-clicked')}
+                      style={{ fontSize: '0.78rem', padding: '0.45rem 1rem', alignSelf: 'flex-start', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block' }}
+                    >
+                      Support ☕ →
+                    </a>
+                  </div>
+                )}
               </>
             ))}
           </div>
