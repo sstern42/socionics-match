@@ -12,8 +12,10 @@ declare
 begin
   select jsonb_build_object(
     -- Existing stats
-    'connections',    (select count(*) from matches),
-    'messages',       (select count(*) from messages),
+    'connections',       (select count(*) from matches),
+    'connections_today', (select count(*) from matches where created_at >= current_date),
+    'messages',          (select count(*) from messages),
+    'messages_today',    (select count(*) from messages where created_at >= current_date),
     'assessments',    (select count(*) from type_assessments),
     'cooloffs',       (
                         select count(*) from blocks

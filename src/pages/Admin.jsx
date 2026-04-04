@@ -165,7 +165,9 @@ export default function Admin() {
         countryCounts,
         reports,
         totalConnections: adminStats?.connections ?? 0,
+        connectionsToday: adminStats?.connections_today ?? 0,
         totalMessages: adminStats?.messages ?? 0,
+        messagesToday: adminStats?.messages_today ?? 0,
         totalAssessments: adminStats?.assessments ?? 0,
         totalCooloffs: adminStats?.cooloffs ?? 0,
         authUsers: adminStats?.auth_users ?? 0,
@@ -218,7 +220,7 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, totalMessages, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount } = data
+  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, connectionsToday, totalMessages, messagesToday, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -244,10 +246,19 @@ export default function Admin() {
         {/* Headline stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 100%), 1fr))', gap: '0.75rem', marginBottom: '2.5rem' }}>
           {/* Auth signups */}
-          <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{authUsers}</div>
-            <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>Sign-ups</div>
-          </div>
+          {(() => {
+            const todayStr = new Date().toDateString()
+            const signupsToday = (users ?? []).filter(u => new Date(u.created_at).toDateString() === todayStr).length
+            return (
+              <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
+                <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{authUsers}</div>
+                {signupsToday > 0 && (
+                  <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{signupsToday} today</div>
+                )}
+                <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.2rem' }}>Sign-ups</div>
+              </div>
+            )
+          })()}
 
           {/* Members — with today's delta */}
           {(() => {
@@ -264,18 +275,21 @@ export default function Admin() {
             )
           })()}
           {[
-            { value: totalConnections, label: 'Connections' },
-            { value: totalMessages, label: 'Messages' },
+            { value: totalConnections, label: 'Connections', delta: connectionsToday },
+            { value: totalMessages, label: 'Messages', delta: messagesToday },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
             { value: totalAssessments, label: 'Assessments' },
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
             { value: active7d, label: 'Active 7d' },
             { value: inactive, label: 'Inactive 7d+' },
             { value: messagingActive, label: 'Messaging 7d' },
-          ].map(({ value, label }) => (
+          ].map(({ value, label, delta }) => (
             <div key={label} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
-              <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>{label}</div>
+              {delta > 0 && (
+                <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{delta} today</div>
+              )}
+              <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: delta > 0 ? '0.2rem' : '0.4rem' }}>{label}</div>
             </div>
           ))}
 
