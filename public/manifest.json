@@ -3,6 +3,7 @@
   "short_name": "Socion",
   "description": "Match by personality type, not algorithm.",
   "start_url": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#f7f4ef",
   "theme_color": "#9a6f38",
