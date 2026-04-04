@@ -312,27 +312,32 @@ export default function Admin() {
 
 
         {/* Member growth chart */}
-        {growthData.length > 0 && (
+        {growthData.length > 0 && (() => {
+          const visibleData = growthData.slice(-30)
+          return (
           <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
-            <p style={cardTitleStyle}>Member growth</p>
-            <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'flex-end', gap: '6px', height: 80 }}>
-              {growthData.map(({ label, total }, i) => {
-                const max = growthData[growthData.length - 1].total
-                const barH = Math.max(4, Math.round((total / max) * 80))
-                return (
-                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
-                    <span style={{ fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 500 }}>{total}</span>
-                    <div
-                      title={`${label}: ${total} members`}
-                      style={{ width: '100%', height: barH, background: i === growthData.length - 1 ? 'var(--accent)' : 'var(--accent-lt)', borderRadius: '2px 2px 0 0' }}
-                    />
-                    <span style={{ fontSize: '0.6rem', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center' }}>{label}</span>
-                  </div>
-                )
-              })}
+            <p style={cardTitleStyle}>Member growth {growthData.length > 30 && <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>— last 30 days</span>}</p>
+            <div style={{ marginTop: '1.25rem', overflowX: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '6px', height: 80, minWidth: `${visibleData.length * 36}px` }}>
+                {visibleData.map(({ label, total }, i) => {
+                  const max = visibleData[visibleData.length - 1].total
+                  const barH = Math.max(4, Math.round((total / max) * 80))
+                  return (
+                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.3rem' }}>
+                      <span style={{ fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 500 }}>{total}</span>
+                      <div
+                        title={`${label}: ${total} members`}
+                        style={{ width: '100%', height: barH, background: i === visibleData.length - 1 ? 'var(--accent)' : 'var(--accent-lt)', borderRadius: '2px 2px 0 0' }}
+                      />
+                      <span style={{ fontSize: '0.6rem', color: 'var(--muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%', textAlign: 'center' }}>{label}</span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
-        )}
+          )
+        })()}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
           {/* Type distribution by quadra */}
