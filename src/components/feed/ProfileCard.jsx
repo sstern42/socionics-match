@@ -137,6 +137,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   }
 
   return (
+    <>
     <div style={{
       background: '#fff',
       border: `1px solid ${colours.border}`,
@@ -334,5 +335,6 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       </button>
     </div>
     <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
+    </>
   )
 }
