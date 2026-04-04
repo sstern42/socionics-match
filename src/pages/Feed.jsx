@@ -204,9 +204,9 @@ export default function Feed() {
   const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
   const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = profiles
-    .filter(p => onlineNow ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo) : true)
-    .filter(p => activeToday ? (p.last_active && new Date(p.last_active) > oneDayAgo) : true)
-    .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo) : true)
+    .filter(p => onlineNow ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo && !p.profile_data?.hide_activity) : true)
+    .filter(p => activeToday ? (p.last_active && new Date(p.last_active) > oneDayAgo && !p.profile_data?.hide_activity) : true)
+    .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo && !p.profile_data?.hide_activity) : true)
     .filter(p => withPhotos ? !!p.avatar_url : true)
     .filter(p => excludeAnon ? !p.profile_data?.anonymous : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)

@@ -114,7 +114,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const displayAvatar = isAnonymous ? null : profile.avatar_url
 
   const activityLabel = (() => {
-    if (!last_active) return null
+    if (!last_active || profile_data?.hide_activity) return null
     const diff = Date.now() - new Date(last_active).getTime()
     const mins = diff / 60000
     const hours = diff / 3600000

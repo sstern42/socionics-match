@@ -20,6 +20,8 @@ export default function ProfileEdit() {
   const [country, setCountry] = useState(profile?.profile_data?.country ?? '')
   const [city, setCity] = useState(profile?.profile_data?.city ?? '')
   const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
+  const [hideActivity, setHideActivity] = useState(profile?.profile_data?.hide_activity ?? false)
+  const [hideActivity, setHideActivity] = useState(profile?.profile_data?.hide_activity ?? false)
   const [connectionQuestion, setConnectionQuestion] = useState(profile?.profile_data?.connection_question ?? '')
   const [type, setType] = useState(profile?.type ?? '')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -54,6 +56,8 @@ export default function ProfileEdit() {
           country,
           city: city.trim(),
           anonymous,
+          hide_activity: hideActivity,
+          hide_activity: hideActivity,
           connection_question: connectionQuestion.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
         },
@@ -202,6 +206,13 @@ export default function ProfileEdit() {
               <div>
                 <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🕵️ Anonymous mode</p>
                 <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🕵️ badge shows on your card. You can turn this off at any time to reveal your details.</p>
+              </div>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: hideActivity ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
+              <input type="checkbox" checked={hideActivity} onChange={e => setHideActivity(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
+              <div>
+                <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>👁️ Hide activity status</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Others won't see when you were last active and you won't appear in the "Online now" or "Active today" filters. You'll also appear lower in the feed while this is on.</p>
               </div>
             </label>
             <div>

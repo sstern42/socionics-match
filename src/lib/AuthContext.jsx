@@ -28,8 +28,8 @@ export function AuthProvider({ children }) {
     try {
       const p = await getProfile(authId)
       setProfile(p)
-      // Update last_active silently — fire and forget
-      if (p?.id) {
+      // Update last_active silently — fire and forget (skip if hide_activity is on)
+      if (p?.id && !p.profile_data?.hide_activity) {
         supabase.from('users').update({ last_active: new Date().toISOString() }).eq('id', p.id).then(() => {})
       }
     } catch {
