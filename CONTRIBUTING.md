@@ -1,4 +1,4 @@
-# Contributing to Socion
+# Contributing to Socion™
 
 Socion is open source under the MIT licence. The matching logic — the intertype relations matrix and type confidence scoring — is published and auditable. Community trust through transparency is a core principle of the project.
 
