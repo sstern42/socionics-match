@@ -124,6 +124,25 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           {children}
         </main>
 
+        {/* Help button — fixed bottom right */}
+        <Link
+          to="/help"
+          onClick={() => window.umami?.track('help-button-clicked', { from: location.pathname })}
+          title="Help & FAQ"
+          style={{
+            position: 'fixed', bottom: '1.25rem', right: '1.25rem', zIndex: 200,
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'var(--accent)', color: '#fff',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            textDecoration: 'none', fontSize: '1rem', fontWeight: 700,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+            lineHeight: 1,
+          }}
+          aria-label="Help & FAQ"
+        >
+          ?
+        </Link>
+
         {!hideFooter && (
         <footer className="site-footer">
           <div>

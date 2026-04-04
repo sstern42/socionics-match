@@ -40,6 +40,24 @@ export default function ProfileNav() {
           </Link>
         )
       })}
+      <Link
+        to="/help"
+        style={{
+          padding: '0.65rem 1.25rem',
+          fontSize: '0.78rem',
+          letterSpacing: '0.1em',
+          textTransform: 'uppercase',
+          textDecoration: 'none',
+          color: 'var(--muted)',
+          borderBottom: '2px solid transparent',
+          marginBottom: '-1px',
+          transition: 'color 0.15s',
+          whiteSpace: 'nowrap',
+          marginLeft: 'auto',
+        }}
+      >
+        Help
+      </Link>
     </div>
   )
 }

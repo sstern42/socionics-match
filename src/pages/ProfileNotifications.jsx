@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { updateProfileData } from '../lib/profile'
@@ -118,6 +118,13 @@ export default function ProfileNotifications() {
           </div>
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
+
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center', lineHeight: 1.6 }}>
+            Notifications not working?{' '}
+            <Link to="/help#notifications" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              See the fix guide →
+            </Link>
+          </p>
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate('/feed')}>Cancel</button>
