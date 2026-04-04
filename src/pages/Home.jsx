@@ -121,8 +121,63 @@ function TestimonialsCarousel() {
   )
 }
 
+
+function SIWebview({ url, onClose }) {
+  if (!url) return null
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: '12px 12px 0 0',
+          height: '85vh',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0.75rem 1rem',
+          borderBottom: '1px solid var(--border)',
+          flexShrink: 0,
+        }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+            socionicsinsight.com
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: '1.1rem', color: 'var(--muted)', padding: '0.25rem 0.5rem',
+              lineHeight: 1, flexShrink: 0,
+            }}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <iframe
+          src={url}
+          title="Socionics Insight"
+          style={{ flex: 1, border: 'none', width: '100%' }}
+          loading="lazy"
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function Home() {
   const { session, profile } = useAuth()
+  const [webviewUrl, setWebviewUrl] = useState(null)
   const ctaPath = session && profile ? '/feed' : '/onboarding'
   const ctaLabel = session && profile ? 'View your matches' : 'Find your type'
 
@@ -154,6 +209,7 @@ export default function Home() {
   }, [])
 
   return (
+    <>
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(3rem,8vw,6rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
         <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
@@ -180,9 +236,9 @@ export default function Home() {
         {!session && (
           <p className="fade-up-4" style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '-0.25rem' }}>
             New to Socionics?{' '}
-              <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              <button onClick={() => { window.umami?.track('si-link-home'); setWebviewUrl('https://socionicsinsight.com') }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>
                 Start here →
-              </a>
+              </button>
         {' '}&nbsp;·&nbsp;{' '}
         <Link to="/network" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
           Browse the network →
@@ -268,7 +324,7 @@ export default function Home() {
           </blockquote>
           <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.8 }}>
             Developed in the 1970s on Jungian foundations, Socionics maps 16 specific dynamics between every type pair.{' '}
-            <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>New to Socionics? Start here →</a>
+            <button onClick={() => { window.umami?.track('si-link-home'); setWebviewUrl('https://socionicsinsight.com') }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>New to Socionics? Start here →</button>
           </p>
         </div>
       </section>
@@ -380,5 +436,7 @@ export default function Home() {
         </div>
       </section>
     </Layout>
+    <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
+    </>
   )
 }
