@@ -36,7 +36,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       </div>
       <div className="page" style={noScroll ? { height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' } : undefined}>
         <header className="site-header">
-          <Link className="wordmark" to="/" onClick={closeMenu}>Socion</Link>
+          <Link className="wordmark" to="/" onClick={closeMenu}>Socion™</Link>
 
           {/* Desktop nav */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
