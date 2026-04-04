@@ -1,4 +1,4 @@
-# Socion
+# Socion™
 
 **Match by personality type, not algorithm.** → [socion.app](https://socion.app)
 
