@@ -21,7 +21,6 @@ export default function ProfileEdit() {
   const [city, setCity] = useState(profile?.profile_data?.city ?? '')
   const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
   const [hideActivity, setHideActivity] = useState(profile?.profile_data?.hide_activity ?? false)
-  const [hideActivity, setHideActivity] = useState(profile?.profile_data?.hide_activity ?? false)
   const [connectionQuestion, setConnectionQuestion] = useState(profile?.profile_data?.connection_question ?? '')
   const [type, setType] = useState(profile?.type ?? '')
   const [avatarFile, setAvatarFile] = useState(null)
@@ -55,7 +54,6 @@ export default function ProfileEdit() {
           country,
           city: city.trim(),
           anonymous,
-          hide_activity: hideActivity,
           hide_activity: hideActivity,
           connection_question: connectionQuestion.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
