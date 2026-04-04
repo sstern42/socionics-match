@@ -27,7 +27,6 @@ export default function ProfileEdit() {
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url ?? null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
-  const [showPreview, setShowPreview] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleting, setDeleting] = useState(false)
@@ -120,12 +119,19 @@ export default function ProfileEdit() {
           <div style={{ textAlign: 'center' }}>
             <p className="eyebrow">Profile</p>
             <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>Your <em>details</em></h1>
-            <button type="button" onClick={() => setShowPreview(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', letterSpacing: '0.06em', textTransform: 'uppercase', marginTop: '0.5rem' }}>
-              Preview card →
-            </button>
+
           </div>
 
           <ProfileNav />
+
+          {/* Live preview card */}
+          <div style={{ width: '100%' }}>
+            <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem', textAlign: 'center' }}>Live preview</p>
+            <ProfileCard
+              profile={{ profile_data: { name, dob: dob || null, gender, bio, country, city: city.trim(), anonymous, hide_activity: hideActivity }, type, relation: null, displayRelation: null, avatar_url: avatarPreview }}
+              onConnect={() => {}} alreadyMatched={false} matchId={null} connecting={false}
+            />
+          </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
@@ -278,15 +284,7 @@ export default function ProfileEdit() {
         </div>
       )}
 
-      {showPreview && (
-        <div onClick={() => setShowPreview(false)} style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 380 }}>
-            <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.6)', marginBottom: '0.75rem', textAlign: 'center' }}>How others see your card</p>
-            <ProfileCard profile={{ profile_data: { name, dob: dob || null, gender, bio, country }, type, relation: null, displayRelation: null, avatar_url: avatarPreview }} onConnect={() => {}} alreadyMatched={false} matchId={null} connecting={false} />
-            <button type="button" onClick={() => setShowPreview(false)} style={{ display: 'block', margin: '1rem auto 0', background: 'none', border: '1px solid rgba(255,255,255,0.3)', borderRadius: 3, padding: '0.5rem 1.5rem', color: 'rgba(255,255,255,0.8)', cursor: 'pointer', fontSize: '0.78rem', letterSpacing: '0.06em' }}>Close</button>
-          </div>
-        </div>
-      )}
+
     </Layout>
   )
 }
