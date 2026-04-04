@@ -2,6 +2,17 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '4 April 2026',
+    label: 'Update',
+    items: [
+      'Help & FAQ — a ? button fixed to the bottom right of every page opens a full FAQ covering matching, relations, account settings, safety, and push notification troubleshooting by device',
+      'In-app reference sheets — tapping a type badge or relation \'Learn more \' now opens the Socionics Insight page inside Socion rather than a new tab. Works in both the feed and messages',
+      'Onboarding — a one-line note at the start of onboarding now tells you that a sign-in step is coming at the end, so there are no surprises',
+      'Member growth chart — replaced the bar chart with a line graph with visible data points',
+      'Admin dashboard — sign-ups, connections, and messages now show a +N today delta alongside the total',
+    ],
+  },
+  {
     date: '2 April 2026',
     label: 'Update',
     items: [
