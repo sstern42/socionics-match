@@ -6,8 +6,63 @@ import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks
 import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
 import { supabase } from '../../lib/supabase'
 
+
+function SIWebview({ url, onClose }) {
+  if (!url) return null
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 1000,
+        background: 'rgba(0,0,0,0.45)',
+        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+      }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#fff',
+          borderRadius: '12px 12px 0 0',
+          height: '85vh',
+          display: 'flex', flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '0.75rem 1rem',
+          borderBottom: '1px solid var(--border)',
+          flexShrink: 0,
+        }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+            socionicsinsight.com
+          </span>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: '1.1rem', color: 'var(--muted)', padding: '0.25rem 0.5rem',
+              lineHeight: 1, flexShrink: 0,
+            }}
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+        <iframe
+          src={url}
+          title="Socionics Insight"
+          style={{ flex: 1, border: 'none', width: '100%' }}
+          loading="lazy"
+        />
+      </div>
+    </div>
+  )
+}
+
 export default function Conversation({ match, currentUserId, hasFeedback, onBack }) {
   const navigate = useNavigate()
+  const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -204,6 +259,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const iBlockedThem = activeBlock?.blocker_id === currentUserId
 
   return (
+    <>
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
       {/* Mobile header — compact nav bar */}
@@ -217,13 +273,12 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         )}
         <span className="convo-header-name">{otherName}</span>
         <div className="convo-header-meta">
-          <a
-            href={`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`}
-            target="_blank" rel="noopener noreferrer"
-            style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}
+          <button
+            onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }}
+            style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             {match.other.type}
-          </a>
+          </button>
           {relInfo && (
             <span style={{ fontSize: '0.68rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>· {relInfo.name}</span>
           )}
@@ -259,9 +314,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500 }}>{otherName}</h3>
             <p style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, marginTop: '0.15rem' }}>
-              <a href={`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              <button onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', fontWeight: 'inherit' }}>
                 {match.other.type}
-              </a>
+              </button>
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
@@ -270,9 +325,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 <p style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>{relInfo.name}</p>
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.5, marginTop: '0.15rem' }}>{relInfo.description}</p>
                 {relInfo.siSlug && (
-                  <a href={`https://socionicsinsight.com/relations/${relInfo.siSlug}/`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.68rem', color: 'var(--accent)', opacity: 0.7, textDecoration: 'none' }}>
+                  <button onClick={() => { window.umami?.track('si-link-relation', { relation: relInfo.siSlug }); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }} style={{ fontSize: '0.68rem', color: 'var(--accent)', opacity: 0.7, textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                     Learn more →
-                  </a>
+                  </button>
                 )}
               </div>
             )}
@@ -666,6 +721,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         </div>
       )}
     </div>
+    <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
+    </>
   )
 }
 
