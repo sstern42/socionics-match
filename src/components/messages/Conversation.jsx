@@ -561,7 +561,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     ) : (
                       <button
                         type="button"
-                        onClick={() => { window.umami?.track('message-delete-tapped'); setDeleteConfirmId(msg.id) }}}
+                        onClick={() => { window.umami?.track('message-delete-tapped'); setDeleteConfirmId(msg.id) }}
                         aria-label="Delete message"
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : 0.3 }}
                       >
