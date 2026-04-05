@@ -380,6 +380,15 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         </div>
       )}
 
+      {!hasFeedback && messages.length >= 5 && (
+        <div style={{ padding: '0.6rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'rgba(154,111,56,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Rate this connection — does the theory hold?</p>
+          <button type="button" onClick={() => { window.umami?.track('feedback-rate-it-clicked', { relationType: match?.relation_type }); navigate(`/feedback/${match.id}`) }} style={{ background: 'none', border: '1px solid var(--accent-lt)', borderRadius: 3, padding: '0.3rem 0.75rem', fontSize: '0.75rem', color: 'var(--accent)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            Rate it →
+          </button>
+        </div>
+      )}
+
       {/* Messages */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', background: 'var(--bg)' }}>
         {loading ? (
@@ -563,15 +572,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         })()}
         <div ref={bottomRef} />
       </div>
-
-      {!hasFeedback && messages.length >= 5 && (
-        <div style={{ padding: '0.6rem 1.5rem', borderTop: '1px solid var(--border)', background: 'rgba(154,111,56,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Rate this connection — does the theory hold?</p>
-          <button type="button" onClick={() => { window.umami?.track('feedback-rate-it-clicked', { relationType: match?.relation_type }); navigate(`/feedback/${match.id}`) }} style={{ background: 'none', border: '1px solid var(--accent-lt)', borderRadius: 3, padding: '0.3rem 0.75rem', fontSize: '0.75rem', color: 'var(--accent)', cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            Rate it →
-          </button>
-        </div>
-      )}
 
       {/* Input — disabled during cool off or block */}
       <div style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
