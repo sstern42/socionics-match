@@ -78,6 +78,7 @@ export default function Feed() {
   const [onlineNow, setOnlineNow] = useState(false)
   const [withPhotos, setWithPhotos] = useState(false)
   const [excludeAnon, setExcludeAnon] = useState(false)
+  const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [connectPrompt, setConnectPrompt] = useState(null) // { targetProfile }
   const [connectMessage, setConnectMessage] = useState('')
@@ -209,6 +210,7 @@ export default function Feed() {
     .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo && !p.profile_data?.hide_activity) : true)
     .filter(p => withPhotos ? !!p.avatar_url : true)
     .filter(p => excludeAnon ? !p.profile_data?.anonymous : true)
+    .filter(p => verifiedOnly ? !!p.verified_by : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
     .filter(p => {
       if (filterLocation === 'anywhere') return true
@@ -302,7 +304,7 @@ export default function Feed() {
               ))}
             </div>
             {(() => {
-              const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, filterLocation !== 'anywhere'].filter(Boolean).length
+              const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
               return (
                 <>
                   <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -321,7 +323,7 @@ export default function Feed() {
                     {activeCount > 0 && (
                       <button
                         type="button"
-                        onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere') }}
+                        onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }}
                         style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}
                       >
                         Clear
@@ -338,6 +340,9 @@ export default function Feed() {
                           </button>
                           <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>
                             {excludeAnon ? '✓ ' : ''}Known users only
+                          </button>
+                          <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>
+                            {verifiedOnly ? '✓ ' : ''}Verified types only
                           </button>
                         </div>
                       </div>
