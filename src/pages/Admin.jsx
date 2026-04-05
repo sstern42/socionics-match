@@ -778,7 +778,6 @@ export default function Admin() {
             ))}
           </div>
         </div>
-        </div>
 
         {/* Verification */}
         <VerificationPanel users={users} onUpdate={loadData} />
@@ -786,8 +785,6 @@ export default function Admin() {
       </section>
     </Layout>
   )
-}
-
 }
 
 function VerificationPanel({ users, onUpdate }) {
