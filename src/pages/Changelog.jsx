@@ -2,6 +2,14 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '5 April 2026',
+    label: 'Update',
+    items: [
+      'Rate this connection — the feedback bar has moved to the top of the conversation, just below the header, so it no longer overlaps the message input',
+      'Help button — repositioned consistently across all pages so it no longer overlaps the Send button in messages',
+    ],
+  },
+  {
     date: '4 April 2026',
     label: 'Update',
     items: [
