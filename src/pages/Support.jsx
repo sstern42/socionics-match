@@ -2,7 +2,7 @@ import Layout from '../components/Layout'
 
 export default function Support() {
   return (
-    <Layout>
+    <Layout noScroll>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>
         <p className="eyebrow">Socion</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
