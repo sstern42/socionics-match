@@ -92,7 +92,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
   const [photoModal, setPhotoModal] = useState(false)
-  const { profile_data, type, relation, displayRelation, purpose, last_active } = profile
+  const { profile_data, type, relation, displayRelation, purpose, last_active, verified_by } = profile
   const [webviewUrl, setWebviewUrl] = useState(null)
   const name = profile_data?.name ?? 'Unknown'
   const dob = profile_data?.dob
@@ -253,18 +253,38 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             )}
           </div>
         </div>
-        <button
-          onClick={() => { window.umami?.track('si-link-type', { type }); setWebviewUrl(`https://socionicsinsight.com/types/${type.toLowerCase()}/`) }}
-          style={{
-            fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
-            fontWeight: 500, color: colours.text,
-            background: colours.bg, border: `1px solid ${colours.border}`,
-            padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0,
-            textDecoration: 'none', cursor: 'pointer',
-          }}
-        >
-          {type}
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem', flexShrink: 0 }}>
+          <button
+            onClick={() => { window.umami?.track('si-link-type', { type }); setWebviewUrl(`https://socionicsinsight.com/types/${type.toLowerCase()}/`) }}
+            style={{
+              fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase',
+              fontWeight: 500, color: colours.text,
+              background: colours.bg, border: `1px solid ${colours.border}`,
+              padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0,
+              textDecoration: 'none', cursor: 'pointer',
+            }}
+          >
+            {type}
+          </button>
+          {verified_by && (
+            <span
+              title={`Type verified by ${verified_by}`}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                fontSize: '0.6rem', letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--accent)', fontWeight: 600,
+              }}
+            >
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                width: 13, height: 13, borderRadius: '50%',
+                background: 'var(--accent)', color: '#fff',
+                fontSize: '0.5rem', fontWeight: 700, lineHeight: 1, flexShrink: 0,
+              }}>✓</span>
+              Verified
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Relation badge */}

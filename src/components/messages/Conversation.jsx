@@ -130,6 +130,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const isOtherAnonymous = match.other.profile_data?.anonymous ?? false
   const otherName = isOtherAnonymous ? 'Anonymous' : (match.other.profile_data?.name ?? match.other.type)
   const otherUserId = match.other.id
+  const otherVerifiedBy = match.other.verified_by ?? null
 
   // Track mobile breakpoint for always-visible action buttons
   useEffect(() => {
@@ -291,6 +292,12 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           {relInfo && (
             <span style={{ fontSize: '0.68rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>· {relInfo.name}</span>
           )}
+          {otherVerifiedBy && (
+            <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 11, height: 11, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
+              Verified
+            </span>
+          )}
           {/* ··· menu — mobile */}
           <div style={{ position: 'relative' }} ref={menuRef}>
             <button
@@ -322,11 +329,19 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500 }}>{otherName}</h3>
-            <p style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, marginTop: '0.15rem' }}>
-              <button onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', fontWeight: 'inherit' }}>
-                {match.other.type}
-              </button>
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
+              <p style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, margin: 0 }}>
+                <button onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', fontWeight: 'inherit' }}>
+                  {match.other.type}
+                </button>
+              </p>
+              {otherVerifiedBy && (
+                <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 13, height: 13, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.5rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
+                  Verified
+                </span>
+              )}
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
             {relInfo && (

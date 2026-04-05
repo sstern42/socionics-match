@@ -79,7 +79,7 @@ export default function Admin() {
         { data: incompleteData },
         { data: memberEmailsData },
       ] = await Promise.all([
-        supabase.from('users').select('id, type, purpose, profile_data, created_at').order('created_at', { ascending: false }),
+        supabase.from('users').select('id, type, purpose, profile_data, created_at, verified_by').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
         supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
@@ -778,8 +778,121 @@ export default function Admin() {
             ))}
           </div>
         </div>
+        </div>
+
+        {/* Verification */}
+        <VerificationPanel users={users} onUpdate={loadData} />
+
       </section>
     </Layout>
+  )
+}
+
+}
+
+function VerificationPanel({ users, onUpdate }) {
+  const [verifying, setVerifying] = useState(null) // user id being updated
+  const [verifierName, setVerifierName] = useState('Spencer')
+  const [search, setSearch] = useState('')
+
+  const filtered = users.filter(u => {
+    const q = search.toLowerCase()
+    return !q || (u.profile_data?.name ?? '').toLowerCase().includes(q) || u.type.toLowerCase().includes(q)
+  })
+
+  async function grant(userId) {
+    setVerifying(userId)
+    try {
+      const { error } = await supabase.from('users').update({ verified_by: verifierName.trim() || 'Spencer' }).eq('id', userId)
+      if (error) throw error
+      await onUpdate()
+    } catch (err) {
+      console.error('Verify failed:', err)
+    } finally {
+      setVerifying(null)
+    }
+  }
+
+  async function revoke(userId) {
+    setVerifying(userId)
+    try {
+      const { error } = await supabase.from('users').update({ verified_by: null }).eq('id', userId)
+      if (error) throw error
+      await onUpdate()
+    } catch (err) {
+      console.error('Revoke failed:', err)
+    } finally {
+      setVerifying(null)
+    }
+  }
+
+  return (
+    <div style={cardStyle}>
+      <p style={cardTitleStyle}>Type verification</p>
+      <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap' }}>
+        <input
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Filter by name or type…"
+          style={{ flex: 1, minWidth: 160, padding: '0.4rem 0.75rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }}
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Verified by</span>
+          <input
+            value={verifierName}
+            onChange={e => setVerifierName(e.target.value)}
+            style={{ width: 100, padding: '0.4rem 0.6rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }}
+          />
+        </div>
+      </div>
+      <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {filtered.map((u, i) => (
+          <div key={u.id} style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '0.55rem 0',
+            borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none',
+            gap: '0.75rem',
+          }}>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flex: 1, minWidth: 0 }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36, flexShrink: 0 }}>{u.type}</span>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {u.profile_data?.name ?? '—'}
+              </span>
+              {u.verified_by && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
+                  {u.verified_by}
+                </span>
+              )}
+            </div>
+            <div style={{ flexShrink: 0 }}>
+              {u.verified_by ? (
+                <button
+                  type="button"
+                  onClick={() => revoke(u.id)}
+                  disabled={verifying === u.id}
+                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
+                >
+                  {verifying === u.id ? '…' : 'Revoke'}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => grant(u.id)}
+                  disabled={verifying === u.id}
+                  style={{ background: 'var(--accent)', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
+                >
+                  {verifying === u.id ? '…' : 'Verify'}
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p style={{ fontSize: '0.82rem', color: 'var(--muted)', padding: '0.75rem 0' }}>No members match.</p>
+        )}
+      </div>
+    </div>
   )
 }
 

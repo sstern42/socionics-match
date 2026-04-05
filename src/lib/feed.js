@@ -8,7 +8,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
   // Build query — purpose overlap filter applied server-side when userPurpose is set
   let query = supabase
     .from('users')
-    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active')
+    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active, verified_by')
     .neq('id', currentUserId)
     .not('profile_data', 'is', null)
     .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
