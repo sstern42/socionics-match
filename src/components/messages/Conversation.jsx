@@ -293,10 +293,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             <span style={{ fontSize: '0.68rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>· {relInfo.name}</span>
           )}
           {otherVerifiedBy && (
-            <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 11, height: 11, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
-              Verified
-            </span>
+            <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>✓</span>
           )}
           {/* ··· menu — mobile */}
           <div style={{ position: 'relative' }} ref={menuRef}>
@@ -336,10 +333,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 </button>
               </p>
               {otherVerifiedBy && (
-                <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 13, height: 13, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.5rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
-                  Verified
-                </span>
+                <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 13, height: 13, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.5rem', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>✓</span>
               )}
             </div>
           </div>
