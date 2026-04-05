@@ -147,10 +147,12 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
 /* Mobile utility */
 .show-mobile { display: none; }
 .hidden-mobile { display: revert; }
+.footer-desktop-only { display: revert; }
 
 @media (max-width: 700px) {
   .show-mobile { display: revert; }
   .hidden-mobile { display: none !important; }
+  .footer-desktop-only { display: none !important; }
 
   /* Messages — single column, full viewport height */
   .messages-grid {

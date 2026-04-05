@@ -143,8 +143,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           ?
         </Link>
 
-        {!hideFooter && (
-        <footer className="site-footer">
+        <footer className={`site-footer${hideFooter ? ' footer-desktop-only' : ''}`}>
           <div>
             <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern</a></p>
           </div>
@@ -165,7 +164,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             </Link>
           </div>
         </footer>
-        )}
       </div>
     </>
   )
