@@ -130,7 +130,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           onClick={() => window.umami?.track('help-button-clicked', { from: location.pathname })}
           title="Help & FAQ"
           style={{
-            position: 'fixed', bottom: location.pathname === '/messages' ? '5rem' : '1.25rem', right: '1.25rem', zIndex: 200,
+            position: 'fixed', bottom: '5rem', right: '1.25rem', zIndex: 200,
             width: 36, height: 36, borderRadius: '50%',
             background: 'var(--accent)', color: '#fff',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
