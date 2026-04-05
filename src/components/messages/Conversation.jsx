@@ -511,7 +511,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   {/* Reply icon — visible on hover (desktop) */}
                   <button
                     type="button"
-                    onClick={() => setReplyTo({ id: msg.id, content: msg.content, sender_id: msg.sender_id })}
+                    onClick={() => { window.umami?.track('message-reply-tapped'); setReplyTo({ id: msg.id, content: msg.content, sender_id: msg.sender_id }) }}
                     aria-label="Reply"
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
@@ -530,7 +530,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   {isMine && msg.id === lastMineId && (showReplyBtn || isMobile) && !deleteConfirmId && (
                     <button
                       type="button"
-                      onClick={() => { setEditingId(msg.id); setEditText(msg.content) }}
+                      onClick={() => { window.umami?.track('message-edit-tapped'); setEditingId(msg.id); setEditText(msg.content) }}
                       aria-label="Edit message"
                       style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : 0.3 }}
                     >
@@ -561,7 +561,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     ) : (
                       <button
                         type="button"
-                        onClick={() => setDeleteConfirmId(msg.id)}
+                        onClick={() => { window.umami?.track('message-delete-tapped'); setDeleteConfirmId(msg.id) }}}
                         aria-label="Delete message"
                         style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : 0.3 }}
                       >
