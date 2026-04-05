@@ -788,9 +788,10 @@ export default function Admin() {
 }
 
 function VerificationPanel({ users, onUpdate }) {
-  const [verifying, setVerifying] = useState(null) // user id being updated
+  const [verifying, setVerifying] = useState(null)
   const [verifierName, setVerifierName] = useState('Spencer')
   const [search, setSearch] = useState('')
+  const [error, setError] = useState(null)
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase()
@@ -799,12 +800,13 @@ function VerificationPanel({ users, onUpdate }) {
 
   async function grant(userId) {
     setVerifying(userId)
+    setError(null)
     try {
       const { error } = await supabase.from('users').update({ verified_by: verifierName.trim() || 'Spencer' }).eq('id', userId)
       if (error) throw error
       await onUpdate()
     } catch (err) {
-      console.error('Verify failed:', err)
+      setError(err.message ?? JSON.stringify(err))
     } finally {
       setVerifying(null)
     }
@@ -812,12 +814,13 @@ function VerificationPanel({ users, onUpdate }) {
 
   async function revoke(userId) {
     setVerifying(userId)
+    setError(null)
     try {
       const { error } = await supabase.from('users').update({ verified_by: null }).eq('id', userId)
       if (error) throw error
       await onUpdate()
     } catch (err) {
-      console.error('Revoke failed:', err)
+      setError(err.message ?? JSON.stringify(err))
     } finally {
       setVerifying(null)
     }
@@ -842,6 +845,9 @@ function VerificationPanel({ users, onUpdate }) {
           />
         </div>
       </div>
+      {error && (
+        <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>
+      )}
       <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
         {filtered.map((u, i) => (
           <div key={u.id} style={{
