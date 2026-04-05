@@ -5,6 +5,9 @@ export const ENTRIES = [
     date: '5 April 2026',
     label: 'Update',
     items: [
+      'Verified type badges — members whose Socionics type has been professionally verified now show a ✓ on their type badge. Hover to see who verified it. Hidden in anonymous mode',
+      'Verified types filter — new filter in the feed to show only members with verified types',
+      'Anonymous mode — fixed an issue where members without a date of birth set could not save changes to their profile, including turning off anonymous mode. Date of birth is now optional',
       'Rate this connection — the feedback bar has moved to the top of the conversation, just below the header, so it no longer overlaps the message input',
       'Help button — repositioned consistently across all pages so it no longer overlaps the Send button in messages',
     ],
