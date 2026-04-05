@@ -76,6 +76,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [activeBlock, setActiveBlock] = useState(null)
   const [replyTo, setReplyTo] = useState(null) // { id, content, sender_id }
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 700)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
   const [deleting, setDeleting] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -129,6 +130,14 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const isOtherAnonymous = match.other.profile_data?.anonymous ?? false
   const otherName = isOtherAnonymous ? 'Anonymous' : (match.other.profile_data?.name ?? match.other.type)
   const otherUserId = match.other.id
+
+  // Track mobile breakpoint for always-visible action buttons
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 700px)')
+    const handler = e => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   // Load active block between these two users
   useEffect(() => {
@@ -507,10 +516,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       color: 'var(--muted)', padding: '0.25rem', lineHeight: 1,
-                      opacity: showReplyBtn ? 1 : 0,
+                      opacity: showReplyBtn ? 1 : (isMobile ? 0.3 : 0),
                       transition: 'opacity 0.15s',
                       flexShrink: 0,
-                      pointerEvents: showReplyBtn ? 'auto' : 'none',
+                      pointerEvents: (showReplyBtn || isMobile) ? 'auto' : 'none',
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -518,19 +527,19 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       <path d="M1 6h7a5 5 0 0 1 5 5v1"/>
                     </svg>
                   </button>
-                  {isMine && msg.id === lastMineId && showReplyBtn && !deleteConfirmId && (
+                  {isMine && msg.id === lastMineId && (showReplyBtn || isMobile) && !deleteConfirmId && (
                     <button
                       type="button"
                       onClick={() => { setEditingId(msg.id); setEditText(msg.content) }}
                       aria-label="Edit message"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : 0.3 }}
                     >
                       <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/>
                       </svg>
                     </button>
                   )}
-                  {isMine && msg.id === lastMineId && showReplyBtn && (
+                  {isMine && msg.id === lastMineId && (showReplyBtn || isMobile) && (
                     deleteConfirmId === msg.id ? (
                       <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
                         <button
@@ -554,7 +563,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                         type="button"
                         onClick={() => setDeleteConfirmId(msg.id)}
                         aria-label="Delete message"
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : 0.3 }}
                       >
                         <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/>
