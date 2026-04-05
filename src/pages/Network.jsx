@@ -271,7 +271,7 @@ export default function Network() {
   const maxConn = graphData?.maxConn ?? 1
 
   return (
-    <Layout>
+    <Layout noScroll>
       <section style={{ maxWidth: 960, margin: '0 auto', padding: '4rem 1.5rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent-lt)', borderRadius: 3, padding: '0.2rem 0.6rem', marginBottom: '1rem' }}>
