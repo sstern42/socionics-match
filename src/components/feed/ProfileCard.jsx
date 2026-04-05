@@ -266,7 +266,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           }}
         >
           {type}
-          {verified_by && (
+          {verified_by && !isAnonymous && (
             <span style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
               width: 12, height: 12, borderRadius: '50%',

@@ -160,7 +160,7 @@ export default function ProfileEdit() {
                 onChange={e => setDob(e.target.value)}
               />
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                Date of birth — only your age is shown on your card, never your DOB.
+                Date of birth — only your age is shown on your card, never your DOB. Optional, but your age won't show without it.
               </p>
             </div>
             <select className="input-standalone" value={gender} onChange={e => setGender(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
@@ -229,7 +229,7 @@ export default function ProfileEdit() {
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate('/feed')}>Cancel</button>
-            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !dob || !typeValid} style={{ opacity: (saving || !name || !dob || !typeValid) ? 0.5 : 1 }}>
+            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !typeValid} style={{ opacity: (saving || !name || !typeValid) ? 0.5 : 1 }}>
               {saving ? 'Saving…' : 'Save details'}
             </button>
           </div>
