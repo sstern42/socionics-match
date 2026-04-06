@@ -1,9 +1,25 @@
+import { useState, useEffect } from 'react'
 import { usePushNotifications } from '../../lib/usePushNotifications'
 
 export default function NotificationPrompt({ userId }) {
   const { supported, permission, subscribed, subscribe } = usePushNotifications(userId)
 
-  if (!supported || permission === 'denied' || subscribed) return null
+  useEffect(() => {
+    if (!supported) return
+    function recheck() {
+      navigator.serviceWorker.ready.then(reg =>
+        reg.pushManager.getSubscription().then(sub => {
+          if (sub) setLocalSubscribed(true)
+        })
+      )
+    }
+    window.addEventListener('push-subscribed', recheck)
+    return () => window.removeEventListener('push-subscribed', recheck)
+  }, [supported])
+
+  const [localSubscribed, setLocalSubscribed] = useState(false)
+
+  if (!supported || permission === 'denied' || subscribed || localSubscribed) return null
 
   return (
     <button

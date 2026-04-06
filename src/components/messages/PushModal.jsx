@@ -26,8 +26,11 @@ export default function PushModal({ userId }) {
     setLoading(true)
     const err = await subscribe()
     setLoading(false)
-    window.umami?.track('push-notifications-enabled')
-    if (!err) dismiss()
+    if (!err) {
+      window.dispatchEvent(new Event('push-subscribed'))
+      window.umami?.track('push-notifications-enabled')
+      dismiss()
+    }
   }
 
   if (!visible) return null
