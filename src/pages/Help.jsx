@@ -110,7 +110,7 @@ const FAQS = [
       },
       {
         q: 'How do I install Socion to my home screen?',
-        a: "On iPhone: open socion.app in Safari, tap the Share button, then \"Add to Home Screen.\" On Android: open socion.app in Chrome, tap the three-dot menu, then \"Add to Home Screen\" or \"Install app.\"",
+        a: "On iPhone, you must use Safari — Chrome and other iOS browsers don't support home screen installation. Open socion.app in Safari, tap the Share button, then \"Add to Home Screen.\" On Android: open socion.app in Chrome, tap the three-dot menu, then \"Add to Home Screen\" or \"Install app.\"",
       },
       {
         q: 'Push notifications not working?',
@@ -124,9 +124,9 @@ const FAQS = [
 const NOTIFICATIONS_CONTENT = [
   {
     heading: 'iPhone / iPad (Safari)',
-    body: `Notifications only work if Socion is installed to your home screen first.
+    body: `Notifications require Safari and Socion installed to your home screen. Chrome, Firefox, and in-app browsers on iPhone do not support either.
 
-1. Open socion.app in Safari
+1. Open socion.app in Safari (not Chrome or any other app)
 2. Tap the Share button (the box with an arrow)
 3. Tap "Add to Home Screen"
 4. Open Socion from your home screen
