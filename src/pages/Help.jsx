@@ -105,6 +105,10 @@ const FAQS = [
         a: "Yes, completely free. If you'd like to support the running costs, there's a Ko-fi link in the app — but it's entirely optional.",
       },
       {
+        q: 'Why does it say Beta?',
+        a: "Socion is in early beta. The core experience works well but some features — particularly push notifications on iPhone — may be unreliable on certain devices. Things will improve as the platform grows. If you run into anything, the Discord is the best place to flag it.",
+      },
+      {
         q: 'Is my data private?',
         a: "Your profile is only visible to other signed-in Socion members. Your data is stored securely on Supabase servers in the EU. Socion does not sell or share your data with third parties.",
       },
