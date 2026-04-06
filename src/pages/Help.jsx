@@ -130,14 +130,14 @@ const NOTIFICATIONS_CONTENT = [
 2. Tap the Share button (the box with an arrow)
 3. Tap "Add to Home Screen"
 4. Open Socion from your home screen
-5. Go to Profile → Notifications and tap Enable
+5. Go to Messages — a prompt to enable notifications will appear automatically
 
 Already installed but still not working? Safari may have blocked the permission:
 
 1. Open the Settings app
 2. Scroll down to Safari → Settings for Websites → Notifications
 3. Find socion.app and set it to Allow
-4. Reopen Socion from your home screen and try enabling again`,
+4. Reopen Socion from your home screen and go to Messages — the prompt will reappear`,
   },
   {
     heading: 'Android (Chrome)',
