@@ -35,9 +35,20 @@ Deno.serve(async (req) => {
 
     if (matchErr || !match) return new Response('Match not found', { status: 200 })
 
-    const recipient_id = match.user_a_id === sender_id
+    const recipient_internal_id = match.user_a_id === sender_id
       ? match.user_b_id
       : match.user_a_id
+
+    // Get recipient's auth_id for push subscription lookup
+    const { data: recipient } = await supabase
+      .from('users')
+      .select('auth_id, profile_data')
+      .eq('id', recipient_internal_id)
+      .single()
+
+    if (!recipient?.auth_id) return new Response('Recipient not found', { status: 200 })
+
+    const recipient_id = recipient.auth_id
 
     // Get sender profile for notification title
     const { data: sender } = await supabase

@@ -26,7 +26,7 @@ Deno.serve(async (_req) => {
     // Step 1 — find inactive users in the 3-7 day window
     const { data: inactiveUsers, error: usersError } = await supabase
       .from('users')
-      .select('id')
+      .select('id, auth_id')
       .lt('last_active', threeDaysAgo)
       .gt('last_active', sevenDaysAgo)
 
@@ -39,14 +39,14 @@ Deno.serve(async (_req) => {
       return new Response('No inactive candidates', { status: 200 })
     }
 
-    const userIds = inactiveUsers.map(u => u.id)
+    const authIds = inactiveUsers.map(u => u.auth_id).filter(Boolean)
 
     // Step 2 — get push subscriptions for those users
     // exclude those notified in the last 7 days
     const { data: subscriptions, error: subsError } = await supabase
       .from('push_subscriptions')
       .select('user_id, subscription, reengagement_sent_at')
-      .in('user_id', userIds)
+      .in('user_id', authIds)
       .or(`reengagement_sent_at.is.null,reengagement_sent_at.lt.${sevenDaysAgo}`)
 
     if (subsError) {
