@@ -2,6 +2,18 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '6 April 2026',
+    label: 'Update',
+    items: [
+      'Push notifications — fixed a bug where message push notifications were not being delivered to anyone. Notifications now arrive correctly on all subscribed devices',
+      'Push notifications — fixed a bug where the "Your Dual just joined" notification was not firing correctly due to the same underlying issue',
+      'Push notifications — stale or revoked subscriptions (e.g. when push is blocked in the browser) are now automatically cleaned up on the next notification attempt',
+      'Push notifications — multiple devices are now correctly supported; each device receives notifications independently',
+      'Footer — restored on desktop across all pages including Feed, Messages, Profile, and Admin',
+      'Message actions — reply, edit, and delete buttons are now always visible at reduced opacity on mobile rather than hidden until long-press',
+    ],
+  },
+  {
     date: '5 April 2026',
     label: 'Update',
     items: [
