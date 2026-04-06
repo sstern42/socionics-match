@@ -67,7 +67,6 @@ export function usePushNotifications(userId) {
         .upsert(
           {
             user_id: authUid,
-            endpoint: sub.toJSON().endpoint,
             subscription: sub.toJSON(),
             device_hint: getDeviceHint(),
             updated_at: new Date().toISOString(),
