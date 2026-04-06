@@ -65,6 +65,7 @@ export function usePushNotifications(userId) {
         .upsert(
           {
             user_id: authUid,
+            endpoint: sub.toJSON().endpoint,
             subscription: sub.toJSON(),
             device_hint: getDeviceHint(),
             updated_at: new Date().toISOString(),
@@ -86,7 +87,6 @@ export function usePushNotifications(userId) {
     if (sub) {
       const endpoint = sub.endpoint
       await sub.unsubscribe()
-      // Delete only this device's row by endpoint
       await supabase
         .from('push_subscriptions')
         .delete()
