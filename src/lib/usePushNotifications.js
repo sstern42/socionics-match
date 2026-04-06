@@ -34,6 +34,7 @@ export function usePushNotifications(userId) {
     supported ? Notification.permission : 'unsupported'
   )
   const [subscribed, setSubscribed] = useState(false)
+  const [subscribeError, setSubscribeError] = useState(null)
 
   useEffect(() => {
     if (!supported || !userId) return
@@ -44,6 +45,7 @@ export function usePushNotifications(userId) {
 
   async function subscribe() {
     if (!supported || !userId || !VAPID_PUBLIC_KEY) return
+    setSubscribeError(null)
 
     const reg = await navigator.serviceWorker.ready
     const result = await Notification.requestPermission()
@@ -77,6 +79,11 @@ export function usePushNotifications(userId) {
       setSubscribed(true)
     } catch (err) {
       console.error('Push subscribe failed:', err)
+      const msg = /iphone|ipad|ipod/i.test(navigator.userAgent)
+        ? 'Could not enable notifications. Make sure Socion is installed to your home screen (via Safari) and your iOS is 16.4 or later.'
+        : 'Could not enable notifications. Check your browser permissions and try again.'
+      setSubscribeError(msg)
+      return msg
     }
   }
 
@@ -95,5 +102,5 @@ export function usePushNotifications(userId) {
     setSubscribed(false)
   }
 
-  return { supported, permission, subscribed, subscribe, unsubscribe }
+  return { supported, permission, subscribed, subscribe, unsubscribe, subscribeError }
 }

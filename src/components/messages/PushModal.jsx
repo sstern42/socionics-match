@@ -4,7 +4,7 @@ import { usePushNotifications } from '../../lib/usePushNotifications'
 const STORAGE_KEY = 'socion_push_modal_seen'
 
 export default function PushModal({ userId }) {
-  const { supported, permission, subscribed, subscribe } = usePushNotifications(userId)
+  const { supported, permission, subscribed, subscribe, subscribeError } = usePushNotifications(userId)
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -24,10 +24,10 @@ export default function PushModal({ userId }) {
 
   async function handleEnable() {
     setLoading(true)
-    await subscribe()
+    const err = await subscribe()
     setLoading(false)
     window.umami?.track('push-notifications-enabled')
-    dismiss()
+    if (!err) dismiss()
   }
 
   if (!visible) return null
@@ -60,6 +60,9 @@ export default function PushModal({ userId }) {
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7 }}>
           Enable push notifications and you'll know instantly when someone messages you — no need to keep the app open.
         </p>
+        {subscribeError && (
+          <p style={{ fontSize: '0.8rem', color: '#c0392b', lineHeight: 1.5 }}>{subscribeError}</p>
+        )}
         <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
           <button
             type="button"

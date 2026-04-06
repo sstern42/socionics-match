@@ -21,6 +21,7 @@ export default function ProfileNotifications() {
     subscribed: pushSubscribed,
     subscribe: pushSubscribe,
     unsubscribe: pushUnsubscribe,
+    subscribeError: pushError,
   } = usePushNotifications(profile?.id)
 
   async function handleSave() {
@@ -102,6 +103,9 @@ export default function ProfileNotifications() {
                         : 'Push notifications are off for this device.'
                       : 'Get instant alerts for new messages on this device. Takes effect immediately.'}
                   </p>
+                  {pushError && (
+                    <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.4rem', lineHeight: 1.5 }}>{pushError}</p>
+                  )}
                 </div>
               </label>
             )}
