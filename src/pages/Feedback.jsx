@@ -81,7 +81,7 @@ export default function Feedback() {
   }
 
   const other = match.user_a_id === profile?.id ? match.user_b : match.user_a
-  const otherName = other?.profile_data?.name ?? other?.type ?? 'this person'
+  const otherName = other?.profile_data?.anonymous ? 'Anonymous' : (other?.profile_data?.name ?? other?.type ?? 'this person')
 
   if (alreadySubmitted) {
     return (
