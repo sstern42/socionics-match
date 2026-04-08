@@ -6,6 +6,17 @@ import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks
 import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
 import { supabase } from '../../lib/supabase'
 
+function renderContent(text) {
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts = text.split(urlRegex)
+  return parts.map((part, i) =>
+    urlRegex.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline', wordBreak: 'break-all' }}>{part}</a>
+      : part
+  )
+}
+
+
 
 function SIWebview({ url, onClose }) {
   if (!url) return null
@@ -515,7 +526,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                           <button type="button" onClick={() => { setEditingId(null); setEditText('') }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', padding: '0.2rem' }}>Cancel</button>
                         </div>
                       </div>
-                    ) : msg.content}
+                    ) : renderContent(msg.content)}
                   </div>
                   {/* Reply icon — visible on hover (desktop) */}
                   <button
