@@ -85,7 +85,7 @@ export default function Admin() {
         supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
         supabase.rpc('get_member_emails'),
-        supabase.from('typing_requests').select('id, user_id, notes, status, created_at').order('created_at', { ascending: false }),
+        supabase.from('typing_requests').select('id, user_id, notes, discord_handle, status, created_at').order('created_at', { ascending: false }),
       ])
 
       setAnnouncement(statsRow?.announcement ?? '')
@@ -841,6 +841,9 @@ function TypingRequestsPanel({ requests, users, onUpdate }) {
                     <span style={{ fontSize: '0.85rem', color: 'var(--fg)' }}>{user?.profile_data?.name ?? 'Anonymous'}</span>
                     <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: statusColour[r.status] ?? 'var(--muted)', fontWeight: 500 }}>{r.status}</span>
                   </div>
+                  {r.discord_handle && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--accent)', paddingLeft: '3rem' }}>Discord: {r.discord_handle}</p>
+                  )}
                   {r.notes && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>
                   )}

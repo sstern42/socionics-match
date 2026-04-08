@@ -9,6 +9,7 @@ export default function Typing() {
   const navigate = useNavigate()
 
   const [notes, setNotes]           = useState('')
+  const [discord, setDiscord]         = useState('')
   const [status, setStatus]         = useState('idle') // idle | submitting | success | error | exists
   const [errorMsg, setErrorMsg]     = useState('')
 
@@ -42,7 +43,7 @@ export default function Typing() {
 
     const { error } = await supabase
       .from('typing_requests')
-      .insert({ user_id: profile.id, notes: notes.trim() || null })
+      .insert({ user_id: profile.id, notes: notes.trim() || null, discord_handle: discord.trim() || null })
 
     if (error) {
       setErrorMsg('Something went wrong. Please try again.')
@@ -164,7 +165,19 @@ export default function Typing() {
           </div>
         ) : (
           <div style={cardStyle}>
-            <label style={labelStyle} htmlFor="typing-notes">
+            <label style={labelStyle} htmlFor="typing-discord">
+              Your Discord username <span style={{ fontWeight: 300 }}>(optional — so the typist can reach you)</span>
+            </label>
+            <input
+              id="typing-discord"
+              type="text"
+              style={{ ...textareaStyle, minHeight: 'unset', padding: '0.6rem 0.75rem' }}
+              placeholder="e.g. username or username#1234"
+              value={discord}
+              onChange={e => setDiscord(e.target.value)}
+              maxLength={100}
+            />
+            <label style={{ ...labelStyle, marginTop: '1rem' }} htmlFor="typing-notes">
               Anything to add? <span style={{ fontWeight: 300 }}>(optional)</span>
             </label>
             <textarea
