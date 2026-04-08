@@ -539,7 +539,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       opacity: showReplyBtn ? 1 : (isMobile ? 0.3 : 0),
                       transition: 'opacity 0.15s',
                       flexShrink: 0,
-                      pointerEvents: (showReplyBtn || isMobile) ? 'auto' : 'none',
+                      pointerEvents: 'auto',
                     }}
                   >
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -547,7 +547,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       <path d="M1 6h7a5 5 0 0 1 5 5v1"/>
                     </svg>
                   </button>
-                  {isMine && msg.id === lastMineId && (showReplyBtn || isMobile) && !deleteConfirmId && (
+                  {isMine && msg.id === lastMineId && (showReplyBtn || isMobile || !isMobile) && !deleteConfirmId && (
                     <button
                       type="button"
                       onClick={() => { window.umami?.track('message-edit-tapped'); setEditingId(msg.id); setEditText(msg.content) }}
@@ -559,7 +559,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       </svg>
                     </button>
                   )}
-                  {isMine && msg.id === lastMineId && (showReplyBtn || isMobile) && (
+                  {isMine && msg.id === lastMineId && (showReplyBtn || isMobile || !isMobile) && (
                     deleteConfirmId === msg.id ? (
                       <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
                         <button
@@ -583,7 +583,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                         type="button"
                         onClick={() => { window.umami?.track('message-delete-tapped'); setDeleteConfirmId(msg.id) }}
                         aria-label="Delete message"
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : 0.3 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0, opacity: showReplyBtn ? 1 : (isMobile ? 0.3 : 0.15) }}
                       >
                         <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/>
