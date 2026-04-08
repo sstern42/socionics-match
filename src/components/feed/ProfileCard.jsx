@@ -221,7 +221,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
                 display: 'inline-block', marginTop: '0.2rem',
                 fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase',
                 fontWeight: 600, color: '#fff',
-                background: role === 'founder' ? '#2c2a22' : 'var(--accent)',
+                background: role === 'founder' ? '#2c2a22' : role === 'typist' ? '#185FA5' : 'var(--accent)',
                 padding: '0.15rem 0.5rem', borderRadius: 2,
               }}>
                 {role}
