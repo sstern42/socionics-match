@@ -38,6 +38,10 @@ export default function Typing() {
 
   async function handleSubmit() {
     if (status === 'submitting') return
+    if (!discord.trim()) {
+      setErrorMsg('Please enter your Discord username so the typist can reach you.')
+      return
+    }
     setStatus('submitting')
     setErrorMsg('')
 
@@ -128,7 +132,7 @@ export default function Typing() {
         <h1 style={headingStyle}>Get typed</h1>
         <p style={subStyle}>
           Not sure of your type, or want it confirmed by an expert? Book a one-to-one typing session
-          with our resident typist. A verified badge will be added to your profile on completion.
+          with our resident typist via Discord voice call. A verified badge will be added to your profile on completion.
         </p>
 
         {/* What to expect */}
@@ -136,7 +140,7 @@ export default function Typing() {
           <p style={{ ...labelStyle, marginBottom: '1rem' }}>What to expect</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {[
-              ['Format', 'Voice call — fluent English required'],
+              ['Format', 'Discord voice call — fluent English required'],
               ['Duration', '1–2 hours'],
               ['Price', '$20 / £17'],
               ['Outcome', 'Verified badge on your profile'],
@@ -166,13 +170,14 @@ export default function Typing() {
         ) : (
           <div style={cardStyle}>
             <label style={labelStyle} htmlFor="typing-discord">
-              Your Discord username <span style={{ fontWeight: 300 }}>(optional — so the typist can reach you)</span>
+              Your Discord username <span style={{ color: "crimson" }}>*</span>
             </label>
             <input
               id="typing-discord"
               type="text"
               style={{ ...textareaStyle, minHeight: 'unset', padding: '0.6rem 0.75rem' }}
               placeholder="e.g. username or username#1234"
+              required
               value={discord}
               onChange={e => setDiscord(e.target.value)}
               maxLength={100}
