@@ -78,12 +78,14 @@ export default function Admin() {
         { data: statsRow },
         { data: incompleteData },
         { data: memberEmailsData },
+        { data: typingRequestsData },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at, verified_by').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
         supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
         supabase.rpc('get_member_emails'),
+        supabase.from('typing_requests').select('id, user_id, notes, status, created_at').order('created_at', { ascending: false }),
       ])
 
       setAnnouncement(statsRow?.announcement ?? '')
@@ -183,6 +185,7 @@ export default function Admin() {
         relAvgRatings,
         comments,
         growthData,
+        typingRequests: typingRequestsData ?? [],
       })
     } catch (err) {
       setError(err.message)
@@ -220,7 +223,7 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, connectionsToday, totalMessages, messagesToday, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount } = data
+  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, connectionsToday, totalMessages, messagesToday, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount, typingRequests } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -779,11 +782,98 @@ export default function Admin() {
           </div>
         </div>
 
+        {/* Typing requests */}
+        <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} />
+
         {/* Verification */}
         <VerificationPanel users={users} onUpdate={loadData} />
 
       </section>
     </Layout>
+  )
+}
+
+function TypingRequestsPanel({ requests, users, onUpdate }) {
+  const [updating, setUpdating] = useState(null)
+  const [error, setError] = useState(null)
+
+  const userMap = Object.fromEntries(users.map(u => [u.id, u]))
+
+  async function updateStatus(id, status) {
+    setUpdating(id)
+    setError(null)
+    try {
+      const { error } = await supabase.from('typing_requests').update({ status }).eq('id', id)
+      if (error) throw error
+      await onUpdate()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  const statusColour = { pending: '#BA7517', scheduled: '#185FA5', completed: '#0F6E56', cancelled: 'var(--muted)' }
+
+  return (
+    <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
+      <p style={cardTitleStyle}>
+        Typing requests
+        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {requests.length} total</span>
+      </p>
+      {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
+      {requests.length === 0 ? (
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>No requests yet.</p>
+      ) : (
+        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+          {requests.map((r, i) => {
+            const user = userMap[r.user_id]
+            return (
+              <div key={r.id} style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
+                padding: '0.75rem 0',
+                borderBottom: i < requests.length - 1 ? '1px solid var(--border)' : 'none',
+                gap: '1rem', flexWrap: 'wrap',
+              }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36, flexShrink: 0 }}>{user?.type ?? '?'}</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--fg)' }}>{user?.profile_data?.name ?? 'Anonymous'}</span>
+                    <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: statusColour[r.status] ?? 'var(--muted)', fontWeight: 500 }}>{r.status}</span>
+                  </div>
+                  {r.notes && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>
+                  )}
+                  <p style={{ fontSize: '0.68rem', color: 'var(--muted)', paddingLeft: '3rem' }}>
+                    {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(r.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap' }}>
+                  {r.status === 'pending' && (
+                    <button type="button" onClick={() => updateStatus(r.id, 'scheduled')} disabled={updating === r.id}
+                      style={{ background: '#185FA5', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>
+                      {updating === r.id ? '…' : 'Mark scheduled'}
+                    </button>
+                  )}
+                  {r.status === 'scheduled' && (
+                    <button type="button" onClick={() => updateStatus(r.id, 'completed')} disabled={updating === r.id}
+                      style={{ background: '#0F6E56', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>
+                      {updating === r.id ? '…' : 'Mark completed'}
+                    </button>
+                  )}
+                  {r.status !== 'cancelled' && r.status !== 'completed' && (
+                    <button type="button" onClick={() => updateStatus(r.id, 'cancelled')} disabled={updating === r.id}
+                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>
+                      {updating === r.id ? '…' : 'Cancel'}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   )
 }
 

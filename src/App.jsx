@@ -16,6 +16,7 @@ import Changelog from './pages/Changelog'
 import Network from './pages/Network'
 import Feed from './pages/Feed'
 import Messages from './pages/Messages'
+import Typing from './pages/Typing'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="/network" element={<Network />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/typing" element={<Typing />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

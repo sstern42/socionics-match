@@ -51,6 +51,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   )}
                 </Link>
                 <Link to="/profile/edit" style={navStyle(isActive('/profile/edit'))}>Profile</Link>
+                <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
                 )}
@@ -104,6 +105,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   )}
                 </Link>
                 <Link to="/profile/edit" onClick={closeMenu} style={mobileNavStyle(isActive('/profile/edit'))}>Profile</Link>
+                <Link to="/typing" onClick={closeMenu} style={mobileNavStyle(isActive('/typing'))}>Get typed</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" onClick={closeMenu} style={mobileNavStyle(isActive('/admin'))}>Admin</Link>
                 )}
