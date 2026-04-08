@@ -13,7 +13,7 @@ const FAQS = [
       },
       {
         q: 'Can I change my type after signing up?',
-        a: "Yes. Go to Profile → Details and update your type at any time. If you're unsure, the #typing channel in the Socion Discord is a good place to get a second opinion from the community.",
+        a: "Yes. Go to Profile → Details and update your type at any time. If you want expert confirmation, the Get Typed service offers a professional one-to-one typing session with a verified badge on completion.",
       },
       {
         q: 'How accurate is the typing questionnaire?',
@@ -22,6 +22,39 @@ const FAQS = [
       {
         q: "What's the difference between Socionics and MBTI?",
         a: "They share the same 16-type structure and Jungian roots, but Socionics is primarily a theory of relationships rather than individual traits. The type names differ slightly, and crucially, Socionics maps a specific named dynamic between every possible pair of types. MBTI doesn't do this. The two systems also differ on how some types are defined — introverted types in particular don't map cleanly between the two.",
+      },
+    ],
+  },
+  {
+    section: 'Get typed',
+    items: [
+      {
+        q: 'What is the Get Typed service?',
+        a: 'Get Typed is a professional one-to-one Socionics typing session conducted via Discord voice call with our resident typist. On completion, a verified badge is added to your profile confirming your type.',
+      },
+      {
+        q: 'How much does it cost?',
+        a: '$20 / £17, paid after your session is confirmed. Payment is arranged via a secure Stripe link sent to you directly.',
+      },
+      {
+        q: 'How long does a session take?',
+        a: 'Sessions typically run 1–2 hours depending on how the conversation goes.',
+      },
+      {
+        q: 'Do I need a Discord account?',
+        a: 'Yes — sessions are conducted via Discord voice call, so a Discord account is required. You\'ll be asked for your Discord username when you submit a request.',
+      },
+      {
+        q: 'Is fluent English required?',
+        a: 'Yes. The typist needs to assess how you communicate and reason, which requires fluent spoken English.',
+      },
+      {
+        q: 'What happens after I request a typing?',
+        a: 'The typist will reach out to you on Discord to schedule a convenient time. Once the session is complete and payment is confirmed, your verified badge will appear on your profile.',
+      },
+      {
+        q: 'What does the verified badge show?',
+        a: 'A small ✓ badge appears on your type on your profile card. Hover to see who verified it.',
       },
     ],
   },
