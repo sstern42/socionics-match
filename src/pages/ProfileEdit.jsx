@@ -32,6 +32,7 @@ export default function ProfileEdit() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
 
+  const isVerified = !!profile?.verified_by
   const typeValid = TYPES.includes(type.toUpperCase())
 
   async function handleSave() {
@@ -58,7 +59,8 @@ export default function ProfileEdit() {
           connection_question: connectionQuestion.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
         },
-        type: type.toUpperCase(),
+        // don't allow type change if verified
+        type: isVerified ? profile.type : type.toUpperCase(),
         avatarUrl,
       })
       await refreshProfile()
@@ -119,7 +121,6 @@ export default function ProfileEdit() {
           <div style={{ textAlign: 'center' }}>
             <p className="eyebrow">Profile</p>
             <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>Your <em>details</em></h1>
-
           </div>
 
           <ProfileNav />
@@ -145,12 +146,9 @@ export default function ProfileEdit() {
                   {avatarPreview ? 'Change photo' : 'Add photo'}
                   <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                 </label>
-                {avatarPreview && (
-                  <button type="button" onClick={() => { setAvatarFile(null); setAvatarPreview(null) }} style={{ marginLeft: '0.75rem', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--muted)' }}>Remove</button>
-                )}
               </div>
             </div>
-            <input className="input-standalone" placeholder="First name or alias" value={name} onChange={e => setName(e.target.value)} />
+            <input className="input-standalone" placeholder="Display name" value={name} onChange={e => setName(e.target.value)} />
             <div>
               <input
                 className="input-standalone"
@@ -219,9 +217,28 @@ export default function ProfileEdit() {
                 <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Others won't see when you were last active and you won't appear in the "Online now" or "Active today" filters. You'll also appear lower in the feed while this is on.</p>
               </div>
             </label>
+
+            {/* Type field — locked if verified */}
             <div>
-              <input className="input-standalone" placeholder="Socionics type (e.g. LII)" value={type} onChange={e => setType(e.target.value.toUpperCase())} />
-              {type && !typeValid && <p style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.25rem' }}>Not a recognised type — check spelling.</p>}
+              {isVerified ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.65rem 0.75rem', border: '1px solid var(--border)', borderRadius: 3, background: 'var(--surface)' }}>
+                  <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--accent)' }}>{profile.type}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
+                    Verified by {profile.verified_by}
+                  </span>
+                </div>
+              ) : (
+                <input className="input-standalone" placeholder="Socionics type (e.g. LII)" value={type} onChange={e => setType(e.target.value.toUpperCase())} />
+              )}
+              {!isVerified && type && !typeValid && (
+                <p style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.25rem' }}>Not a recognised type — check spelling.</p>
+              )}
+              {isVerified && (
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                  Your type has been professionally verified and cannot be changed.
+                </p>
+              )}
             </div>
           </div>
 
@@ -229,7 +246,7 @@ export default function ProfileEdit() {
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate('/feed')}>Cancel</button>
-            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !typeValid} style={{ opacity: (saving || !name || !typeValid) ? 0.5 : 1 }}>
+            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || (!isVerified && !typeValid)} style={{ opacity: (saving || !name || (!isVerified && !typeValid)) ? 0.5 : 1 }}>
               {saving ? 'Saving…' : 'Save details'}
             </button>
           </div>
@@ -245,8 +262,6 @@ export default function ProfileEdit() {
           </div>
         </div>
       </section>
-
-
 
       {showDeleteModal && (
         <div onClick={() => !deleting && setShowDeleteModal(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
@@ -283,8 +298,6 @@ export default function ProfileEdit() {
           </div>
         </div>
       )}
-
-
     </Layout>
   )
 }
@@ -294,7 +307,7 @@ const centreStyle = {
   display: 'flex', 
   flexDirection: 'column', 
   alignItems: 'center', 
-  justifyContent: 'flex-start',  // was 'center'
+  justifyContent: 'flex-start',
   padding: '2rem 1.5rem 6rem', 
   gap: '2rem' 
 }
