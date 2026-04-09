@@ -880,22 +880,32 @@ function TypingRequestsPanel({ requests, users, onUpdate }) {
   )
 }
 
+const SOCIONICS_TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
+
 function VerificationPanel({ users, onUpdate }) {
   const [verifying, setVerifying] = useState(null)
   const [verifierName, setVerifierName] = useState('Spencer')
   const [search, setSearch] = useState('')
   const [error, setError] = useState(null)
+  const [typeOverrides, setTypeOverrides] = useState({})
 
   const filtered = users.filter(u => {
     const q = search.toLowerCase()
     return !q || (u.profile_data?.name ?? '').toLowerCase().includes(q) || u.type.toLowerCase().includes(q)
   })
 
-  async function grant(userId) {
+  function selectedType(u) {
+    return typeOverrides[u.id] ?? u.type
+  }
+
+  async function grant(userId, newType) {
     setVerifying(userId)
     setError(null)
     try {
-      const { error } = await supabase.from('users').update({ verified_by: verifierName.trim() || 'Spencer' }).eq('id', userId)
+      const { error } = await supabase.from('users').update({
+        verified_by: verifierName.trim() || 'Spencer',
+        type: newType,
+      }).eq('id', userId)
       if (error) throw error
       await onUpdate()
     } catch (err) {
@@ -942,48 +952,62 @@ function VerificationPanel({ users, onUpdate }) {
         <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>
       )}
       <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {filtered.map((u, i) => (
-          <div key={u.id} style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '0.55rem 0',
-            borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none',
-            gap: '0.75rem',
-          }}>
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flex: 1, minWidth: 0 }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36, flexShrink: 0 }}>{u.type}</span>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {u.profile_data?.name ?? '—'}
-              </span>
-              {u.verified_by && (
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
-                  {u.verified_by}
+        {filtered.map((u, i) => {
+          const isVerified = !!u.verified_by
+          const currentType = selectedType(u)
+          return (
+            <div key={u.id} style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '0.55rem 0',
+              borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none',
+              gap: '0.75rem',
+            }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flex: 1, minWidth: 0 }}>
+                {isVerified ? (
+                  <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 52, flexShrink: 0 }}>{u.type}</span>
+                ) : (
+                  <select
+                    value={currentType}
+                    onChange={e => setTypeOverrides(prev => ({ ...prev, [u.id]: e.target.value }))}
+                    style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 72, flexShrink: 0, border: '1px solid var(--border)', borderRadius: 3, padding: '0.15rem 0.25rem', fontFamily: 'var(--sans)', background: '#fff', cursor: 'pointer' }}
+                  >
+                    {SOCIONICS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                )}
+                <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {u.profile_data?.name ?? '—'}
                 </span>
-              )}
+                {isVerified && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
+                    {u.verified_by}
+                  </span>
+                )}
+              </div>
+              <div style={{ flexShrink: 0 }}>
+                {isVerified ? (
+                  <button
+                    type="button"
+                    onClick={() => revoke(u.id)}
+                    disabled={verifying === u.id}
+                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
+                  >
+                    {verifying === u.id ? '…' : 'Revoke'}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => grant(u.id, currentType)}
+                    disabled={verifying === u.id}
+                    style={{ background: 'var(--accent)', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
+                  >
+                    {verifying === u.id ? '…' : 'Verify'}
+                  </button>
+                )}
+              </div>
             </div>
-            <div style={{ flexShrink: 0 }}>
-              {u.verified_by ? (
-                <button
-                  type="button"
-                  onClick={() => revoke(u.id)}
-                  disabled={verifying === u.id}
-                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
-                >
-                  {verifying === u.id ? '…' : 'Revoke'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => grant(u.id)}
-                  disabled={verifying === u.id}
-                  style={{ background: 'var(--accent)', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
-                >
-                  {verifying === u.id ? '…' : 'Verify'}
-                </button>
-              )}
-            </div>
-          </div>
-        ))}
+          )
+        })}
         {filtered.length === 0 && (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', padding: '0.75rem 0' }}>No members match.</p>
         )}
