@@ -4,14 +4,32 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 
+const PLATFORM_CONFIG = {
+  discord: {
+    format:      'Discord voice call — fluent English required',
+    fieldLabel:  'Your Discord username',
+    placeholder: 'e.g. username or username#1234',
+    inputType:   'text',
+    maxLength:   100,
+  },
+  teams: {
+    format:      'Microsoft Teams call — fluent English required',
+    fieldLabel:  'Your Teams email address',
+    placeholder: 'e.g. you@example.com',
+    inputType:   'email',
+    maxLength:   200,
+  },
+}
+
 export default function Typing() {
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
 
-  const [notes, setNotes]           = useState('')
-  const [discord, setDiscord]         = useState('')
-  const [status, setStatus]         = useState('idle') // idle | submitting | success | error | exists
-  const [errorMsg, setErrorMsg]     = useState('')
+  const [platform, setPlatform]   = useState('discord')
+  const [contact,  setContact]    = useState('')
+  const [notes,    setNotes]      = useState('')
+  const [status,   setStatus]     = useState('idle') // idle | submitting | success | error | exists
+  const [errorMsg, setErrorMsg]   = useState('')
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -21,7 +39,6 @@ export default function Typing() {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
 
-  // Check for existing pending request
   useEffect(() => {
     if (!profile?.id) return
     async function checkExisting() {
@@ -38,8 +55,9 @@ export default function Typing() {
 
   async function handleSubmit() {
     if (status === 'submitting') return
-    if (!discord.trim()) {
-      setErrorMsg('Please enter your Discord username so the typist can reach you.')
+    if (!contact.trim()) {
+      const cfg = PLATFORM_CONFIG[platform]
+      setErrorMsg(`Please enter ${cfg.fieldLabel.toLowerCase()} so the typist can reach you.`)
       return
     }
     setStatus('submitting')
@@ -47,7 +65,12 @@ export default function Typing() {
 
     const { error } = await supabase
       .from('typing_requests')
-      .insert({ user_id: profile.id, notes: notes.trim() || null, discord_handle: discord.trim() || null })
+      .insert({
+        user_id:        profile.id,
+        notes:          notes.trim() || null,
+        discord_handle: platform === 'discord' ? contact.trim() : null,
+        teams_contact:  platform === 'teams'   ? contact.trim() : null,
+      })
 
     if (error) {
       setErrorMsg('Something went wrong. Please try again.')
@@ -55,7 +78,7 @@ export default function Typing() {
       return
     }
 
-    window.umami?.track('typing-request-submitted')
+    window.umami?.track('typing-request-submitted', { platform })
     setStatus('success')
   }
 
@@ -124,6 +147,8 @@ export default function Typing() {
     width: '100%',
   }
 
+  const cfg = PLATFORM_CONFIG[platform]
+
   if (loading || !profile) return null
 
   return (
@@ -132,7 +157,7 @@ export default function Typing() {
         <h1 style={headingStyle}>Get typed</h1>
         <p style={subStyle}>
           Not sure of your type, or want it confirmed by an expert? Book a one-to-one typing session
-          with our resident typist via Discord voice call. A verified badge will be added to your profile on completion.
+          with our resident typist via voice call. A verified badge will be added to your profile on completion.
         </p>
 
         {/* What to expect */}
@@ -140,10 +165,10 @@ export default function Typing() {
           <p style={{ ...labelStyle, marginBottom: '1rem' }}>What to expect</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {[
-              ['Format', 'Discord voice call — fluent English required'],
+              ['Format',   cfg.format],
               ['Duration', '1–2 hours'],
-              ['Price', '$20 / £17'],
-              ['Outcome', 'Verified badge on your profile'],
+              ['Price',    '$20 / £17'],
+              ['Outcome',  'Verified badge on your profile'],
             ].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', gap: '1rem', fontSize: '0.86rem' }}>
                 <span style={{ color: 'var(--muted)', minWidth: 80 }}>{k}</span>
@@ -169,19 +194,50 @@ export default function Typing() {
           </div>
         ) : (
           <div style={cardStyle}>
-            <label style={labelStyle} htmlFor="typing-discord">
-              Your Discord username <span style={{ color: "crimson" }}>*</span>
+
+            {/* Platform toggle */}
+            <label style={labelStyle}>Platform</label>
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+              {['discord', 'teams'].map(p => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => { setPlatform(p); setContact(''); setErrorMsg('') }}
+                  style={{
+                    flex: 1,
+                    padding: '0.5rem',
+                    fontSize: '0.82rem',
+                    letterSpacing: '0.04em',
+                    border: '1px solid var(--border)',
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    background: platform === p ? 'var(--accent)' : 'transparent',
+                    color: platform === p ? '#fff' : 'var(--fg)',
+                    fontFamily: 'var(--serif)',
+                    transition: 'background 0.15s, color 0.15s',
+                  }}
+                >
+                  {p === 'discord' ? 'Discord' : 'MS Teams'}
+                </button>
+              ))}
+            </div>
+
+            {/* Contact field */}
+            <label style={labelStyle} htmlFor="typing-contact">
+              {cfg.fieldLabel} <span style={{ color: 'crimson' }}>*</span>
             </label>
             <input
-              id="typing-discord"
-              type="text"
+              id="typing-contact"
+              type={cfg.inputType}
               style={{ ...textareaStyle, minHeight: 'unset', padding: '0.6rem 0.75rem' }}
-              placeholder="e.g. username or username#1234"
+              placeholder={cfg.placeholder}
               required
-              value={discord}
-              onChange={e => setDiscord(e.target.value)}
-              maxLength={100}
+              value={contact}
+              onChange={e => setContact(e.target.value)}
+              maxLength={cfg.maxLength}
             />
+
+            {/* Notes */}
             <label style={{ ...labelStyle, marginTop: '1rem' }} htmlFor="typing-notes">
               Anything to add? <span style={{ fontWeight: 300 }}>(optional)</span>
             </label>
@@ -193,9 +249,11 @@ export default function Typing() {
               onChange={e => setNotes(e.target.value)}
               maxLength={500}
             />
+
             {errorMsg && (
               <p style={{ fontSize: '0.82rem', color: 'crimson', marginTop: '0.5rem' }}>{errorMsg}</p>
             )}
+
             <button
               style={{ ...btnStyle, marginTop: '1rem' }}
               onClick={handleSubmit}
