@@ -280,7 +280,7 @@ export default function Admin() {
           })()}
           {[
             { value: totalConnections, label: 'Connections', delta: connectionsToday },
-            { value: totalMessages, label: 'Messages', delta: messagesToday, sub: messagesEver > totalMessages ? `${messagesEver.toLocaleString()} all-time` : null },
+            { value: totalMessages, label: 'Messages', delta: messagesToday, sub: messagesEver > 0 ? `${messagesEver.toLocaleString()} all-time` : null },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
             { value: totalAssessments, label: 'Assessments' },
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
