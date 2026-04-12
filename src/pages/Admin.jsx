@@ -170,6 +170,7 @@ export default function Admin() {
         connectionsToday: adminStats?.connections_today ?? 0,
         totalMessages: adminStats?.messages ?? 0,
         messagesToday: adminStats?.messages_today ?? 0,
+        messagesEver: adminStats?.messages_ever ?? 0,
         totalAssessments: adminStats?.assessments ?? 0,
         totalCooloffs: adminStats?.cooloffs ?? 0,
         authUsers: adminStats?.auth_users ?? 0,
@@ -223,7 +224,7 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, connectionsToday, totalMessages, messagesToday, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount, typingRequests } = data
+  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, connectionsToday, totalMessages, messagesToday, messagesEver, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount, typingRequests } = data
 
   const recentUsers = users.slice(0, 10)
   const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
@@ -279,20 +280,23 @@ export default function Admin() {
           })()}
           {[
             { value: totalConnections, label: 'Connections', delta: connectionsToday },
-            { value: totalMessages, label: 'Messages', delta: messagesToday },
+            { value: totalMessages, label: 'Messages', delta: messagesToday, sub: messagesEver > totalMessages ? `${messagesEver.toLocaleString()} all-time` : null },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
             { value: totalAssessments, label: 'Assessments' },
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
             { value: active7d, label: 'Active 7d' },
             { value: inactive, label: 'Inactive 7d+' },
             { value: messagingActive, label: 'Messaging 7d' },
-          ].map(({ value, label, delta }) => (
+          ].map(({ value, label, delta, sub }) => (
             <div key={label} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
               {delta > 0 && (
                 <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{delta} today</div>
               )}
-              <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: delta > 0 ? '0.2rem' : '0.4rem' }}>{label}</div>
+              {sub && (
+                <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.15rem' }}>{sub}</div>
+              )}
+              <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: delta > 0 || sub ? '0.2rem' : '0.4rem' }}>{label}</div>
             </div>
           ))}
 
