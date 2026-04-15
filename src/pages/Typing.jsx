@@ -156,7 +156,7 @@ export default function Typing() {
       <div style={containerStyle}>
         <h1 style={headingStyle}>Get typed</h1>
         <p style={subStyle}>
-          Not sure of your type, or want it confirmed by an expert? Book a one-to-one typing session
+          Not sure of your type, or want it confirmed by a typist? Book a one-to-one typing session
           with our resident typist via voice call. A verified badge will be added to your profile on completion.
         </p>
 
