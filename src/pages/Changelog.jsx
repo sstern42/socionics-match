@@ -2,10 +2,19 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '15 April 2026',
+    label: 'Update',
+    items: [
+      'Get typed — typing sessions are now free. No charge during the current beta period',
+      'Support page — shop link added. Browse 16 type-specific mugs at shop.socionicsinsight.com',
+      'Support page — running costs breakdown removed',
+    ],
+  },
+  {
     date: '8 April 2026',
     label: 'Update',
     items: [
-      'Get typed — book a one-to-one Socionics typing session with our resident typist via Discord voice call. A verified badge is added to your profile on completion. $20 / £17, payment arranged after your session is confirmed',
+      'Get typed — book a one-to-one Socionics typing session with our resident typist via Discord voice call. A verified badge is added to your profile on completion',
       'Get typed — accessible from the nav for all logged-in members',
       'Get typed — Discord username required at the point of booking so the typist can reach you directly',
     ],
