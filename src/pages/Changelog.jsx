@@ -5,7 +5,7 @@ export const ENTRIES = [
     date: '15 April 2026',
     label: 'Update',
     items: [
-      'Get typed — typing sessions are now free. No charge during the current beta period',
+      'Get typed — typing sessions are now free',
       'Support page — shop link added. Browse 16 type-specific mugs at shop.socionicsinsight.com',
       'Support page — running costs breakdown removed',
     ],
