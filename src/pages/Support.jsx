@@ -14,7 +14,7 @@ export default function Support() {
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-          Socion costs around <strong>£23 a month</strong> to run. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
+          Socion costs money to run. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
         </p>
 
         <div style={{
@@ -79,28 +79,7 @@ export default function Support() {
             </p>
           </div>
 
-          <div>
-            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>Running costs</h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.75rem' }}>
-              {[
-                ['Hosting (Netlify)', 'Free tier'],
-                ['Database (Supabase)', 'Pro — $25/mo (~£20)'],
-                ['Email delivery (Resend)', 'Free tier'],
-                ['Email newsletter (MailerLite)', 'Free tier'],
-                ['Cloudflare', 'Free tier'],
-                ['Domain — socion.app', '£33/yr (~£2.75/mo)'],
-              ].map(([item, cost]) => (
-                <div key={item} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.4rem 0', borderBottom: '1px solid var(--border)' }}>
-                  <span style={{ color: 'var(--text)' }}>{item}</span>
-                  <span style={{ color: 'var(--muted)' }}>{cost}</span>
-                </div>
-              ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', padding: '0.5rem 0' }}>
-                <span style={{ color: 'var(--text)', fontWeight: 500 }}>Total</span>
-                <span style={{ color: 'var(--accent)', fontWeight: 500 }}>~£23/mo</span>
-              </div>
-            </div>
-          </div>
+
         </div>
 
         <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
