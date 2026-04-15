@@ -39,6 +39,31 @@ export default function Support() {
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>One-time tip or monthly. Cancel any time.</p>
         </div>
 
+        <div style={{
+          border: '1px solid var(--border)', borderRadius: 8,
+          padding: '2rem', marginBottom: '3rem',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
+          textAlign: 'center',
+        }}>
+          <p style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', color: 'var(--text)', lineHeight: 1.6 }}>
+            <em>Or grab a type mug.</em>
+          </p>
+          <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 420 }}>
+            16 type-specific mugs — one for every Socionics type. Dictionary-definition style, printed on demand.
+          </p>
+          <a
+            href="https://shop.socionicsinsight.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-primary"
+            style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2rem', display: 'inline-block' }}
+            onClick={() => window.umami?.track('support-shop-clicked')}
+          >
+            🛒 Browse the shop
+          </a>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Ships worldwide. Fulfilled by print-on-demand.</p>
+        </div>
+
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>Other ways to help</h2>
