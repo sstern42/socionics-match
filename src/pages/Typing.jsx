@@ -167,7 +167,7 @@ export default function Typing() {
             {[
               ['Format',   cfg.format],
               ['Duration', '1–2 hours'],
-              ['Price',    '$20 / £17'],
+              ['Price',    'Free'],
               ['Outcome',  'Verified badge on your profile'],
             ].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', gap: '1rem', fontSize: '0.86rem' }}>
@@ -259,11 +259,9 @@ export default function Typing() {
               onClick={handleSubmit}
               disabled={status === 'submitting'}
             >
-              {status === 'submitting' ? 'Submitting...' : 'Request a typing — $20 / £17'}
+              {status === 'submitting' ? 'Submitting...' : 'Request a typing session'}
             </button>
-            <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.75rem', textAlign: 'center' }}>
-              Payment is arranged after your session is confirmed.
-            </p>
+
           </div>
         )}
       </div>

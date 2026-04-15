@@ -34,7 +34,7 @@ const FAQS = [
       },
       {
         q: 'How much does it cost?',
-        a: '$20 / £17, paid after your session is confirmed. Payment is arranged via a secure Stripe link sent to you directly.',
+        a: 'Free — there\'s no charge for typing sessions during the current beta period.',
       },
       {
         q: 'How long does a session take?',
@@ -50,7 +50,7 @@ const FAQS = [
       },
       {
         q: 'What happens after I request a typing?',
-        a: 'The typist will reach out to you on Discord to schedule a convenient time. Once the session is complete and payment is confirmed, your verified badge will appear on your profile.',
+        a: 'The typist will reach out to you on Discord to schedule a convenient time. Once the session is complete, your verified badge will appear on your profile.',
       },
       {
         q: 'What does the verified badge show?',
