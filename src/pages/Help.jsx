@@ -34,7 +34,7 @@ const FAQS = [
       },
       {
         q: 'How much does it cost?',
-        a: 'Free — there\'s no charge for typing sessions during the current beta period.',
+        a: 'Free.',
       },
       {
         q: 'How long does a session take?',
