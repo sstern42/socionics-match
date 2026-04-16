@@ -14,7 +14,7 @@ export default function Support() {
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-          Socion costs money to run. That comes out of my pocket. If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
+          If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
         </p>
 
         <div style={{
