@@ -7,7 +7,6 @@ const FEATURES = [
   ['Message history', 'Full conversation history', 'Last 30 days'],
   ['Read receipts', 'See when messages are read', '—'],
   ['Profile views', 'See who viewed your profile', '—'],
-  ['Founding member', 'Permanent free access — joined early', 'Current members only'],
 ]
 
 export default function Premium() {
