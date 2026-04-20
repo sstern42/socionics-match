@@ -6,11 +6,11 @@ export default function Support() {
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>
         <p className="eyebrow">Socion</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '1.5rem' }}>
-          Keep it <em>free</em>
+          Keep it <em>independent</em>
         </h1>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '1.25rem' }}>
-          Socion is free and will stay that way. No algorithm, no premium tier, no matches locked behind a paywall. The theory either works or it doesn't — charging for access would compromise the experiment.
+          Socion's core is free and always will be. No algorithm, no matches locked away, no paywall between you and the theory. A premium tier is coming soon for those who want the full experience — but the experiment runs regardless.
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
@@ -75,7 +75,7 @@ export default function Support() {
           <div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>What Socion will never do</h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-              No ads. No selling your data. No locking matches behind a subscription. No proprietary algorithm deciding who you see. The intertype relations matrix is published and auditable. That's the commitment.
+              No ads. No selling your data. No proprietary algorithm deciding who you see. The intertype relations matrix is published and auditable. That's the commitment.
             </p>
           </div>
 

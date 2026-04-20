@@ -34,7 +34,7 @@ const FAQS = [
       },
       {
         q: 'How much does it cost?',
-        a: 'Free.',
+        a: '$20 per session. On completion, a verified badge is added to your Socion profile permanently.',
       },
       {
         q: 'How long does a session take?',
@@ -135,7 +135,7 @@ const FAQS = [
     items: [
       {
         q: 'Is Socion free?',
-        a: "Yes, completely free. If you'd like to support the running costs, there's a Ko-fi link in the app — but it's entirely optional.",
+        a: "The core experience is free. A premium tier is coming soon for those who want the full experience — unlimited connections, all relation type filters, and more. If you'd like to support the running costs in the meantime, there's a Ko-fi link in the app.",
       },
       {
         q: 'Why does it say Beta?',
