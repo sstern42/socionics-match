@@ -17,6 +17,7 @@ import Network from './pages/Network'
 import Feed from './pages/Feed'
 import Messages from './pages/Messages'
 import Typing from './pages/Typing'
+import Premium from './pages/Premium'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/typing" element={<Typing />} />
+        <Route path="/premium" element={<Premium />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>

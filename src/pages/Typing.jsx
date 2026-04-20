@@ -167,7 +167,7 @@ export default function Typing() {
             {[
               ['Format',   cfg.format],
               ['Duration', '1–2 hours'],
-              ['Price',    'Free'],
+              ['Price',    '$20'],
               ['Outcome',  'Verified badge on your profile'],
             ].map(([k, v]) => (
               <div key={k} style={{ display: 'flex', gap: '1rem', fontSize: '0.86rem' }}>
