@@ -33,6 +33,10 @@ const FAQS = [
         a: 'Get Typed is a professional one-to-one Socionics typing session conducted via Discord voice call with our resident typist. On completion, a verified badge is added to your profile confirming your type.',
       },
       {
+        q: 'What typing method is used?',
+        a: 'Our typist uses Classical Model A, the original Socionics framework developed by Aushra Augusta.',
+      },
+      {
         q: 'How much does it cost?',
         a: "It's free at the moment. On completion, a verified badge is added to your Socion profile permanently.",
       },

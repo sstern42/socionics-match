@@ -176,6 +176,16 @@ export default function Typing() {
               </div>
             ))}
           </div>
+          <p style={{
+            fontSize: '0.8rem',
+            color: 'var(--muted)',
+            fontStyle: 'italic',
+            marginTop: '1rem',
+            marginBottom: 0,
+            lineHeight: 1.5,
+          }}>
+            Note: you will be typed in Classical Model A.
+          </p>
         </div>
 
         {status === 'success' ? (
