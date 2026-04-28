@@ -34,7 +34,7 @@ const FAQS = [
       },
       {
         q: 'How much does it cost?',
-        a: '$20 per session. On completion, a verified badge is added to your Socion profile permanently.',
+        a: "It's free at the moment. On completion, a verified badge is added to your Socion profile permanently.",
       },
       {
         q: 'How long does a session take?',
