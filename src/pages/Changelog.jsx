@@ -2,6 +2,17 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+  date: '3 May 2026',
+  label: 'Update',
+  items: [
+    'Type — your assessed or selected type is now framed as a working hypothesis rather than a final answer',
+    'Get typed — links to verify your type with our typist now appear across the result screen, sign-in page, profile setup, and your own profile (when unverified)',
+    'Feed — three new in-feed cards: Get typed for verifying your type with our typist, Read about your type which opens your full Socionics Insight profile in-app, and the shop for type-specific mugs',
+    'Feed — every in-feed card can now be dismissed with a small × in the corner. Dismissed cards stay hidden across visits',
+    'Feed — the support card now opens the full /support page where you can choose between a Ko-fi tip, the shop, or other ways to help, instead of going straight to Ko-fi',
+  ],
+},
+  {
     date: '15 April 2026',
     label: 'Update',
     items: [
