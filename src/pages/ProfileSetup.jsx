@@ -106,9 +106,17 @@ export default function ProfileSetup() {
                 Your <em>profile</em>
               </h1>
               {type && (
-                <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
-                  Type: <strong style={{ color: 'var(--accent)' }}>{type}</strong>
-                </p>
+                <>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
+                    Type: <strong style={{ color: 'var(--accent)' }}>{type}</strong>
+                  </p>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.72rem', marginTop: '0.25rem' }}>
+                    Working hypothesis ·{' '}
+                    <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                      verify with a typist
+                    </a>
+                  </p>
+                </>
               )}
             </div>
 

@@ -23,7 +23,11 @@ export default function TypeSelector({ onConfirm }) {
           Select your <em>type</em>
         </h2>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.75rem' }}>
-          Your type as determined by the community or your own study.
+          Your best guess based on community input or your own study. You can change this any time, and{' '}
+          <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+            verify it with a typist
+          </a>
+          {' '}when you want certainty.
         </p>
       </div>
 
@@ -69,7 +73,7 @@ export default function TypeSelector({ onConfirm }) {
                 onConfirm(selected, { [selected]: 1.0 })
               }}
             >
-              Confirm {selected}
+              Continue as {selected}
             </button>
           </>
         ) : (

@@ -64,12 +64,19 @@ export default function ResultScreen({ distribution, primaryType, onConfirm, onO
         ))}
       </div>
 
+      <p className="fade-up-5" style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
+        This is a working hypothesis based on twelve questions. Many people refine their type over time — when you're ready, you can{' '}
+        <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+          verify it with a typist →
+        </a>
+      </p>
+
       <div className="fade-up-5" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%' }}>
         <button className="btn-primary" onClick={() => {
           window.umami?.track('type-confirmed', { type: primaryType, method: 'assessment' })
           onConfirm(primaryType, distribution)
         }}>
-          Confirm — I am {primaryType}
+          Continue as {primaryType}
         </button>
         <button
           onClick={onOverride}

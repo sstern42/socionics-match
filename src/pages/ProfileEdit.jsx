@@ -234,6 +234,14 @@ export default function ProfileEdit() {
               {!isVerified && type && !typeValid && (
                 <p style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.25rem' }}>Not a recognised type — check spelling.</p>
               )}
+              {!isVerified && (!type || typeValid) && (
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.35rem', lineHeight: 1.5 }}>
+                  Self-typed · want certainty?{' '}
+                  <a href="/typing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                    Get verified by a typist →
+                  </a>
+                </p>
+              )}
               {isVerified && (
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
                   Your type has been professionally verified and cannot be changed.
