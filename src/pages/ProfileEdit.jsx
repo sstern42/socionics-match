@@ -238,7 +238,7 @@ export default function ProfileEdit() {
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.35rem', lineHeight: 1.5 }}>
                   Self-typed · want certainty?{' '}
                   <a href="/typing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                    Get verified by a typist →
+                    Get verified by our typist →
                   </a>
                 </p>
               )}
