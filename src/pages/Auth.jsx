@@ -173,7 +173,7 @@ export default function Auth() {
       <section style={centreStyle}>
         <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>
-            <p className="eyebrow">{incomingType ? `You're an ${incomingType}` : 'Sign in or create account'}</p>
+            <p className="eyebrow">{incomingType ? `Working type · ${incomingType}` : 'Sign in or create account'}</p>
             <h1 className="fade-up-2" style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
               {incomingType ? <>Sign in to find your <em>matches</em></> : <>Welcome to <em>Socion</em></>}
             </h1>
