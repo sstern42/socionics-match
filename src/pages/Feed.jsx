@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
+import FeedAd from '../components/feed/FeedAd'
+import SIWebview from '../components/SIWebview'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
@@ -10,6 +12,7 @@ import { supabase } from '../lib/supabase'
 
 const BANNER_KEY = 'socion_announcement_dismissed_v'
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
+const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 
 export default function Feed() {
   const { session, profile, loading, refreshProfile } = useAuth()
@@ -19,6 +22,20 @@ export default function Feed() {
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [memberCount, setMemberCount] = useState(null)
   const [shareState, setShareState] = useState('idle') // idle | copied
+  const [webviewUrl, setWebviewUrl] = useState(null)
+  const [dismissedAds, setDismissedAds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(AD_DISMISSED_KEY) || '{}')
+    } catch {
+      return {}
+    }
+  })
+
+  function dismissAd(adId) {
+    const next = { ...dismissedAds, [adId]: true }
+    setDismissedAds(next)
+    try { localStorage.setItem(AD_DISMISSED_KEY, JSON.stringify(next)) } catch {}
+  }
 
   function announcementKey(text) {
     try {
@@ -415,98 +432,99 @@ export default function Feed() {
                   matchId={matchedMap[p.id] ?? null}
                   connecting={connectingId === p.id}
                 />
-                {i === 4 && (
-                  <div key="share-nudge" style={{
-                    border: '1px solid var(--accent)',
-                    borderRadius: 6,
-                    padding: '1.5rem',
-                    display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '0.85rem',
-                    background: 'rgba(154,111,56,0.06)',
-                  }}>
-                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, margin: 0 }}>
-                      Spread the word
-                    </p>
-                    <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
-                      Know someone who'd be into this?
-                    </p>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-                      {memberCount ? `${memberCount} members and growing.` : 'Growing every day.'} Spread the word and help us find the missing types.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={handleShare}
-                      className="btn-primary"
-                      style={{ fontSize: '0.78rem', padding: '0.45rem 1rem', alignSelf: 'flex-start', whiteSpace: 'nowrap' }}
-                    >
-                      {shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'}
-                    </button>
-                  </div>
+                {i === 4 && !dismissedAds.share && (
+                  <FeedAd
+                    id="share"
+                    eyebrow="Spread the word"
+                    headline="Know someone who'd be into this?"
+                    body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`}
+                    ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'}
+                    onClick={handleShare}
+                    onDismiss={() => dismissAd('share')}
+                  />
                 )}
 
-                {i === 9 && (
-                  <div key="discord-nudge" style={{
-                    border: '1px solid var(--accent)',
-                    borderRadius: 6,
-                    padding: '1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '0.85rem',
-                    background: 'rgba(154,111,56,0.06)',
-                  }}>
-                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, margin: 0 }}>
-                      Community
-                    </p>
-                    <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
-                      Chat beyond the app
-                    </p>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-                      Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community.
-                    </p>
-                    <a
-                      href="https://discord.gg/328KxsDKdr"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary"
-                      onClick={() => window.umami?.track('feed-discord-clicked')}
-                      style={{ fontSize: '0.78rem', padding: '0.45rem 1rem', alignSelf: 'flex-start', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block' }}
-                    >
-                      Join Discord →
-                    </a>
-                  </div>
+                {i === 7 && !dismissedAds['get-typed'] && (
+                  <FeedAd
+                    id="get-typed"
+                    eyebrow="Verify your type"
+                    headline="Working hypothesis or final answer?"
+                    body="A typing session with our resident typist gives you a verified type and a badge on your profile."
+                    ctaLabel="Book a session →"
+                    onClick={() => {
+                      window.umami?.track('feed-get-typed-clicked')
+                      navigate('/typing')
+                    }}
+                    onDismiss={() => dismissAd('get-typed')}
+                  />
                 )}
 
-                {i === 14 && (
-                  <div key="kofi-nudge" style={{
-                    border: '1px solid var(--accent)',
-                    borderRadius: 6,
-                    padding: '1.5rem',
-                    display: 'flex', flexDirection: 'column', gap: '0.85rem',
-                    background: 'rgba(154,111,56,0.06)',
-                  }}>
-                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, margin: 0 }}>
-                      Support Socion
-                    </p>
-                    <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.6, margin: 0, fontFamily: 'var(--serif)', fontStyle: 'italic' }}>
-                      Socion is free and will stay that way
-                    </p>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-                      No algorithm, no premium tier. If it's been useful, a one-time tip helps cover the running costs.
-                    </p>
-                    <a
-                      href="https://ko-fi.com/socion"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn-primary"
-                      onClick={() => window.umami?.track('feed-kofi-clicked')}
-                      style={{ fontSize: '0.78rem', padding: '0.45rem 1rem', alignSelf: 'flex-start', whiteSpace: 'nowrap', textDecoration: 'none', display: 'inline-block' }}
-                    >
-                      Support ☕ →
-                    </a>
-                  </div>
+                {i === 9 && !dismissedAds.discord && (
+                  <FeedAd
+                    id="discord"
+                    eyebrow="Community"
+                    headline="Chat beyond the app"
+                    body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community."
+                    ctaLabel="Join Discord →"
+                    onClick={() => {
+                      window.umami?.track('feed-discord-clicked')
+                      window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer')
+                    }}
+                    onDismiss={() => dismissAd('discord')}
+                  />
+                )}
+
+                {i === 12 && !dismissedAds['si-type'] && profile?.type && (
+                  <FeedAd
+                    id="si-type"
+                    eyebrow="Read more"
+                    headline={`Get to know your type`}
+                    body={`Functions, quadras, blind spots, and how others see you — the full ${profile.type} profile on Socionics Insight.`}
+                    ctaLabel={`Read about ${profile.type} →`}
+                    onClick={() => {
+                      window.umami?.track('feed-si-type-clicked', { type: profile.type })
+                      setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`)
+                    }}
+                    onDismiss={() => dismissAd('si-type')}
+                  />
+                )}
+
+                {i === 14 && !dismissedAds.support && (
+                  <FeedAd
+                    id="support"
+                    eyebrow="Support Socion"
+                    headline="Keep Socion independent"
+                    body="Socion's core is free and always will be. If it's been useful, there are a few ways to help."
+                    ctaLabel="Support Socion →"
+                    onClick={() => {
+                      window.umami?.track('feed-support-clicked')
+                      navigate('/support')
+                    }}
+                    onDismiss={() => dismissAd('support')}
+                  />
+                )}
+
+                {i === 17 && !dismissedAds.shop && (
+                  <FeedAd
+                    id="shop"
+                    eyebrow="Treat yourself"
+                    headline="A mug for every type"
+                    body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand."
+                    ctaLabel="Browse the shop →"
+                    onClick={() => {
+                      window.umami?.track('feed-shop-clicked')
+                      window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer')
+                    }}
+                    onDismiss={() => dismissAd('shop')}
+                  />
                 )}
               </>
             ))}
           </div>
         )}
       </section>
+
+      <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
 
       {connectPrompt && (() => {
         const { targetProfile } = connectPrompt
