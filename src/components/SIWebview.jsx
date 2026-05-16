@@ -1,3 +1,15 @@
+function withUtm(url) {
+  if (!url) return url
+  try {
+    const u = new URL(url)
+    u.searchParams.set('utm_source', 'socion.app')
+    u.searchParams.set('utm_medium', 'webview')
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
 export default function SIWebview({ url, onClose }) {
   if (!url) return null
   return (
@@ -41,7 +53,7 @@ export default function SIWebview({ url, onClose }) {
           </button>
         </div>
         <iframe
-          src={url}
+          src={withUtm(url)}
           title="Socionics Insight"
           style={{ flex: 1, border: 'none', width: '100%' }}
           loading="lazy"
