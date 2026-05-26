@@ -5,7 +5,6 @@ import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 import { COUNTRIES } from '../data/countries'
 
-// Gate: only profiles with role='founder' can access
 const ADMIN_ROLE = 'founder'
 export const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const COUNTRY_NAME = Object.fromEntries(COUNTRIES.map(c => [c.code, c.name]))
@@ -29,15 +28,8 @@ function FounderFeedToggle() {
           </p>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flexShrink: 0 }}>
-          <input
-            type="checkbox"
-            checked={enabled}
-            onChange={toggle}
-            style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
-          />
-          <span style={{ fontSize: '0.82rem', color: 'var(--text)', fontWeight: enabled ? 500 : 400 }}>
-            {enabled ? 'On' : 'Off'}
-          </span>
+          <input type="checkbox" checked={enabled} onChange={toggle} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
+          <span style={{ fontSize: '0.82rem', color: 'var(--text)', fontWeight: enabled ? 500 : 400 }}>{enabled ? 'On' : 'Off'}</span>
         </label>
       </div>
     </div>
@@ -60,7 +52,6 @@ export default function Admin() {
     if (loading) return
     if (!profile) { navigate('/auth', { replace: true }); return }
     if (profile.profile_data?.role !== ADMIN_ROLE) { navigate('/', { replace: true }); return }
-    // ?exclude=1 sets the Umami opt-out flag — visit this URL on any device to exclude it from analytics
     if (new URLSearchParams(window.location.search).get('exclude') === '1') {
       localStorage.setItem('umami.disabled', '1')
       window.history.replaceState(null, '', '/admin')
@@ -91,13 +82,11 @@ export default function Admin() {
       setAnnouncement(statsRow?.announcement ?? '')
       setAnnouncementActive(statsRow?.announcement_active ?? false)
 
-      // Type distribution
       const typeCounts = {}
       for (const u of users ?? []) {
         typeCounts[u.type] = (typeCounts[u.type] ?? 0) + 1
       }
 
-      // All match/feedback data from SECURITY DEFINER RPC (bypasses RLS — truly site-wide)
       const relCounts = adminStats?.rel_counts ?? {}
       const totalMatchCount = adminStats?.total_matches ?? 0
       const feedbackCount = adminStats?.feedback_count ?? 0
@@ -108,7 +97,6 @@ export default function Admin() {
       const comments = (adminStats?.comments ?? [])
         .sort((a, b) => new Date(b.submitted_at) - new Date(a.submitted_at))
 
-      // Overall avg rating
       const allRatings = (adminStats?.rel_ratings ?? []).flatMap(r =>
         Array(parseInt(r.count)).fill(parseFloat(r.avg))
       )
@@ -117,7 +105,6 @@ export default function Admin() {
         : null
       const ratingsCount = (adminStats?.rel_ratings ?? []).reduce((s, r) => s + parseInt(r.count), 0)
 
-      // Purpose breakdown
       const purposeCounts = {}
       for (const u of users ?? []) {
         for (const p of u.purpose ?? []) {
@@ -125,7 +112,6 @@ export default function Admin() {
         }
       }
 
-      // Country breakdown
       const countryCounts = {}
       for (const u of users ?? []) {
         const c = u.profile_data?.country
@@ -134,13 +120,11 @@ export default function Admin() {
 
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
-      // Daily member growth chart
       const dayCounts = {}
       for (const u of users ?? []) {
         const day = new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
         dayCounts[day] = (dayCounts[day] ?? 0) + 1
       }
-      // Build cumulative series sorted by date
       const sortedDays = (users ?? [])
         .map(u => new Date(u.created_at).toDateString())
         .filter((v, i, a) => a.indexOf(v) === i)
@@ -153,7 +137,7 @@ export default function Admin() {
         return { label, count, total: cumulative }
       })
 
-      const anonCount = (users ?? []).filter(u => u.profile_data?.anonymous === true).length
+      const anonCount  = (users ?? []).filter(u => u.profile_data?.anonymous === true).length
       const knownCount = (users ?? []).length - anonCount
 
       setData({
@@ -166,20 +150,20 @@ export default function Admin() {
         purposeCounts,
         countryCounts,
         reports,
-        totalConnections: adminStats?.connections ?? 0,
-        connectionsToday: adminStats?.connections_today ?? 0,
-        totalMessages: adminStats?.messages ?? 0,
-        messagesToday: adminStats?.messages_today ?? 0,
-        messagesEver: adminStats?.messages_ever ?? 0,
-        totalAssessments: adminStats?.assessments ?? 0,
-        totalCooloffs: adminStats?.cooloffs ?? 0,
-        authUsers: adminStats?.auth_users ?? 0,
-        incompleteSignups: incompleteData ?? [],
-        memberEmails: memberEmailsData ?? [],
-        totalReports: adminStats?.reports ?? 0,
-        active7d: adminStats?.active_7d ?? 0,
-        inactive: adminStats?.inactive ?? 0,
-        messagingActive: adminStats?.messaging_active ?? 0,
+        totalConnections:  adminStats?.connections       ?? 0,
+        connectionsToday:  adminStats?.connections_today ?? 0,
+        totalMessages:     adminStats?.messages          ?? 0,
+        messagesToday:     adminStats?.messages_today    ?? 0,
+        messagesEver:      adminStats?.messages_ever     ?? 0,
+        totalAssessments:  adminStats?.assessments       ?? 0,
+        totalCooloffs:     adminStats?.cooloffs          ?? 0,
+        authUsers:         adminStats?.auth_users        ?? 0,
+        incompleteSignups: incompleteData   ?? [],
+        memberEmails:      memberEmailsData ?? [],
+        totalReports:      adminStats?.reports    ?? 0,
+        active7d:          adminStats?.active_7d  ?? 0,
+        inactive:          adminStats?.inactive   ?? 0,
+        messagingActive:   adminStats?.messaging_active ?? 0,
         anonCount,
         knownCount,
         feedbackCount,
@@ -187,6 +171,11 @@ export default function Admin() {
         comments,
         growthData,
         typingRequests: typingRequestsData ?? [],
+        // Swipe stats
+        totalSwipes:  adminStats?.total_swipes  ?? 0,
+        rightSwipes:  adminStats?.right_swipes  ?? 0,
+        leftSwipes:   adminStats?.left_swipes   ?? 0,
+        swipeMatches: adminStats?.swipe_matches ?? 0,
       })
     } catch (err) {
       setError(err.message)
@@ -206,9 +195,7 @@ export default function Admin() {
   if (loading || fetching) {
     return (
       <Layout noScroll hideFooter>
-        <section style={centreStyle}>
-          <p style={{ color: 'var(--muted)' }}>Loading…</p>
-        </section>
+        <section style={centreStyle}><p style={{ color: 'var(--muted)' }}>Loading…</p></section>
       </Layout>
     )
   }
@@ -224,11 +211,21 @@ export default function Admin() {
     )
   }
 
-  const { users, authUsers, incompleteSignups, memberEmails, totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount, purposeCounts, countryCounts, reports, totalConnections, connectionsToday, totalMessages, messagesToday, messagesEver, totalAssessments, totalCooloffs, totalReports, feedbackCount, relAvgRatings, comments, growthData, active7d, inactive, messagingActive, anonCount, knownCount, typingRequests } = data
+  const {
+    users, authUsers, incompleteSignups, memberEmails,
+    totalMatchCount, typeCounts, relCounts, avgRating, ratingsCount,
+    purposeCounts, countryCounts, reports,
+    totalConnections, connectionsToday, totalMessages, messagesToday,
+    messagesEver, totalAssessments, totalCooloffs, totalReports,
+    feedbackCount, relAvgRatings, comments, growthData,
+    active7d, inactive, messagingActive, anonCount, knownCount,
+    typingRequests,
+    totalSwipes, rightSwipes, leftSwipes, swipeMatches,
+  } = data
 
-  const recentUsers = users.slice(0, 10)
-  const sortedTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
-  const sortedRels = Object.entries(relCounts).sort((a, b) => b[1] - a[1])
+  const recentUsers    = users.slice(0, 10)
+  const sortedTypes    = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
+  const sortedRels     = Object.entries(relCounts).sort((a, b) => b[1] - a[1])
   const sortedPurposes = Object.entries(purposeCounts).sort((a, b) => b[1] - a[1])
   const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1])
 
@@ -238,91 +235,79 @@ export default function Admin() {
         <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <p className="eyebrow">Admin</p>
-            <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,4vw,3rem)', marginTop: '0.4rem' }}>
-              Dashboard
-            </h1>
+            <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,4vw,3rem)', marginTop: '0.4rem' }}>Dashboard</h1>
           </div>
-          <button type="button" className="btn-ghost" onClick={loadData} style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }}>
-            Refresh
-          </button>
+          <button type="button" className="btn-ghost" onClick={loadData} style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }}>Refresh</button>
         </div>
 
         {/* Headline stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 100%), 1fr))', gap: '0.75rem', marginBottom: '2.5rem' }}>
+
           {/* Auth signups */}
           {(() => {
             const todayStr = new Date().toDateString()
             const signupsToday = (users ?? []).filter(u => new Date(u.created_at).toDateString() === todayStr).length
             return (
-              <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{authUsers}</div>
-                {signupsToday > 0 && (
-                  <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{signupsToday} today</div>
-                )}
-                <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.2rem' }}>Sign-ups</div>
+              <div style={statCardStyle}>
+                <div style={statValueStyle}>{authUsers}</div>
+                {signupsToday > 0 && <div style={statDeltaStyle}>+{signupsToday} today</div>}
+                <div style={statLabelStyle}>Sign-ups</div>
               </div>
             )
           })()}
 
-          {/* Members — with today's delta */}
+          {/* Members */}
           {(() => {
-            const todayStr = new Date().toDateString()
+            const todayStr  = new Date().toDateString()
             const todayCount = users.filter(u => new Date(u.created_at).toDateString() === todayStr).length
             return (
-              <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
-                <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{users.length}</div>
-                {todayCount > 0 && (
-                  <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{todayCount} today</div>
-                )}
-                <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.2rem' }}>Members</div>
+              <div style={statCardStyle}>
+                <div style={statValueStyle}>{users.length}</div>
+                {todayCount > 0 && <div style={statDeltaStyle}>+{todayCount} today</div>}
+                <div style={statLabelStyle}>Members</div>
               </div>
             )
           })()}
+
           {[
-            { value: totalConnections, label: 'Connections', delta: connectionsToday },
-            { value: totalMessages, label: 'Messages', delta: messagesToday, sub: messagesEver > 0 ? `${messagesEver.toLocaleString()} all-time` : null },
+            { value: totalConnections,  label: 'Connections',   delta: connectionsToday },
+            { value: totalMessages,     label: 'Messages',      delta: messagesToday, sub: messagesEver > 0 ? `${messagesEver.toLocaleString()} all-time` : null },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
-            { value: totalAssessments, label: 'Assessments' },
+            { value: totalAssessments,  label: 'Assessments' },
             { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
-            { value: active7d, label: 'Active 7d' },
-            { value: inactive, label: 'Inactive 7d+' },
-            { value: messagingActive, label: 'Messaging 7d' },
+            { value: active7d,          label: 'Active 7d' },
+            { value: inactive,          label: 'Inactive 7d+' },
+            { value: messagingActive,   label: 'Messaging 7d' },
+            // Swipe stats
+            { value: totalSwipes,  label: 'Swipes' },
+            { value: rightSwipes,  label: 'Likes', sub: totalSwipes > 0 ? `${Math.round((rightSwipes / totalSwipes) * 100)}% like rate` : null },
+            { value: swipeMatches, label: 'Swipe matches', sub: rightSwipes > 0 ? `${Math.round((swipeMatches / rightSwipes) * 100)}% match rate` : null },
           ].map(({ value, label, delta, sub }) => (
-            <div key={label} style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
-              <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
-              {delta > 0 && (
-                <div style={{ fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }}>+{delta} today</div>
-              )}
-              {sub && (
-                <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.15rem' }}>{sub}</div>
-              )}
-              <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: delta > 0 || sub ? '0.2rem' : '0.4rem' }}>{label}</div>
+            <div key={label} style={statCardStyle}>
+              <div style={statValueStyle}>{value}</div>
+              {delta > 0 && <div style={statDeltaStyle}>+{delta} today</div>}
+              {sub && <div style={{ fontSize: '0.65rem', color: 'var(--muted)', marginTop: '0.15rem' }}>{sub}</div>}
+              <div style={{ ...statLabelStyle, marginTop: (delta > 0 || sub) ? '0.2rem' : '0.4rem' }}>{label}</div>
             </div>
           ))}
 
-          {/* Cool-offs / Reports combined */}
-          <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>
-              {totalCooloffs} <span style={{ color: 'var(--border)', fontWeight: 300 }}>/</span> {totalReports}
-            </div>
-            <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>Cool-offs / Reports</div>
+          {/* Cool-offs / Reports */}
+          <div style={statCardStyle}>
+            <div style={statValueStyle}>{totalCooloffs} <span style={{ color: 'var(--border)', fontWeight: 300 }}>/</span> {totalReports}</div>
+            <div style={statLabelStyle}>Cool-offs / Reports</div>
           </div>
 
           {/* Anon : Known */}
-          <div style={{ background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }}>
-            <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>
-              {anonCount} <span style={{ color: 'var(--border)', fontWeight: 300 }}>:</span> {knownCount}
-            </div>
-            <div style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.4rem' }}>Anon : Known</div>
+          <div style={statCardStyle}>
+            <div style={statValueStyle}>{anonCount} <span style={{ color: 'var(--border)', fontWeight: 300 }}>:</span> {knownCount}</div>
+            <div style={statLabelStyle}>Anon : Known</div>
           </div>
         </div>
-
 
         {/* Member growth chart */}
         {growthData.length > 0 && (() => {
           const visibleData = growthData.slice(-30)
           const W = 580, H = 110, padL = 28, padR = 12, padT = 18, padB = 24
-          const minVal = 0
           const maxVal = visibleData[visibleData.length - 1].total
           const xStep = visibleData.length > 1 ? (W - padL - padR) / (visibleData.length - 1) : W - padL - padR
           const toX = i => padL + i * xStep
@@ -330,44 +315,36 @@ export default function Admin() {
           const points = visibleData.map((d, i) => ({ x: toX(i), y: toY(d.total), ...d }))
           const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
           const areaD = pathD + ` L${points[points.length-1].x.toFixed(1)},${(H-padB).toFixed(1)} L${points[0].x.toFixed(1)},${(H-padB).toFixed(1)} Z`
-          // Show labels: first, last, and every ~5th
           const showLabel = i => i === 0 || i === points.length - 1 || i % Math.max(1, Math.floor(points.length / 6)) === 0
           return (
-          <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
-            <p style={cardTitleStyle}>Member growth {growthData.length > 30 && <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>— last 30 days</span>}</p>
-            <div style={{ marginTop: '1.25rem', overflowX: 'auto' }}>
-              <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', minWidth: `${Math.max(visibleData.length * 28, 300)}px` }}>
-                <defs>
-                  <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
-                    <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                {/* Area fill */}
-                <path d={areaD} fill="url(#growthGrad)" />
-                {/* Line */}
-                <path d={pathD} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-                {/* Data points + labels */}
-                {points.map((p, i) => (
-                  <g key={i}>
-                    <circle cx={p.x} cy={p.y} r="3.5" fill="var(--accent)" stroke="#fff" strokeWidth="1.5" />
-                    <title>{p.label}: {p.total} members</title>
-                    {/* Value label above point */}
-                    <text x={p.x} y={p.y - 7} textAnchor="middle" fontSize="8" fill="var(--accent)" fontWeight="500">{p.total}</text>
-                    {/* Date label below */}
-                    {showLabel(i) && (
-                      <text x={p.x} y={H - 4} textAnchor="middle" fontSize="8" fill="var(--muted)">{p.label}</text>
-                    )}
-                  </g>
-                ))}
-              </svg>
+            <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+              <p style={cardTitleStyle}>Member growth {growthData.length > 30 && <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>— last 30 days</span>}</p>
+              <div style={{ marginTop: '1.25rem', overflowX: 'auto' }}>
+                <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', minWidth: `${Math.max(visibleData.length * 28, 300)}px` }}>
+                  <defs>
+                    <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.18" />
+                      <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path d={areaD} fill="url(#growthGrad)" />
+                  <path d={pathD} fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                  {points.map((p, i) => (
+                    <g key={i}>
+                      <circle cx={p.x} cy={p.y} r="3.5" fill="var(--accent)" stroke="#fff" strokeWidth="1.5" />
+                      <title>{p.label}: {p.total} members</title>
+                      <text x={p.x} y={p.y - 7} textAnchor="middle" fontSize="8" fill="var(--accent)" fontWeight="500">{p.total}</text>
+                      {showLabel(i) && <text x={p.x} y={H - 4} textAnchor="middle" fontSize="8" fill="var(--muted)">{p.label}</text>}
+                    </g>
+                  ))}
+                </svg>
+              </div>
             </div>
-          </div>
           )
         })()}
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          {/* Type distribution by quadra */}
+          {/* Type distribution */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Type distribution</p>
             {[
@@ -400,14 +377,8 @@ export default function Admin() {
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Connections by relation</p>
             {[
-              {
-                name: 'Symmetric',
-                relations: ['DUAL','ACTIVITY','MIRROR','IDENTITY','KINDRED','SEMI_DUAL','BUSINESS','QUASI_IDENTITY','CONFLICT','SUPER_EGO','CONTRARY','ILLUSIONARY'],
-              },
-              {
-                name: 'Asymmetric',
-                relations: ['SUPERVISOR','SUPERVISEE','BENEFACTOR','BENEFICIARY'],
-              },
+              { name: 'Symmetric',  relations: ['DUAL','ACTIVITY','MIRROR','IDENTITY','KINDRED','SEMI_DUAL','BUSINESS','QUASI_IDENTITY','CONFLICT','SUPER_EGO','CONTRARY','ILLUSIONARY'] },
+              { name: 'Asymmetric', relations: ['SUPERVISOR','SUPERVISEE','BENEFACTOR','BENEFICIARY'] },
             ].map(({ name, relations }) => (
               <div key={name} style={{ marginTop: '1rem' }}>
                 <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, marginBottom: '0.4rem' }}>{name}</p>
@@ -433,7 +404,7 @@ export default function Admin() {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
-          {/* Purpose breakdown — pie chart */}
+          {/* Purpose breakdown */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Purpose breakdown</p>
             {(() => {
@@ -448,20 +419,16 @@ export default function Admin() {
                 return { p, c, frac, start, end: cumAngle, colour: colours[p] ?? COLOURS[i % COLOURS.length] }
               })
               const arc = (cx, cy, r, start, end) => {
-                if (end - start >= 2 * Math.PI - 0.001) {
-                  return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z`
-                }
+                if (end - start >= 2 * Math.PI - 0.001) return `M ${cx} ${cy - r} A ${r} ${r} 0 1 1 ${cx - 0.01} ${cy - r} Z`
                 const x1 = cx + r * Math.cos(start), y1 = cy + r * Math.sin(start)
-                const x2 = cx + r * Math.cos(end), y2 = cy + r * Math.sin(end)
+                const x2 = cx + r * Math.cos(end),   y2 = cy + r * Math.sin(end)
                 const large = end - start > Math.PI ? 1 : 0
                 return `M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z`
               }
               return (
                 <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center', marginTop: '1rem' }}>
                   <svg width="90" height="90" viewBox="0 0 90 90" style={{ flexShrink: 0 }}>
-                    {slices.map(s => (
-                      <path key={s.p} d={arc(45, 45, 42, s.start, s.end)} fill={s.colour} />
-                    ))}
+                    {slices.map(s => <path key={s.p} d={arc(45, 45, 42, s.start, s.end)} fill={s.colour} />)}
                     <circle cx="45" cy="45" r="22" fill="var(--bg, #FAF9F6)" />
                     <text x="45" y="49" textAnchor="middle" fontSize="13" fontWeight="500" fill="var(--text, #333)">{total}</text>
                   </svg>
@@ -481,7 +448,7 @@ export default function Admin() {
             })()}
           </div>
 
-          {/* Country breakdown — scrollable */}
+          {/* Country breakdown */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Members by country</p>
             <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', paddingRight: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -566,7 +533,6 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Founder feed override */}
         <FounderFeedToggle />
 
         {/* Analytics exclusion */}
@@ -574,23 +540,13 @@ export default function Admin() {
           <div>
             <p style={cardTitleStyle}>Analytics exclusion</p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
-              {trackingExcluded
-                ? 'This device is excluded from Umami analytics.'
-                : 'Exclude this device from Umami analytics tracking.'}
+              {trackingExcluded ? 'This device is excluded from Umami analytics.' : 'Exclude this device from Umami analytics tracking.'}
             </p>
           </div>
-          <button
-            type="button"
-            className="btn-ghost"
-            style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
+          <button type="button" className="btn-ghost" style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
             onClick={() => {
-              if (trackingExcluded) {
-                localStorage.removeItem('umami.disabled')
-                setTrackingExcluded(false)
-              } else {
-                localStorage.setItem('umami.disabled', '1')
-                setTrackingExcluded(true)
-              }
+              if (trackingExcluded) { localStorage.removeItem('umami.disabled'); setTrackingExcluded(false) }
+              else { localStorage.setItem('umami.disabled', '1'); setTrackingExcluded(true) }
             }}
           >
             {trackingExcluded ? '✓ Excluded — re-enable?' : 'Exclude this device'}
@@ -612,66 +568,34 @@ export default function Admin() {
           />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={announcementActive}
-                onChange={e => setAnnouncementActive(e.target.checked)}
-                style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
-              />
+              <input type="checkbox" checked={announcementActive} onChange={e => setAnnouncementActive(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
               Active (visible on feed)
             </label>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={saveAnnouncement}
-              disabled={savingAnnouncement}
-              style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingAnnouncement ? 0.5 : 1 }}
-            >
+            <button type="button" className="btn-ghost" onClick={saveAnnouncement} disabled={savingAnnouncement} style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingAnnouncement ? 0.5 : 1 }}>
               {savingAnnouncement ? 'Saving…' : announcementSaved ? '✓ Saved' : 'Save'}
             </button>
           </div>
         </div>
 
-        {/* Incomplete signups — authed but no profile */}
+        {/* Incomplete signups */}
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <p style={cardTitleStyle}>
-                Incomplete sign-ups
-                <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— last 7 days</span>
-              </p>
-              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                Authenticated but never completed onboarding.
-              </p>
+              <p style={cardTitleStyle}>Incomplete sign-ups <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— last 7 days</span></p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>Authenticated but never completed onboarding.</p>
             </div>
             {incompleteSignups.length > 0 && (
               <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
-                  onClick={() => {
-                    const emails = incompleteSignups.map(u => u.email).join('\n')
-                    navigator.clipboard.writeText(emails)
-                  }}
-                >
+                <button type="button" className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  onClick={() => navigator.clipboard.writeText(incompleteSignups.map(u => u.email).join('\n'))}>
                   Copy emails
                 </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                <button type="button" className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
                   onClick={() => {
-                    const csv = 'email,signed_up\n' + incompleteSignups.map(u =>
-                      `${u.email},${new Date(u.created_at).toISOString().split('T')[0]}`
-                    ).join('\n')
-                    const blob = new Blob([csv], { type: 'text/csv' })
-                    const a = document.createElement('a')
-                    a.href = URL.createObjectURL(blob)
-                    a.download = `socion-incomplete-signups-${new Date().toISOString().split('T')[0]}.csv`
-                    a.click()
-                  }}
-                >
+                    const csv = 'email,signed_up\n' + incompleteSignups.map(u => `${u.email},${new Date(u.created_at).toISOString().split('T')[0]}`).join('\n')
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+                    a.download = `socion-incomplete-signups-${new Date().toISOString().split('T')[0]}.csv`; a.click()
+                  }}>
                   Export CSV
                 </button>
               </div>
@@ -682,11 +606,7 @@ export default function Admin() {
           ) : (
             <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
               {incompleteSignups.map((u, i) => (
-                <div key={u.id} style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '0.55rem 0',
-                  borderBottom: i < incompleteSignups.length - 1 ? '1px solid var(--border)' : 'none',
-                }}>
+                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0', borderBottom: i < incompleteSignups.length - 1 ? '1px solid var(--border)' : 'none' }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{u.email}</span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, marginLeft: '1rem' }}>
                     {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(u.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
@@ -697,46 +617,25 @@ export default function Admin() {
           )}
         </div>
 
-        {/* Member emails export */}
+        {/* Member emails */}
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <p style={cardTitleStyle}>
-                Member emails
-                <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {memberEmails.length} completed profiles</span>
-              </p>
-              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                All users who completed onboarding.
-              </p>
+              <p style={cardTitleStyle}>Member emails <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {memberEmails.length} completed profiles</span></p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>All users who completed onboarding.</p>
             </div>
             {memberEmails.length > 0 && (
               <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
-                  onClick={() => {
-                    const emails = memberEmails.map(u => u.email).join('\n')
-                    navigator.clipboard.writeText(emails)
-                  }}
-                >
+                <button type="button" className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  onClick={() => navigator.clipboard.writeText(memberEmails.map(u => u.email).join('\n'))}>
                   Copy emails
                 </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                <button type="button" className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
                   onClick={() => {
-                    const csv = 'email,name,type,joined\n' + memberEmails.map(u =>
-                      `${u.email},${u.name ?? ''},${u.type},${new Date(u.created_at).toISOString().split('T')[0]}`
-                    ).join('\n')
-                    const blob = new Blob([csv], { type: 'text/csv' })
-                    const a = document.createElement('a')
-                    a.href = URL.createObjectURL(blob)
-                    a.download = `socion-members-${new Date().toISOString().split('T')[0]}.csv`
-                    a.click()
-                  }}
-                >
+                    const csv = 'email,name,type,joined\n' + memberEmails.map(u => `${u.email},${u.name ?? ''},${u.type},${new Date(u.created_at).toISOString().split('T')[0]}`).join('\n')
+                    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+                    a.download = `socion-members-${new Date().toISOString().split('T')[0]}.csv`; a.click()
+                  }}>
                   Export CSV
                 </button>
               </div>
@@ -745,15 +644,11 @@ export default function Admin() {
         </div>
 
         {/* Recent signups */}
-        <div style={cardStyle}>
+        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <p style={cardTitleStyle}>Recent signups</p>
-          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0' }}>
+          <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
             {recentUsers.map((u, i) => (
-              <div key={u.id} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                padding: '0.6rem 0',
-                borderBottom: i < recentUsers.length - 1 ? '1px solid var(--border)' : 'none',
-              }}>
+              <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem 0', borderBottom: i < recentUsers.length - 1 ? '1px solid var(--border)' : 'none', gap: '0.75rem' }}>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36 }}>{u.type}</span>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
@@ -762,20 +657,13 @@ export default function Admin() {
                     {u.profile_data?.gender && u.profile_data.gender !== 'Prefer not to say' ? ` ${{ Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[u.profile_data.gender] ?? ''}` : ''}
                   </span>
                   {u.profile_data?.dob && (() => {
-                    const dob = new Date(u.profile_data.dob)
-                    const age = Math.floor((Date.now() - dob) / (365.25 * 24 * 60 * 60 * 1000))
+                    const age = Math.floor((Date.now() - new Date(u.profile_data.dob)) / (365.25 * 24 * 60 * 60 * 1000))
                     return <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{age}y</span>
                   })()}
-                  {u.profile_data?.country && (
-                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{u.profile_data.country}</span>
-                  )}
-                  {u.profile_data?.anonymous === true && (
-                    <span style={{ fontSize: '0.62rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.35rem' }}>Anon</span>
-                  )}
+                  {u.profile_data?.country && <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{u.profile_data.country}</span>}
+                  {u.profile_data?.anonymous === true && <span style={{ fontSize: '0.62rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.35rem' }}>Anon</span>}
                   <div style={{ display: 'flex', gap: '0.3rem' }}>
-                    {(u.purpose ?? []).map(p => (
-                      <span key={p} style={{ fontSize: '0.62rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.35rem' }}>{p}</span>
-                    ))}
+                    {(u.purpose ?? []).map(p => <span key={p} style={{ fontSize: '0.62rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.35rem' }}>{p}</span>)}
                   </div>
                 </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>
@@ -786,10 +674,7 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* Typing requests */}
         <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} />
-
-        {/* Verification */}
         <VerificationPanel users={users} onUpdate={loadData} />
 
       </section>
@@ -800,31 +685,22 @@ export default function Admin() {
 function TypingRequestsPanel({ requests, users, onUpdate }) {
   const [updating, setUpdating] = useState(null)
   const [error, setError] = useState(null)
-
   const userMap = Object.fromEntries(users.map(u => [u.id, u]))
 
   async function updateStatus(id, status) {
-    setUpdating(id)
-    setError(null)
+    setUpdating(id); setError(null)
     try {
       const { error } = await supabase.from('typing_requests').update({ status }).eq('id', id)
       if (error) throw error
       await onUpdate()
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setUpdating(null)
-    }
+    } catch (err) { setError(err.message) } finally { setUpdating(null) }
   }
 
   const statusColour = { pending: '#BA7517', scheduled: '#185FA5', completed: '#0F6E56', cancelled: 'var(--muted)' }
 
   return (
     <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
-      <p style={cardTitleStyle}>
-        Typing requests
-        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {requests.length} total</span>
-      </p>
+      <p style={cardTitleStyle}>Typing requests <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {requests.length} total</span></p>
       {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
       {requests.length === 0 ? (
         <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>No requests yet.</p>
@@ -833,47 +709,23 @@ function TypingRequestsPanel({ requests, users, onUpdate }) {
           {requests.map((r, i) => {
             const user = userMap[r.user_id]
             return (
-              <div key={r.id} style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
-                padding: '0.75rem 0',
-                borderBottom: i < requests.length - 1 ? '1px solid var(--border)' : 'none',
-                gap: '1rem', flexWrap: 'wrap',
-              }}>
+              <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0.75rem 0', borderBottom: i < requests.length - 1 ? '1px solid var(--border)' : 'none', gap: '1rem', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36, flexShrink: 0 }}>{user?.type ?? '?'}</span>
-                    <span style={{ fontSize: '0.85rem', color: 'var(--fg)' }}>{user?.profile_data?.name ?? 'Anonymous'}</span>
+                    <span style={{ fontSize: '0.85rem' }}>{user?.profile_data?.name ?? 'Anonymous'}</span>
                     <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: statusColour[r.status] ?? 'var(--muted)', fontWeight: 500 }}>{r.status}</span>
                   </div>
-                  {r.discord_handle && (
-                    <p style={{ fontSize: '0.78rem', color: 'var(--accent)', paddingLeft: '3rem' }}>Discord: {r.discord_handle}</p>
-                  )}
-                  {r.notes && (
-                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>
-                  )}
+                  {r.discord_handle && <p style={{ fontSize: '0.78rem', color: 'var(--accent)', paddingLeft: '3rem' }}>Discord: {r.discord_handle}</p>}
+                  {r.notes && <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>}
                   <p style={{ fontSize: '0.68rem', color: 'var(--muted)', paddingLeft: '3rem' }}>
                     {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(r.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap' }}>
-                  {r.status === 'pending' && (
-                    <button type="button" onClick={() => updateStatus(r.id, 'scheduled')} disabled={updating === r.id}
-                      style={{ background: '#185FA5', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>
-                      {updating === r.id ? '…' : 'Mark scheduled'}
-                    </button>
-                  )}
-                  {r.status === 'scheduled' && (
-                    <button type="button" onClick={() => updateStatus(r.id, 'completed')} disabled={updating === r.id}
-                      style={{ background: '#0F6E56', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>
-                      {updating === r.id ? '…' : 'Mark completed'}
-                    </button>
-                  )}
-                  {r.status !== 'cancelled' && r.status !== 'completed' && (
-                    <button type="button" onClick={() => updateStatus(r.id, 'cancelled')} disabled={updating === r.id}
-                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>
-                      {updating === r.id ? '…' : 'Cancel'}
-                    </button>
-                  )}
+                  {r.status === 'pending' && <button type="button" onClick={() => updateStatus(r.id, 'scheduled')} disabled={updating === r.id} style={{ background: '#185FA5', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>{updating === r.id ? '…' : 'Mark scheduled'}</button>}
+                  {r.status === 'scheduled' && <button type="button" onClick={() => updateStatus(r.id, 'completed')} disabled={updating === r.id} style={{ background: '#0F6E56', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>{updating === r.id ? '…' : 'Mark completed'}</button>}
+                  {r.status !== 'cancelled' && r.status !== 'completed' && <button type="button" onClick={() => updateStatus(r.id, 'cancelled')} disabled={updating === r.id} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>{updating === r.id ? '…' : 'Cancel'}</button>}
                 </div>
               </div>
             )
@@ -887,10 +739,10 @@ function TypingRequestsPanel({ requests, users, onUpdate }) {
 const SOCIONICS_TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
 function VerificationPanel({ users, onUpdate }) {
-  const [verifying, setVerifying] = useState(null)
+  const [verifying, setVerifying]       = useState(null)
   const [verifierName, setVerifierName] = useState('Spencer')
-  const [search, setSearch] = useState('')
-  const [error, setError] = useState(null)
+  const [search, setSearch]             = useState('')
+  const [error, setError]               = useState(null)
   const [typeOverrides, setTypeOverrides] = useState({})
 
   const filtered = users.filter(u => {
@@ -898,89 +750,52 @@ function VerificationPanel({ users, onUpdate }) {
     return !q || (u.profile_data?.name ?? '').toLowerCase().includes(q) || u.type.toLowerCase().includes(q)
   })
 
-  function selectedType(u) {
-    return typeOverrides[u.id] ?? u.type
-  }
+  function selectedType(u) { return typeOverrides[u.id] ?? u.type }
 
   async function grant(userId, newType) {
-    setVerifying(userId)
-    setError(null)
+    setVerifying(userId); setError(null)
     try {
-      const { error } = await supabase.from('users').update({
-        verified_by: verifierName.trim() || 'Spencer',
-        type: newType,
-      }).eq('id', userId)
+      const { error } = await supabase.from('users').update({ verified_by: verifierName.trim() || 'Spencer', type: newType }).eq('id', userId)
       if (error) throw error
       await onUpdate()
-    } catch (err) {
-      setError(err.message ?? JSON.stringify(err))
-    } finally {
-      setVerifying(null)
-    }
+    } catch (err) { setError(err.message ?? JSON.stringify(err)) } finally { setVerifying(null) }
   }
 
   async function revoke(userId) {
-    setVerifying(userId)
-    setError(null)
+    setVerifying(userId); setError(null)
     try {
       const { error } = await supabase.from('users').update({ verified_by: null }).eq('id', userId)
       if (error) throw error
       await onUpdate()
-    } catch (err) {
-      setError(err.message ?? JSON.stringify(err))
-    } finally {
-      setVerifying(null)
-    }
+    } catch (err) { setError(err.message ?? JSON.stringify(err)) } finally { setVerifying(null) }
   }
 
   return (
     <div style={cardStyle}>
       <p style={cardTitleStyle}>Type verification</p>
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', marginTop: '1rem', flexWrap: 'wrap' }}>
-        <input
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Filter by name or type…"
-          style={{ flex: 1, minWidth: 160, padding: '0.4rem 0.75rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }}
-        />
+        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Filter by name or type…" style={{ flex: 1, minWidth: 160, padding: '0.4rem 0.75rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
           <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Verified by</span>
-          <input
-            value={verifierName}
-            onChange={e => setVerifierName(e.target.value)}
-            style={{ width: 100, padding: '0.4rem 0.6rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }}
-          />
+          <input value={verifierName} onChange={e => setVerifierName(e.target.value)} style={{ width: 100, padding: '0.4rem 0.6rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }} />
         </div>
       </div>
-      {error && (
-        <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>
-      )}
+      {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
       <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
         {filtered.map((u, i) => {
-          const isVerified = !!u.verified_by
+          const isVerified  = !!u.verified_by
           const currentType = selectedType(u)
           return (
-            <div key={u.id} style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '0.55rem 0',
-              borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none',
-              gap: '0.75rem',
-            }}>
+            <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0', borderBottom: i < filtered.length - 1 ? '1px solid var(--border)' : 'none', gap: '0.75rem' }}>
               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flex: 1, minWidth: 0 }}>
                 {isVerified ? (
                   <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 52, flexShrink: 0 }}>{u.type}</span>
                 ) : (
-                  <select
-                    value={currentType}
-                    onChange={e => setTypeOverrides(prev => ({ ...prev, [u.id]: e.target.value }))}
-                    style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 72, flexShrink: 0, border: '1px solid var(--border)', borderRadius: 3, padding: '0.15rem 0.25rem', fontFamily: 'var(--sans)', background: '#fff', cursor: 'pointer' }}
-                  >
+                  <select value={currentType} onChange={e => setTypeOverrides(prev => ({ ...prev, [u.id]: e.target.value }))} style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 72, flexShrink: 0, border: '1px solid var(--border)', borderRadius: 3, padding: '0.15rem 0.25rem', fontFamily: 'var(--sans)', background: '#fff', cursor: 'pointer' }}>
                     {SOCIONICS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 )}
-                <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {u.profile_data?.name ?? '—'}
-                </span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.profile_data?.name ?? '—'}</span>
                 {isVerified && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
@@ -990,61 +805,25 @@ function VerificationPanel({ users, onUpdate }) {
               </div>
               <div style={{ flexShrink: 0 }}>
                 {isVerified ? (
-                  <button
-                    type="button"
-                    onClick={() => revoke(u.id)}
-                    disabled={verifying === u.id}
-                    style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
-                  >
-                    {verifying === u.id ? '…' : 'Revoke'}
-                  </button>
+                  <button type="button" onClick={() => revoke(u.id)} disabled={verifying === u.id} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}>{verifying === u.id ? '…' : 'Revoke'}</button>
                 ) : (
-                  <button
-                    type="button"
-                    onClick={() => grant(u.id, currentType)}
-                    disabled={verifying === u.id}
-                    style={{ background: 'var(--accent)', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}
-                  >
-                    {verifying === u.id ? '…' : 'Verify'}
-                  </button>
+                  <button type="button" onClick={() => grant(u.id, currentType)} disabled={verifying === u.id} style={{ background: 'var(--accent)', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: verifying === u.id ? 0.5 : 1 }}>{verifying === u.id ? '…' : 'Verify'}</button>
                 )}
               </div>
             </div>
           )
         })}
-        {filtered.length === 0 && (
-          <p style={{ fontSize: '0.82rem', color: 'var(--muted)', padding: '0.75rem 0' }}>No members match.</p>
-        )}
+        {filtered.length === 0 && <p style={{ fontSize: '0.82rem', color: 'var(--muted)', padding: '0.75rem 0' }}>No members match.</p>}
       </div>
     </div>
   )
 }
 
-const centreStyle = {
-  minHeight: 'calc(100vh - 72px)',
-  display: 'flex', flexDirection: 'column',
-  alignItems: 'center', justifyContent: 'center',
-  gap: '1.5rem', padding: '2rem',
-}
-
-const cardStyle = {
-  background: '#fff',
-  border: '1px solid var(--border)',
-  borderRadius: 4,
-  padding: '1.25rem',
-}
-
-const founderCardStyle = {
-  background: 'rgba(154,111,56,0.04)',
-  border: '1px solid var(--accent-lt)',
-  borderRadius: 4,
-  padding: '1.25rem',
-}
-
-const cardTitleStyle = {
-  fontSize: '0.72rem',
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-  fontWeight: 500,
-}
+const centreStyle    = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '2rem' }
+const cardStyle      = { background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem' }
+const founderCardStyle = { background: 'rgba(154,111,56,0.04)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '1.25rem' }
+const cardTitleStyle = { fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }
+const statCardStyle  = { background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }
+const statValueStyle = { fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }
+const statDeltaStyle = { fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }
+const statLabelStyle = { fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)' }
