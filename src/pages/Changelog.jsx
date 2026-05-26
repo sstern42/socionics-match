@@ -2,6 +2,15 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '26 May 2026',
+    label: 'Update',
+    items: [
+      'Swipe mode — tap Swipe in the feed header to browse profiles one at a time. Drag right to like, left to pass. Buttons below the card work too for desktop and accessibility',
+      'Mutual match — when both sides swipe right on each other a match is created automatically and a modal appears with the relation type and a link to start the conversation',
+      'Mode preference is remembered across visits — switching between Browse and Swipe stays put',
+    ],
+  },
+  {
   date: '3 May 2026',
   label: 'Update',
   items: [
