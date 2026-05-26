@@ -5,7 +5,6 @@ import { getActiveBlocks } from './blocks'
 export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200 }) {
   const compatibleTypes = getMatchingTypes(userType, relationPreferences)
 
-  // Build query — purpose overlap filter applied server-side when userPurpose is set
   let query = supabase
     .from('users')
     .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active, verified_by')
@@ -19,9 +18,10 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     query = query.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
   }
 
-  const [feedResult, blocks] = await Promise.all([
+  const [feedResult, blocks, swipedResult] = await Promise.all([
     query,
     getActiveBlocks(currentUserId),
+    supabase.from('already_swiped').select('swiped_profile_id'),
   ])
 
   if (feedResult.error) throw feedResult.error
@@ -30,17 +30,21 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     b.blocker_id === currentUserId ? b.blocked_id : b.blocker_id
   ))
 
+  const swipedIds = new Set(
+    (swipedResult.data ?? []).map(r => r.swiped_profile_id)
+  )
+
   return feedResult.data
     .filter(profile => !blockedIds.has(profile.id))
+    .filter(profile => !swipedIds.has(profile.id))
     .map(profile => ({
       ...profile,
-      relation: getRelation(userType, profile.type),
+      relation:        getRelation(userType, profile.type),
       displayRelation: getRelation(profile.type, userType),
     }))
     .filter(profile =>
       !profile.profile_data?.hidden &&
       profile.relation && relationPreferences.includes(profile.relation)
-      // purpose filter now handled server-side
     )
     .slice(0, limit)
 }

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import FeedAd from '../components/feed/FeedAd'
+import SwipeDeck from '../components/feed/SwipeDeck'
+import MatchModal from '../components/feed/MatchModal'
 import SIWebview from '../components/SIWebview'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
@@ -13,6 +15,7 @@ import { supabase } from '../lib/supabase'
 const BANNER_KEY = 'socion_announcement_dismissed_v'
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
+const FEED_MODE_KEY = 'socion_feed_mode'
 
 export default function Feed() {
   const { session, profile, loading, refreshProfile } = useAuth()
@@ -21,15 +24,23 @@ export default function Feed() {
   const [announcement, setAnnouncement] = useState(null)
   const [bannerDismissed, setBannerDismissed] = useState(false)
   const [memberCount, setMemberCount] = useState(null)
-  const [shareState, setShareState] = useState('idle') // idle | copied
+  const [shareState, setShareState] = useState('idle')
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [dismissedAds, setDismissedAds] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(AD_DISMISSED_KEY) || '{}')
-    } catch {
-      return {}
-    }
+    try { return JSON.parse(localStorage.getItem(AD_DISMISSED_KEY) || '{}') }
+    catch { return {} }
   })
+
+  // Swipe mode
+  const [swipeMode, setSwipeMode] = useState(() => localStorage.getItem(FEED_MODE_KEY) === 'swipe')
+  const [matchData, setMatchData] = useState(null)
+
+  function toggleFeedMode() {
+    const next = !swipeMode
+    setSwipeMode(next)
+    localStorage.setItem(FEED_MODE_KEY, next ? 'swipe' : 'browse')
+    window.umami?.track('feed-mode-toggled', { mode: next ? 'swipe' : 'browse' })
+  }
 
   function dismissAd(adId) {
     const next = { ...dismissedAds, [adId]: true }
@@ -38,11 +49,8 @@ export default function Feed() {
   }
 
   function announcementKey(text) {
-    try {
-      return BANNER_KEY + btoa(encodeURIComponent(text)).slice(0, 8)
-    } catch {
-      return BANNER_KEY + text.length
-    }
+    try { return BANNER_KEY + btoa(encodeURIComponent(text)).slice(0, 8) }
+    catch { return BANNER_KEY + text.length }
   }
 
   useEffect(() => {
@@ -81,9 +89,7 @@ export default function Feed() {
     }
   }
 
-
   const [profiles, setProfiles] = useState([])
-
   const [matchedMap, setMatchedMap] = useState({})
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState(null)
@@ -97,12 +103,11 @@ export default function Feed() {
   const [excludeAnon, setExcludeAnon] = useState(false)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
-  const [connectPrompt, setConnectPrompt] = useState(null) // { targetProfile }
+  const [connectPrompt, setConnectPrompt] = useState(null)
   const [connectMessage, setConnectMessage] = useState('')
   const [connectError, setConnectError] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
   const [showCard, setShowCard] = useState(false)
-
   const [retrying, setRetrying] = useState(false)
   const [retried, setRetried] = useState(false)
 
@@ -148,7 +153,6 @@ export default function Feed() {
         getExistingMatches(profile.id),
       ])
       setProfiles(feedData)
-
       const map = {}
       for (const m of existingMatches) {
         const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
@@ -218,23 +222,23 @@ export default function Feed() {
   }
 
   const oneWeekAgo = new Date(Date.now() - 7 * 86400000)
-  const oneDayAgo = new Date(Date.now() - 86400000)
+  const oneDayAgo  = new Date(Date.now() - 86400000)
   const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
   const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = profiles
-    .filter(p => onlineNow ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo && !p.profile_data?.hide_activity) : true)
-    .filter(p => activeToday ? (p.last_active && new Date(p.last_active) > oneDayAgo && !p.profile_data?.hide_activity) : true)
-    .filter(p => activeOnly ? (p.last_active && new Date(p.last_active) > oneWeekAgo && !p.profile_data?.hide_activity) : true)
-    .filter(p => withPhotos ? !!p.avatar_url : true)
-    .filter(p => excludeAnon ? !p.profile_data?.anonymous : true)
+    .filter(p => onlineNow    ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo && !p.profile_data?.hide_activity) : true)
+    .filter(p => activeToday  ? (p.last_active && new Date(p.last_active) > oneDayAgo      && !p.profile_data?.hide_activity) : true)
+    .filter(p => activeOnly   ? (p.last_active && new Date(p.last_active) > oneWeekAgo     && !p.profile_data?.hide_activity) : true)
+    .filter(p => withPhotos   ? !!p.avatar_url : true)
+    .filter(p => excludeAnon  ? !p.profile_data?.anonymous : true)
     .filter(p => verifiedOnly ? !!p.verified_by : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
     .filter(p => {
       if (filterLocation === 'anywhere') return true
       const myCountry = profile?.profile_data?.country
-      const myCity = profile?.profile_data?.city?.toLowerCase().trim()
+      const myCity    = profile?.profile_data?.city?.toLowerCase().trim()
       if (filterLocation === 'same_country') return p.profile_data?.country === myCountry
-      if (filterLocation === 'same_city') return myCity && p.profile_data?.city?.toLowerCase().trim() === myCity && p.profile_data?.country === myCountry
+      if (filterLocation === 'same_city')    return myCity && p.profile_data?.city?.toLowerCase().trim() === myCity && p.profile_data?.country === myCountry
       return true
     })
 
@@ -242,11 +246,46 @@ export default function Feed() {
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem' }}>
 
+        {/* Header */}
         <div style={{ marginBottom: '2.5rem' }}>
           <p className="eyebrow">Your matches</p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)', marginTop: '0.4rem' }}>
-            {profile?.type} — <em>finding your dynamic</em>
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginTop: '0.4rem' }}>
+            <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
+              {profile?.type} — <em>finding your dynamic</em>
+            </h1>
+            {/* Browse / Swipe toggle */}
+            <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', flexShrink: 0, marginTop: '0.5rem' }}>
+              <button
+                type="button"
+                onClick={() => { setSwipeMode(false); localStorage.setItem(FEED_MODE_KEY, 'browse') }}
+                style={{
+                  padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
+                  fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  background: !swipeMode ? 'var(--accent)' : 'transparent',
+                  color:      !swipeMode ? '#fff' : 'var(--muted)',
+                  transition: 'background 0.15s, color 0.15s',
+                }}
+              >
+                Browse
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSwipeMode(true); localStorage.setItem(FEED_MODE_KEY, 'swipe') }}
+                style={{
+                  padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
+                  fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  background: swipeMode ? 'var(--accent)' : 'transparent',
+                  color:      swipeMode ? '#fff' : 'var(--muted)',
+                  transition: 'background 0.15s, color 0.15s',
+                  borderLeft: '1px solid var(--border)',
+                }}
+              >
+                Swipe
+              </button>
+            </div>
+          </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
           </p>
@@ -260,12 +299,7 @@ export default function Feed() {
           {showCard && (
             <div style={{ marginTop: '1rem', maxWidth: 340 }}>
               <ProfileCard
-                profile={{
-                  ...profile,
-                  profile_data: profile.profile_data,
-                  relation: null,
-                  displayRelation: null,
-                }}
+                profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
                 onConnect={() => {}}
                 alreadyMatched={false}
                 matchId={null}
@@ -283,6 +317,7 @@ export default function Feed() {
           )}
         </div>
 
+        {/* Announcement banner */}
         {announcement && !bannerDismissed && (
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
@@ -296,236 +331,185 @@ export default function Feed() {
                   : part
               )}
             </p>
-            <button
-              type="button"
-              onClick={dismissBanner}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: '0 0.25rem', lineHeight: 1 }}
-              aria-label="Dismiss"
-            >
-              ×
-            </button>
+            <button type="button" onClick={dismissBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: '0 0.25rem', lineHeight: 1 }} aria-label="Dismiss">×</button>
           </div>
         )}
 
-
-        {feedDisplayRelations.length > 1 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
-                All ({profiles.length})
-              </button>
-              {feedDisplayRelations.map(rel => (
-                <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
-                  {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
-                </button>
-              ))}
+        {/* ── SWIPE MODE ───────────────────────────────────────── */}
+        {swipeMode ? (
+          fetching ? (
+            <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '4rem 0' }}>Finding matches…</p>
+          ) : error ? (
+            <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
+              <p style={{ color: '#c0392b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Something went wrong loading the feed:</p>
+              <p style={{ color: '#c0392b', fontSize: '0.78rem', fontFamily: 'monospace' }}>{error}</p>
+              <button type="button" className="btn-ghost" style={{ marginTop: '0.75rem', padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={loadFeed}>Try again</button>
             </div>
-            {(() => {
-              const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
-              return (
-                <>
-                  <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      className={`rel-pill clickable${showFilters || activeCount > 0 ? ' active' : ''}`}
-                      onClick={() => setShowFilters(v => !v)}
-                      style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
-                    >
-                      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
-                      Filters
-                      {activeCount > 0 && (
-                        <span style={{ background: 'var(--accent)', color: '#fff', fontSize: '0.6rem', fontWeight: 600, padding: '0.05rem 0.35rem', borderRadius: 10, lineHeight: 1.6 }}>{activeCount}</span>
-                      )}
-                    </button>
-                    {activeCount > 0 && (
+          ) : (
+            <SwipeDeck
+              profiles={profiles}
+              currentUserId={profile.id}
+              userType={profile.type}
+              onMatch={(data) => {
+                setMatchData(data)
+                window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
+              }}
+            />
+          )
+        ) : (
+        /* ── BROWSE MODE ─────────────────────────────────────── */
+        <>
+          {/* Relation filter pills */}
+          {feedDisplayRelations.length > 1 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
+                  All ({profiles.length})
+                </button>
+                {feedDisplayRelations.map(rel => (
+                  <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
+                    {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
+                  </button>
+                ))}
+              </div>
+              {(() => {
+                const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
+                return (
+                  <>
+                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                       <button
                         type="button"
-                        onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}
+                        className={`rel-pill clickable${showFilters || activeCount > 0 ? ' active' : ''}`}
+                        onClick={() => setShowFilters(v => !v)}
+                        style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
                       >
-                        Clear
+                        <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}><path d="M2 4h12M4 8h8M6 12h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                        Filters
+                        {activeCount > 0 && (
+                          <span style={{ background: 'var(--accent)', color: '#fff', fontSize: '0.6rem', fontWeight: 600, padding: '0.05rem 0.35rem', borderRadius: 10, lineHeight: 1.6 }}>{activeCount}</span>
+                        )}
                       </button>
-                    )}
-                  </div>
-                  {showFilters && (
-                    <div style={{ border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
-                      <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
-                        <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>
-                            {withPhotos ? '✓ ' : ''}With photos
-                          </button>
-                          <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>
-                            {excludeAnon ? '✓ ' : ''}Known users only
-                          </button>
-                          <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>
-                            {verifiedOnly ? '✓ ' : ''}Verified types only
-                          </button>
-                        </div>
-                      </div>
-                      <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
-                        <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Activity</p>
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>
-                            {activeOnly ? '✓ ' : ''}This week
-                          </button>
-                          <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>
-                            {activeToday ? '✓ ' : ''}Today
-                          </button>
-                          <button type="button" className={`rel-pill clickable${onlineNow ? ' active' : ''}`} onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }} style={{ fontSize: '0.7rem' }}>
-                            <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
-                            {onlineNow ? '✓ ' : ''}Online now
-                          </button>
-                        </div>
-                      </div>
-                      <div style={{ padding: '0.65rem 0.85rem' }}>
-                        <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Location</p>
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>🌍 Anywhere</button>
-                          <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '✓ ' : ''}Same country</button>
-                          <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '✓ ' : ''}Same city</button>
-                        </div>
-                      </div>
+                      {activeCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}
+                        >
+                          Clear
+                        </button>
+                      )}
                     </div>
+                    {showFilters && (
+                      <div style={{ border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
+                        <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                          <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
+                            <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Known users only</button>
+                            <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
+                          </div>
+                        </div>
+                        <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                          <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Activity</p>
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeOnly ? '✓ ' : ''}This week</button>
+                            <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeToday ? '✓ ' : ''}Today</button>
+                            <button type="button" className={`rel-pill clickable${onlineNow ? ' active' : ''}`} onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }} style={{ fontSize: '0.7rem' }}>
+                              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
+                              {onlineNow ? '✓ ' : ''}Online now
+                            </button>
+                          </div>
+                        </div>
+                        <div style={{ padding: '0.65rem 0.85rem' }}>
+                          <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Location</p>
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>🌍 Anywhere</button>
+                            <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '✓ ' : ''}Same country</button>
+                            <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '✓ ' : ''}Same city</button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          )}
+
+          {justConnected && (
+            <div style={{ background: 'rgba(154,111,56,0.1)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--accent)' }}>
+              Connected with {justConnected}. Click Message → to start a conversation.
+            </div>
+          )}
+
+          {error && (
+            <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
+              <p style={{ color: '#c0392b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Something went wrong loading the feed:</p>
+              <p style={{ color: '#c0392b', fontSize: '0.78rem', fontFamily: 'monospace' }}>{error}</p>
+              <button type="button" className="btn-ghost" style={{ marginTop: '0.75rem', padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={loadFeed}>Try again</button>
+            </div>
+          )}
+
+          {fetching ? (
+            <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '4rem 0' }}>Finding matches…</p>
+          ) : displayed.length === 0 && !error ? (
+            <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+              <p className="eyebrow" style={{ marginBottom: '1rem' }}>No matches yet</p>
+              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '2rem', marginBottom: '1rem' }}>The community is <em>growing</em></h2>
+              <p style={{ color: 'var(--muted)', maxWidth: 400, margin: '0 auto 0.75rem' }}>No profiles match your selected dynamics yet.</p>
+              <p style={{ color: 'var(--muted)', fontSize: '0.82rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
+                Selected relations: <strong>{profile?.relation_preferences?.join(', ') || 'none'}</strong>
+              </p>
+              <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+              {displayed.map((p, i) => (
+                <>
+                  <ProfileCard
+                    key={p.id}
+                    profile={p}
+                    onConnect={handleConnect}
+                    alreadyMatched={p.id in matchedMap}
+                    matchId={matchedMap[p.id] ?? null}
+                    connecting={connectingId === p.id}
+                  />
+                  {i === 4 && !dismissedAds.share && (
+                    <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
+                  )}
+                  {i === 7 && !dismissedAds['get-typed'] && (
+                    <FeedAd id="get-typed" eyebrow="Verify your type" headline="Working hypothesis or final answer?" body="A typing session with our resident typist gives you a verified type and a badge on your profile." ctaLabel="Book a session →" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
+                  )}
+                  {i === 9 && !dismissedAds.discord && (
+                    <FeedAd id="discord" eyebrow="Community" headline="Chat beyond the app" body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
+                  )}
+                  {i === 12 && !dismissedAds['si-type'] && profile?.type && (
+                    <FeedAd id="si-type" eyebrow="Read more" headline="Get to know your type" body={`Functions, quadras, blind spots, and how others see you — the full ${profile.type} profile on Socionics Insight.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
+                  )}
+                  {i === 14 && !dismissedAds.support && (
+                    <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion's core is free and always will be. If it's been useful, there are a few ways to help." ctaLabel="Support Socion →" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
+                  )}
+                  {i === 17 && !dismissedAds.shop && (
+                    <FeedAd id="shop" eyebrow="Treat yourself" headline="A mug for every type" body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand." ctaLabel="Browse the shop →" onClick={() => { window.umami?.track('feed-shop-clicked'); window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('shop')} />
                   )}
                 </>
-              )
-            })()}
-          </div>
-        )}
-
-        {justConnected && (
-          <div style={{ background: 'rgba(154,111,56,0.1)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--accent)' }}>
-            Connected with {justConnected}. Click Message → to start a conversation.
-          </div>
-        )}
-
-        {error && (
-          <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
-            <p style={{ color: '#c0392b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Something went wrong loading the feed:</p>
-            <p style={{ color: '#c0392b', fontSize: '0.78rem', fontFamily: 'monospace' }}>{error}</p>
-            <button type="button" className="btn-ghost" style={{ marginTop: '0.75rem', padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={loadFeed}>Try again</button>
-          </div>
-        )}
-
-        {fetching ? (
-          <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '4rem 0' }}>Finding matches…</p>
-        ) : displayed.length === 0 && !error ? (
-          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-            <p className="eyebrow" style={{ marginBottom: '1rem' }}>No matches yet</p>
-            <h2 style={{ fontFamily: 'var(--serif)', fontSize: '2rem', marginBottom: '1rem' }}>The community is <em>growing</em></h2>
-            <p style={{ color: 'var(--muted)', maxWidth: 400, margin: '0 auto 0.75rem' }}>No profiles match your selected dynamics yet.</p>
-            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
-              Selected relations: <strong>{profile?.relation_preferences?.join(', ') || 'none'}</strong>
-            </p>
-            <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-            {displayed.map((p, i) => (
-              <>
-                <ProfileCard
-                  key={p.id}
-                  profile={p}
-                  onConnect={handleConnect}
-                  alreadyMatched={p.id in matchedMap}
-                  matchId={matchedMap[p.id] ?? null}
-                  connecting={connectingId === p.id}
-                />
-                {i === 4 && !dismissedAds.share && (
-                  <FeedAd
-                    id="share"
-                    eyebrow="Spread the word"
-                    headline="Know someone who'd be into this?"
-                    body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`}
-                    ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'}
-                    onClick={handleShare}
-                    onDismiss={() => dismissAd('share')}
-                  />
-                )}
-
-                {i === 7 && !dismissedAds['get-typed'] && (
-                  <FeedAd
-                    id="get-typed"
-                    eyebrow="Verify your type"
-                    headline="Working hypothesis or final answer?"
-                    body="A typing session with our resident typist gives you a verified type and a badge on your profile."
-                    ctaLabel="Book a session →"
-                    onClick={() => {
-                      window.umami?.track('feed-get-typed-clicked')
-                      navigate('/typing')
-                    }}
-                    onDismiss={() => dismissAd('get-typed')}
-                  />
-                )}
-
-                {i === 9 && !dismissedAds.discord && (
-                  <FeedAd
-                    id="discord"
-                    eyebrow="Community"
-                    headline="Chat beyond the app"
-                    body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community."
-                    ctaLabel="Join Discord →"
-                    onClick={() => {
-                      window.umami?.track('feed-discord-clicked')
-                      window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer')
-                    }}
-                    onDismiss={() => dismissAd('discord')}
-                  />
-                )}
-
-                {i === 12 && !dismissedAds['si-type'] && profile?.type && (
-                  <FeedAd
-                    id="si-type"
-                    eyebrow="Read more"
-                    headline={`Get to know your type`}
-                    body={`Functions, quadras, blind spots, and how others see you — the full ${profile.type} profile on Socionics Insight.`}
-                    ctaLabel={`Read about ${profile.type} →`}
-                    onClick={() => {
-                      window.umami?.track('feed-si-type-clicked', { type: profile.type })
-                      setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`)
-                    }}
-                    onDismiss={() => dismissAd('si-type')}
-                  />
-                )}
-
-                {i === 14 && !dismissedAds.support && (
-                  <FeedAd
-                    id="support"
-                    eyebrow="Support Socion"
-                    headline="Keep Socion independent"
-                    body="Socion's core is free and always will be. If it's been useful, there are a few ways to help."
-                    ctaLabel="Support Socion →"
-                    onClick={() => {
-                      window.umami?.track('feed-support-clicked')
-                      navigate('/support')
-                    }}
-                    onDismiss={() => dismissAd('support')}
-                  />
-                )}
-
-                {i === 17 && !dismissedAds.shop && (
-                  <FeedAd
-                    id="shop"
-                    eyebrow="Treat yourself"
-                    headline="A mug for every type"
-                    body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand."
-                    ctaLabel="Browse the shop →"
-                    onClick={() => {
-                      window.umami?.track('feed-shop-clicked')
-                      window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer')
-                    }}
-                    onDismiss={() => dismissAd('shop')}
-                  />
-                )}
-              </>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+        </>
         )}
       </section>
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
 
+      {/* Match modal — swipe mode only */}
+      <MatchModal
+        matchData={matchData}
+        currentProfile={profile}
+        onDismiss={() => setMatchData(null)}
+      />
+
+      {/* Connect modal — browse mode */}
       {connectPrompt && (() => {
         const { targetProfile } = connectPrompt
         const isAnon = targetProfile.profile_data?.anonymous ?? false
@@ -543,12 +527,8 @@ export default function Feed() {
               style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}
             >
               <div>
-                <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>
-                  Connecting with {targetName}
-                </p>
-                <p style={{ fontSize: '0.95rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
-                  {label}
-                </p>
+                <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Connecting with {targetName}</p>
+                <p style={{ fontSize: '0.95rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>{label}</p>
               </div>
               <textarea
                 className="input-standalone"
@@ -568,27 +548,12 @@ export default function Feed() {
               )}
               {connectError && <p style={{ fontSize: '0.82rem', color: '#c0392b', margin: 0 }}>{connectError}</p>}
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => { setConnectPrompt(null); setConnectMessage('') }}
-                  disabled={isConnecting}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={handleConnectSubmit}
-                  disabled={isConnecting || connectMessage.trim().length < 10}
-                  style={{ opacity: (isConnecting || connectMessage.trim().length < 10) ? 0.5 : 1 }}
-                >
+                <button type="button" className="btn-ghost" onClick={() => { setConnectPrompt(null); setConnectMessage('') }} disabled={isConnecting}>Cancel</button>
+                <button type="button" className="btn-primary" onClick={handleConnectSubmit} disabled={isConnecting || connectMessage.trim().length < 10} style={{ opacity: (isConnecting || connectMessage.trim().length < 10) ? 0.5 : 1 }}>
                   {isConnecting ? 'Connecting…' : 'Send & connect'}
                 </button>
               </div>
-              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', margin: 0 }}>
-                Ctrl + Enter to send
-              </p>
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', margin: 0 }}>Ctrl + Enter to send</p>
             </div>
           </div>
         )
