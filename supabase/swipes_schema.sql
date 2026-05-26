@@ -12,6 +12,21 @@
 
 
 -- -------------------------------------------------------------
+-- 0. MATCHES UNIQUE CONSTRAINT
+-- Prevents duplicate connections between the same pair.
+-- Uses an expression index so it works regardless of which user
+-- is user_a vs user_b — normalises the pair before comparing.
+-- The trigger inserts with least/greatest so this index is always hit.
+-- -------------------------------------------------------------
+
+create unique index if not exists matches_pair_unique
+  on matches (
+    least(user_a_id::text,    user_b_id::text),
+    greatest(user_a_id::text, user_b_id::text)
+  );
+
+
+-- -------------------------------------------------------------
 -- 1. SWIPES TABLE
 -- -------------------------------------------------------------
 
