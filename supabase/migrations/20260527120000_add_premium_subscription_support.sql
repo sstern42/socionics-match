@@ -174,6 +174,11 @@ CREATE INDEX IF NOT EXISTS idx_messages_read_at_null
 -- ============================================================================
 -- Used by the stripe-webhook edge function to prevent double-processing
 -- when Stripe retries delivery of the same event.
+--
+-- RLS is enabled with NO policies. This is intentional: only the edge function
+-- (using the service role, which bypasses RLS) should ever read or write this
+-- table. Anon and authenticated client users get zero access — the right
+-- posture for a backend-only idempotency log that may contain webhook payloads.
 
 CREATE TABLE IF NOT EXISTS stripe_webhook_events (
   stripe_event_id TEXT PRIMARY KEY,
@@ -181,6 +186,10 @@ CREATE TABLE IF NOT EXISTS stripe_webhook_events (
   processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   payload JSONB
 );
+
+ALTER TABLE stripe_webhook_events ENABLE ROW LEVEL SECURITY;
+
+-- No policies added — service role bypasses RLS; clients should never touch this table.
 
 -- Optional cleanup (run periodically or via Supabase cron):
 --   DELETE FROM stripe_webhook_events
