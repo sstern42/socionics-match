@@ -18,6 +18,7 @@ import Feed from './pages/Feed'
 import Messages from './pages/Messages'
 import Typing from './pages/Typing'
 import Premium from './pages/Premium'
+import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
 import './App.css'
 
@@ -32,6 +33,7 @@ export default function App() {
         <Route path="/profile/edit" element={<ProfileEdit />} />
         <Route path="/profile/dynamics" element={<ProfileDynamics />} />
         <Route path="/profile/notifications" element={<ProfileNotifications />} />
+        <Route path="/profile/:userId" element={<UserProfile />} />
         <Route path="/feedback/:matchId" element={<Feedback />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />

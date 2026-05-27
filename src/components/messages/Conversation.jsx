@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { getMessages, sendMessage, subscribeToMessages } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
@@ -189,8 +189,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       }
     })
 
-    // Unique ID for this browser tab — used to exclude self from typing indicator
-
     // Typing indicator via broadcast (more reliable than presence for transient state)
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
@@ -304,7 +302,31 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             </svg>
           </button>
         )}
-        <span className="convo-header-name">{otherName}</span>
+        {/* Clickable avatar — navigates to profile */}
+        <Link
+          to={`/profile/${otherUserId}`}
+          onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'mobile-header' })}
+          style={{ flexShrink: 0, display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          aria-label={`View ${otherName}'s profile`}
+        >
+          <div style={{ width: 30, height: 30, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {match.other.avatar_url && !isOtherAnonymous
+              ? <img src={match.other.avatar_url} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontFamily: 'var(--serif)', fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1 }}>
+                  {isOtherAnonymous ? '🕵️' : (match.other.profile_data?.name?.[0]?.toUpperCase() ?? '?')}
+                </span>
+            }
+          </div>
+        </Link>
+        {/* Clickable name — also navigates to profile */}
+        <Link
+          to={`/profile/${otherUserId}`}
+          className="convo-header-name"
+          onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'mobile-header' })}
+          style={{ color: 'inherit', textDecoration: 'none' }}
+        >
+          {otherName}
+        </Link>
         <div className="convo-header-meta">
           <button
             onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }}
@@ -347,17 +369,42 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       {/* Desktop header */}
       <div className="hidden-mobile" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500 }}>{otherName}</h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
-              <p style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, margin: 0 }}>
-                <button onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', fontWeight: 'inherit' }}>
-                  {match.other.type}
-                </button>
-              </p>
-              {otherVerifiedBy && (
-                <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 13, height: 13, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.5rem', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>✓</span>
-              )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+            {/* Clickable avatar */}
+            <Link
+              to={`/profile/${otherUserId}`}
+              onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'desktop-header' })}
+              style={{ flexShrink: 0, textDecoration: 'none' }}
+              aria-label={`View ${otherName}'s profile`}
+            >
+              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {match.other.avatar_url && !isOtherAnonymous
+                  ? <img src={match.other.avatar_url} alt={otherName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ fontFamily: 'var(--serif)', fontSize: '1rem', color: 'var(--muted)', lineHeight: 1 }}>
+                      {isOtherAnonymous ? '🕵️' : (match.other.profile_data?.name?.[0]?.toUpperCase() ?? '?')}
+                    </span>
+                }
+              </div>
+            </Link>
+            <div>
+              {/* Clickable name */}
+              <Link
+                to={`/profile/${otherUserId}`}
+                onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'desktop-header' })}
+                style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--text)', textDecoration: 'none' }}
+              >
+                {otherName}
+              </Link>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
+                <p style={{ fontSize: '0.72rem', color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, margin: 0 }}>
+                  <button onClick={() => { window.umami?.track('si-link-type', { type: match.other.type }); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit', letterSpacing: 'inherit', textTransform: 'inherit', fontWeight: 'inherit' }}>
+                    {match.other.type}
+                  </button>
+                </p>
+                {otherVerifiedBy && (
+                  <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 13, height: 13, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.5rem', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>✓</span>
+                )}
+              </div>
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
@@ -672,10 +719,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 rows={1}
                 onChange={e => {
                   setText(e.target.value)
-                  // Auto-resize
                   e.target.style.height = 'auto'
                   e.target.style.height = `${e.target.scrollHeight}px`
-                  // Broadcast typing state
                   presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: true } })
                   clearTimeout(typingTimer.current)
                   typingTimer.current = setTimeout(() => {
