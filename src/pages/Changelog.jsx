@@ -2,6 +2,16 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '27 May 2026',
+    label: 'Update',
+    items: [
+      'Member profiles — tap a profile avatar or name in your conversation list or message thread header to open their full profile page',
+      'Profile page — shows their type, your relation, bio, location, and their Discord handle if set',
+      'Discord handle — add your Discord username in Profile → Details so connections can find you across both platforms',
+      'Discord handle — copyable with one tap from the profile page',
+    ],
+  },
+  {
     date: '26 May 2026',
     label: 'Update',
     items: [

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { isMatchUnread } from '../../lib/useUnreadCount'
 
@@ -14,6 +15,8 @@ function timeAgo(dateStr) {
 }
 
 export default function MatchList({ matches, selectedId, onSelect, currentUserId }) {
+  const navigate = useNavigate()
+
   if (matches.length === 0) {
     return (
       <div style={{ padding: '2rem', textAlign: 'center' }}>
@@ -33,46 +36,72 @@ export default function MatchList({ matches, selectedId, onSelect, currentUserId
         const isSelected = match.id === selectedId
         const last = match.lastMessage
         const unread = isMatchUnread(match, currentUserId)
+        const avatarUrl = isOtherAnonymous ? null : match.other.avatar_url
+        const initial = isOtherAnonymous ? '🕵️' : (match.other.profile_data?.name?.[0]?.toUpperCase() ?? '?')
 
         return (
           <button
             key={match.id}
             onClick={() => onSelect(match)}
             style={{
-              display: 'flex', flexDirection: 'column', gap: '0.2rem',
-              padding: '1rem 1.25rem',
+              display: 'flex', flexDirection: 'row', gap: '0.75rem', alignItems: 'flex-start',
+              padding: '0.9rem 1.25rem',
               borderBottom: '1px solid var(--border)',
               background: isSelected ? 'rgba(154,111,56,0.07)' : unread ? 'rgba(154,111,56,0.03)' : 'transparent',
               borderLeft: isSelected ? '2px solid var(--accent)' : unread ? '2px solid var(--accent-lt)' : '2px solid transparent',
               textAlign: 'left', cursor: 'pointer', transition: 'background 0.15s',
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                {unread && (
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
-                )}
-                <span style={{ fontWeight: unread ? 500 : 400, fontSize: '0.92rem', color: 'var(--text)' }}>{name}</span>
-              </div>
-              <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>
-                {match.other.type}
-              </span>
+            {/* Clickable avatar */}
+            <div
+              onClick={e => {
+                e.stopPropagation()
+                navigate(`/profile/${match.other.id}`)
+                window.umami?.track('match-list-avatar-clicked')
+              }}
+              title="View profile"
+              style={{
+                width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                background: 'var(--surface)', border: '1px solid var(--border)',
+                overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', marginTop: '0.1rem',
+              }}
+            >
+              {avatarUrl
+                ? <img src={avatarUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontFamily: 'var(--serif)', fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1 }}>{initial}</span>
+              }
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                {relName}
-              </span>
-              {last && (
-                <span style={{ fontSize: '0.68rem', color: unread ? 'var(--accent)' : 'var(--muted)', flexShrink: 0, fontWeight: unread ? 500 : 400 }}>
-                  {timeAgo(last.created_at)}
+
+            {/* Text content */}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: 0 }}>
+                  {unread && (
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
+                  )}
+                  <span style={{ fontWeight: unread ? 500 : 400, fontSize: '0.92rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                </div>
+                <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>
+                  {match.other.type}
                 </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  {relName}
+                </span>
+                {last && (
+                  <span style={{ fontSize: '0.68rem', color: unread ? 'var(--accent)' : 'var(--muted)', flexShrink: 0, fontWeight: unread ? 500 : 400 }}>
+                    {timeAgo(last.created_at)}
+                  </span>
+                )}
+              </div>
+              {last && (
+                <p style={{ fontSize: '0.78rem', color: unread ? 'var(--text)' : 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', fontWeight: unread ? 500 : 400 }}>
+                  {last.content}
+                </p>
               )}
             </div>
-            {last && (
-              <p style={{ fontSize: '0.78rem', color: unread ? 'var(--text)' : 'var(--muted)', marginTop: '0.15rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%', fontWeight: unread ? 500 : 400 }}>
-                {last.content}
-              </p>
-            )}
           </button>
         )
       })}

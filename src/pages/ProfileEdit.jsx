@@ -22,6 +22,7 @@ export default function ProfileEdit() {
   const [anonymous, setAnonymous] = useState(profile?.profile_data?.anonymous ?? false)
   const [hideActivity, setHideActivity] = useState(profile?.profile_data?.hide_activity ?? false)
   const [connectionQuestion, setConnectionQuestion] = useState(profile?.profile_data?.connection_question ?? '')
+  const [discordHandle, setDiscordHandle] = useState(profile?.profile_data?.discord_handle ?? '')
   const [type, setType] = useState(profile?.type ?? '')
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url ?? null)
@@ -57,6 +58,7 @@ export default function ProfileEdit() {
           anonymous,
           hide_activity: hideActivity,
           connection_question: connectionQuestion.trim() || null,
+          discord_handle: discordHandle.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
         },
         // don't allow type change if verified
@@ -203,6 +205,22 @@ export default function ProfileEdit() {
                 {connectionQuestion.length}/120
               </p>
             </div>
+
+            {/* Discord handle */}
+            <div>
+              <input
+                className="input-standalone"
+                type="text"
+                placeholder="Discord username (optional) — e.g. yourname or yourname#1234"
+                value={discordHandle}
+                onChange={e => setDiscordHandle(e.target.value.slice(0, 100))}
+                style={{ fontFamily: 'var(--sans)' }}
+              />
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                Shown on your profile so connections can find you on Discord.
+              </p>
+            </div>
+
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
               <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }} />
               <div>
