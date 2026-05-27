@@ -289,6 +289,11 @@ export default function Feed() {
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
           </p>
+          {swipeMode && (
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
+              Profiles you swipe on won't appear in Browse either — swipes apply across both modes.
+            </p>
+          )}
           <button
             type="button"
             onClick={() => setShowCard(c => !c)}
