@@ -1,9 +1,19 @@
 import { supabase } from './supabase'
-import { getRelation, getMatchingTypes } from '../data/relations'
+import { getRelation, getMatchingTypes, sameQuadraTypes } from '../data/relations'
 import { getActiveBlocks } from './blocks'
 
-export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200 }) {
-  const compatibleTypes = getMatchingTypes(userType, relationPreferences)
+export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200, isPremium = true }) {
+  let compatibleTypes = getMatchingTypes(userType, relationPreferences)
+
+  // Free-tier gate: restrict the feed to same-quadra types only.
+  // Same quadra produces the Identity / Dual / Activity / Mirror relations.
+  // Premium and founding members (isPremium === true) see all 16.
+  // Default is true so callers that don't pass the flag keep the full feed —
+  // gating only kicks in where isPremium is explicitly passed as false.
+  if (!isPremium) {
+    const quadraTypes = new Set(sameQuadraTypes(userType))
+    compatibleTypes = compatibleTypes.filter(t => quadraTypes.has(t))
+  }
 
   let query = supabase
     .from('users')

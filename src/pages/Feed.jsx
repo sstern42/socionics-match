@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import FeedAd from '../components/feed/FeedAd'
@@ -18,7 +18,7 @@ const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 const FEED_MODE_KEY = 'socion_feed_mode'
 
 export default function Feed() {
-  const { session, profile, loading, refreshProfile } = useAuth()
+  const { session, profile, loading, refreshProfile, isPremium } = useAuth()
   const navigate = useNavigate()
 
   const [announcement, setAnnouncement] = useState(null)
@@ -107,6 +107,7 @@ export default function Feed() {
   const [connectMessage, setConnectMessage] = useState('')
   const [connectError, setConnectError] = useState(null)
   const [justConnected, setJustConnected] = useState(null)
+  const [capModal, setCapModal] = useState(false)
   const [showCard, setShowCard] = useState(false)
   const [retrying, setRetrying] = useState(false)
   const [retried, setRetried] = useState(false)
@@ -149,6 +150,7 @@ export default function Feed() {
           relationPreferences: profile.relation_preferences ?? [],
           userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
           currentUserId: profile.id,
+          isPremium,
         }),
         getExistingMatches(profile.id),
       ])
@@ -167,6 +169,13 @@ export default function Feed() {
   }
 
   function handleConnect(targetProfile) {
+    // Free-tier cap: 5 active connections. Premium / founding members are unlimited.
+    // Real enforcement is the RLS insert gate on matches; this is the UX mirror.
+    if (!isPremium && Object.keys(matchedMap).length >= 5) {
+      window.umami?.track('connection-cap-hit')
+      setCapModal(true)
+      return
+    }
     setConnectPrompt({ targetProfile })
     setConnectMessage('')
     setConnectError(null)
@@ -224,6 +233,7 @@ export default function Feed() {
   const oneWeekAgo = new Date(Date.now() - 7 * 86400000)
   const oneDayAgo  = new Date(Date.now() - 86400000)
   const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
+  const connectionCount = Object.keys(matchedMap).length
   const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = profiles
     .filter(p => onlineNow    ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo && !p.profile_data?.hide_activity) : true)
@@ -294,6 +304,19 @@ export default function Feed() {
               Profiles you swipe on won't appear in Browse either — swipes apply across both modes.
             </p>
           )}
+          {!isPremium && (
+            <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
+              <strong style={{ color: connectionCount >= 5 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 5</strong> connections used.
+              {connectionCount >= 5 && (
+                <>
+                  {' '}
+                  <Link to="/premium" onClick={() => window.umami?.track('connection-counter-upgrade-clicked')} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+                    Upgrade for unlimited
+                  </Link>.
+                </>
+              )}
+            </p>
+          )}
           <button
             type="button"
             onClick={() => setShowCard(c => !c)}
@@ -340,6 +363,27 @@ export default function Feed() {
           </div>
         )}
 
+        {/* Free-tier quadra notice */}
+        {!isPremium && (
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
+            background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
+            borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem',
+          }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
+              Showing same-quadra matches.{' '}
+              <Link
+                to="/premium"
+                onClick={() => window.umami?.track('feed-quadra-upgrade-clicked')}
+                style={{ color: 'var(--accent)', textDecoration: 'underline' }}
+              >
+                Upgrade to Premium
+              </Link>
+              {' '}to see all 16 relation types.
+            </p>
+          </div>
+        )}
+
         {/* ── SWIPE MODE ───────────────────────────────────────── */}
         {swipeMode ? (
           fetching ? (
@@ -355,8 +399,13 @@ export default function Feed() {
               profiles={profiles}
               currentUserId={profile.id}
               userType={profile.type}
+              blockRightSwipe={!isPremium && connectionCount >= 5}
+              onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
               onMatch={(data) => {
                 setMatchData(data)
+                // Keep the connection count live so a mid-session match counts
+                // toward the cap without needing a reload.
+                setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
                 window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
               }}
             />
@@ -563,6 +612,43 @@ export default function Feed() {
           </div>
         )
       })()}
+      {/* Connection cap modal — free tier */}
+      {capModal && (
+        <div
+          onClick={() => setCapModal(false)}
+          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}
+          >
+            <div>
+              <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Free tier limit</p>
+              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You've reached 5 connections</h2>
+            </div>
+            <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+              The free tier includes up to 5 active connections. Upgrade to Premium for unlimited connections, or end an existing connection to free up a slot.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              <Link
+                to="/premium"
+                onClick={() => window.umami?.track('connection-cap-upgrade-clicked')}
+                className="btn-primary"
+                style={{ textAlign: 'center', textDecoration: 'none' }}
+              >
+                Upgrade to Premium
+              </Link>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => { window.umami?.track('connection-cap-manage-clicked'); navigate('/messages') }}
+              >
+                Manage existing connections
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }
