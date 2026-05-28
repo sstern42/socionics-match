@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
-import { getMessages, sendMessage, subscribeToMessages } from '../../lib/messages'
+import { getMessages, sendMessage, subscribeToMessages, markRead } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
 import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
+import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabase'
 
 function renderContent(text) {
@@ -85,6 +86,7 @@ function SIWebview({ url, onClose }) {
 
 export default function Conversation({ match, currentUserId, hasFeedback, onBack }) {
   const navigate = useNavigate()
+  const { isPremium } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
@@ -177,17 +179,30 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         setMessages(msgs)
         setLoading(false)
         markMatchRead(match.id)
+        markRead(match.id)
         const lastVisited = getLastVisited()
         const unreadInChat = msgs.filter(m => m.sender_id !== currentUserId && new Date(m.created_at) > new Date(lastVisited)).length
         subtractUnread(unreadInChat)
       }
     })
-    const channel = subscribeToMessages(match.id, newMsg => {
-      if (!cancelled) {
-        setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
-        markMatchRead(match.id)
+    const channel = subscribeToMessages(
+      match.id,
+      newMsg => {
+        if (!cancelled) {
+          setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+          markMatchRead(match.id)
+          // A message from the other person arriving while this thread is open
+          // is read immediately.
+          if (newMsg.sender_id !== currentUserId) markRead(match.id)
+        }
+      },
+      updatedMsg => {
+        if (!cancelled) {
+          // Merge read_at so the sender sees "Read" appear live without a reload.
+          setMessages(prev => prev.map(m => m.id === updatedMsg.id ? { ...m, read_at: updatedMsg.read_at } : m))
+        }
       }
-    })
+    )
 
     // Typing indicator via broadcast (more reliable than presence for transient state)
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
@@ -494,6 +509,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           const items = []
 
           const lastMineId = [...messages].reverse().find(m => m.sender_id === currentUserId)?.id
+          const lastReadMineId = [...messages].reverse().find(m => m.sender_id === currentUserId && m.read_at)?.id
 
           for (const msg of messages) {
             const msgDate = new Date(msg.created_at)
@@ -652,7 +668,12 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     )
                   )}
                 </div>
-                <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>{timeStr}{msg.edited ? ' · edited' : ''}</span>
+                <span style={{ fontSize: '0.62rem', color: 'var(--muted)', alignSelf: isMine ? 'flex-end' : 'flex-start', paddingInline: '0.2rem' }}>
+                  {timeStr}{msg.edited ? ' · edited' : ''}
+                  {isMine && isPremium && msg.id === lastReadMineId && (
+                    <span style={{ color: 'var(--accent)' }}> · Read</span>
+                  )}
+                </span>
               </div>
             )
           }
