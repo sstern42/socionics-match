@@ -55,3 +55,37 @@ export function getMatchingTypes(userType, wantedRelations) {
     return rel && wantedRelations.includes(rel)
   })
 }
+
+// ============================================================================
+// Quadras
+// ============================================================================
+// The four Socionics quadras, each containing four types. This is the in-app
+// source of truth for quadra membership — Network.jsx and Admin.jsx currently
+// hardcode the same grouping and should be migrated to read from here.
+//
+// Used by the freemium feed gate: free-tier members only see same-quadra types
+// (which produces the Identity / Dual / Activity / Mirror relations). Premium
+// and founding members see all 16 relation types across all quadras.
+
+export const QUADRAS = {
+  Alpha: ['ILE', 'SEI', 'ESE', 'LII'],
+  Beta:  ['EIE', 'LSI', 'SLE', 'IEI'],
+  Gamma: ['SEE', 'ILI', 'LIE', 'ESI'],
+  Delta: ['LSE', 'EII', 'IEE', 'SLI'],
+}
+
+// Reverse lookup: type → quadra name (e.g. 'SEI' → 'Alpha')
+export const TYPE_QUADRA = Object.fromEntries(
+  Object.entries(QUADRAS).flatMap(([quadra, types]) => types.map(t => [t, quadra]))
+)
+
+export function getQuadra(type) {
+  return TYPE_QUADRA[type] ?? null
+}
+
+// All types in the same quadra as the given type, including the type itself.
+// Returns [] for an unrecognised type.
+export function sameQuadraTypes(type) {
+  const quadra = getQuadra(type)
+  return quadra ? QUADRAS[quadra] : []
+}

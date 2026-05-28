@@ -15,7 +15,7 @@ const RELATION_COLOURS = {
 const NEUTRAL = { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
 const getColours = (rel) => RELATION_COLOURS[rel] ?? NEUTRAL
 
-export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTransform = 'none' }) {
+export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTransform = 'none', blockRightSwipe = false, onBlockedRightSwipe }) {
   const [dragX, setDragX]       = useState(0)
   const [dragY, setDragY]       = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -59,6 +59,14 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
 
     if (Math.abs(dragX) >= SWIPE_THRESHOLD) {
       const direction = dragX > 0 ? 'right' : 'left'
+      // Free-tier cap: a right-swipe past threshold snaps back instead of
+      // flying off, and surfaces the cap modal. Pass (left) is never blocked.
+      if (direction === 'right' && blockRightSwipe) {
+        setDragX(0)
+        setDragY(0)
+        onBlockedRightSwipe?.()
+        return
+      }
       setIsFlying(true)
       setDragX(dragX > 0 ? FLY_DISTANCE : -FLY_DISTANCE)
       setTimeout(() => onSwipe(direction), 320)
@@ -66,7 +74,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
       setDragX(0)
       setDragY(0)
     }
-  }, [isDragging, dragX, onSwipe])
+  }, [isDragging, dragX, onSwipe, blockRightSwipe, onBlockedRightSwipe])
 
   const transform = isTop
     ? `translateX(${dragX}px) translateY(${dragY}px) rotate(${dragX * ROTATION_FACTOR}deg)`
@@ -260,7 +268,11 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
             </button>
             <button
               type="button"
-              onClick={() => onSwipe('right')}
+              onClick={() => {
+                // Free-tier cap: surface the modal instead of registering a like.
+                if (blockRightSwipe) { onBlockedRightSwipe?.(); return }
+                onSwipe('right')
+              }}
               style={{
                 flex: 1, border: '1px solid #4caf50', borderRadius: 4,
                 background: 'transparent', color: '#4caf50',

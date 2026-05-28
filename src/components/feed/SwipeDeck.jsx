@@ -13,7 +13,7 @@ const STACK = [
   { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
 ]
 
-export default function SwipeDeck({ profiles, currentUserId, userType, onMatch }) {
+export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe }) {
   const [queue, setQueue]   = useState([...profiles])
   const [swiped, setSwiped] = useState(new Set())
 
@@ -24,6 +24,14 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch }
   }, [profiles])
 
   const handleSwipe = useCallback(async (direction, profile) => {
+    // Free-tier cap backstop: an at-cap right-swipe is stopped before anything
+    // is recorded or removed from the deck. SwipeCard already gates this at the
+    // gesture / button, so reaching here on a blocked right is belt-and-braces.
+    if (direction === 'right' && blockRightSwipe) {
+      onBlockedRightSwipe?.()
+      return
+    }
+
     const relationType = getRelation(userType, profile.type)
 
     // Remove from deck immediately for snappy UX
@@ -74,7 +82,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch }
         onMatch?.({ profile, relationType, matchId: matchRow?.id ?? null })
       }
     }
-  }, [currentUserId, userType, onMatch])
+  }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe])
 
   const visible = queue.slice(0, VISIBLE_COUNT)
 
@@ -124,6 +132,8 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch }
             isTop={isTop}
             zIndex={stackEntry.zIndex}
             stackTransform={stackEntry.transform}
+            blockRightSwipe={blockRightSwipe}
+            onBlockedRightSwipe={onBlockedRightSwipe}
             onSwipe={(direction) => handleSwipe(direction, profile)}
           />
         )
