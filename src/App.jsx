@@ -18,6 +18,8 @@ import Feed from './pages/Feed'
 import Messages from './pages/Messages'
 import Typing from './pages/Typing'
 import Premium from './pages/Premium'
+import PremiumWelcome from './pages/PremiumWelcome'
+import Settings from './pages/Settings'
 import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
 import './App.css'
@@ -46,6 +48,8 @@ export default function App() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/typing" element={<Typing />} />
         <Route path="/premium" element={<Premium />} />
+        <Route path="/premium/welcome" element={<PremiumWelcome />} />
+        <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
