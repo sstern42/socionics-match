@@ -1,0 +1,125 @@
+import { useState, useEffect } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import Layout from '../components/Layout'
+import { useAuth } from '../lib/AuthContext'
+import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
+
+// Lightweight settings page. Exists primarily as the return target for the
+// Stripe customer portal (create-portal-session return_url = /settings) and as
+// a home for subscription management. Refreshes the profile on mount so a
+// just-returned-from-portal user sees their current plan.
+export default function Settings() {
+  const { session, profile, isPremium, loading, refreshProfile } = useAuth()
+  const navigate = useNavigate()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    if (!loading && !session) navigate('/auth')
+  }, [session, loading])
+
+  useEffect(() => {
+    if (session) refreshProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
+
+  const isFounding = profile?.is_founding_member === true
+  const isSubscriber = !isFounding && (profile?.plan_status === 'active' || profile?.plan_status === 'past_due')
+
+  const planLabel = isFounding
+    ? 'Founding member'
+    : profile?.plan_status === 'active'
+      ? 'Premium'
+      : profile?.plan_status === 'past_due'
+        ? 'Premium (payment due)'
+        : 'Free'
+
+  async function handleManage() {
+    setBusy(true)
+    setError(null)
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession()
+      const token = s?.access_token
+      if (!token) throw new Error('Please sign in again.')
+      const res = await fetch(`${supabaseUrl}/functions/v1/create-portal-session`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, apikey: supabaseKey, 'Content-Type': 'application/json' },
+      })
+      const text = await res.text()
+      let json = {}
+      try { json = JSON.parse(text) } catch { /* non-JSON */ }
+      if (!res.ok) throw new Error(json.error ?? `Something went wrong (${res.status}).`)
+      if (json.url) { window.location.href = json.url; return }
+      throw new Error('Could not open the customer portal.')
+    } catch (err) {
+      setError(err.message)
+      setBusy(false)
+    }
+  }
+
+  if (loading || !session) return (
+    <Layout noScroll hideFooter>
+      <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--muted)' }}>Loading…</p>
+      </div>
+    </Layout>
+  )
+
+  return (
+    <Layout noScroll hideFooter>
+      <section style={{ maxWidth: 520, margin: '0 auto', padding: '4rem 1.5rem 6rem' }}>
+        <p className="eyebrow">Socion</p>
+        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '2rem' }}>
+          Settings
+        </h1>
+
+        <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div>
+              <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.3rem' }}>Plan</p>
+              <p style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text)' }}>{planLabel}</p>
+            </div>
+            {isFounding && (
+              <span style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fff', background: 'var(--accent)', padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0 }}>✦ Free forever</span>
+            )}
+          </div>
+
+          {isFounding && (
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+              You have permanent free Premium as a founding member. There's no subscription to manage.
+            </p>
+          )}
+
+          {isSubscriber && (
+            <>
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+                Manage your subscription, update your payment method, or view invoices.
+              </p>
+              <button type="button" className="btn-primary" onClick={handleManage} disabled={busy} style={{ alignSelf: 'flex-start', opacity: busy ? 0.6 : 1 }}>
+                {busy ? 'Opening…' : 'Manage subscription'}
+              </button>
+            </>
+          )}
+
+          {!isPremium && (
+            <>
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+                You're on the free tier — 5 connections and same-quadra matches.
+              </p>
+              <Link to="/premium" className="btn-primary" style={{ alignSelf: 'flex-start', textDecoration: 'none' }}>
+                Upgrade to Premium
+              </Link>
+            </>
+          )}
+
+          {error && <p style={{ fontSize: '0.82rem', color: '#c0392b' }}>{error}</p>}
+        </div>
+
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2rem', lineHeight: 1.7 }}>
+          Looking for profile and notification settings? They're under{' '}
+          <Link to="/profile/edit" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Profile</Link>.
+        </p>
+      </section>
+    </Layout>
+  )
+}
