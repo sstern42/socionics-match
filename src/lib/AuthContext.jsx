@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from './supabase'
 import { getProfile } from './profile'
+import { computeIsPremium } from './premium'
 
 const AuthContext = createContext(null)
 
@@ -51,8 +52,12 @@ export function AuthProvider({ children }) {
 
   const loading = session === undefined || profile === undefined
 
+  // Derived premium status — single source of truth in lib/premium.js.
+  // Founding members and active/past_due subscribers are premium.
+  const isPremium = computeIsPremium(profile)
+
   return (
-    <AuthContext.Provider value={{ session, profile, refreshProfile, loading }}>
+    <AuthContext.Provider value={{ session, profile, refreshProfile, loading, isPremium }}>
       {children}
     </AuthContext.Provider>
   )
