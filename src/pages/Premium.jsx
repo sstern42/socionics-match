@@ -10,6 +10,7 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 const FEATURES = [
   ['Connections', 'Unlimited active connections', '5 active'],
   ['Relation filters', 'All 16 relation types in your feed', 'Same quadra only'],
+  ['Compatibility breakdown', 'Full Model A breakdown for every connection', '—'],
   ['Read receipts', 'See when your messages are read', '—'],
 ]
 

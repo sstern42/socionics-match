@@ -2,6 +2,16 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '29 May 2026',
+    label: 'Update',
+    items: [
+      'Compatibility breakdown — tap "Full breakdown" in any conversation header to see a Model A analysis of that specific dyad: where each person\'s leading and creative functions land in the other\'s stack, the position name, and what it means',
+      'Compatibility breakdown — covers strengths, friction points, and a practical note for the relation type. Content is dyad-specific, not a generic relation description',
+      'Compatibility breakdown — available on desktop and mobile. On mobile, tap the bar below the conversation header',
+      'Compatibility breakdown — premium feature. Founding members have full access',
+    ],
+  },
+  {
     date: '27 May 2026',
     label: 'Update',
     items: [
