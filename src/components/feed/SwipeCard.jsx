@@ -15,7 +15,7 @@ const RELATION_COLOURS = {
 const NEUTRAL = { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
 const getColours = (rel) => RELATION_COLOURS[rel] ?? NEUTRAL
 
-export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTransform = 'none', blockRightSwipe = false, onBlockedRightSwipe }) {
+export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1, stackTransform = 'none', blockRightSwipe = false, onBlockedRightSwipe }) {
   const [dragX, setDragX]       = useState(0)
   const [dragY, setDragY]       = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -59,8 +59,6 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
 
     if (Math.abs(dragX) >= SWIPE_THRESHOLD) {
       const direction = dragX > 0 ? 'right' : 'left'
-      // Free-tier cap: a right-swipe past threshold snaps back instead of
-      // flying off, and surfaces the cap modal. Pass (left) is never blocked.
       if (direction === 'right' && blockRightSwipe) {
         setDragX(0)
         setDragY(0)
@@ -234,7 +232,7 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
 
           {/* Bio */}
           <p style={{
-            fontSize: '0.84rem', color: 'var(--text)',
+            fontSize: '0.84rem',
             lineHeight: 1.65, fontWeight: 300, margin: 0,
             fontStyle: profile_data?.bio ? 'normal' : 'italic',
             color: profile_data?.bio ? 'var(--text)' : 'var(--border)',
@@ -245,10 +243,10 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
           </p>
         </div>
 
-        {/* Like / Pass buttons — shown only on top card */}
+        {/* Pass / Skip / Like buttons — shown only on top card */}
         {isTop && (
           <div style={{
-            display: 'flex', gap: '0.75rem',
+            display: 'flex', gap: '0.5rem',
             padding: '0.75rem 1.1rem',
             borderTop: '1px solid var(--border)',
             background: '#fff', flexShrink: 0,
@@ -268,8 +266,21 @@ export default function SwipeCard({ profile, onSwipe, isTop, zIndex = 1, stackTr
             </button>
             <button
               type="button"
+              onClick={() => onSkip?.()}
+              title="Show again later this session"
+              style={{
+                flex: '0 0 auto', border: '1px solid var(--border)', borderRadius: 4,
+                background: 'transparent', color: 'var(--muted)',
+                padding: '0.55rem 0.85rem', cursor: 'pointer',
+                fontSize: '0.78rem', fontFamily: 'var(--sans)',
+                fontWeight: 500, letterSpacing: '0.04em',
+              }}
+            >
+              ↩
+            </button>
+            <button
+              type="button"
               onClick={() => {
-                // Free-tier cap: surface the modal instead of registering a like.
                 if (blockRightSwipe) { onBlockedRightSwipe?.(); return }
                 onSwipe('right')
               }}
