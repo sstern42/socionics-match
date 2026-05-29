@@ -169,8 +169,6 @@ export default function Feed() {
   }
 
   function handleConnect(targetProfile) {
-    // Free-tier cap: 5 active connections. Premium / founding members are unlimited.
-    // Real enforcement is the RLS insert gate on matches; this is the UX mirror.
     if (!isPremium && Object.keys(matchedMap).length >= 5) {
       window.umami?.track('connection-cap-hit')
       setCapModal(true)
@@ -234,7 +232,12 @@ export default function Feed() {
   const oneDayAgo  = new Date(Date.now() - 86400000)
   const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
   const connectionCount = Object.keys(matchedMap).length
-  const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
+
+  // FIX: use relation (your perspective) for filter pills, not displayRelation (other's perspective).
+  // This ensures pill labels match what was stored in relation_preferences and what the
+  // cards now display — all consistent from the user's own perspective.
+  const feedDisplayRelations = [...new Set(profiles.map(p => p.relation ?? p.displayRelation).filter(Boolean))]
+
   const displayed = profiles
     .filter(p => onlineNow    ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo && !p.profile_data?.hide_activity) : true)
     .filter(p => activeToday  ? (p.last_active && new Date(p.last_active) > oneDayAgo      && !p.profile_data?.hide_activity) : true)
@@ -242,7 +245,8 @@ export default function Feed() {
     .filter(p => withPhotos   ? !!p.avatar_url : true)
     .filter(p => excludeAnon  ? !p.profile_data?.anonymous : true)
     .filter(p => verifiedOnly ? !!p.verified_by : true)
-    .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
+    // FIX: filter by relation (your perspective) to match pill labels
+    .filter(p => filterRelation === 'ALL' ? true : (p.relation ?? p.displayRelation) === filterRelation)
     .filter(p => {
       if (filterLocation === 'anywhere') return true
       const myCountry = profile?.profile_data?.country
@@ -403,8 +407,6 @@ export default function Feed() {
               onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
               onMatch={(data) => {
                 setMatchData(data)
-                // Keep the connection count live so a mid-session match counts
-                // toward the cap without needing a reload.
                 setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
                 window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
               }}
@@ -422,7 +424,7 @@ export default function Feed() {
                 </button>
                 {feedDisplayRelations.map(rel => (
                   <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
-                    {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
+                    {RELATIONS[rel]?.name} ({profiles.filter(p => (p.relation ?? p.displayRelation) === rel).length})
                   </button>
                 ))}
               </div>
@@ -612,6 +614,7 @@ export default function Feed() {
           </div>
         )
       })()}
+
       {/* Connection cap modal — free tier */}
       {capModal && (
         <div
