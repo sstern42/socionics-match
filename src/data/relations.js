@@ -24,8 +24,10 @@ export const RELATIONS = {
   ILLUSIONARY:    { name: 'Illusionary',    description: 'Initial attraction gives way to mutual misreading.',                                     siSlug: 'mirage' },
 }
 
-// Matrix sourced from socionics.com/rel/relcht.htm — validated for symmetry and completeness.
+// Matrix sourced from socionics.com/rel/relcht.htm
 // Row = type A, column = type B, value = relation from A's perspective.
+// Note: the display layer uses displayRelation (other->me) for feed cards and pills,
+// which inverts asymmetric keys — this is intentional and consistent throughout.
 export const MATRIX = {
   ILE: { ILE:'IDENTITY', SEI:'DUAL', ESE:'ACTIVITY', LII:'MIRROR', EIE:'BENEFACTOR', LSI:'SUPERVISOR', SLE:'BUSINESS', IEI:'ILLUSIONARY', SEE:'SUPER_EGO', ILI:'CONTRARY', LIE:'QUASI_IDENTITY', ESI:'CONFLICT', LSE:'BENEFICIARY', EII:'SUPERVISEE', IEE:'KINDRED', SLI:'SEMI_DUAL' },
   SEI: { ILE:'DUAL', SEI:'IDENTITY', ESE:'MIRROR', LII:'ACTIVITY', EIE:'SUPERVISOR', LSI:'BENEFACTOR', SLE:'ILLUSIONARY', IEI:'BUSINESS', SEE:'CONTRARY', ILI:'SUPER_EGO', LIE:'CONFLICT', ESI:'QUASI_IDENTITY', LSE:'SUPERVISEE', EII:'BENEFICIARY', IEE:'SEMI_DUAL', SLI:'KINDRED' },
@@ -56,17 +58,6 @@ export function getMatchingTypes(userType, wantedRelations) {
   })
 }
 
-// ============================================================================
-// Quadras
-// ============================================================================
-// The four Socionics quadras, each containing four types. This is the in-app
-// source of truth for quadra membership — Network.jsx and Admin.jsx currently
-// hardcode the same grouping and should be migrated to read from here.
-//
-// Used by the freemium feed gate: free-tier members only see same-quadra types
-// (which produces the Identity / Dual / Activity / Mirror relations). Premium
-// and founding members see all 16 relation types across all quadras.
-
 export const QUADRAS = {
   Alpha: ['ILE', 'SEI', 'ESE', 'LII'],
   Beta:  ['EIE', 'LSI', 'SLE', 'IEI'],
@@ -74,7 +65,6 @@ export const QUADRAS = {
   Delta: ['LSE', 'EII', 'IEE', 'SLI'],
 }
 
-// Reverse lookup: type → quadra name (e.g. 'SEI' → 'Alpha')
 export const TYPE_QUADRA = Object.fromEntries(
   Object.entries(QUADRAS).flatMap(([quadra, types]) => types.map(t => [t, quadra]))
 )
@@ -83,8 +73,6 @@ export function getQuadra(type) {
   return TYPE_QUADRA[type] ?? null
 }
 
-// All types in the same quadra as the given type, including the type itself.
-// Returns [] for an unrecognised type.
 export function sameQuadraTypes(type) {
   const quadra = getQuadra(type)
   return quadra ? QUADRAS[quadra] : []

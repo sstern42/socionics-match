@@ -1,6 +1,5 @@
 import { RELATIONS, MATRIX } from '../../data/relations'
 
-// Group relations by broad compatibility tier for UX clarity
 const RELATION_GROUPS = [
   {
     label: 'Complementary',
@@ -24,9 +23,12 @@ const RELATION_GROUPS = [
   },
 ]
 
-// For asymmetric relations, the MATRIX value describes your role (e.g. BENEFACTOR = you benefit them).
-// To show who fills that role *toward you*, we look up the inverse relation.
-const PARTNER_RELATION_LOOKUP = {
+// The feed displays cards using displayRelation (other->me), which inverts asymmetric keys.
+// To align stored prefs with displayed labels, we save the inverse key for asymmetric relations.
+// e.g. SEI clicks "Benefactor" (label) → saves BENEFICIARY (key) → getMatchingTypes finds EII
+//      EII displayRelation = BENEFACTOR → EII card appears under Benefactor pill ✓
+// The bracket hint uses the same inverse so the shown type matches the feed result.
+const ASYMMETRIC_INVERSE = {
   BENEFACTOR:  'BENEFICIARY',
   BENEFICIARY: 'BENEFACTOR',
   SUPERVISOR:  'SUPERVISEE',
@@ -34,22 +36,35 @@ const PARTNER_RELATION_LOOKUP = {
 }
 
 export default function RelationPicker({ selected, onChange, userType }) {
+  // For asymmetric relations, the stored key is the inverse of the label key
+  // so that getMatchingTypes returns types that displayRelation shows with the label.
+  function storedKey(rel) {
+    return ASYMMETRIC_INVERSE[rel] ?? rel
+  }
+
   function toggle(rel) {
-    if (selected.includes(rel)) {
-      onChange(selected.filter(r => r !== rel))
+    const key = storedKey(rel)
+    if (selected.includes(key)) {
+      onChange(selected.filter(r => r !== key))
     } else {
-      onChange([...selected, rel])
+      onChange([...selected, key])
     }
   }
 
   function toggleGroup(rels) {
-    const allSelected = rels.every(r => selected.includes(r))
+    const keys = rels.map(storedKey)
+    const allSelected = keys.every(k => selected.includes(k))
     if (allSelected) {
-      onChange(selected.filter(r => !rels.includes(r)))
+      onChange(selected.filter(r => !keys.includes(r)))
     } else {
-      const toAdd = rels.filter(r => !selected.includes(r))
+      const toAdd = keys.filter(k => !selected.includes(k))
       onChange([...selected, ...toAdd])
     }
+  }
+
+  // A button is selected if its stored key is in the current selection
+  function isSelected(rel) {
+    return selected.includes(storedKey(rel))
   }
 
   return (
@@ -64,13 +79,20 @@ export default function RelationPicker({ selected, onChange, userType }) {
               onClick={() => toggleGroup(group.relations)}
               style={{ background: 'none', border: 'none', color: 'var(--accent-lt)', fontSize: '0.7rem', cursor: 'pointer', textDecoration: 'underline', letterSpacing: '0.06em' }}
             >
-              {group.relations.every(r => selected.includes(r)) ? 'deselect all' : 'select all'}
+              {group.relations.every(r => isSelected(r)) ? 'deselect all' : 'select all'}
             </button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.5rem' }}>
             {group.relations.map(rel => {
-              const isSelected = selected.includes(rel)
+              const sel = isSelected(rel)
               const info = RELATIONS[rel]
+
+              // Bracket: inverse lookup → type that will appear in feed under this label
+              const lookupRel = ASYMMETRIC_INVERSE[rel] ?? rel
+              const partnerType = userType
+                ? Object.entries(MATRIX[userType] ?? {}).find(([, r]) => r === lookupRel)?.[0]
+                : null
+
               return (
                 <button
                   key={rel}
@@ -78,21 +100,19 @@ export default function RelationPicker({ selected, onChange, userType }) {
                   title={info.description}
                   style={{
                     padding: '0.75rem 1rem',
-                    border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
+                    border: `1px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
                     borderRadius: 4,
-                    background: isSelected ? 'rgba(154,111,56,0.08)' : '#fff',
+                    background: sel ? 'rgba(154,111,56,0.08)' : '#fff',
                     textAlign: 'left',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
                   }}
                 >
-                  <div style={{ fontWeight: isSelected ? 500 : 300, color: isSelected ? 'var(--accent)' : 'var(--text)', fontSize: '0.88rem', letterSpacing: '0.04em' }}>
+                  <div style={{ fontWeight: sel ? 500 : 300, color: sel ? 'var(--accent)' : 'var(--text)', fontSize: '0.88rem', letterSpacing: '0.04em' }}>
                     {info.name}
-                    {userType && (() => {
-                      const lookupRel = PARTNER_RELATION_LOOKUP[rel] ?? rel
-                      const partnerType = Object.entries(MATRIX[userType] ?? {}).find(([, r]) => r === lookupRel)?.[0]
-                      return partnerType ? <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.3em' }}>({partnerType})</span> : null
-                    })()}
+                    {partnerType && (
+                      <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.3em' }}>({partnerType})</span>
+                    )}
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.4 }}>
                     {info.description}
