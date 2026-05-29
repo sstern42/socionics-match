@@ -2,15 +2,19 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
-    date: '29 May 2026',
-    label: 'Update',
-    items: [
-      'Compatibility breakdown — tap "Full breakdown" in any conversation header to see a Model A analysis of that specific dyad: where each person\'s leading and creative functions land in the other\'s stack, the position name, and what it means',
-      'Compatibility breakdown — covers strengths, friction points, and a practical note for the relation type. Content is dyad-specific, not a generic relation description',
-      'Compatibility breakdown — available on desktop and mobile. On mobile, tap the bar below the conversation header',
-      'Compatibility breakdown — premium feature. Founding members have full access',
-    ],
-  },
+  date: '29 May 2026',
+  label: 'Update',
+  items: [
+    'Compatibility breakdown — tap "Full breakdown" in any conversation header to see a Model A analysis of that specific dyad: where each person\'s leading and creative functions land in the other\'s stack, the position name, and what it means',
+    'Compatibility breakdown — covers strengths, friction points, and a practical note for the relation type. Content is dyad-specific, not a generic relation description',
+    'Compatibility breakdown — available on desktop and mobile. On mobile, tap the bar below the conversation header',
+    'Compatibility breakdown — premium feature. Founding members have full access',
+    'Archive — hide any conversation from your connections list via the ··· menu in a conversation. Archived conversations sit in a collapsible section at the bottom of the list',
+    'Archive — tap "Archived (N)" at the bottom of the connections list to expand and access archived conversations',
+    'Archive — if the other person sends you a message while a conversation is archived, it returns to the top of your active list automatically',
+    'Archive — tap ··· and select Unarchive to restore a conversation manually at any time',
+  ],
+},
   {
     date: '27 May 2026',
     label: 'Update',
