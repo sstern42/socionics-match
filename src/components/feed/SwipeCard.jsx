@@ -245,12 +245,15 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
 
         {/* Pass / Skip / Like buttons — shown only on top card */}
         {isTop && (
-          <div style={{
-            display: 'flex', gap: '0.5rem',
-            padding: '0.75rem 1.1rem',
-            borderTop: '1px solid var(--border)',
-            background: '#fff', flexShrink: 0,
-          }}>
+          <div
+            onPointerDown={e => e.stopPropagation()}
+            style={{
+              display: 'flex', gap: '0.5rem',
+              padding: '0.75rem 1.1rem',
+              borderTop: '1px solid var(--border)',
+              background: '#fff', flexShrink: 0,
+            }}
+          >
             <button
               type="button"
               onClick={() => onSwipe('left')}
