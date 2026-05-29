@@ -177,7 +177,7 @@ async function handleUnarchive() {
               className={`messages-sidebar${mobileShowConvo ? ' hidden-mobile' : ''}`}
             >
               <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-                <p className="eyebrow">Connections</p>
+                <p className="eyebrow">Connections {matches.length > 0 && `(${matches.length})`}</p>
               </div>
 
               <NotificationPrompt userId={profile?.id} />
