@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
+import { getCompatibilityBreakdown } from '../../data/compatibility'
 import { getMessages, sendMessage, subscribeToMessages, markRead } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
 import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
@@ -16,8 +17,6 @@ function renderContent(text) {
       : part
   )
 }
-
-
 
 function withUtm(url) {
   if (!url) return url
@@ -86,20 +85,20 @@ function SIWebview({ url, onClose }) {
 
 export default function Conversation({ match, currentUserId, hasFeedback, onBack }) {
   const navigate = useNavigate()
-  const { isPremium } = useAuth()
+  const { isPremium, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [modal, setModal] = useState(null) // 'cooloff' | 'block' | null
+  const [modal, setModal] = useState(null)
   const [blockReason, setBlockReason] = useState('spam')
   const [blockNotes, setBlockNotes] = useState('')
   const [blockError, setBlockError] = useState(null)
   const [blocking, setBlocking] = useState(false)
   const [activeBlock, setActiveBlock] = useState(null)
-  const [replyTo, setReplyTo] = useState(null) // { id, content, sender_id }
+  const [replyTo, setReplyTo] = useState(null)
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 700)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
@@ -108,6 +107,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [editText, setEditText] = useState('')
   const [saving, setSaving] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
+  const [breakdownOpen, setBreakdownOpen] = useState(false)
   const longPressTimer = useRef(null)
 
   async function editMessage(msgId) {
@@ -144,6 +144,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       setDeleting(false)
     }
   }
+
   const typingTimer = useRef(null)
   const presenceChannel = useRef(null)
   const tabId = useRef(Math.random().toString(36).slice(2))
@@ -157,7 +158,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const otherUserId = match.other.id
   const otherVerifiedBy = match.other.verified_by ?? null
 
-  // Track mobile breakpoint for always-visible action buttons
+  // Premium compatibility breakdown — computed once per render
+  const breakdown = (isPremium && profile?.type)
+    ? getCompatibilityBreakdown(profile.type, match.other.type, match.displayRelationType ?? match.relation_type)
+    : null
+
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 700px)')
     const handler = e => setIsMobile(e.matches)
@@ -165,7 +170,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     return () => mq.removeEventListener('change', handler)
   }, [])
 
-  // Load active block between these two users
   useEffect(() => {
     getBlockBetween(currentUserId, otherUserId).then(setActiveBlock).catch(() => {})
   }, [match.id])
@@ -191,20 +195,16 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         if (!cancelled) {
           setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
           markMatchRead(match.id)
-          // A message from the other person arriving while this thread is open
-          // is read immediately.
           if (newMsg.sender_id !== currentUserId) markRead(match.id)
         }
       },
       updatedMsg => {
         if (!cancelled) {
-          // Merge read_at so the sender sees "Read" appear live without a reload.
           setMessages(prev => prev.map(m => m.id === updatedMsg.id ? { ...m, read_at: updatedMsg.read_at } : m))
         }
       }
     )
 
-    // Typing indicator via broadcast (more reliable than presence for transient state)
     presenceChannel.current = supabase.channel(`typing:${match.id}`)
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (payload.tab_id !== tabId.current) {
@@ -230,7 +230,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     if (!sending) inputRef.current?.focus()
   }, [sending])
 
-  // Close menu on outside click
   useEffect(() => {
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
@@ -308,7 +307,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     <>
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-      {/* Mobile header — compact nav bar */}
+      {/* Mobile header */}
       <div className="convo-header-mobile show-mobile">
         {onBack && (
           <button className="convo-back-btn" onClick={onBack} aria-label="Back">
@@ -317,7 +316,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             </svg>
           </button>
         )}
-        {/* Clickable avatar — navigates to profile */}
         <Link
           to={`/profile/${otherUserId}`}
           onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'mobile-header' })}
@@ -333,7 +331,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             }
           </div>
         </Link>
-        {/* Clickable name — also navigates to profile */}
         <Link
           to={`/profile/${otherUserId}`}
           className="convo-header-name"
@@ -355,7 +352,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           {otherVerifiedBy && (
             <span title={`Type verified by ${otherVerifiedBy}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>✓</span>
           )}
-          {/* ··· menu — mobile */}
           <div style={{ position: 'relative' }} ref={menuRef}>
             <button
               type="button"
@@ -385,7 +381,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       <div className="hidden-mobile" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-            {/* Clickable avatar */}
             <Link
               to={`/profile/${otherUserId}`}
               onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'desktop-header' })}
@@ -402,7 +397,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               </div>
             </Link>
             <div>
-              {/* Clickable name */}
               <Link
                 to={`/profile/${otherUserId}`}
                 onClick={() => window.umami?.track('conversation-profile-clicked', { source: 'desktop-header' })}
@@ -424,17 +418,26 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           </div>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
             {relInfo && (
-              <div style={{ textAlign: 'right', maxWidth: 200 }}>
+              <div style={{ textAlign: 'right', maxWidth: 220 }}>
                 <p style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>{relInfo.name}</p>
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.5, marginTop: '0.15rem' }}>{relInfo.description}</p>
-                {relInfo.siSlug && (
-                  <button onClick={() => { window.umami?.track('si-link-relation', { relation: relInfo.siSlug }); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }} style={{ fontSize: '0.68rem', color: 'var(--accent)', opacity: 0.7, textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                {isPremium && breakdown ? (
+                  <button
+                    onClick={() => { window.umami?.track('breakdown-toggled', { open: !breakdownOpen, relation: match.displayRelationType ?? match.relation_type }); setBreakdownOpen(o => !o) }}
+                    style={{ fontSize: '0.68rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.15rem' }}
+                  >
+                    {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
+                  </button>
+                ) : relInfo.siSlug ? (
+                  <button
+                    onClick={() => { window.umami?.track('si-link-relation', { relation: relInfo.siSlug }); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }}
+                    style={{ fontSize: '0.68rem', color: 'var(--accent)', opacity: 0.7, textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  >
                     Learn more →
                   </button>
-                )}
+                ) : null}
               </div>
             )}
-            {/* ··· menu */}
             <div style={{ position: 'relative' }} ref={menuRef}>
               <button
                 type="button"
@@ -447,17 +450,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               {menuOpen && (
                 <div style={{ position: 'absolute', right: 0, top: '100%', background: '#fff', border: '1px solid var(--border)', borderRadius: 4, minWidth: 160, zIndex: 50, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
                   {isCoolingOff && iBlockedThem ? (
-                    <button type="button" onClick={handleLiftBlock} style={menuItemStyle}>
-                      Lift cool-off
-                    </button>
+                    <button type="button" onClick={handleLiftBlock} style={menuItemStyle}>Lift cool-off</button>
                   ) : !activeBlock ? (
                     <>
-                      <button type="button" onClick={() => { setModal('cooloff'); setMenuOpen(false) }} style={menuItemStyle}>
-                        Cool off (7 days)
-                      </button>
-                      <button type="button" onClick={() => { setModal('block'); setMenuOpen(false) }} style={{ ...menuItemStyle, color: '#c0392b' }}>
-                        Block & report
-                      </button>
+                      <button type="button" onClick={() => { setModal('cooloff'); setMenuOpen(false) }} style={menuItemStyle}>Cool off (7 days)</button>
+                      <button type="button" onClick={() => { setModal('block'); setMenuOpen(false) }} style={{ ...menuItemStyle, color: '#c0392b' }}>Block & report</button>
                     </>
                   ) : null}
                 </div>
@@ -466,6 +463,58 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           </div>
         </div>
       </div>
+
+      {/* Premium compatibility breakdown panel (desktop only) */}
+      {breakdownOpen && breakdown && (
+        <div className="hidden-mobile" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+
+          <div>
+            <p style={breakdownSectionLabel}>Function interactions</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <p style={breakdownText}>
+                Your leading <strong>{breakdown.functions.myLeading}</strong> sits at {otherName}'s <strong>{breakdown.functions.myLeadingPosName}</strong> position.{' '}
+                <span style={{ color: 'var(--muted)' }}>{breakdown.functions.myLeadingMeaning}</span>
+              </p>
+              <p style={breakdownText}>
+                {otherName}'s leading <strong>{breakdown.functions.otherLeading}</strong> sits at your <strong>{breakdown.functions.otherLeadingPosName}</strong> position.
+              </p>
+              <p style={breakdownText}>
+                Your creative <strong>{breakdown.functions.myCreative}</strong> sits at {otherName}'s <strong>{breakdown.functions.myCreativePosName}</strong> position.{' '}
+                <span style={{ color: 'var(--muted)' }}>{breakdown.functions.myCreativeMeaning}</span>
+              </p>
+            </div>
+          </div>
+
+          {breakdown.strengths.length > 0 && (
+            <div>
+              <p style={breakdownSectionLabel}>Strengths</p>
+              <ul style={{ margin: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                {breakdown.strengths.map((s, i) => (
+                  <li key={i} style={breakdownText}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {breakdown.friction.length > 0 && (
+            <div>
+              <p style={breakdownSectionLabel}>Friction points</p>
+              <ul style={{ margin: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                {breakdown.friction.map((f, i) => (
+                  <li key={i} style={breakdownText}>{f}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {breakdown.advice && (
+            <div>
+              <p style={breakdownSectionLabel}>Practical note</p>
+              <p style={{ ...breakdownText, color: 'var(--muted)', fontStyle: 'italic' }}>{breakdown.advice}</p>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Cooling off banner */}
       {isCoolingOff && (
@@ -603,7 +652,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       </div>
                     ) : renderContent(msg.content)}
                   </div>
-                  {/* Reply icon — visible on hover (desktop) */}
                   <button
                     type="button"
                     onClick={() => { window.umami?.track('message-reply-tapped'); setReplyTo({ id: msg.id, content: msg.content, sender_id: msg.sender_id }) }}
@@ -637,21 +685,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   {isMine && msg.id === lastMineId && (showReplyBtn || isMobile || !isMobile) && (
                     deleteConfirmId === msg.id ? (
                       <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-                        <button
-                          type="button"
-                          onClick={() => deleteMessage(msg.id)}
-                          disabled={deleting}
-                          style={{ background: '#c0392b', color: '#fff', border: 'none', borderRadius: 4, padding: '0.2rem 0.5rem', fontSize: '0.68rem', cursor: 'pointer', opacity: deleting ? 0.6 : 1 }}
-                        >
-                          {deleting ? '…' : 'Delete'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setDeleteConfirmId(null)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem', padding: '0.2rem' }}
-                        >
-                          Cancel
-                        </button>
+                        <button type="button" onClick={() => deleteMessage(msg.id)} disabled={deleting} style={{ background: '#c0392b', color: '#fff', border: 'none', borderRadius: 4, padding: '0.2rem 0.5rem', fontSize: '0.68rem', cursor: 'pointer', opacity: deleting ? 0.6 : 1 }}>{deleting ? '…' : 'Delete'}</button>
+                        <button type="button" onClick={() => setDeleteConfirmId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem', padding: '0.2rem' }}>Cancel</button>
                       </div>
                     ) : (
                       <button
@@ -682,7 +717,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         <div ref={bottomRef} />
       </div>
 
-      {/* Input — disabled during cool off or block */}
+      {/* Input */}
       <div style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
         {otherTyping && (
           <div style={{ padding: '0.4rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -709,12 +744,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 {replyTo.content}
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setReplyTo(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
-              aria-label="Cancel reply"
-            >
+            <button type="button" onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }} aria-label="Cancel reply">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
               </svg>
@@ -850,4 +880,20 @@ const modalStyle = {
   background: '#fff', borderRadius: 6, padding: '2rem',
   width: '100%', maxWidth: 440,
   boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+}
+
+const breakdownSectionLabel = {
+  fontSize: '0.62rem',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
+  color: 'var(--accent)',
+  fontWeight: 500,
+  marginBottom: '0.4rem',
+}
+
+const breakdownText = {
+  fontSize: '0.78rem',
+  color: 'var(--text)',
+  lineHeight: 1.55,
+  margin: 0,
 }
