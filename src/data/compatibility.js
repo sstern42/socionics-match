@@ -20,14 +20,14 @@ const POSITION_NAMES = {
 // What it means when your leading function occupies that position in the other
 // person's Model A stack.
 const POSITION_MEANING = {
-  1: 'You share the same leading function — the same strength, the same lens on the world.',
-  2: "Meets their creative function — your strength activates their most expressive mode.",
-  3: "Falls on their role function — they work hard in this area; your ease here can feel pressuring.",
-  4: "Lands on their most sensitive point — they feel exposed here. Handle with care.",
-  5: "Speaks directly to their deepest need — you provide what they require most without effort.",
-  6: "Energises their mobilising function — you're activating and invigorating to them.",
-  7: "Is largely filtered out — they're aware of it but it doesn't hold their attention.",
-  8: "Resonates in the background — present but not at the forefront of conscious engagement.",
+  1: 'This is their Leading function — the top of their stack, where they are strongest.',
+  2: 'This meets their Creative function — where they are most expressive and productive.',
+  3: 'This falls on their Role function — they work hard here; ease in this area can feel pressuring.',
+  4: 'This lands on their most Vulnerable point — handle with care.',
+  5: 'This speaks to their Suggestive function — their deepest need, where they most welcome input.',
+  6: 'This energises their Mobilising function — you are activating to them here.',
+  7: 'This meets their Ignoring function — they are aware of it but it does not hold their attention.',
+  8: 'This resonates in their Demonstrative — present in the background, not consciously engaged.',
 }
 
 // ─── Function stacks for all 16 types ────────────────────────────────────────
