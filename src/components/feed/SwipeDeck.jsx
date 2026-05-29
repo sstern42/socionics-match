@@ -24,9 +24,6 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
   }, [profiles])
 
   const handleSwipe = useCallback(async (direction, profile) => {
-    // Free-tier cap backstop: an at-cap right-swipe is stopped before anything
-    // is recorded or removed from the deck. SwipeCard already gates this at the
-    // gesture / button, so reaching here on a blocked right is belt-and-braces.
     if (direction === 'right' && blockRightSwipe) {
       onBlockedRightSwipe?.()
       return
@@ -53,9 +50,6 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
 
     window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
 
-    // On a right-swipe, check for mutual match
-    // The DB trigger already inserts into matches — we just need to detect
-    // it for the UI and pass back the match details.
     if (direction === 'right') {
       const { data: reverseSwipe } = await supabase
         .from('swipes')
@@ -66,7 +60,6 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
         .maybeSingle()
 
       if (reverseSwipe) {
-        // Mutual — fetch the newly created match row for the match ID
         const { data: matchRow } = await supabase
           .from('matches')
           .select('id')
@@ -83,6 +76,15 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
       }
     }
   }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe])
+
+  // Skip — move top profile to the back of the current queue, session-only, no DB write
+  const handleSkip = useCallback((profile) => {
+    setQueue(prev => {
+      const rest = prev.filter(p => p.id !== profile.id)
+      return [...rest, profile]
+    })
+    window.umami?.track('swipe-skipped', { type: profile.type })
+  }, [])
 
   const visible = queue.slice(0, VISIBLE_COUNT)
 
@@ -105,21 +107,14 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
   }
 
   return (
-    // Outer wrapper: fixed height with bottom padding for the button row breathing room
     <div style={{
       position: 'relative',
       width: '100%',
       maxWidth: 420,
       margin: '0 auto',
-      // Height adapts: fills available space up to a comfortable card height.
-      // The extra 40px bottom padding accounts for the card stack peek effect.
       height: 'min(calc(100vh - 200px), 620px)',
       paddingBottom: 40,
     }}>
-      {/*
-        Render in reverse order so the top card (index 0) is painted last
-        and receives pointer events correctly.
-      */}
       {[...visible].reverse().map((profile, reverseIdx) => {
         const idx        = visible.length - 1 - reverseIdx
         const isTop      = idx === 0
@@ -135,6 +130,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
             blockRightSwipe={blockRightSwipe}
             onBlockedRightSwipe={onBlockedRightSwipe}
             onSwipe={(direction) => handleSwipe(direction, profile)}
+            onSkip={isTop ? () => handleSkip(profile) : undefined}
           />
         )
       })}
