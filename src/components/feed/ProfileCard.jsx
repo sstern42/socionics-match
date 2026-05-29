@@ -135,10 +135,13 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
     if (hours < 168) return { label: 'Active this week', colour: '#9a6f38' }
     return null
   })()
-  // displayRelation = what they are to you (e.g. SUPERVISOR)
-  // relation = your role (e.g. SUPERVISEE) — used for connect/filter logic
-  const relInfo = RELATIONS[displayRelation ?? relation]
-  const colours = RELATION_COLOURS[displayRelation ?? relation] ?? RELATION_COLOURS.IDENTITY
+
+  // FIX: Use relation (your perspective) for display on feed cards.
+  // displayRelation is the other person's perspective — correct for conversation
+  // headers but wrong for feed cards where you filtered by your own relation.
+  const relKey = relation ?? displayRelation
+  const relInfo = RELATIONS[relKey]
+  const colours = RELATION_COLOURS[relKey] ?? RELATION_COLOURS.IDENTITY
 
   function handleAction() {
     if (alreadyMatched && matchId) {
@@ -251,7 +254,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             )}
             {(displayFlag || (!isAnonymous && profile_data?.city)) && (
               <p style={{ fontSize: '0.82rem', marginTop: '0.15rem', lineHeight: 1.4, color: 'var(--muted)' }}>
-                {displayFlag}{displayFlag && !isAnonymous && profile_data?.city ? ' ' : ''}{!isAnonymous && profile_data?.city ? profile_data.city : ''}
+                {displayFlag}{displayFlag && !isAnonymous && profile_data?.city ? ' ' : ''}{!isAnonymous && profile_data?.city ? profile_data.city : ''}
               </p>
             )}
             {purpose?.length > 0 && (
@@ -315,12 +318,12 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
         </div>
       )}
 
-      {/* Bio */}
+      {/* Bio — FIX: whiteSpace pre-wrap preserves line breaks */}
       {bio ? (() => {
         const long = bio.length > 200
         return (
           <div>
-            <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.7, fontWeight: 300 }}>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.7, fontWeight: 300, whiteSpace: 'pre-wrap' }}>
               {long && !bioExpanded ? bio.slice(0, 200) + '…' : bio}
             </p>
             {long && (
