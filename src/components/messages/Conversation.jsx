@@ -220,8 +220,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     }
   }, [match.id])
 
-  // Reset breakdown when switching conversations
-useEffect(() => { setBreakdownOpen(false) }, [match.id])
+  // Reset breakdown panel when switching conversations
+  useEffect(() => { setBreakdownOpen(false) }, [match.id])
 
   useEffect(() => {
     const wasInputFocused = document.activeElement === inputRef.current
@@ -380,6 +380,18 @@ useEffect(() => { setBreakdownOpen(false) }, [match.id])
         </div>
       </div>
 
+      {/* Mobile breakdown toggle — premium only */}
+      {isPremium && breakdown && (
+        <div className="show-mobile" style={{ borderBottom: '1px solid var(--border)', background: '#fff', textAlign: 'center' }}>
+          <button
+            onClick={() => { window.umami?.track('breakdown-toggled', { open: !breakdownOpen, relation: match.displayRelationType ?? match.relation_type, source: 'mobile' }); setBreakdownOpen(o => !o) }}
+            style={{ fontSize: '0.68rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.45rem 1rem', letterSpacing: '0.04em' }}
+          >
+            {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
+          </button>
+        </div>
+      )}
+
       {/* Desktop header */}
       <div className="hidden-mobile" style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border)', background: '#fff' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -426,7 +438,7 @@ useEffect(() => { setBreakdownOpen(false) }, [match.id])
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.5, marginTop: '0.15rem' }}>{relInfo.description}</p>
                 {isPremium && breakdown ? (
                   <button
-                    onClick={() => { window.umami?.track('breakdown-toggled', { open: !breakdownOpen, relation: match.displayRelationType ?? match.relation_type }); setBreakdownOpen(o => !o) }}
+                    onClick={() => { window.umami?.track('breakdown-toggled', { open: !breakdownOpen, relation: match.displayRelationType ?? match.relation_type, source: 'desktop' }); setBreakdownOpen(o => !o) }}
                     style={{ fontSize: '0.68rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.15rem' }}
                   >
                     {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
@@ -467,9 +479,9 @@ useEffect(() => { setBreakdownOpen(false) }, [match.id])
         </div>
       </div>
 
-      {/* Premium compatibility breakdown panel (desktop only) */}
+      {/* Premium compatibility breakdown panel */}
       {breakdownOpen && breakdown && (
-        <div className="hidden-mobile" style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+        <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
 
           <div>
             <p style={breakdownSectionLabel}>Function interactions</p>

@@ -4,7 +4,7 @@
 // relation pages (taglines, strengths, friction, advice).
 // Called by Conversation.jsx to render the inline premium breakdown panel.
 
-// ─── Model A position names ───────────────────────────────────────────────────
+// ─── Model A position names ──────────────────────────────────────────────────
 
 const POSITION_NAMES = {
   1: 'Leading',
@@ -17,8 +17,6 @@ const POSITION_NAMES = {
   8: 'Demonstrative',
 }
 
-// What it means when your leading function occupies that position in the other
-// person's Model A stack.
 const POSITION_MEANING = {
   1: 'This is their Leading function — the top of their stack, where they are strongest.',
   2: 'This meets their Creative function — where they are most expressive and productive.',
