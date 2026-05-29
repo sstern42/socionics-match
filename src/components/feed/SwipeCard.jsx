@@ -23,6 +23,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
   const startRef = useRef(null)
 
   const { profile_data, type, displayRelation, relation, avatar_url, verified_by } = profile
+
   const relKey   = displayRelation ?? relation
   const relInfo  = RELATIONS[relKey]
   const colours  = getColours(relKey)
@@ -230,12 +231,13 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
             </div>
           )}
 
-          {/* Bio */}
+          {/* Bio — FIX: whiteSpace pre-wrap preserves line breaks */}
           <p style={{
             fontSize: '0.84rem',
             lineHeight: 1.65, fontWeight: 300, margin: 0,
             fontStyle: profile_data?.bio ? 'normal' : 'italic',
             color: profile_data?.bio ? 'var(--text)' : 'var(--border)',
+            whiteSpace: 'pre-wrap',
           }}>
             {profile_data?.bio
               ? (profile_data.bio.length > 160 ? profile_data.bio.slice(0, 160) + '…' : profile_data.bio)
