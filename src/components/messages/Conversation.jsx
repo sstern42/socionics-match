@@ -220,6 +220,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     }
   }, [match.id])
 
+  // Reset breakdown when switching conversations
+useEffect(() => { setBreakdownOpen(false) }, [match.id])
+
   useEffect(() => {
     const wasInputFocused = document.activeElement === inputRef.current
     bottomRef.current?.scrollIntoView({ behavior: 'auto' })
