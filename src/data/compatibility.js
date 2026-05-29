@@ -22,7 +22,7 @@ const POSITION_NAMES = {
 const POSITION_MEANING = {
   1: 'This is their Leading function — the top of their stack, where they are strongest.',
   2: 'This meets their Creative function — where they are most expressive and productive.',
-  3: 'This falls on their Role function — they work hard here; ease in this area can feel pressuring.',
+  3: 'This is their Role function — something they consciously work at rather than lead with naturally.',
   4: 'This lands on their most Vulnerable point — handle with care.',
   5: 'This speaks to their Suggestive function — their deepest need, where they most welcome input.',
   6: 'This energises their Mobilising function — you are activating to them here.',
@@ -227,7 +227,7 @@ const RELATION_DATA = {
       'Mutual respect at distance, often expressed as long-term appreciation.',
     ],
     friction: [
-      'Up close, each partner\'s leading function lands on the other\'s most vulnerable position — what generates admiration at distance generates pressure at proximity.',
+      'Up close, each partner\'s ego functions press on the other\'s weak spots — your leading meets their Role, your creative their most vulnerable point — so what inspires from a distance becomes pressure in proximity.',
       'Long-term close contact tends to become draining for both.',
       'The very qualities that attract also challenge most deeply.',
     ],
