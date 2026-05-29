@@ -100,26 +100,34 @@ export default function Messages() {
   }
 
   async function handleArchive() {
-    if (!selectedMatch || !profile) return
-    try {
-      await archiveMatch(profile.id, selectedMatch.id)
-      window.umami?.track('match-archived')
-      setShowArchived(true)        // expand archived section so match is still reachable on desktop
-      setMobileShowConvo(false)    // back to list on mobile
-    } catch (err) {
-      console.error('Archive failed:', err)
-    }
+  if (!selectedMatch || !profile) return
+  try {
+    // optimistic update first
+    setArchivedIds(prev => new Set([...prev, selectedMatch.id]))
+    await archiveMatch(profile.id, selectedMatch.id)
+    window.umami?.track('match-archived')
+    setShowArchived(true)
+    setMobileShowConvo(false)
+  } catch (err) {
+    // roll back on failure
+    setArchivedIds(prev => { const s = new Set(prev); s.delete(selectedMatch.id); return s })
+    console.error('Archive failed:', err)
   }
+}
 
-  async function handleUnarchive() {
-    if (!selectedMatch || !profile) return
-    try {
-      await unarchiveMatch(profile.id, selectedMatch.id)
-      window.umami?.track('match-unarchived')
-    } catch (err) {
-      console.error('Unarchive failed:', err)
-    }
+async function handleUnarchive() {
+  if (!selectedMatch || !profile) return
+  try {
+    // optimistic update first
+    setArchivedIds(prev => { const s = new Set(prev); s.delete(selectedMatch.id); return s })
+    await unarchiveMatch(profile.id, selectedMatch.id)
+    window.umami?.track('match-unarchived')
+  } catch (err) {
+    // roll back on failure
+    setArchivedIds(prev => new Set([...prev, selectedMatch.id]))
+    console.error('Unarchive failed:', err)
   }
+}
 
   const activeMatches   = matches.filter(m => !archivedIds.has(m.id))
   const archivedMatches = matches.filter(m =>  archivedIds.has(m.id))
