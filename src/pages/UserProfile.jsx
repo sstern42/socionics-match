@@ -169,11 +169,11 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* Bio */}
+          {/* Bio — pre-wrap preserves line breaks */}
           {bio && (
             <div>
               <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Bio</p>
-              <p style={{ fontSize: '0.9rem', color: 'var(--text)', lineHeight: 1.75, fontWeight: 300 }}>{bio}</p>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text)', lineHeight: 1.75, fontWeight: 300, whiteSpace: 'pre-wrap' }}>{bio}</p>
             </div>
           )}
 
