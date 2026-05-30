@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
-import { RELATIONS } from '../data/relations'
+import { RELATIONS, TYPES, getRelation } from '../data/relations'
 import EmailCapture from '../components/EmailCapture'
 import SIWebview from '../components/SIWebview'
+import SwipeCard from '../components/feed/SwipeCard'
 
 // Founding window closes at the end of 15 June (London midnight, 15→16 June).
 // MUST match the timestamp used in the founding-member SQL trigger/backfill,
@@ -130,6 +131,184 @@ function TestimonialsCarousel() {
 
 
 
+
+// ── Homepage swipe demo ──────────────────────────────────────────────────────
+// A non-authenticated taste of the real swipe deck. Reuses the production
+// SwipeCard for visual fidelity and the real intertype matrix (getRelation) so
+// the dynamic shown on each card is genuine, not faked. No DB writes — swipes
+// are handled locally; a right-swipe (or running out of cards) is the signup
+// moment. The visitor picks a type first so the relations are computed against
+// a real perspective.
+
+const DEMO_PROFILES = [
+  { id: 'demo-ese', type: 'ESE', avatar_url: null, profile_data: { name: 'Elena',  dob: '1998-04-12', gender: 'Woman', country: 'DE', bio: 'Curious about people, loves deep conversations and figuring out what makes someone tick.' } },
+  { id: 'demo-ile', type: 'ILE', avatar_url: null, profile_data: { name: 'Marcus', dob: '1994-09-03', gender: 'Man',   country: 'US', bio: 'Builder and systems thinker. Here to meet people who like discussing ideas seriously.' } },
+  { id: 'demo-iei', type: 'IEI', avatar_url: null, profile_data: { name: 'Sofia',  dob: '2001-01-22', gender: 'Woman', country: 'BR', bio: 'Into philosophy, literature, and long walks. Looking for people who think carefully about the world.' } },
+  { id: 'demo-lii', type: 'LII', avatar_url: null, profile_data: { name: 'Daniel', dob: '1996-07-30', gender: 'Man',   country: 'GB', bio: 'Quiet and precise, a bit obsessive about getting concepts exactly right.' } },
+  { id: 'demo-see', type: 'SEE', avatar_url: null, profile_data: { name: 'Nadia',  dob: '1999-11-08', gender: 'Woman', country: 'CA', bio: 'Direct, warm, decisive. I like knowing where I stand with people.' } },
+]
+
+const DEMO_STACK = [
+  { zIndex: 30, transform: 'none' },
+  { zIndex: 20, transform: 'scale(0.96) translateY(14px)' },
+  { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
+]
+
+function HomeSwipeDemo({ foundingActive }) {
+  const [chosenType, setChosenType] = useState(null)
+  const [queue, setQueue]   = useState([])
+  const [matched, setMatched] = useState(null)
+  const [done, setDone]     = useState(false)
+
+  function start(type) {
+    const withRel = DEMO_PROFILES
+      .filter(p => p.type !== type) // skip a same-type Identity card so the demo opens on a stronger dynamic
+      .map(p => ({ ...p, relation: getRelation(type, p.type), displayRelation: getRelation(p.type, type) }))
+    setChosenType(type)
+    setQueue(withRel)
+    setMatched(null)
+    setDone(false)
+    window.umami?.track('home-swipe-demo-started', { type })
+  }
+
+  function handleSwipe(direction, profile) {
+    if (direction === 'right') {
+      setMatched(profile)
+      window.umami?.track('home-swipe-demo-match', { relation: profile.displayRelation ?? profile.relation })
+      return
+    }
+    setQueue(prev => {
+      const rest = prev.filter(p => p.id !== profile.id)
+      if (rest.length === 0) setDone(true)
+      return rest
+    })
+  }
+
+  function handleSkip(profile) {
+    setQueue(prev => {
+      const rest = prev.filter(p => p.id !== profile.id)
+      return [...rest, profile]
+    })
+  }
+
+  function continueAfterMatch() {
+    setQueue(prev => {
+      const rest = prev.filter(p => p.id !== matched.id)
+      if (rest.length === 0) setDone(true)
+      return rest
+    })
+    setMatched(null)
+  }
+
+  // ── Type picker ──
+  if (!chosenType) {
+    return (
+      <div style={{ maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
+        <p style={{ fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.4rem' }}>
+          Try it
+        </p>
+        <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
+          Pick your type — or your best guess — and swipe a few profiles to see the dynamic you'd have with each.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.4rem' }}>
+          {TYPES.map(t => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => start(t)}
+              style={{ padding: '0.7rem 0.3rem', border: '1px solid var(--border)', borderRadius: 4, background: '#fff', color: 'var(--text)', fontFamily: 'var(--sans)', fontSize: '0.82rem', fontWeight: 500, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <p style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '1rem' }}>
+          Not sure?{' '}
+          <Link to="/onboarding" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Find your type →</Link>
+        </p>
+      </div>
+    )
+  }
+
+  // ── Match moment ──
+  if (matched) {
+    const relInfo = RELATIONS[matched.displayRelation ?? matched.relation]
+    const name = matched.profile_data?.name ?? matched.type
+    return (
+      <div style={{ maxWidth: 380, margin: '0 auto', background: '#fff', border: '1px solid var(--accent)', borderRadius: 10, padding: '1.75rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <p style={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>It's a match</p>
+        <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500 }}>You and <em>{name}</em></h3>
+        {relInfo && (
+          <div style={{ background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.65rem 1rem' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>{relInfo.name}</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.5, marginTop: '0.2rem' }}>{relInfo.description}</p>
+          </div>
+        )}
+        <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+          That's the demo — {name} isn't a real member. Sign up free to meet people whose type actually fits yours.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+          <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'match' })}>
+            {foundingActive ? 'Claim founding access →' : 'Sign up free to message →'}
+          </Link>
+          <button type="button" className="btn-ghost" onClick={continueAfterMatch}>Keep swiping</button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── End of demo deck ──
+  if (done) {
+    return (
+      <div style={{ maxWidth: 380, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem 0' }}>
+        <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.2rem', color: 'var(--muted)' }}>That's the demo.</p>
+        <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 300 }}>
+          These were sample profiles. Sign up free to swipe through real members whose type fits the dynamics you want.
+        </p>
+        <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'end' })}>
+          {foundingActive ? 'Claim founding access →' : 'Sign up free →'}
+        </Link>
+        <button type="button" onClick={() => start(chosenType)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'underline' }}>
+          Swipe again
+        </button>
+      </div>
+    )
+  }
+
+  // ── The deck ──
+  const visible = queue.slice(0, 3)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+      <p style={{ fontSize: '0.75rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>
+        You're an <strong style={{ color: 'var(--accent)', fontWeight: 500 }}>{chosenType}</strong> ·{' '}
+        <button type="button" onClick={() => setChosenType(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent)', textDecoration: 'underline', fontSize: 'inherit', padding: 0 }}>change</button>
+      </p>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 380, margin: '0 auto', height: 'min(70vh, 540px)' }}>
+        {[...visible].reverse().map((profile, reverseIdx) => {
+          const idx        = visible.length - 1 - reverseIdx
+          const isTop      = idx === 0
+          const stackEntry = DEMO_STACK[idx] ?? DEMO_STACK[DEMO_STACK.length - 1]
+          return (
+            <SwipeCard
+              key={profile.id}
+              profile={profile}
+              isTop={isTop}
+              zIndex={stackEntry.zIndex}
+              stackTransform={stackEntry.transform}
+              onSwipe={(direction) => handleSwipe(direction, profile)}
+              onSkip={isTop ? () => handleSkip(profile) : undefined}
+            />
+          )
+        })}
+      </div>
+      <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center' }}>
+        Swipe or use the buttons. Right to connect, left to pass.
+      </p>
+    </div>
+  )
+}
 
 export default function Home() {
   const { session, profile } = useAuth()
@@ -345,44 +524,11 @@ export default function Home() {
           <h2 style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
             Every profile shows <em>your dynamic</em>
           </h2>
-          <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto 3.5rem', lineHeight: 1.7 }}>
-            Not just a profile — a named relationship dynamic, its character, and a link to the full theory.
+          <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto 3rem', lineHeight: 1.7 }}>
+            Not just a profile — a named relationship dynamic, computed from your type and theirs. Try it below.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem', pointerEvents: 'none', userSelect: 'none' }}>
-            {[
-              { initial: 'E', name: 'Elena, 27 👩', flag: '🇩🇪', type: 'ESE', purposes: ['Friendship', 'Dating'], rel: 'Dual', relDesc: "Full complementarity. Each type's strengths meet the other's blind spots.", bio: 'Curious about people, loves deep conversations and understanding what makes someone tick.', highlight: true },
-              { initial: 'M', name: 'Marcus, 31 👨', flag: '🇺🇸', type: 'ILE', purposes: ['Networking'], rel: 'Mirror', relDesc: 'Intellectually aligned but prone to mutual criticism.', bio: 'Builder, systems thinker. Looking to connect with people who want to discuss ideas seriously.', highlight: false },
-              { initial: 'S', name: 'Sofia, 24 👩', flag: '🇧🇷', type: 'IEI', purposes: ['Friendship'], rel: 'Activity', relDesc: 'Energising and stimulating. Can become unstable at close range.', bio: 'Into philosophy, literature, and long walks. Looking for people who think carefully about the world.', highlight: false },
-            ].map(({ initial, name, flag, type, purposes, rel, relDesc, bio, highlight }) => (
-              <div key={name} style={{ background: 'var(--bg)', border: `1px solid ${highlight ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 6, padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem', minHeight: 300 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#e8e2d9', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--muted)' }}>{initial}</div>
-                    <div>
-                      <p style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', fontWeight: 500 }}>{name}</p>
-                      <p style={{ fontSize: '1rem', marginTop: 2 }}>{flag}</p>
-                      <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.3rem' }}>
-                        {purposes.map(p => <span key={p} style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: 2, padding: '0.1rem 0.4rem' }}>{p}</span>)}
-                      </div>
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500, color: highlight ? 'var(--accent)' : 'var(--muted)', background: highlight ? 'rgba(154,111,56,0.10)' : 'rgba(100,100,100,0.05)', border: `1px solid ${highlight ? 'var(--accent)' : 'var(--border)'}`, padding: '0.25rem 0.6rem', borderRadius: 3 }}>{type}</span>
-                </div>
-                <div style={{ background: highlight ? 'rgba(154,111,56,0.08)' : 'rgba(100,100,100,0.04)', border: `1px solid ${highlight ? 'var(--accent)' : 'var(--border)'}`, borderRadius: 4, padding: '0.6rem 0.85rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: highlight ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{rel}</p>
-                    <span style={{ fontSize: '0.68rem', color: highlight ? 'var(--accent)' : 'var(--muted)', opacity: 0.7 }}>Learn more →</span>
-                  </div>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem' }}>{relDesc}</p>
-                </div>
-                <p style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.7, fontWeight: 300, flex: 1 }}>{bio}</p>
-                <div style={{ height: 38, background: 'var(--accent)', borderRadius: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontSize: '0.82rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#fff', fontWeight: 500 }}>Connect</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <HomeSwipeDemo foundingActive={foundingActive} />
 
           <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
             <p style={{ fontSize: '0.95rem', color: 'var(--muted)', maxWidth: 420, lineHeight: 1.7 }}>
