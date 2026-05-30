@@ -18,10 +18,15 @@ export default function Messages() {
 
   const [matches, setMatches] = useState([])
   const [archivedIds, setArchivedIds] = useState(new Set())
-  const [selectedMatch, setSelectedMatch] = useState(null)
+  // Store selected match by ID only — prevents iOS Safari keyboard resize
+  // from silently swapping the active conversation when matches reorder.
+  const [selectedMatchId, setSelectedMatchId] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+
+  // Derive the full match object from the stable ID reference
+  const selectedMatch = matches.find(m => m.id === selectedMatchId) ?? null
 
   useEffect(() => {
     if (!session && !loading) navigate('/auth')
@@ -57,13 +62,13 @@ export default function Messages() {
           // Deep-linked match — show even if archived
           if (archived.has(m.id)) setShowArchived(true)
           markMatchRead(m.id)
-          setSelectedMatch(m)
+          setSelectedMatchId(m.id)
           setMobileShowConvo(true)
         }
       } else {
         // Auto-select first active (non-archived) match
         const first = data.find(m => !archived.has(m.id))
-        if (first) { markMatchRead(first.id); setSelectedMatch(first) }
+        if (first) { markMatchRead(first.id); setSelectedMatchId(first.id) }
       }
       setFetching(false)
     })
@@ -95,39 +100,35 @@ export default function Messages() {
 
   function handleSelect(match) {
     markMatchRead(match.id)
-    setSelectedMatch(match)
+    setSelectedMatchId(match.id)
     setMobileShowConvo(true)
   }
 
   async function handleArchive() {
-  if (!selectedMatch || !profile) return
-  try {
-    // optimistic update first
-    setArchivedIds(prev => new Set([...prev, selectedMatch.id]))
-    await archiveMatch(profile.id, selectedMatch.id)
-    window.umami?.track('match-archived')
-    setShowArchived(true)
-    setMobileShowConvo(false)
-  } catch (err) {
-    // roll back on failure
-    setArchivedIds(prev => { const s = new Set(prev); s.delete(selectedMatch.id); return s })
-    console.error('Archive failed:', err)
+    if (!selectedMatchId || !profile) return
+    try {
+      setArchivedIds(prev => new Set([...prev, selectedMatchId]))
+      await archiveMatch(profile.id, selectedMatchId)
+      window.umami?.track('match-archived')
+      setShowArchived(true)
+      setMobileShowConvo(false)
+    } catch (err) {
+      setArchivedIds(prev => { const s = new Set(prev); s.delete(selectedMatchId); return s })
+      console.error('Archive failed:', err)
+    }
   }
-}
 
-async function handleUnarchive() {
-  if (!selectedMatch || !profile) return
-  try {
-    // optimistic update first
-    setArchivedIds(prev => { const s = new Set(prev); s.delete(selectedMatch.id); return s })
-    await unarchiveMatch(profile.id, selectedMatch.id)
-    window.umami?.track('match-unarchived')
-  } catch (err) {
-    // roll back on failure
-    setArchivedIds(prev => new Set([...prev, selectedMatch.id]))
-    console.error('Unarchive failed:', err)
+  async function handleUnarchive() {
+    if (!selectedMatchId || !profile) return
+    try {
+      setArchivedIds(prev => { const s = new Set(prev); s.delete(selectedMatchId); return s })
+      await unarchiveMatch(profile.id, selectedMatchId)
+      window.umami?.track('match-unarchived')
+    } catch (err) {
+      setArchivedIds(prev => new Set([...prev, selectedMatchId]))
+      console.error('Unarchive failed:', err)
+    }
   }
-}
 
   const activeMatches   = matches.filter(m => !archivedIds.has(m.id))
   const archivedMatches = matches.filter(m =>  archivedIds.has(m.id))
@@ -190,7 +191,7 @@ async function handleUnarchive() {
                     ? <p style={{ padding: '1.5rem', color: 'var(--muted)', fontSize: '0.85rem' }}>No connections yet.</p>
                     : <MatchList
                         matches={activeMatches}
-                        selectedId={selectedMatch?.id}
+                        selectedId={selectedMatchId}
                         onSelect={handleSelect}
                         currentUserId={profile.id}
                       />
@@ -218,7 +219,7 @@ async function handleUnarchive() {
                   {showArchived && (
                     <MatchList
                       matches={archivedMatches}
-                      selectedId={selectedMatch?.id}
+                      selectedId={selectedMatchId}
                       onSelect={handleSelect}
                       currentUserId={profile.id}
                     />
