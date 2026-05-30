@@ -139,6 +139,48 @@ export default function Feed() {
     }
   }, [profile?.id, loading])
 
+  // Realtime: fire match modal when someone else's swipe creates a match for us.
+  // The DB trigger always sets us as user_b_id when we're the second liker,
+  // so we only need to filter on that column.
+  useEffect(() => {
+    if (!profile?.id) return
+
+    const channel = supabase
+      .channel(`matches:incoming:${profile.id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'matches',
+        filter: `user_b_id=eq.${profile.id}`,
+      }, async (payload) => {
+        const matchRow = payload.new
+        const otherId = matchRow.user_a_id
+
+        // Don't re-trigger if we already have this match in state
+        if (otherId in matchedMap) return
+
+        // Fetch the other user's profile to populate the modal
+        const { data: otherProfile } = await supabase
+          .from('users')
+          .select('id, type, profile_data, avatar_url, verified_by')
+          .eq('id', otherId)
+          .maybeSingle()
+
+        if (!otherProfile) return
+
+        setMatchedMap(prev => ({ ...prev, [otherId]: matchRow.id }))
+        setMatchData({
+          profile: otherProfile,
+          relationType: matchRow.relation_type,
+          matchId: matchRow.id,
+        })
+        window.umami?.track('swipe-match-modal-shown-incoming', { relationType: matchRow.relation_type })
+      })
+      .subscribe()
+
+    return () => channel.unsubscribe()
+  }, [profile?.id])
+
   async function loadFeed() {
     if (!profile) return
     setFetching(true)
@@ -169,8 +211,6 @@ export default function Feed() {
   }
 
   function handleConnect(targetProfile) {
-    // Free-tier cap: 5 active connections. Premium / founding members are unlimited.
-    // Real enforcement is the RLS insert gate on matches; this is the UX mirror.
     if (!isPremium && Object.keys(matchedMap).length >= 5) {
       window.umami?.track('connection-cap-hit')
       setCapModal(true)
@@ -403,8 +443,6 @@ export default function Feed() {
               onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
               onMatch={(data) => {
                 setMatchData(data)
-                // Keep the connection count live so a mid-session match counts
-                // toward the cap without needing a reload.
                 setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
                 window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
               }}
@@ -556,7 +594,7 @@ export default function Feed() {
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
 
-      {/* Match modal — swipe mode only */}
+      {/* Match modal — swipe mode and incoming realtime matches */}
       <MatchModal
         matchData={matchData}
         currentProfile={profile}
