@@ -2,6 +2,13 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '30 May 2026',
+    label: 'Fix',
+    items: [
+      'Swipe mode — mutual match modal now appears correctly for both the first and second swiper. Previously only the second swiper saw the modal; the first swiper would receive a push notification but no in-app modal',
+    ],
+  },
+  {
   date: '29 May 2026',
   label: 'Update',
   items: [
