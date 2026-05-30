@@ -154,7 +154,7 @@ const DEMO_STACK = [
   { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
 ]
 
-function HomeSwipeDemo({ foundingActive }) {
+function HomeSwipeDemo({ foundingActive, loggedIn }) {
   const [chosenType, setChosenType] = useState(null)
   const [queue, setQueue]   = useState([])
   const [matched, setMatched] = useState(null)
@@ -247,12 +247,20 @@ function HomeSwipeDemo({ foundingActive }) {
           </div>
         )}
         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-          That's the demo — {name} isn't a real member. Sign up free to meet people whose type actually fits yours.
+          {loggedIn
+            ? `${name} is a demo profile. Head to your feed to swipe real members whose type fits yours.`
+            : `That's the demo — ${name} isn't a real member. Sign up free to meet people whose type actually fits yours.`}
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-          <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'match' })}>
-            {foundingActive ? 'Claim founding access →' : 'Sign up free to message →'}
-          </Link>
+          {loggedIn ? (
+            <Link to="/feed" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-to-feed', { from: 'match' })}>
+              View your matches →
+            </Link>
+          ) : (
+            <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'match' })}>
+              {foundingActive ? 'Claim founding access →' : 'Sign up free to message →'}
+            </Link>
+          )}
           <button type="button" className="btn-ghost" onClick={continueAfterMatch}>Keep swiping</button>
         </div>
       </div>
@@ -265,11 +273,19 @@ function HomeSwipeDemo({ foundingActive }) {
       <div style={{ maxWidth: 380, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem 0' }}>
         <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.2rem', color: 'var(--muted)' }}>That's the demo.</p>
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 300 }}>
-          These were sample profiles. Sign up free to swipe through real members whose type fits the dynamics you want.
+          {loggedIn
+            ? 'These were sample profiles. Head to your feed to swipe through real members.'
+            : 'These were sample profiles. Sign up free to swipe through real members whose type fits the dynamics you want.'}
         </p>
-        <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'end' })}>
-          {foundingActive ? 'Claim founding access →' : 'Sign up free →'}
-        </Link>
+        {loggedIn ? (
+          <Link to="/feed" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-to-feed', { from: 'end' })}>
+            View your matches →
+          </Link>
+        ) : (
+          <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'end' })}>
+            {foundingActive ? 'Claim founding access →' : 'Sign up free →'}
+          </Link>
+        )}
         <button type="button" onClick={() => start(chosenType)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'underline' }}>
           Swipe again
         </button>
@@ -528,7 +544,7 @@ export default function Home() {
             Not just a profile — a named relationship dynamic, computed from your type and theirs. Try it below.
           </p>
 
-          <HomeSwipeDemo foundingActive={foundingActive} />
+          <HomeSwipeDemo foundingActive={foundingActive} loggedIn={!!(session && profile)} />
 
           <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
             <p style={{ fontSize: '0.95rem', color: 'var(--muted)', maxWidth: 420, lineHeight: 1.7 }}>
