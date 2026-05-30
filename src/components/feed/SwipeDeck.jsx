@@ -51,19 +51,15 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
     window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
 
     if (direction === 'right') {
-      console.log('Right swipe — checking for reciprocal', { target: profile.id, currentUserId })
+      // Use SECURITY DEFINER RPC to check reciprocal swipe — direct table query
+      // is blocked by RLS (swipes_select_own only allows reading your own rows)
+      const { data: hasMatch } = await supabase
+        .rpc('has_swiped_right', {
+          p_swiper_id: profile.id,
+          p_target_id: currentUserId,
+        })
 
-      const { data: reverseSwipe } = await supabase
-        .from('swipes')
-        .select('id')
-        .eq('swiper_id', profile.id)
-        .eq('target_id', currentUserId)
-        .eq('direction', 'right')
-        .maybeSingle()
-
-      console.log('Reverse swipe result:', reverseSwipe)
-
-      if (reverseSwipe) {
+      if (hasMatch) {
         const { data: matchRow } = await supabase
           .from('matches')
           .select('id')
@@ -74,9 +70,6 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
-
-        console.log('Match row result:', matchRow)
-        console.log('Calling onMatch with:', { profileId: profile.id, relationType, matchId: matchRow?.id })
 
         window.umami?.track('swipe-mutual-match', { relationType: relationType ?? 'unknown' })
         onMatch?.({ profile, relationType, matchId: matchRow?.id ?? null })
