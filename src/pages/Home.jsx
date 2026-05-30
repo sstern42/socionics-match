@@ -7,6 +7,12 @@ import { RELATIONS } from '../data/relations'
 import EmailCapture from '../components/EmailCapture'
 import SIWebview from '../components/SIWebview'
 
+// Founding window closes at the end of 15 June (London midnight, 15→16 June).
+// MUST match the timestamp used in the founding-member SQL trigger/backfill,
+// with strict `created_at < cutoff`, or the homepage promises a window the
+// database won't honour. Everything founding-related auto-hides past this.
+const FOUNDING_CUTOFF = new Date('2026-06-15T23:00:00Z')
+
 const RELATION_PILLS = [
   { label: 'Dual',           key: 'DUAL' },
   { label: 'Activity',       key: 'ACTIVITY' },
@@ -128,11 +134,24 @@ function TestimonialsCarousel() {
 export default function Home() {
   const { session, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
-  const ctaPath = session && profile ? '/feed' : '/onboarding'
-  const ctaLabel = session && profile ? 'View your matches' : 'Find your type'
 
   const [stats, setStats] = useState(null)
   const [selectedPill, setSelectedPill] = useState(null)
+
+  // Founding-member countdown. Ticks each minute; days + hours is enough
+  // resolution and reads calmer than a seconds timer. foundingActive gates
+  // every founding element in the hero, so the page reverts to its standard
+  // state automatically the instant the window closes — no launch-day switch.
+  const [now, setNow] = useState(Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60000)
+    return () => clearInterval(id)
+  }, [])
+  const foundingActive = now < FOUNDING_CUTOFF.getTime()
+  const msLeft    = Math.max(0, FOUNDING_CUTOFF.getTime() - now)
+  const daysLeft  = Math.floor(msLeft / 86400000)
+  const hoursLeft = Math.floor((msLeft % 86400000) / 3600000)
+  const foundingDay = new Date(FOUNDING_CUTOFF.getTime() - 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 
   useEffect(() => {
     supabase
@@ -162,7 +181,17 @@ export default function Home() {
     <>
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(3rem,8vw,6rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
-        <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
+
+        {/* Eyebrow — founding urgency for logged-out visitors while the window is open, else live stats */}
+        {foundingActive && !session ? (
+          <p className="eyebrow fade-up-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
+            <span>✦ Founding member offer</span>
+            <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--accent-lt)' }} />
+            <span>Ends {foundingDay}</span>
+          </p>
+        ) : (
+          <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
+        )}
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
@@ -172,12 +201,41 @@ export default function Home() {
           Socionics maps 16 named dynamics between every type pair. You choose the dynamic — the app shows you who fits.
         </p>
 
+        {/* Founding member card — the centrepiece, logged-out + window open only */}
+        {foundingActive && !session && (
+          <div className="fade-up-4" style={{
+            maxWidth: 520, width: '100%',
+            background: 'rgba(154,111,56,0.08)',
+            border: '1px solid var(--accent)',
+            borderRadius: 10,
+            padding: 'clamp(1.25rem,3vw,1.75rem)',
+            display: 'flex', flexDirection: 'column', gap: '0.85rem',
+          }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.15rem,3vw,1.45rem)', color: 'var(--text)', lineHeight: 1.4 }}>
+              Join now, keep <em>Premium free — forever.</em>
+            </p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
+              Every account created before midnight on {foundingDay} becomes a founding member: unlimited connections, all 16 relation filters, and full compatibility breakdowns — permanently free, no card needed.
+            </p>
+            {/* Countdown */}
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginTop: '0.15rem' }}>
+              {[{ n: daysLeft, l: daysLeft === 1 ? 'day' : 'days' }, { n: hoursLeft, l: hoursLeft === 1 ? 'hour' : 'hours' }].map(({ n, l }) => (
+                <div key={l} style={{ minWidth: 72, background: '#fff', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.5rem 0.75rem' }}>
+                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.75rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{n}</div>
+                  <div style={{ fontSize: '0.62rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.3rem' }}>{l} left</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CTAs */}
         <div className="fade-up-4" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           {session && profile ? (
             <Link to="/feed" className="btn-primary">View your matches</Link>
           ) : (
             <>
-              <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+              <Link to="/onboarding?know=1" className="btn-primary">{foundingActive ? 'Claim founding access →' : 'I know my type →'}</Link>
               <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
             </>
           )}
@@ -186,13 +244,13 @@ export default function Home() {
         {!session && (
           <p className="fade-up-4" style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '-0.25rem' }}>
             New to Socionics?{' '}
-              <button onClick={() => { window.umami?.track('si-link-home'); setWebviewUrl('https://socionicsinsight.com') }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>
-                Start here →
-              </button>
-        {' '}&nbsp;·&nbsp;{' '}
-        <Link to="/network" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-          Browse the network →
-        </Link>
+            <button onClick={() => { window.umami?.track('si-link-home'); setWebviewUrl('https://socionicsinsight.com') }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>
+              Start here →
+            </button>
+            {' '}&nbsp;·&nbsp;{' '}
+            <Link to="/network" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Browse the network →
+            </Link>
           </p>
         )}
 
@@ -333,7 +391,7 @@ export default function Home() {
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
               {!session && (
                 <>
-                  <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+                  <Link to="/onboarding?know=1" className="btn-primary">{foundingActive ? 'Claim founding access →' : 'I know my type →'}</Link>
                   <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
                 </>
               )}
@@ -359,7 +417,7 @@ export default function Home() {
             { title: '🤝 Four purposes', body: "Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you're dating or building a product team." },
             { title: '📊 Real data', body: "Every connection and rating tests the theory at scale. You're part of the first large-scale empirical test of Socionics in the English-speaking world." },
             { title: '🕵️ Browse anonymously', body: "Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them." },
-            { title: '✨ Free to join', body: "No app store. No subscription. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes." },
+            { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
           ].map(({ title, body }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
               <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
@@ -372,12 +430,12 @@ export default function Home() {
       <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', color: 'var(--text)', marginBottom: '1.5rem' }}>
-            Ready to find your dynamic?
+            {foundingActive && !session ? <>Become a founding member before {foundingDay}.</> : <>Ready to find your dynamic?</>}
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
             {!session && (
               <>
-                <Link to="/onboarding?know=1" className="btn-primary">I know my type →</Link>
+                <Link to="/onboarding?know=1" className="btn-primary">{foundingActive ? 'Claim founding access →' : 'I know my type →'}</Link>
                 <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
               </>
             )}
