@@ -51,6 +51,8 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
     window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
 
     if (direction === 'right') {
+      console.log('Right swipe — checking for reciprocal', { target: profile.id, currentUserId })
+
       const { data: reverseSwipe } = await supabase
         .from('swipes')
         .select('id')
@@ -58,6 +60,8 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
         .eq('target_id', currentUserId)
         .eq('direction', 'right')
         .maybeSingle()
+
+      console.log('Reverse swipe result:', reverseSwipe)
 
       if (reverseSwipe) {
         const { data: matchRow } = await supabase
@@ -70,6 +74,9 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
           .order('created_at', { ascending: false })
           .limit(1)
           .maybeSingle()
+
+        console.log('Match row result:', matchRow)
+        console.log('Calling onMatch with:', { profileId: profile.id, relationType, matchId: matchRow?.id })
 
         window.umami?.track('swipe-mutual-match', { relationType: relationType ?? 'unknown' })
         onMatch?.({ profile, relationType, matchId: matchRow?.id ?? null })
