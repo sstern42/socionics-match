@@ -124,35 +124,44 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   }, [match.id])
 
   useEffect(() => {
+    // Capture match.id in a local const at effect initialisation time.
+    // This prevents iOS Safari from reading a stale closure value when the
+    // virtual keyboard fires a resize/re-render that swaps match props.
+    const matchId = match.id
+
     setMessages([]); setLoading(true)
     let cancelled = false
-    getMessages(match.id).then(msgs => {
+
+    getMessages(matchId).then(msgs => {
       if (!cancelled) {
         setMessages(msgs); setLoading(false)
-        markMatchRead(match.id); markRead(match.id)
+        markMatchRead(matchId); markRead(matchId)
         const lastVisited = getLastVisited()
         const unreadInChat = msgs.filter(m => m.sender_id !== currentUserId && new Date(m.created_at) > new Date(lastVisited)).length
         subtractUnread(unreadInChat)
       }
     })
+
     const channel = subscribeToMessages(
-      match.id,
+      matchId,
       newMsg => {
         if (!cancelled) {
           setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
-          markMatchRead(match.id)
-          if (newMsg.sender_id !== currentUserId) markRead(match.id)
+          markMatchRead(matchId)
+          if (newMsg.sender_id !== currentUserId) markRead(matchId)
         }
       },
       updatedMsg => {
         if (!cancelled) setMessages(prev => prev.map(m => m.id === updatedMsg.id ? { ...m, read_at: updatedMsg.read_at } : m))
       }
     )
-    presenceChannel.current = supabase.channel(`typing:${match.id}`)
+
+    presenceChannel.current = supabase.channel(`typing:${matchId}`)
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (payload.tab_id !== tabId.current) setOtherTyping(payload.typing === true)
       })
       .subscribe()
+
     return () => { cancelled = true; channel.unsubscribe(); presenceChannel.current?.unsubscribe() }
   }, [match.id])
 
@@ -176,13 +185,15 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
   async function handleSend() {
     if (!text.trim() || sending) return
+    // Capture both matchId and recipientId at send time — immune to re-renders
+    const matchId = match.id
     setSending(true)
     const replyToId = replyTo?.id ?? null
     setReplyTo(null)
     clearTimeout(typingTimer.current)
     presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
     try {
-      const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: text.trim(), replyToId })
+      const msg = await sendMessage({ matchId, senderId: currentUserId, content: text.trim(), replyToId })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
       setText('')
       if (inputRef.current) { inputRef.current.style.height = 'auto'; inputRef.current.focus() }
@@ -226,7 +237,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     : null
   const iBlockedThem = activeBlock?.blocker_id === currentUserId
 
-  // Menu items — rendered identically in both mobile and desktop menus
   function MenuItems() {
     return isCoolingOff && iBlockedThem ? (
       <button type="button" onClick={handleLiftBlock} style={menuItemStyle}>Lift cool-off</button>
