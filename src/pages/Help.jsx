@@ -79,7 +79,7 @@ const FAQS = [
       },
       {
         q: 'Can I disconnect from someone?',
-        a: "Not currently — but you can block someone if needed, which ends all contact.",
+        a: "Yes. Open the conversation, tap the ··· menu, and choose Disconnect. This ends the connection for both of you and frees up a connection slot — your message history isn't deleted, but neither of you can send new messages unless you reconnect. If you want to stop someone contacting you entirely, use Block instead, which is permanent.",
       },
     ],
   },
