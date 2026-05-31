@@ -59,16 +59,45 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     .slice(0, limit)
 }
 
+// Only live (non-unmatched) matches. This drives both the free-tier cap count
+// (Object.keys(matchedMap).length) and whether a profile shows "Message" vs
+// "Connect" in the feed — so unmatching frees a slot AND lets that person
+// reappear as connectable. The DB unmatch is a soft-delete; the row still
+// exists with unmatched_at set, but it no longer counts here.
 export async function getExistingMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
     .select('id, user_a_id, user_b_id')
     .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+    .is('unmatched_at', null)
   if (error) throw error
   return data ?? []
 }
 
 export async function createMatch({ userAId, userBId, relationType, purpose = 'dating' }) {
+  // Reconnecting a previously-unmatched pair revives the original row (keeps
+  // the thread + history continuous and avoids the duplicate-match constraint
+  // tripping on the soft-deleted row). revive_match returns the revived id, or
+  // null if there's nothing to revive — in which case we insert fresh.
+  const { data: revivedId, error: reviveErr } = await supabase.rpc('revive_match', {
+    p_user_a: userAId,
+    p_user_b: userBId,
+    p_relation_type: relationType,
+    p_purpose: purpose,
+  })
+  if (reviveErr) throw reviveErr
+
+  if (revivedId) {
+    const { data, error } = await supabase
+      .from('matches')
+      .select()
+      .eq('id', revivedId)
+      .single()
+    if (error) throw error
+    window.umami?.track('connection-revived', { relationType, purpose })
+    return data
+  }
+
   const { data, error } = await supabase
     .from('matches')
     .insert({ user_a_id: userAId, user_b_id: userBId, relation_type: relationType, purpose })

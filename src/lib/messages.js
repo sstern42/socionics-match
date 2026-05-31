@@ -5,12 +5,13 @@ export async function getMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
     .select(`
-      id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b,
+      id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b, unmatched_at,
       user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by ),
       user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by ),
       messages ( content, created_at, sender_id )
     `)
     .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+    .is('unmatched_at', null)
     .order('created_at', { ascending: false })
   if (error) throw error
   return (data ?? []).map(m => {

@@ -4,6 +4,7 @@ import { RELATIONS } from '../../data/relations'
 import { getCompatibilityBreakdown } from '../../data/compatibility'
 import { getMessages, sendMessage, subscribeToMessages, markRead } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
+import { unmatch } from '../../lib/unmatch'
 import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
 import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabase'
@@ -43,7 +44,7 @@ function SIWebview({ url, onClose }) {
   )
 }
 
-export default function Conversation({ match, currentUserId, hasFeedback, onBack, isArchived, onArchive, onUnarchive }) {
+export default function Conversation({ match, currentUserId, hasFeedback, onBack, isArchived, onArchive, onUnarchive, onUnmatch }) {
   const navigate = useNavigate()
   const { isPremium, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
@@ -57,6 +58,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [blockNotes, setBlockNotes] = useState('')
   const [blockError, setBlockError] = useState(null)
   const [blocking, setBlocking] = useState(false)
+  const [unmatching, setUnmatching] = useState(false)
   const [activeBlock, setActiveBlock] = useState(null)
   const [replyTo, setReplyTo] = useState(null)
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
@@ -218,6 +220,17 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     } catch (err) { setBlockError(err.message); setBlocking(false) }
   }
 
+  async function handleUnmatch() {
+    setUnmatching(true); setBlockError(null)
+    try {
+      await unmatch(match.id)
+      // Let the parent drop it from the list and clear the selection; the modal
+      // closes with the unmount. Falls back to a hard nav if no handler given.
+      if (onUnmatch) { await onUnmatch(match.id) }
+      else { navigate('/messages', { replace: true }) }
+    } catch (err) { setBlockError(err.message); setUnmatching(false) }
+  }
+
   async function handleLiftBlock() {
     if (!activeBlock) return
     try { await liftBlock(activeBlock.id); setActiveBlock(null) }
@@ -248,7 +261,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         {!activeBlock && (
           <>
             <button type="button" onClick={() => { setModal('cooloff'); setMenuOpen(false) }} style={menuItemStyle}>Cool off (7 days)</button>
-            <button type="button" onClick={() => { setModal('block'); setMenuOpen(false) }} style={{ ...menuItemStyle, color: '#c0392b' }}>Block & report</button>
+            <button type="button" onClick={() => { setModal('unmatch'); setMenuOpen(false) }} style={menuItemStyle}>Disconnect</button>
+            <button type="button" onClick={() => { setModal('block'); setMenuOpen(false) }} style={{ ...menuItemStyle, color: '#c0392b' }}>Block &amp; report</button>
           </>
         )}
       </>
@@ -577,11 +591,28 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         </div>
       )}
 
+      {/* Disconnect / unmatch modal */}
+      {modal === 'unmatch' && (
+        <div onClick={() => !unmatching && setModal(null)} style={overlayStyle}>
+          <div onClick={e => e.stopPropagation()} style={modalStyle}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', marginBottom: '0.75rem' }}>Disconnect from {otherName}?</h3>
+            <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '1.5rem' }}>
+              This ends the connection for both of you and removes it from both your lists. It frees up a connection slot, and you'll see each other in the feed again. Your message history isn't deleted — but neither of you can send new messages unless you reconnect. This isn't a block; if you want to stop someone contacting you, use Block &amp; report instead.
+            </p>
+            {blockError && <p style={{ fontSize: '0.82rem', color: '#c0392b', marginBottom: '0.75rem' }}>{blockError}</p>}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button type="button" className="btn-ghost" onClick={() => setModal(null)} disabled={unmatching}>Cancel</button>
+              <button type="button" className="btn-primary" onClick={handleUnmatch} disabled={unmatching} style={{ opacity: unmatching ? 0.6 : 1 }}>{unmatching ? 'Disconnecting…' : 'Disconnect'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Block & report modal */}
       {modal === 'block' && (
         <div onClick={() => setModal(null)} style={overlayStyle}>
           <div onClick={e => e.stopPropagation()} style={modalStyle}>
-            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', marginBottom: '0.75rem' }}>Block & report</h3>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', marginBottom: '0.75rem' }}>Block &amp; report</h3>
             <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '1.25rem' }}>This is permanent and cannot be undone from the app. {otherName} will be removed from your feed and this conversation will be hidden.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1.25rem' }}>
               <select className="input-standalone" value={blockReason} onChange={e => setBlockReason(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>

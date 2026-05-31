@@ -144,6 +144,19 @@ export default function Messages() {
     }
   }
 
+  // Disconnect/unmatch — the RPC has already soft-deleted the row in the DB
+  // (Conversation calls lib/unmatch before invoking this). Here we just drop it
+  // from local state so the list and selection update without a refetch. The
+  // unmatched match won't come back on next load (getMatches filters it out).
+  function handleUnmatch(matchId) {
+    const id = matchId ?? selectedMatchId
+    if (!id) return
+    setMatches(prev => prev.filter(m => m.id !== id))
+    setArchivedIds(prev => { const s = new Set(prev); s.delete(id); return s })
+    if (selectedMatchId === id) setSelectedMatchId(null)
+    setMobileShowConvo(false)
+  }
+
   const activeMatches   = matches.filter(m => !archivedIds.has(m.id))
   const archivedMatches = matches.filter(m =>  archivedIds.has(m.id))
 
@@ -260,6 +273,7 @@ export default function Messages() {
                   isArchived={archivedIds.has(selectedMatch.id)}
                   onArchive={handleArchive}
                   onUnarchive={handleUnarchive}
+                  onUnmatch={handleUnmatch}
                 />
               ) : (
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
