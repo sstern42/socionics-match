@@ -390,7 +390,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       {/* Compatibility breakdown panel */}
       {breakdownOpen && breakdown && breakdownUnlocked && (
-        <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '45vh', overflowY: 'auto', flexShrink: 0 }}>
           <div>
             <p style={breakdownSectionLabel}>Function interactions</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -426,7 +426,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       {/* Locked teaser — free users */}
       {breakdownOpen && breakdown && !breakdownUnlocked && (
-        <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem' }}>
+        <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', maxHeight: '45vh', overflowY: 'auto', flexShrink: 0 }}>
           <div style={{ position: 'relative', borderRadius: 6, overflow: 'hidden' }}>
             {/* Real content, blurred */}
             <div aria-hidden="true" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', filter: 'blur(5px)', opacity: 0.55, userSelect: 'none', pointerEvents: 'none', padding: '0.1rem' }}>
