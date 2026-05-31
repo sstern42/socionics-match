@@ -110,9 +110,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const otherUserId = match.other.id
   const otherVerifiedBy = match.other.verified_by ?? null
 
-  const breakdown = (isPremium && profile?.type)
+  const breakdown = profile?.type
     ? getCompatibilityBreakdown(profile.type, match.other.type, match.displayRelationType ?? match.relation_type)
     : null
+  const breakdownUnlocked = isPremium && !!breakdown
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 700px)')
@@ -310,14 +311,21 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         </div>
       </div>
 
-      {/* Mobile breakdown toggle — premium only */}
-      {isPremium && breakdown && (
+      {/* Mobile breakdown toggle */}
+      {breakdown && (
         <div className="show-mobile" style={{ borderBottom: '1px solid var(--border)', background: '#fff', textAlign: 'center' }}>
           <button
-            onClick={() => { window.umami?.track('breakdown-toggled', { open: !breakdownOpen, relation: match.displayRelationType ?? match.relation_type, source: 'mobile' }); setBreakdownOpen(o => !o) }}
+            onClick={() => {
+              const next = !breakdownOpen
+              if (breakdownUnlocked) window.umami?.track('breakdown-toggled', { open: next, relation: match.displayRelationType ?? match.relation_type, source: 'mobile' })
+              else if (next) window.umami?.track('breakdown-teaser-opened', { relation: match.displayRelationType ?? match.relation_type, source: 'mobile' })
+              setBreakdownOpen(next)
+            }}
             style={{ fontSize: '0.68rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.45rem 1rem', letterSpacing: '0.04em' }}
           >
-            {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
+            {breakdownUnlocked
+              ? (breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓')
+              : (breakdownOpen ? 'Hide breakdown ↑' : 'Full compatibility breakdown 🔒')}
           </button>
         </div>
       )}
@@ -353,9 +361,13 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               <div style={{ textAlign: 'right', maxWidth: 220 }}>
                 <p style={{ fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>{relInfo.name}</p>
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.5, marginTop: '0.15rem' }}>{relInfo.description}</p>
-                {isPremium && breakdown ? (
+                {breakdownUnlocked ? (
                   <button onClick={() => { window.umami?.track('breakdown-toggled', { open: !breakdownOpen, relation: match.displayRelationType ?? match.relation_type, source: 'desktop' }); setBreakdownOpen(o => !o) }} style={{ fontSize: '0.68rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.15rem' }}>
                     {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
+                  </button>
+                ) : breakdown ? (
+                  <button onClick={() => { const next = !breakdownOpen; if (next) window.umami?.track('breakdown-teaser-opened', { relation: match.displayRelationType ?? match.relation_type, source: 'desktop' }); setBreakdownOpen(next) }} style={{ fontSize: '0.68rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: '0.15rem' }}>
+                    {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown 🔒'}
                   </button>
                 ) : relInfo.siSlug ? (
                   <button onClick={() => { window.umami?.track('si-link-relation', { relation: relInfo.siSlug }); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }} style={{ fontSize: '0.68rem', color: 'var(--accent)', opacity: 0.7, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -377,7 +389,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       </div>
 
       {/* Compatibility breakdown panel */}
-      {breakdownOpen && breakdown && (
+      {breakdownOpen && breakdown && breakdownUnlocked && (
         <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           <div>
             <p style={breakdownSectionLabel}>Function interactions</p>
@@ -409,6 +421,58 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               <p style={{ ...breakdownText, color: 'var(--muted)', fontStyle: 'italic' }}>{breakdown.advice}</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Locked teaser — free users */}
+      {breakdownOpen && breakdown && !breakdownUnlocked && (
+        <div style={{ borderBottom: '1px solid var(--border)', background: 'var(--bg)', padding: isMobile ? '0.75rem 1rem' : '1rem 1.5rem' }}>
+          <div style={{ position: 'relative', borderRadius: 6, overflow: 'hidden' }}>
+            {/* Real content, blurred */}
+            <div aria-hidden="true" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', filter: 'blur(5px)', opacity: 0.55, userSelect: 'none', pointerEvents: 'none', padding: '0.1rem' }}>
+              <div>
+                <p style={breakdownSectionLabel}>Function interactions</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <p style={breakdownText}>Your leading <strong>{breakdown.functions.myLeading}</strong> sits at {otherName}'s <strong>{breakdown.functions.myLeadingPosName}</strong> position. {breakdown.functions.myLeadingMeaning}</p>
+                  <p style={breakdownText}>{otherName}'s leading <strong>{breakdown.functions.otherLeading}</strong> sits at your <strong>{breakdown.functions.otherLeadingPosName}</strong> position.</p>
+                  <p style={breakdownText}>Your creative <strong>{breakdown.functions.myCreative}</strong> sits at {otherName}'s <strong>{breakdown.functions.myCreativePosName}</strong> position.</p>
+                </div>
+              </div>
+              {breakdown.strengths.length > 0 && (
+                <div>
+                  <p style={breakdownSectionLabel}>Strengths</p>
+                  <ul style={{ margin: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    {breakdown.strengths.slice(0, 2).map((s, i) => <li key={i} style={breakdownText}>{s}</li>)}
+                  </ul>
+                </div>
+              )}
+              {breakdown.friction.length > 0 && (
+                <div>
+                  <p style={breakdownSectionLabel}>Friction points</p>
+                  <ul style={{ margin: 0, paddingLeft: '1rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                    {breakdown.friction.slice(0, 2).map((f, i) => <li key={i} style={breakdownText}>{f}</li>)}
+                  </ul>
+                </div>
+              )}
+            </div>
+            {/* Lock overlay */}
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.5rem', padding: '1rem', background: 'linear-gradient(to bottom, rgba(247,244,239,0.35), rgba(247,244,239,0.82))' }}>
+              <span style={{ fontSize: '1.4rem', lineHeight: 1 }} aria-hidden="true">🔒</span>
+              <p style={{ fontFamily: 'var(--serif)', fontSize: isMobile ? '0.95rem' : '1.05rem', fontWeight: 500, color: 'var(--text)', margin: 0 }}>
+                See exactly how you and {otherName} fit
+              </p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0, maxWidth: 360 }}>
+                Premium unlocks your full Model A breakdown for every connection — function-by-function strengths, friction points and a practical note.
+              </p>
+              <Link
+                to="/premium"
+                onClick={() => window.umami?.track('breakdown-teaser-cta', { relation: match.displayRelationType ?? match.relation_type, source: isMobile ? 'mobile' : 'desktop' })}
+                style={{ marginTop: '0.15rem', display: 'inline-block', background: 'var(--accent)', color: '#fff', textDecoration: 'none', fontSize: '0.8rem', fontWeight: 500, letterSpacing: '0.03em', padding: '0.5rem 1.1rem', borderRadius: 4 }}
+              >
+                Unlock with Premium
+              </Link>
+            </div>
+          </div>
         </div>
       )}
 
