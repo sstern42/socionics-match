@@ -348,6 +348,12 @@ export default function Home() {
   const hoursLeft = Math.floor((msLeft % 86400000) / 3600000)
   const foundingDay = new Date(FOUNDING_CUTOFF.getTime() - 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 
+  // Live founding-member count. While the window is open every existing member
+  // is, by definition, pre-cutoff — so the current member total IS the founding
+  // count. Reuses stats.users (already fetched below) rather than a second
+  // query. Refreshes on page load only, in step with the rest of the stats.
+  const foundingCount = stats?.users ?? null
+
   useEffect(() => {
     supabase
       .from('stats')
@@ -412,6 +418,21 @@ export default function Home() {
             <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
               Every account created before midnight on {foundingDay} becomes a founding member: unlimited connections, all 16 relation filters, and full compatibility breakdowns — permanently free, no card needed.
             </p>
+
+            {/* Live founding-member count — how many have claimed it so far */}
+            {foundingCount != null && foundingCount > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
+                <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7, flexShrink: 0 }}>
+                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--accent)', opacity: 0.4, animation: 'foundingPulse 2s ease-in-out infinite' }} />
+                  <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+                </span>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text)', letterSpacing: '0.01em' }}>
+                  <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>{foundingCount.toLocaleString()}</strong>
+                  {' '}founding {foundingCount === 1 ? 'member has' : 'members have'} claimed their spot
+                </p>
+              </div>
+            )}
+
             {/* Countdown */}
             <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginTop: '0.15rem' }}>
               {[{ n: daysLeft, l: daysLeft === 1 ? 'day' : 'days' }, { n: hoursLeft, l: hoursLeft === 1 ? 'hour' : 'hours' }].map(({ n, l }) => (
