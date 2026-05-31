@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import MatchList from '../components/messages/MatchList'
@@ -24,6 +24,17 @@ export default function Messages() {
   const [fetching, setFetching] = useState(true)
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+
+  // Mirror the current selection into a ref so the load effect can read it
+  // without taking selectedMatchId as a dependency (which would re-fetch).
+  // The load effect re-runs whenever `profile` changes identity — and it does:
+  // AuthContext re-emits a fresh profile object on background/foreground,
+  // last_active writes, and refreshProfile. Without this guard, a re-run with
+  // no ?match param would fall into auto-select and clobber the thread the
+  // user already opened, jumping to whoever messaged most recently (matches
+  // are sorted newest-first). That is the iOS mid-session conversation swap.
+  const selectedRef = useRef(null)
+  useEffect(() => { selectedRef.current = selectedMatchId }, [selectedMatchId])
 
   // Derive the full match object from the stable ID reference
   const selectedMatch = matches.find(m => m.id === selectedMatchId) ?? null
@@ -65,8 +76,11 @@ export default function Messages() {
           setSelectedMatchId(m.id)
           setMobileShowConvo(true)
         }
-      } else {
-        // Auto-select first active (non-archived) match
+      } else if (!selectedRef.current) {
+        // Auto-select first active (non-archived) match — ONLY on the initial
+        // load, never on a re-run once the user has chosen a thread. Reading
+        // the ref (not state) keeps this a one-shot without re-triggering the
+        // fetch, while still preventing the mid-session swap.
         const first = data.find(m => !archived.has(m.id))
         if (first) { markMatchRead(first.id); setSelectedMatchId(first.id) }
       }
