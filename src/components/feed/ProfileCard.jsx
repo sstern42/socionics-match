@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
 
@@ -125,6 +125,16 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const displayFlag = isAnonymous ? null : flag
   const displayAvatar = isAnonymous ? null : profile.avatar_url
 
+  // Name links to the profile page only when there's a real member to open:
+  // a genuine id, not anonymous, and not one of the preview cards. Both preview
+  // callers (ProfileEdit live preview, Feed "how you appear") pass relation AND
+  // displayRelation as null; a real feed card always has at least one set. This
+  // keeps the user's own preview cards unlinked while every real feed profile
+  // becomes tappable, matching the avatar/name links in MatchList and the
+  // conversation header.
+  const isPreviewCard = relation == null && displayRelation == null
+  const isLinkable = !!profile.id && !isAnonymous && !isPreviewCard
+
   const activityLabel = (() => {
     if (!last_active || profile_data?.hide_activity) return null
     const diff = Date.now() - new Date(last_active).getTime()
@@ -224,9 +234,21 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             </div>
           )}
           <div>
-            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
-              {displayName}{displayAge ? `, ${displayAge}` : ''}{displayGenderEmoji ? ` ${displayGenderEmoji}` : ''}
-            </h3>
+            {isLinkable ? (
+              <Link
+                to={`/profile/${profile.id}`}
+                onClick={() => window.umami?.track('profile-card-name-clicked', { type })}
+                style={{ textDecoration: 'none', color: 'inherit' }}
+              >
+                <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
+                  {displayName}{displayAge ? `, ${displayAge}` : ''}{displayGenderEmoji ? ` ${displayGenderEmoji}` : ''}
+                </h3>
+              </Link>
+            ) : (
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', fontWeight: 500, margin: 0 }}>
+                {displayName}{displayAge ? `, ${displayAge}` : ''}{displayGenderEmoji ? ` ${displayGenderEmoji}` : ''}
+              </h3>
+            )}
             {role && (
               <span style={{
                 display: 'inline-block', marginTop: '0.2rem',
