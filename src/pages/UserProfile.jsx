@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 import { RELATIONS, MATRIX } from '../data/relations'
-import { countryFlag } from '../data/countries'
+import { countryFlag, COUNTRIES } from '../data/countries'
 
 export default function UserProfile() {
   const { userId } = useParams()
@@ -66,6 +66,10 @@ export default function UserProfile() {
   const discordHandle = isAnon ? null : other.profile_data?.discord_handle
   const bio = other.profile_data?.bio
   const city = isAnon ? null : other.profile_data?.city
+  const countryCode = isAnon ? null : other.profile_data?.country
+  const countryName = countryCode
+    ? (COUNTRIES.find(c => c.code === countryCode)?.name ?? null)
+    : null
 
   // Gallery — primary avatar first, then extra photos. Hidden entirely in
   // anonymous mode, exactly like the avatar. Shown on your own profile so you
@@ -133,9 +137,9 @@ export default function UserProfile() {
               <h1 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, lineHeight: 1.2 }}>
                 {name}{age ? `, ${age}` : ''}{genderEmoji ? ` ${genderEmoji}` : ''}
               </h1>
-              {(flag || city) && (
+              {(flag || countryName || city) && (
                 <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                  {flag}{flag && city ? ' ' : ''}{city ?? ''}
+                  {flag ? `${flag} ` : ''}{[countryName, city].filter(Boolean).join(' · ')}
                 </p>
               )}
             </div>
