@@ -3,8 +3,11 @@ import Layout from '../components/Layout'
 export const ENTRIES = [
   {
     date: '1 June 2026',
-    label: 'Fix',
+    label: 'Update',
     items: [
+      'Get typed — the typing service is now a written report from Spencer Stern. Answer a short questionnaire and receive a considered, reasoned report confirming your type, with your profile updated to match',
+      'Get typed — two options: Standard ($29, within 5 days) and Express ($49, within 48 hours)',
+      'Get typed — typed in Classical Model A, delivered by email. Pay securely, then you are taken straight to the questionnaire',
       'App loading — Socion now shows a loading screen while it starts up instead of a blank page, and displays a readable message with a reload button if something goes wrong. Helps most on slow or unstable connections, where the app previously could show a white screen until it finished loading',
     ],
   },
