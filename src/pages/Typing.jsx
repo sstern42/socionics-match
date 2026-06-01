@@ -1,35 +1,43 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { supabase } from '../lib/supabase'
 
-const PLATFORM_CONFIG = {
-  discord: {
-    format:      'Discord voice call — fluent English required',
-    fieldLabel:  'Your Discord username',
-    placeholder: 'e.g. username or username#1234',
-    inputType:   'text',
-    maxLength:   100,
+// Spencer's async written typing service. Payment is handled by Stripe payment
+// links; on success Stripe redirects the buyer to the Tally questionnaire.
+// No in-app payment, no typing_requests insert — the whole flow lives in
+// Stripe + Tally + email. This page is the storefront and the hand-off.
+const STRIPE_STANDARD = 'https://buy.stripe.com/fZu14m91Pfwl163fIudIA00'
+const STRIPE_EXPRESS  = 'https://buy.stripe.com/bJefZg7XL4RH6qnbsedIA01'
+
+const TIERS = [
+  {
+    key: 'standard',
+    name: 'Standard',
+    price: '$29',
+    turnaround: 'Delivered within 5 days',
+    href: STRIPE_STANDARD,
+    highlight: false,
   },
-  teams: {
-    format:      'Microsoft Teams call — fluent English required',
-    fieldLabel:  'Your Teams email address',
-    placeholder: 'e.g. you@example.com',
-    inputType:   'email',
-    maxLength:   200,
+  {
+    key: 'express',
+    name: 'Express',
+    price: '$49',
+    turnaround: 'Delivered within 48 hours',
+    href: STRIPE_EXPRESS,
+    highlight: true,
   },
-}
+]
+
+const STEPS = [
+  ['01', 'Pay', 'Choose Standard or Express below. Payment is handled securely by Stripe.'],
+  ['02', 'Answer', "You're taken straight to a short questionnaire — twelve questions about how you think and relate. Answer in your own words."],
+  ['03', 'Receive', 'Your written report lands by email within the timeframe you chose. It confirms your type, explains the reasoning, and your Socion profile is updated to match.'],
+]
 
 export default function Typing() {
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
-
-  const [platform, setPlatform]   = useState('discord')
-  const [contact,  setContact]    = useState('')
-  const [notes,    setNotes]      = useState('')
-  const [status,   setStatus]     = useState('idle') // idle | submitting | success | error | exists
-  const [errorMsg, setErrorMsg]   = useState('')
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -39,242 +47,105 @@ export default function Typing() {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
 
-  useEffect(() => {
-    if (!profile?.id) return
-    async function checkExisting() {
-      const { data } = await supabase
-        .from('typing_requests')
-        .select('id, status')
-        .eq('user_id', profile.id)
-        .in('status', ['pending', 'scheduled'])
-        .maybeSingle()
-      if (data) setStatus('exists')
-    }
-    checkExisting()
-  }, [profile?.id])
-
-  async function handleSubmit() {
-    if (status === 'submitting') return
-    if (!contact.trim()) {
-      const cfg = PLATFORM_CONFIG[platform]
-      setErrorMsg(`Please enter ${cfg.fieldLabel.toLowerCase()} so the typist can reach you.`)
-      return
-    }
-    setStatus('submitting')
-    setErrorMsg('')
-
-    const { error } = await supabase
-      .from('typing_requests')
-      .insert({
-        user_id:        profile.id,
-        notes:          notes.trim() || null,
-        discord_handle: platform === 'discord' ? contact.trim() : null,
-        teams_contact:  platform === 'teams'   ? contact.trim() : null,
-      })
-
-    if (error) {
-      setErrorMsg('Something went wrong. Please try again.')
-      setStatus('error')
-      return
-    }
-
-    window.umami?.track('typing-request-submitted', { platform })
-    setStatus('success')
-  }
-
-  const containerStyle = {
-    maxWidth: 520,
-    margin: '0 auto',
-    padding: '3rem 1.5rem',
-  }
-
-  const headingStyle = {
-    fontSize: '1.8rem',
-    fontWeight: 400,
-    marginBottom: '0.5rem',
-    color: 'var(--fg)',
-  }
-
-  const subStyle = {
-    fontSize: '0.88rem',
-    color: 'var(--muted)',
-    marginBottom: '2rem',
-    lineHeight: 1.6,
-  }
-
-  const cardStyle = {
-    background: '#fff',
-    border: '1px solid var(--border)',
-    borderRadius: 6,
-    padding: '1.5rem',
-    marginBottom: '1.5rem',
-  }
-
-  const labelStyle = {
-    display: 'block',
-    fontSize: '0.78rem',
-    letterSpacing: '0.07em',
-    textTransform: 'uppercase',
-    color: 'var(--muted)',
-    marginBottom: '0.5rem',
-  }
-
-  const textareaStyle = {
-    width: '100%',
-    minHeight: 100,
-    padding: '0.75rem',
-    border: '1px solid var(--border)',
-    borderRadius: 4,
-    fontSize: '0.88rem',
-    fontFamily: 'var(--serif)',
-    color: 'var(--fg)',
-    background: 'var(--bg)',
-    resize: 'vertical',
-    boxSizing: 'border-box',
-  }
-
-  const btnStyle = {
-    background: 'var(--accent)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 4,
-    padding: '0.75rem 1.5rem',
-    fontSize: '0.82rem',
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    cursor: status === 'submitting' ? 'not-allowed' : 'pointer',
-    opacity: status === 'submitting' ? 0.6 : 1,
-    width: '100%',
-  }
-
-  const cfg = PLATFORM_CONFIG[platform]
-
   if (loading || !profile) return null
 
+  const isVerified = !!profile.verified_by
+
   return (
-    <Layout>
-      <div style={containerStyle}>
-        <h1 style={headingStyle}>Get typed</h1>
-        <p style={subStyle}>
-          Not sure of your type, or want it confirmed by a typist? Book a one-to-one typing session
-          with our resident typist via voice call. A verified badge will be added to your profile on completion.
+    <Layout noScroll hideFooter>
+      <section style={{ maxWidth: 560, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
+        <p className="eyebrow">Socion</p>
+        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '0.75rem' }}>
+          Get <em>typed</em>
+        </h1>
+        <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '2.5rem' }}>
+          Most people mistype themselves, especially early on. A written typing report from Spencer Stern gives you a considered, reasoned answer, so every match you make rests on the right type.
         </p>
 
-        {/* What to expect */}
-        <div style={cardStyle}>
-          <p style={{ ...labelStyle, marginBottom: '1rem' }}>What to expect</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            {[
-              ['Format',   cfg.format],
-              ['Duration', '1–2 hours'],
-              ['Price',    'Free'],
-              ['Outcome',  'Verified badge on your profile'],
-            ].map(([k, v]) => (
-              <div key={k} style={{ display: 'flex', gap: '1rem', fontSize: '0.86rem' }}>
-                <span style={{ color: 'var(--muted)', minWidth: 80 }}>{k}</span>
-                <span style={{ color: 'var(--fg)' }}>{v}</span>
-              </div>
-            ))}
-          </div>
-          <p style={{
-            fontSize: '0.8rem',
-            color: 'var(--muted)',
-            fontStyle: 'italic',
-            marginTop: '1rem',
-            marginBottom: 0,
-            lineHeight: 1.5,
-          }}>
-            Note: you will be typed in Classical Model A.
-          </p>
-        </div>
-
-        {status === 'success' ? (
-          <div style={{ ...cardStyle, borderColor: 'var(--accent)', textAlign: 'center', padding: '2rem' }}>
-            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>Request submitted ✓</p>
-            <p style={{ fontSize: '0.86rem', color: 'var(--muted)' }}>
-              You'll be contacted shortly to schedule your session.
+        {/* Already verified — no need to buy */}
+        {isVerified && (
+          <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.25rem 1.5rem', marginBottom: '2.5rem' }}>
+            <p style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--accent)', marginBottom: '0.35rem' }}>
+              Your type is already confirmed ✓
             </p>
-          </div>
-        ) : status === 'exists' ? (
-          <div style={{ ...cardStyle, textAlign: 'center', padding: '2rem' }}>
-            <p style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>You already have a request in progress</p>
-            <p style={{ fontSize: '0.86rem', color: 'var(--muted)' }}>
-              You'll be contacted to schedule your session if you haven't been already.
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+              Your profile shows <strong style={{ color: 'var(--text)' }}>{profile.type}</strong>, confirmed by {profile.verified_by}. There's nothing more you need to do, but you're welcome to book another report if you'd like a fresh read.
             </p>
-          </div>
-        ) : (
-          <div style={cardStyle}>
-
-            {/* Platform toggle */}
-            <label style={labelStyle}>Platform</label>
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
-              {['discord', 'teams'].map(p => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => { setPlatform(p); setContact(''); setErrorMsg('') }}
-                  style={{
-                    flex: 1,
-                    padding: '0.5rem',
-                    fontSize: '0.82rem',
-                    letterSpacing: '0.04em',
-                    border: '1px solid var(--border)',
-                    borderRadius: 4,
-                    cursor: 'pointer',
-                    background: platform === p ? 'var(--accent)' : 'transparent',
-                    color: platform === p ? '#fff' : 'var(--fg)',
-                    fontFamily: 'var(--serif)',
-                    transition: 'background 0.15s, color 0.15s',
-                  }}
-                >
-                  {p === 'discord' ? 'Discord' : 'MS Teams'}
-                </button>
-              ))}
-            </div>
-
-            {/* Contact field */}
-            <label style={labelStyle} htmlFor="typing-contact">
-              {cfg.fieldLabel} <span style={{ color: 'crimson' }}>*</span>
-            </label>
-            <input
-              id="typing-contact"
-              type={cfg.inputType}
-              style={{ ...textareaStyle, minHeight: 'unset', padding: '0.6rem 0.75rem' }}
-              placeholder={cfg.placeholder}
-              required
-              value={contact}
-              onChange={e => setContact(e.target.value)}
-              maxLength={cfg.maxLength}
-            />
-
-            {/* Notes */}
-            <label style={{ ...labelStyle, marginTop: '1rem' }} htmlFor="typing-notes">
-              Anything to add? <span style={{ fontWeight: 300 }}>(optional)</span>
-            </label>
-            <textarea
-              id="typing-notes"
-              style={textareaStyle}
-              placeholder="e.g. I've previously tested as INTJ on MBTI... I'm torn between ILI and LII..."
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
-              maxLength={500}
-            />
-
-            {errorMsg && (
-              <p style={{ fontSize: '0.82rem', color: 'crimson', marginTop: '0.5rem' }}>{errorMsg}</p>
-            )}
-
-            <button
-              style={{ ...btnStyle, marginTop: '1rem' }}
-              onClick={handleSubmit}
-              disabled={status === 'submitting'}
-            >
-              {status === 'submitting' ? 'Submitting...' : 'Request a typing session'}
-            </button>
-
           </div>
         )}
-      </div>
+
+        {/* How it works */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2.5rem' }}>
+          {STEPS.map(([num, title, body]) => (
+            <div key={num} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <span style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 400, color: 'var(--accent-lt)', lineHeight: 1, flexShrink: 0, width: 32 }}>{num}</span>
+              <div>
+                <p style={{ fontSize: '0.92rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.2rem' }}>{title}</p>
+                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>{body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* What you get */}
+        <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginBottom: '2.5rem' }}>
+          <p style={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, marginBottom: '1rem' }}>
+            What you get
+          </p>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {[
+              'A written report confirming your type, with the reasoning behind it',
+              'A clear read on your function stack and what it means for how you relate',
+              'Practical guidance on the relations that fit you, for the Socion feed',
+              'Your Socion type updated to match, so your matches are built on solid ground',
+            ].map((item, i) => (
+              <li key={i} style={{ fontSize: '0.86rem', color: 'var(--text)', lineHeight: 1.6 }}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Tiers */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+          {TIERS.map(tier => (
+            <a
+              key={tier.key}
+              href={tier.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => window.umami?.track('typing-checkout-clicked', { tier: tier.key })}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+                border: `1px solid ${tier.highlight ? 'var(--accent)' : 'var(--border)'}`,
+                background: tier.highlight ? 'rgba(154,111,56,0.05)' : '#fff',
+                borderRadius: 8, padding: '1.25rem 1.5rem', textDecoration: 'none',
+                transition: 'border-color 0.15s',
+              }}
+            >
+              <div>
+                <p style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.2rem' }}>
+                  {tier.name}
+                </p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{tier.turnaround}</p>
+              </div>
+              <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                <p style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{tier.price}</p>
+                <p style={{ fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent)', marginTop: '0.35rem' }}>Get typed →</p>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
+          Payment is taken by Stripe. Straight after, you'll be taken to a short questionnaire to complete in your own time. Your report is written by hand and delivered by email, so confidence is honest rather than instant.
+        </p>
+
+        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7 }}>
+            Questions before you book?{' '}
+            <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@socion.app</a>
+          </p>
+        </div>
+      </section>
     </Layout>
   )
 }
