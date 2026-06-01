@@ -5,6 +5,7 @@ import ProfileCard from '../components/feed/ProfileCard'
 import FeedAd from '../components/feed/FeedAd'
 import SwipeDeck from '../components/feed/SwipeDeck'
 import MatchModal from '../components/feed/MatchModal'
+import SeekingYou from '../components/feed/SeekingYou'
 import SIWebview from '../components/SIWebview'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
@@ -423,6 +424,17 @@ export default function Feed() {
             </p>
           </div>
         )}
+
+        {/* Who's looking for you — premium insight panel (pure matrix, no query) */}
+        <SeekingYou
+          userType={profile?.type}
+          isPremium={isPremium}
+          onExploreRelation={(rel) => {
+            setSwipeMode(false)
+            localStorage.setItem(FEED_MODE_KEY, 'browse')
+            setFilterRelation(rel)
+          }}
+        />
 
         {/* ── SWIPE MODE ───────────────────────────────────────── */}
         {swipeMode ? (
