@@ -58,6 +58,28 @@ export function getMatchingTypes(userType, wantedRelations) {
   })
 }
 
+// Inverse lookup — "who is looking for ME".
+// For my type, returns the types that, FROM THEIR PERSPECTIVE, see me as one of
+// the given relations. Because intertype relations are asymmetric, this reads
+// getRelation(otherType, myType) (their row → me), NOT getRelation(myType, otherType).
+// e.g. if I'm ILE and someone wants a Benefactor (a type who gives to them),
+// they see me as their Beneficiary, so EIE — who is ILE's Benefactor and thus
+// sees ILE as their Beneficiary — surfaces here under BENEFICIARY. No manual
+// inversion table needed; the matrix already encodes both directions.
+//
+// Returns [{ type, theySeeMeAs, iSeeThemAs }], excluding my own type.
+export function getTypesSeekingMe(myType, wantedRelations) {
+  if (!myType || !wantedRelations?.length) return []
+  return TYPES
+    .filter(t => t !== myType)
+    .map(t => ({
+      type: t,
+      theySeeMeAs: getRelation(t, myType),
+      iSeeThemAs:  getRelation(myType, t),
+    }))
+    .filter(entry => entry.theySeeMeAs && wantedRelations.includes(entry.theySeeMeAs))
+}
+
 export const QUADRAS = {
   Alpha: ['ILE', 'SEI', 'ESE', 'LII'],
   Beta:  ['EIE', 'LSI', 'SLE', 'IEI'],
