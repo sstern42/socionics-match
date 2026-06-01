@@ -2,6 +2,15 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '2 June 2026',
+    label: 'Update',
+    items: [
+      'Profile cards — tap a member\'s name on any feed card to open their full profile page. Anonymous profiles stay private and your own preview card is unaffected',
+      'View profile — a new tab in Profile lets you see your own public profile exactly as other members see it, with a quick link back to edit',
+      'Profile photos — your extra photos now appear as a tappable gallery on your profile page. Tap any photo to view it full size. Photos stay hidden while anonymous mode is on',
+    ],
+  },
+  {
     date: '1 June 2026',
     label: 'Update',
     items: [
