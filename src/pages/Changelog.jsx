@@ -2,6 +2,13 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
   {
+    date: '1 June 2026',
+    label: 'Fix',
+    items: [
+      'App loading — Socion now shows a loading screen while it starts up instead of a blank page, and displays a readable message with a reload button if something goes wrong. Helps most on slow or unstable connections, where the app previously could show a white screen until it finished loading',
+    ],
+  },
+  {
     date: '30 May 2026',
     label: 'Fix',
     items: [
