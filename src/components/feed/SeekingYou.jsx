@@ -10,11 +10,13 @@ import { getTypesSeekingMe, RELATIONS, getQuadra } from '../../data/relations'
 // resolve from the seeker's side, never reversed.
 //
 // We surface the relations a member is most likely to be actively sought for:
-// Dual, Activity, Mirror, Semi-Dual (the complementary band), plus Benefactor
-// (types who receive from this user — i.e. are drawn to them). Kept deliberately
-// to the "who'd want you" relations rather than all 15, so it reads as a
-// genuine insight, not a dump of the matrix row.
-const SOUGHT_RELATIONS = ['DUAL', 'ACTIVITY', 'MIRROR', 'SEMI_DUAL', 'BENEFICIARY']
+// Dual, Activity, Mirror, Semi-Dual (the complementary band), plus Benefactor —
+// the asymmetric case. A type that sees YOU as their Benefactor receives from
+// you and is therefore drawn to seek you out; the inverse (a type that sees you
+// as their Beneficiary) is the one YOU'D pursue, not one pursuing you, so it
+// does NOT belong under "who's looking for you". Getting this side right is the
+// whole point — Benefactor here, never Beneficiary.
+const SOUGHT_RELATIONS = ['DUAL', 'ACTIVITY', 'MIRROR', 'SEMI_DUAL', 'BENEFACTOR']
 
 const QUADRA_COLOURS = {
   Alpha: '#BA7517', Beta: '#791F1F', Gamma: '#0F6E56', Delta: '#185FA5',
@@ -29,8 +31,8 @@ export default function SeekingYou({ userType, isPremium, onExploreRelation }) {
   if (seekers.length === 0) return null
 
   // Order: complementary band first (Dual → Activity → Mirror → Semi-Dual),
-  // then Beneficiary, so the strongest fits read first.
-  const order = { DUAL: 0, ACTIVITY: 1, MIRROR: 2, SEMI_DUAL: 3, BENEFICIARY: 4 }
+  // then Benefactor, so the strongest fits read first.
+  const order = { DUAL: 0, ACTIVITY: 1, MIRROR: 2, SEMI_DUAL: 3, BENEFACTOR: 4 }
   const sorted = [...seekers].sort((a, b) => (order[a.theySeeMeAs] ?? 9) - (order[b.theySeeMeAs] ?? 9))
 
   function toggle() {
@@ -72,7 +74,7 @@ export default function SeekingYou({ userType, isPremium, onExploreRelation }) {
                     <button
                       key={type}
                       type="button"
-                      onClick={() => { window.umami?.track('seeking-you-relation-clicked', { type, relation: iSeeThemAs }); onExploreRelation?.(iSeeThemAs) }}
+                      onClick={() => { window.umami?.track('seeking-you-relation-clicked', { type, relation: theySeeMeAs }); onExploreRelation?.(theySeeMeAs) }}
                       style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left', background: '#fff', border: '1px solid var(--border)', borderRadius: 6, padding: '0.6rem 0.75rem', cursor: 'pointer', transition: 'border-color 0.15s' }}
                       onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-lt)'}
                       onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
