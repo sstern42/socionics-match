@@ -10,7 +10,7 @@ export default function Support() {
         </h1>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '1.25rem' }}>
-          Socion's core is free and always will be. No algorithm, no matches locked away, no paywall between you and the theory. A premium tier is coming soon for those who want the full experience — but the experiment runs regardless.
+          Socion's core is free and always will be. No algorithm, no matches locked away, no paywall between you and the theory. Premium unlocks the full experience for those who want it, but the experiment runs regardless.
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
@@ -62,6 +62,29 @@ export default function Support() {
             🛒 Browse the shop
           </a>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Ships worldwide. Fulfilled by print-on-demand.</p>
+        </div>
+
+        <div style={{
+          border: '1px solid var(--accent-lt)', borderRadius: 8,
+          padding: '2rem', marginBottom: '3rem',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
+          textAlign: 'center', background: 'rgba(154,111,56,0.04)',
+        }}>
+          <p style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', color: 'var(--text)', lineHeight: 1.6 }}>
+            <em>Want your type pinned down?</em>
+          </p>
+          <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 440 }}>
+            Get a written typing report from Spencer Stern — a considered, reasoned read on your type, with your Socion profile updated to match. Not a donation, a genuinely useful thing you can buy, and it happens to support the project too.
+          </p>
+          <a
+            href="/typing"
+            className="btn-primary"
+            style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2rem', display: 'inline-block' }}
+            onClick={() => window.umami?.track('support-get-typed-clicked')}
+          >
+            Get typed
+          </a>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>From $29. Written report, delivered by email.</p>
         </div>
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
