@@ -113,7 +113,7 @@ export default function ProfileSetup() {
                   <p style={{ color: 'var(--muted)', fontSize: '0.72rem', marginTop: '0.25rem' }}>
                     Working hypothesis ·{' '}
                     <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-                      verify with our typist
+                      get a written typing report
                     </a>
                   </p>
                 </>
