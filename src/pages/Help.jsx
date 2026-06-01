@@ -13,7 +13,7 @@ const FAQS = [
       },
       {
         q: 'Can I change my type after signing up?',
-        a: "Yes. Go to Profile → Details and update your type at any time. If you want expert confirmation, the Get Typed service offers a professional one-to-one typing session with a verified badge on completion.",
+        a: "Yes. Go to Profile → Details and update your type at any time. If you want a considered, reasoned answer, the Get Typed service provides a written typing report and updates your profile to match.",
       },
       {
         q: 'How accurate is the typing questionnaire?',
@@ -30,35 +30,39 @@ const FAQS = [
     items: [
       {
         q: 'What is the Get Typed service?',
-        a: 'Get Typed is a professional one-to-one Socionics typing session conducted via Discord voice call with our resident typist. On completion, a verified badge is added to your profile confirming your type.',
+        a: 'Get Typed is a written Socionics typing report from Spencer Stern. You answer a short questionnaire, and a few days later you receive a written report confirming your type, explaining the reasoning, and your Socion profile is updated to match.',
+      },
+      {
+        q: 'How does it work?',
+        a: 'Choose Standard or Express on the Get Typed page and pay securely via Stripe. Straight after payment you are taken to a short questionnaire — twelve questions about how you think and relate. Answer in your own words, and your report is written and delivered by email within the timeframe you chose.',
       },
       {
         q: 'What typing method is used?',
-        a: 'Our typist uses Classical Model A, the original Socionics framework developed by Aushra Augusta.',
+        a: 'Classical Model A — the original Socionics framework developed by Aushra Augusta.',
       },
       {
         q: 'How much does it cost?',
-        a: "It's free at the moment. On completion, a verified badge is added to your Socion profile permanently.",
+        a: 'Standard is $29 with delivery within 5 days. Express is $49 with delivery within 48 hours. Both include the same written report and a profile update on completion.',
       },
       {
-        q: 'How long does a session take?',
-        a: 'Sessions typically run 1–2 hours depending on how the conversation goes.',
+        q: 'How long does the questionnaire take?',
+        a: "Most people take 20–30 minutes. There are twelve questions and you answer in your own words — two or three honest sentences each is plenty. You can take as long as you like; there's no timer.",
       },
       {
-        q: 'Do I need a Discord account?',
-        a: 'Yes — sessions are conducted via Discord voice call, so a Discord account is required. You\'ll be asked for your Discord username when you submit a request.',
+        q: 'How is the report delivered?',
+        a: "By email, to the address you provide in the questionnaire. It's a written report of roughly 1,500–2,500 words covering your type, the reasoning behind it, and what it means for the relations that fit you.",
       },
       {
         q: 'Is fluent English required?',
-        a: 'Yes. The typist needs to assess how you communicate and reason, which requires fluent spoken English.',
+        a: 'The questionnaire and report are in English, so a good working level of written English helps. You answer in writing in your own time, so there is no live conversation involved.',
       },
       {
-        q: 'What happens after I request a typing?',
-        a: 'The typist will reach out to you on Discord to schedule a convenient time. Once the session is complete, your verified badge will appear on your profile.',
+        q: 'What happens to my Socion profile?',
+        a: 'Once your report is complete, your Socion type is updated to match and a confirmed marker is added to your profile, so your feed and compatibility breakdowns reflect the right type.',
       },
       {
-        q: 'What does the verified badge show?',
-        a: 'A small ✓ badge appears on your type on your profile card. Hover to see who verified it.',
+        q: 'What if my report says my type is uncertain?',
+        a: "If the evidence is genuinely split, the report says so honestly — naming the most likely candidates and explaining what distinguishes them — rather than forcing a single answer. A frank \u2018between these two\u2019 is more useful than false certainty, and you're welcome to reply with anything that might resolve it.",
       },
     ],
   },

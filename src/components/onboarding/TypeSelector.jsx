@@ -25,7 +25,7 @@ export default function TypeSelector({ onConfirm }) {
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.75rem' }}>
           Your best guess based on community input or your own study. You can change this any time, and{' '}
           <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-            verify it with our typist
+            get a written typing report
           </a>
           {' '}when you want certainty.
         </p>

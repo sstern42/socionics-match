@@ -67,7 +67,7 @@ export default function ResultScreen({ distribution, primaryType, onConfirm, onO
       <p className="fade-up-5" style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
         This is a working hypothesis based on twelve questions. Many people refine their type over time — when you're ready, you can{' '}
         <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-          verify it with our typist →
+          get a written typing report →
         </a>
       </p>
 
