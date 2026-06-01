@@ -13,12 +13,13 @@ export default function UserProfile() {
   const [other, setOther] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [lightbox, setLightbox] = useState(null)
 
   useEffect(() => {
     if (!userId) return
     supabase
       .from('users')
-      .select('id, type, profile_data, avatar_url, verified_by')
+      .select('id, type, profile_data, avatar_url, photos, verified_by')
       .eq('id', userId)
       .maybeSingle()
       .then(({ data }) => {
@@ -48,7 +49,12 @@ export default function UserProfile() {
     )
   }
 
-  const isAnon = other.profile_data?.anonymous ?? false
+  // Is this the viewer's own profile? If so, show their real details (never
+  // the anonymous mask — it's their own page) and skip the relation panel,
+  // which would otherwise read "Identity" against themselves.
+  const isSelf = profile?.id === other.id
+
+  const isAnon = !isSelf && (other.profile_data?.anonymous ?? false)
   const name = isAnon ? 'Anonymous' : (other.profile_data?.name ?? other.type)
   const flag = isAnon ? null : countryFlag(other.profile_data?.country)
   const dob = other.profile_data?.dob
@@ -61,9 +67,16 @@ export default function UserProfile() {
   const bio = other.profile_data?.bio
   const city = isAnon ? null : other.profile_data?.city
 
-  // Relation from this viewer's perspective
+  // Gallery — primary avatar first, then extra photos. Hidden entirely in
+  // anonymous mode, exactly like the avatar. Shown on your own profile so you
+  // can preview how it appears to others.
+  const galleryPhotos = isAnon
+    ? []
+    : [other.avatar_url, ...(other.photos ?? [])].filter(Boolean)
+
+  // Relation from this viewer's perspective — not shown on your own profile.
   const myType = profile?.type
-  const relation = myType ? MATRIX[myType]?.[other.type] : null
+  const relation = !isSelf && myType ? MATRIX[myType]?.[other.type] : null
   const relInfo = relation ? RELATIONS[relation] : null
 
   function handleCopyDiscord() {
@@ -87,6 +100,22 @@ export default function UserProfile() {
           </svg>
           Back
         </button>
+
+        {/* Self-view banner — orient the user that this is their public page */}
+        {isSelf && (
+          <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.6rem 0.9rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+              This is how your profile looks to others.
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate('/profile/edit')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', whiteSpace: 'nowrap', padding: 0, textDecoration: 'none' }}
+            >
+              Edit →
+            </button>
+          </div>
+        )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
@@ -133,8 +162,8 @@ export default function UserProfile() {
             )}
           </div>
 
-          {/* Relation with viewer */}
-          {relInfo && myType && (
+          {/* Relation with viewer — hidden on your own profile */}
+          {relInfo && myType && !isSelf && (
             <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.75rem 1rem' }}>
               <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.3rem' }}>
                 Your relation · {relInfo.name}
@@ -142,6 +171,25 @@ export default function UserProfile() {
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
                 {relInfo.description}
               </p>
+            </div>
+          )}
+
+          {/* Photo gallery — primary + extras, hidden in anonymous mode */}
+          {galleryPhotos.length > 0 && (
+            <div>
+              <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Photos</p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.4rem' }}>
+                {galleryPhotos.map((url, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => { setLightbox(url); window.umami?.track('profile-photo-opened') }}
+                    style={{ padding: 0, border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', cursor: 'zoom-in', background: 'var(--surface)', aspectRatio: '1 / 1' }}
+                  >
+                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -177,14 +225,31 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* No discord handle nudge */}
-          {!discordHandle && (
+          {/* No discord handle nudge — only for others' profiles */}
+          {!discordHandle && !isSelf && (
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
               This member hasn't added a Discord handle yet. You can ask them to add one in your conversation — they'll find it under Profile → Details.
             </p>
           )}
         </div>
       </section>
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          onClick={() => setLightbox(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+        >
+          <img src={lightbox} alt="" style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }} onClick={e => e.stopPropagation()} />
+          <button
+            type="button"
+            onClick={() => setLightbox(null)}
+            style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </Layout>
   )
 }
