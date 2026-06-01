@@ -12,7 +12,7 @@ const FEATURES = [
   ['Relation filters', 'All 16 relation types in your feed', 'Same quadra only'],
   ['Compatibility breakdown', 'Full Model A breakdown for every connection', '—'],
   ['Read receipts', 'See when your messages are read', '—'],
-  ['Who\u2019s looking for you', 'See the types most likely to be seeking you, and filter to them', '—'],
+  ['Your strongest matches', 'See who\u2019s most likely seeking you, and who\u2019s worth seeking out', '—'],
 ]
 
 const PRICE_LABEL = '$12.99 / year'
