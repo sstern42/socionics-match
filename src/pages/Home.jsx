@@ -384,20 +384,25 @@ export default function Home() {
   }, [])
 
   // Live founding-member count — only while the window is open and only for
-  // logged-out visitors (the card never shows otherwise). One exact count on
-  // mount, then a light refresh every 60s so the number ticks up during a push
+  // logged-out visitors (the card never shows otherwise). One count on mount,
+  // then a light refresh every 60s so the number ticks up during a push
   // without a realtime subscription. Cleans up on unmount / when the window
-  // closes. RLS must allow an anon head-count on users; if it doesn't the
-  // query errors and we silently keep the stats-snapshot fallback.
+  // closes.
+  //
+  // Uses the founding_member_count() SECURITY DEFINER RPC rather than a direct
+  // count on `users`: a restrictive RLS select policy makes an anon table count
+  // return 0 (not an error), and a literal 0 would short-circuit the
+  // `?? stats?.users` fallback (nullish coalescing passes 0 through), blanking
+  // the line. The RPC returns the integer to logged-out visitors without
+  // exposing any rows. We still only accept a POSITIVE result; 0, null, or an
+  // error all leave liveFoundingCount null and we fall back to the snapshot.
   useEffect(() => {
     if (!foundingActive || session) return
     let cancelled = false
 
     async function fetchCount() {
-      const { count, error } = await supabase
-        .from('users')
-        .select('id', { count: 'exact', head: true })
-      if (!cancelled && !error && count != null) setLiveFoundingCount(count)
+      const { data, error } = await supabase.rpc('founding_member_count')
+      if (!cancelled && !error && typeof data === 'number' && data > 0) setLiveFoundingCount(data)
     }
 
     fetchCount()
