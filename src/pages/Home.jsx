@@ -349,10 +349,15 @@ export default function Home() {
   const foundingDay = new Date(FOUNDING_CUTOFF.getTime() - 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 
   // Live founding-member count. While the window is open every existing member
-  // is, by definition, pre-cutoff — so the current member total IS the founding
-  // count. Reuses stats.users (already fetched below) rather than a second
-  // query. Refreshes on page load only, in step with the rest of the stats.
-  const foundingCount = stats?.users ?? null
+  // is, by definition, pre-cutoff — so a live count of users IS the founding
+  // count. We query users directly (head:true, count:'exact' — no rows pulled,
+  // just the number) rather than reading the stats snapshot, so the figure is
+  // accurate to the moment during the founding push rather than lagging the
+  // ~6-hourly compute-stats refresh. Falls back to the stats snapshot if the
+  // live count fails. Past the cutoff the whole card unmounts, so this query
+  // simply stops running once foundingActive flips false.
+  const [liveFoundingCount, setLiveFoundingCount] = useState(null)
+  const foundingCount = liveFoundingCount ?? stats?.users ?? null
 
   useEffect(() => {
     supabase
@@ -377,6 +382,28 @@ export default function Home() {
         }
       })
   }, [])
+
+  // Live founding-member count — only while the window is open and only for
+  // logged-out visitors (the card never shows otherwise). One exact count on
+  // mount, then a light refresh every 60s so the number ticks up during a push
+  // without a realtime subscription. Cleans up on unmount / when the window
+  // closes. RLS must allow an anon head-count on users; if it doesn't the
+  // query errors and we silently keep the stats-snapshot fallback.
+  useEffect(() => {
+    if (!foundingActive || session) return
+    let cancelled = false
+
+    async function fetchCount() {
+      const { count, error } = await supabase
+        .from('users')
+        .select('id', { count: 'exact', head: true })
+      if (!cancelled && !error && count != null) setLiveFoundingCount(count)
+    }
+
+    fetchCount()
+    const id = setInterval(fetchCount, 60000)
+    return () => { cancelled = true; clearInterval(id) }
+  }, [foundingActive, session])
 
   return (
     <>
