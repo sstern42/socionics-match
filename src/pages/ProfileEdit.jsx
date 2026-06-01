@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { updateProfileData, uploadAvatar } from '../lib/profile'
+import { updateProfileData, uploadAvatar, uploadPhoto, deletePhoto } from '../lib/profile'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { TYPES } from '../data/relations'
 import { COUNTRIES } from '../data/countries'
 import ProfileCard from '../components/feed/ProfileCard'
 import ProfileNav from '../components/profile/ProfileNav'
+
+const MAX_EXTRA_PHOTOS = 5
 
 export default function ProfileEdit() {
   const { profile, refreshProfile, session, loading } = useAuth()
@@ -26,6 +28,9 @@ export default function ProfileEdit() {
   const [type, setType] = useState(profile?.type ?? '')
   const [avatarFile, setAvatarFile] = useState(null)
   const [avatarPreview, setAvatarPreview] = useState(profile?.avatar_url ?? null)
+  const [photos, setPhotos] = useState(profile?.photos ?? [])
+  const [photoUploading, setPhotoUploading] = useState(false)
+  const [photoError, setPhotoError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -64,6 +69,7 @@ export default function ProfileEdit() {
         // don't allow type change if verified
         type: isVerified ? profile.type : type.toUpperCase(),
         avatarUrl,
+        photos,
       })
       await refreshProfile()
       navigate('/feed')
@@ -79,6 +85,30 @@ export default function ProfileEdit() {
     if (!file) return
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  async function handleAddPhoto(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file
+    if (!file || !profile) return
+    if (photos.length >= MAX_EXTRA_PHOTOS) return
+    setPhotoUploading(true)
+    setPhotoError(null)
+    try {
+      const url = await uploadPhoto(profile.auth_id, file)
+      setPhotos(prev => [...prev, url])
+      window.umami?.track('profile-photo-added')
+    } catch (err) {
+      setPhotoError('Could not upload that photo. Try again.')
+    } finally {
+      setPhotoUploading(false)
+    }
+  }
+
+  async function handleRemovePhoto(url) {
+    setPhotos(prev => prev.filter(u => u !== url))
+    deletePhoto(url) // fire and forget; URL already dropped from state
+    window.umami?.track('profile-photo-removed')
   }
 
   async function handleDeleteAccount() {
@@ -108,7 +138,7 @@ export default function ProfileEdit() {
     }
   }
 
-  if (loading || !session) return (
+  if (loading || !session || !profile) return (
     <Layout noScroll hideFooter>
       <div style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p style={{ color: 'var(--muted)' }}>Loading…</p>
@@ -148,8 +178,44 @@ export default function ProfileEdit() {
                   {avatarPreview ? 'Change photo' : 'Add photo'}
                   <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
                 </label>
+                <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.4rem', lineHeight: 1.4 }}>Your main photo, shown on your card.</p>
               </div>
             </div>
+
+            {/* Additional photos gallery */}
+            <div style={{ border: '1px solid var(--border)', borderRadius: 4, padding: '0.85rem' }}>
+              <p style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.3rem' }}>More photos</p>
+              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+                A clear photo of your face helps people trust your profile and tends to get more connections. Optional, but recommended. Add up to {MAX_EXTRA_PHOTOS}.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {photos.map(url => (
+                  <div key={url} style={{ position: 'relative', width: 64, height: 64, borderRadius: 4, overflow: 'hidden', border: '1px solid var(--border)', flexShrink: 0 }}>
+                    <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button
+                      type="button"
+                      onClick={() => handleRemovePhoto(url)}
+                      aria-label="Remove photo"
+                      style={{ position: 'absolute', top: 2, right: 2, width: 18, height: 18, borderRadius: '50%', background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', cursor: 'pointer', fontSize: '0.7rem', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                {photos.length < MAX_EXTRA_PHOTOS && (
+                  <label style={{ width: 64, height: 64, borderRadius: 4, border: '1px dashed var(--accent-lt)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: photoUploading ? 'default' : 'pointer', flexShrink: 0, color: 'var(--accent)', background: 'rgba(154,111,56,0.04)' }}>
+                    {photoUploading ? (
+                      <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>…</span>
+                    ) : (
+                      <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>+</span>
+                    )}
+                    <input type="file" accept="image/*" onChange={handleAddPhoto} disabled={photoUploading} style={{ display: 'none' }} />
+                  </label>
+                )}
+              </div>
+              {photoError && <p style={{ fontSize: '0.72rem', color: '#c0392b', marginTop: '0.5rem' }}>{photoError}</p>}
+            </div>
+
             <input className="input-standalone" placeholder="Display name" value={name} onChange={e => setName(e.target.value)} />
             <div>
               <input
