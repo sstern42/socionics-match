@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
@@ -37,6 +37,33 @@ export default function ProfileEdit() {
   const [deleteConfirm, setDeleteConfirm] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState(null)
+  const [hydrated, setHydrated] = useState(!!profile)
+
+  // Seed the form from the profile once it's available. The useState
+  // initialisers above only run on first render, and on a hard refresh the
+  // profile is usually null at that point (the session resolves before the
+  // users row is fetched), which leaves every field blank and never recovers.
+  // This seeds exactly once, when the profile first arrives, so it fixes the
+  // blank-on-refresh case without clobbering unsaved edits if AuthContext
+  // later re-emits the profile (e.g. on tab focus).
+  useEffect(() => {
+    if (!profile || hydrated) return
+    const pd = profile.profile_data ?? {}
+    setName(pd.name ?? '')
+    setDob(pd.dob ?? '')
+    setGender(pd.gender ?? '')
+    setBio(pd.bio ?? '')
+    setCountry(pd.country ?? '')
+    setCity(pd.city ?? '')
+    setAnonymous(pd.anonymous ?? false)
+    setHideActivity(pd.hide_activity ?? false)
+    setConnectionQuestion(pd.connection_question ?? '')
+    setDiscordHandle(pd.discord_handle ?? '')
+    setType(profile.type ?? '')
+    setAvatarPreview(profile.avatar_url ?? null)
+    setPhotos(profile.photos ?? [])
+    setHydrated(true)
+  }, [profile, hydrated])
 
   const isVerified = !!profile?.verified_by
   const typeValid = TYPES.includes(type.toUpperCase())
