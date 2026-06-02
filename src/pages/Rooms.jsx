@@ -102,6 +102,21 @@ function RoomMessage({
       {/* Sender row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
 
+        {/* Mini avatar */}
+        <div style={{
+          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+          overflow: 'hidden', background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '0.55rem', fontWeight: 600, color: 'var(--accent)',
+          userSelect: 'none',
+        }}>
+          {msg.sender?.avatar_url && !isAnon
+            ? <img src={msg.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            : <span>{senderName ? senderName[0].toUpperCase() : '?'}</span>
+          }
+        </div>
+
         {/* Name — links to profile if not anonymous */}
         {senderId && !isAnon ? (
           <Link
