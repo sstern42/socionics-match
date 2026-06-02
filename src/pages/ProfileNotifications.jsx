@@ -10,10 +10,15 @@ export default function ProfileNotifications() {
   const { profile, refreshProfile, session, loading } = useAuth()
   const navigate = useNavigate()
 
-  const [emailNotifications, setEmailNotifications] = useState(profile?.profile_data?.email_notifications ?? true)
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-  const [error, setError] = useState(null)
+  const [emailNotifications, setEmailNotifications] = useState(
+    profile?.profile_data?.email_notifications ?? true
+  )
+  const [roomNotifications, setRoomNotifications] = useState(
+    profile?.profile_data?.room_notifications ?? false
+  )
+  const [saving, setSaving]   = useState(false)
+  const [saved, setSaved]     = useState(false)
+  const [error, setError]     = useState(null)
 
   const {
     supported: pushSupported,
@@ -33,6 +38,7 @@ export default function ProfileNotifications() {
         profileData: {
           ...profile.profile_data,
           email_notifications: emailNotifications,
+          room_notifications: roomNotifications,
         },
       })
       await refreshProfile()
@@ -110,6 +116,33 @@ export default function ProfileNotifications() {
               </label>
             )}
 
+            {/* Room notifications — only shown when push is subscribed */}
+            {pushSubscribed && (
+              <label
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: '0.75rem',
+                  padding: '0.75rem 0.75rem 0.75rem 2.5rem', // indent under push
+                  border: '1px solid var(--border)', borderRadius: 4,
+                  cursor: 'pointer',
+                  background: roomNotifications ? 'rgba(154,111,56,0.05)' : 'transparent',
+                  borderLeft: '3px solid var(--accent-lt)',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={roomNotifications}
+                  onChange={e => setRoomNotifications(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                />
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>💬 Quadra room notifications</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>
+                    Get notified when someone posts in your quadra room. At most one notification every 5 minutes to avoid noise.
+                  </p>
+                </div>
+              </label>
+            )}
+
             {pushPermission === 'denied' && (
               <div style={{ padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4 }}>
                 <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🔔 Push notifications</p>
@@ -118,7 +151,6 @@ export default function ProfileNotifications() {
                 </p>
               </div>
             )}
-
           </div>
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
@@ -148,12 +180,12 @@ export default function ProfileNotifications() {
   )
 }
 
-const centreStyle = { 
-  minHeight: 'calc(100vh - 72px)', 
-  display: 'flex', 
-  flexDirection: 'column', 
-  alignItems: 'center', 
-  justifyContent: 'flex-start',  // was 'center'
-  padding: '2rem 1.5rem 4rem', 
-  gap: '2rem' 
+const centreStyle = {
+  minHeight: 'calc(100vh - 72px)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  padding: '2rem 1.5rem 4rem',
+  gap: '2rem',
 }
