@@ -296,6 +296,11 @@ export default function Rooms() {
   const inputRef         = useRef(null)
   const listRef          = useRef(null)
   const prevScrollHeight = useRef(0)
+  const typingChannel    = useRef(null)
+  const typingTimer      = useRef(null)    // debounce own stop-typing
+  const typingTimers     = useRef({})      // per-user auto-clear timers
+  const tabId            = useRef(Math.random().toString(36).slice(2))
+  const [typingUsers, setTypingUsers] = useState({}) // { userId: { name, type } }
 
   const quadra       = profile?.type ? getQuadra(profile.type) : null
   const quadraColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
@@ -319,6 +324,42 @@ export default function Rooms() {
     document.body.classList.add('messages-page')
     return () => document.body.classList.remove('messages-page')
   }, [])
+
+  // Typing indicator — broadcast channel, one per room
+  useEffect(() => {
+    if (!roomId || !profile?.id) return
+
+    typingChannel.current = supabase
+      .channel(`room_typing:${roomId}`)
+      .on('broadcast', { event: 'typing' }, ({ payload }) => {
+        if (payload.tab_id === tabId.current) return // ignore own echo
+        const userId = payload.user_id
+        if (payload.typing) {
+          setTypingUsers(prev => ({ ...prev, [userId]: { name: payload.name, userType: payload.user_type } }))
+          // Auto-clear if no follow-up within 4s (handles tab close / network drop)
+          clearTimeout(typingTimers.current[userId])
+          typingTimers.current[userId] = setTimeout(() => {
+            setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n })
+          }, 4000)
+        } else {
+          clearTimeout(typingTimers.current[userId])
+          setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n })
+        }
+      })
+      .subscribe()
+
+    return () => {
+      // Broadcast stop-typing on unmount so others' indicators clear immediately
+      typingChannel.current?.send({
+        type: 'broadcast', event: 'typing',
+        payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
+      })
+      typingChannel.current?.unsubscribe()
+      typingChannel.current = null
+      // Clear all timers
+      Object.values(typingTimers.current).forEach(clearTimeout)
+    }
+  }, [roomId, profile?.id])
 
   useEffect(() => {
     if (!roomId) return
@@ -356,6 +397,12 @@ export default function Rooms() {
     setText('')
     setReplyTo(null)
     inputRef.current?.focus()
+    // Clear own typing indicator for others
+    clearTimeout(typingTimer.current)
+    typingChannel.current?.send({
+      type: 'broadcast', event: 'typing',
+      payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
+    })
     await send(content, replyToId)
   }
 
@@ -522,6 +569,25 @@ export default function Rooms() {
 
             {/* Input */}
             <div style={{ borderTop: '1px solid var(--border)', background: '#fff', flexShrink: 0 }}>
+              {/* Typing indicator */}
+              {Object.keys(typingUsers).length > 0 && (() => {
+                const entries = Object.values(typingUsers)
+                const names = entries.map(u => u.name)
+                let text
+                if (names.length === 1) text = `${names[0]} is typing…`
+                else if (names.length === 2) text = `${names[0]} and ${names[1]} are typing…`
+                else text = `${names[0]}, ${names[1]} and ${names.length - 2} other${names.length - 2 > 1 ? 's' : ''} are typing…`
+                return (
+                  <div style={{ padding: '0.3rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontStyle: 'italic' }}>{text}</span>
+                    <span style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                      {[0, 1, 2].map(i => (
+                        <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--muted)', display: 'inline-block', animation: `typingDot 1.2s ${i * 0.2}s infinite ease-in-out` }} />
+                      ))}
+                    </span>
+                  </div>
+                )
+              })()}
               {replyTo && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
                   <div style={{ flex: 1, borderLeft: '2px solid var(--accent)', paddingLeft: '0.5rem' }}>
@@ -550,7 +616,29 @@ export default function Rooms() {
                         ref={inputRef}
                         placeholder={`Message the ${quadra} quadra…`}
                         value={text} rows={1} maxLength={2000}
-                        onChange={e => { setText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight}px` }}
+                        onChange={e => {
+                          setText(e.target.value)
+                          e.target.style.height = 'auto'
+                          e.target.style.height = `${e.target.scrollHeight}px`
+                          // Broadcast typing
+                          typingChannel.current?.send({
+                            type: 'broadcast', event: 'typing',
+                            payload: {
+                              tab_id: tabId.current,
+                              user_id: profile.id,
+                              name: profile.profile_data?.anonymous ? 'Anonymous' : (profile.profile_data?.name ?? profile.type),
+                              user_type: profile.type,
+                              typing: true,
+                            },
+                          })
+                          clearTimeout(typingTimer.current)
+                          typingTimer.current = setTimeout(() => {
+                            typingChannel.current?.send({
+                              type: 'broadcast', event: 'typing',
+                              payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
+                            })
+                          }, 2000)
+                        }}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
                         style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: isMobile ? '0.85rem' : '0.92rem', fontWeight: 300, color: 'var(--text)', background: 'transparent', border: 'none', outline: 'none', padding: isMobile ? '0.7rem 0.9rem' : '0.9rem 1.25rem', maxHeight: '8rem' }}
                       />
