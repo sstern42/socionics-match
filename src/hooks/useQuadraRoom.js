@@ -6,6 +6,8 @@ import {
   reportRoomMessage,
   subscribeToRoom,
   enrichRoomMessage,
+  addReaction,
+  removeReaction,
 } from '../lib/rooms'
 
 // useQuadraRoom — encapsulates all data logic for the quadra group room UI.
@@ -116,6 +118,29 @@ export function useQuadraRoom({ profile }) {
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
   }, [roomId])
 
+  // ── Reactions realtime ─────────────────────────────────────────
+  useEffect(() => {
+    if (!roomId) return
+    const channel = supabase
+      .channel(`reactions:${roomId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'room_message_reactions' }, ({ new: r }) => {
+        setMessages(prev => prev.map(m => {
+          if (m.id !== r.message_id) return m
+          const existing = m.reactions ?? []
+          if (existing.some(x => x.user_id === r.user_id && x.emoji === r.emoji)) return m
+          return { ...m, reactions: [...existing, { user_id: r.user_id, emoji: r.emoji }] }
+        }))
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'room_message_reactions' }, ({ old: r }) => {
+        setMessages(prev => prev.map(m => {
+          if (m.id !== r.message_id) return m
+          return { ...m, reactions: (m.reactions ?? []).filter(x => !(x.user_id === r.user_id && x.emoji === r.emoji)) }
+        }))
+      })
+      .subscribe()
+    return () => channel.unsubscribe()
+  }, [roomId])
+
   // ── Load older messages (pagination) ────────────────────────
   const loadMore = useCallback(async () => {
     if (!roomId || loadingMore || !hasMore) return
@@ -219,6 +244,39 @@ export function useQuadraRoom({ profile }) {
     await reportRoomMessage({ messageId, reporterId: profile.id, reason })
   }, [profile?.id])
 
+  // ── Toggle reaction ──────────────────────────────────────────
+  const toggleReaction = useCallback(async (messageId, emoji) => {
+    if (!profile?.id) return
+    const msg = messages.find(m => m.id === messageId)
+    if (!msg) return
+    const reactions = msg.reactions ?? []
+    const hasReacted = reactions.some(r => r.user_id === profile.id && r.emoji === emoji)
+    const snapshot = reactions
+
+    // Optimistic update
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m
+      const updated = hasReacted
+        ? (m.reactions ?? []).filter(r => !(r.user_id === profile.id && r.emoji === emoji))
+        : [...(m.reactions ?? []), { user_id: profile.id, emoji }]
+      return { ...m, reactions: updated }
+    }))
+
+    try {
+      if (hasReacted) {
+        await removeReaction({ messageId, userId: profile.id, emoji })
+      } else {
+        await addReaction({ messageId, userId: profile.id, emoji })
+      }
+      window.umami?.track('room-reaction', { emoji, action: hasReacted ? 'remove' : 'add' })
+    } catch {
+      // Roll back
+      setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, reactions: snapshot } : m
+      ))
+    }
+  }, [messages, profile?.id])
+
   return {
     roomId,
     messages,
@@ -232,5 +290,6 @@ export function useQuadraRoom({ profile }) {
     sendError,
     softDelete,
     report,
+    toggleReaction,
   }
 }
