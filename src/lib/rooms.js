@@ -127,3 +127,18 @@ export async function enrichRoomMessage(messageId) {
   if (error) throw error
   return data
 }
+
+// Fetch members of a room who are online (< 15 min) or active today (< 24 hr).
+// Excludes members with hide_activity set. Capped at 20; caller renders a +N overflow.
+export async function getRoomActiveMembers(roomId) {
+  const activeThreshold = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, type, profile_data, avatar_url, last_active')
+    .eq('room_id', roomId)
+    .gte('last_active', activeThreshold)
+    .order('last_active', { ascending: false })
+    .limit(20)
+  if (error) throw error
+  return (data ?? []).filter(u => !u.profile_data?.hide_activity && !u.profile_data?.anonymous)
+}
