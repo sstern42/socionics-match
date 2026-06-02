@@ -8,6 +8,13 @@ export const ENTRIES = [
       'Profile cards — tap a member\'s name on any feed card to open their full profile page. Anonymous profiles stay private and your own preview card is unaffected',
       'View profile — a new tab in Profile lets you see your own public profile exactly as other members see it, with a quick link back to edit',
       'Profile photos — your extra photos now appear as a tappable gallery on your profile page. Tap any photo to view it full size. Photos stay hidden while anonymous mode is on',
+      'Quadra rooms — four permanent group chat rooms (Alpha, Beta, Gamma, Delta), auto-assigned by type. All existing members added automatically',
+      'Quadra rooms — full message history with pagination, date dividers, and a typing indicator',
+      'Quadra rooms — edit your messages, soft-delete with a two-tap confirm, and reply to any message with a quote',
+      'Quadra rooms — room push notifications with a per-device cooldown. Enable from inside the room or via Profile → Notifications',
+      'Quadra rooms — unread dot on the Rooms nav link, cleared on visit',
+      'Connect button on member profile pages — send a connection request directly from a profile, or jump to an existing conversation',
+      'Sticky site header — the nav bar stays visible while scrolling on all pages',
     ],
   },
   {
