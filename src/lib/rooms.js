@@ -19,7 +19,8 @@ export async function getRoomMessages(roomId, { before = null, after = null } = 
       created_at,
       edited_at,
       deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by )
+      sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
+      reactions:room_message_reactions ( user_id, emoji )
     `)
     .eq('room_id', roomId)
     .order('created_at', { ascending: false })
@@ -53,7 +54,8 @@ export async function sendRoomMessage({ roomId, senderId, content }) {
       created_at,
       edited_at,
       deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by )
+      sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
+      reactions:room_message_reactions ( user_id, emoji )
     `)
     .single()
 
@@ -84,6 +86,28 @@ export async function reportRoomMessage({ messageId, reporterId, reason = null }
 
   if (error) throw error
   window.umami?.track('room-message-reported')
+}
+
+// Add a reaction to a message. user_id must be the caller's internal users.id.
+export async function addReaction({ messageId, userId, emoji }) {
+  const { error } = await supabase
+    .from('room_message_reactions')
+    .upsert(
+      { message_id: messageId, user_id: userId, emoji },
+      { onConflict: 'message_id,user_id,emoji', ignoreDuplicates: true }
+    )
+  if (error) throw error
+}
+
+// Remove a reaction from a message.
+export async function removeReaction({ messageId, userId, emoji }) {
+  const { error } = await supabase
+    .from('room_message_reactions')
+    .delete()
+    .eq('message_id', messageId)
+    .eq('user_id', userId)
+    .eq('emoji', emoji)
+  if (error) throw error
 }
 
 // Subscribe to new messages in a room.
@@ -119,7 +143,8 @@ export async function enrichRoomMessage(messageId) {
       created_at,
       edited_at,
       deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by )
+      sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
+      reactions:room_message_reactions ( user_id, emoji )
     `)
     .eq('id', messageId)
     .maybeSingle()

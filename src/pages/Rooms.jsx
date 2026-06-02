@@ -21,6 +21,8 @@ const QUADRA_COLOURS = {
 
 const ROOM_LAST_VISITED_KEY = 'socion_room_last_visited'
 
+const REACTIONS = ['👍', '❤️', '😂', '🔥', '👀', '✓']
+
 export function markRoomVisited() {
   localStorage.setItem(ROOM_LAST_VISITED_KEY, new Date().toISOString())
 }
@@ -59,12 +61,13 @@ function dateDividerLabel(dateStr) {
 
 function RoomMessage({
   msg, isMine, currentUserId,
-  onReply, onEdit, onReport, onTypeClick,
+  onReply, onEdit, onReport, onTypeClick, onReact,
   editingId, editText, setEditText, onEditSave, onEditCancel,
   deleteConfirmId, setDeleteConfirmId, deleting, onDeleteConfirm,
   isMobile,
 }) {
   const [hovered, setHovered] = useState(false)
+  const [showPicker, setShowPicker] = useState(false)
   const longPressTimer = useRef(null)
 
   const isDeleted    = !!msg.deleted_at
@@ -230,9 +233,53 @@ function RoomMessage({
             opacity: showActions ? 1 : (isMobile ? 0.25 : 0),
             transition: 'opacity 0.15s',
             pointerEvents: showActions ? 'auto' : (isMobile ? 'auto' : 'none'),
+            position: 'relative',
           }}>
+            {/* Reaction picker — floats above */}
+            {showPicker && (
+              <div
+                onPointerDown={e => e.stopPropagation()}
+                style={{
+                  position: 'absolute', bottom: '130%',
+                  [isMine ? 'right' : 'left']: 0,
+                  display: 'flex', gap: '0.2rem',
+                  background: '#fff', border: '1px solid var(--border)',
+                  borderRadius: 20, padding: '0.3rem 0.5rem',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+                  zIndex: 20, whiteSpace: 'nowrap',
+                }}
+              >
+                {REACTIONS.map(emoji => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onPointerDown={e => e.stopPropagation()}
+                    onClick={() => { onReact(msg.id, emoji); setShowPicker(false) }}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      fontSize: '1.05rem', padding: '0.1rem 0.15rem',
+                      borderRadius: '50%', lineHeight: 1,
+                      transition: 'transform 0.1s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.3)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            )}
             <button type="button" onClick={() => onReply({ id: msg.id, content: msg.content, sender_id: msg.sender_id, senderName })} aria-label="Reply" style={iconBtnStyle}>
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
+            </button>
+            <button
+              type="button"
+              onPointerDown={e => e.stopPropagation()}
+              onClick={() => setShowPicker(p => !p)}
+              aria-label="React"
+              style={{ ...iconBtnStyle, fontSize: '0.85rem', lineHeight: 1 }}
+            >
+              <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 9.5s.75 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/><circle cx="5.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/></svg>
             </button>
             {isMine && (
               <button type="button" onClick={() => onEdit(msg.id, msg.content)} aria-label="Edit" style={iconBtnStyle}>
@@ -259,6 +306,44 @@ function RoomMessage({
           </div>
         )}
       </div>
+
+      {/* Reaction pills */}
+      {(() => {
+        const groups = {}
+        for (const r of msg.reactions ?? []) {
+          if (!groups[r.emoji]) groups[r.emoji] = []
+          groups[r.emoji].push(r.user_id)
+        }
+        const entries = Object.entries(groups)
+        if (!entries.length) return null
+        return (
+          <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', marginTop: '0.2rem', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
+            {entries.map(([emoji, users]) => {
+              const iReacted = users.includes(currentUserId)
+              return (
+                <button
+                  key={emoji}
+                  type="button"
+                  onPointerDown={e => e.stopPropagation()}
+                  onClick={() => onReact(msg.id, emoji)}
+                  title={`${users.length} reaction${users.length !== 1 ? 's' : ''}`}
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.2rem',
+                    background: iReacted ? 'rgba(154,111,56,0.1)' : 'rgba(0,0,0,0.05)',
+                    border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'transparent'}`,
+                    borderRadius: 12, padding: '0.1rem 0.45rem',
+                    cursor: 'pointer', fontSize: '0.78rem', lineHeight: 1.5,
+                    transition: 'background 0.15s',
+                  }}
+                >
+                  <span>{emoji}</span>
+                  <span style={{ fontSize: '0.7rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{users.length}</span>
+                </button>
+              )
+            })}
+          </div>
+        )
+      })()}
     </div>
   )
 }
@@ -293,7 +378,7 @@ export default function Rooms() {
     loading: roomLoading, error: roomError,
     hasMore, loadMore, loadingMore,
     send, sending, sendError,
-    edit, softDelete, report,
+    edit, softDelete, report, toggleReaction,
   } = useQuadraRoom({ profile })
 
   // Push notifications for room prompt
@@ -519,6 +604,7 @@ export default function Rooms() {
           onReply={setReplyTo}
           onEdit={handleStartEdit}
           onReport={id => setReportTarget(id)}
+          onReact={toggleReaction}
           onTypeClick={url => { window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
           editingId={editingId}
           editText={editText}
