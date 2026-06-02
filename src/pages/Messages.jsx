@@ -18,25 +18,14 @@ export default function Messages() {
 
   const [matches, setMatches] = useState([])
   const [archivedIds, setArchivedIds] = useState(new Set())
-  // Store selected match by ID only — prevents iOS Safari keyboard resize
-  // from silently swapping the active conversation when matches reorder.
   const [selectedMatchId, setSelectedMatchId] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
 
-  // Mirror the current selection into a ref so the load effect can read it
-  // without taking selectedMatchId as a dependency (which would re-fetch).
-  // The load effect re-runs whenever `profile` changes identity — and it does:
-  // AuthContext re-emits a fresh profile object on background/foreground,
-  // last_active writes, and refreshProfile. Without this guard, a re-run with
-  // no ?match param would fall into auto-select and clobber the thread the
-  // user already opened, jumping to whoever messaged most recently (matches
-  // are sorted newest-first). That is the iOS mid-session conversation swap.
   const selectedRef = useRef(null)
   useEffect(() => { selectedRef.current = selectedMatchId }, [selectedMatchId])
 
-  // Derive the full match object from the stable ID reference
   const selectedMatch = matches.find(m => m.id === selectedMatchId) ?? null
 
   useEffect(() => {
@@ -44,19 +33,14 @@ export default function Messages() {
   }, [session, loading])
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden'
     document.body.classList.add('messages-page')
-    return () => {
-      document.body.style.overflow = ''
-      document.body.classList.remove('messages-page')
-    }
+    return () => document.body.classList.remove('messages-page')
   }, [])
 
   useEffect(() => {
     markMessagesRead()
   }, [])
 
-  // Load matches + archived IDs together
   useEffect(() => {
     if (!profile) return
     Promise.all([
@@ -70,17 +54,12 @@ export default function Messages() {
       if (matchId) {
         const m = data.find(m => m.id === matchId)
         if (m) {
-          // Deep-linked match — show even if archived
           if (archived.has(m.id)) setShowArchived(true)
           markMatchRead(m.id)
           setSelectedMatchId(m.id)
           setMobileShowConvo(true)
         }
       } else if (!selectedRef.current) {
-        // Auto-select first active (non-archived) match — ONLY on the initial
-        // load, never on a re-run once the user has chosen a thread. Reading
-        // the ref (not state) keeps this a one-shot without re-triggering the
-        // fetch, while still preventing the mid-session swap.
         const first = data.find(m => !archived.has(m.id))
         if (first) { markMatchRead(first.id); setSelectedMatchId(first.id) }
       }
@@ -88,8 +67,6 @@ export default function Messages() {
     })
   }, [profile])
 
-  // Realtime: keep archivedIds in sync when DB changes
-  // (covers auto-unarchive from the trigger + changes on other devices)
   useEffect(() => {
     if (!profile) return
     const channel = supabase
@@ -144,10 +121,6 @@ export default function Messages() {
     }
   }
 
-  // Disconnect/unmatch — the RPC has already soft-deleted the row in the DB
-  // (Conversation calls lib/unmatch before invoking this). Here we just drop it
-  // from local state so the list and selection update without a refetch. The
-  // unmatched match won't come back on next load (getMatches filters it out).
   function handleUnmatch(matchId) {
     const id = matchId ?? selectedMatchId
     if (!id) return
@@ -210,7 +183,6 @@ export default function Messages() {
 
               <NotificationPrompt userId={profile?.id} />
 
-              {/* Active matches */}
               <div style={{ flex: 1 }}>
                 {fetching
                   ? <p style={{ padding: '1.5rem', color: 'var(--muted)', fontSize: '0.85rem' }}>Loading…</p>
@@ -225,7 +197,6 @@ export default function Messages() {
                 }
               </div>
 
-              {/* Archived section */}
               {!fetching && archivedMatches.length > 0 && (
                 <div style={{ borderTop: '1px solid var(--border)', flexShrink: 0 }}>
                   <button
