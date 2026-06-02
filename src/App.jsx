@@ -16,6 +16,7 @@ import Changelog from './pages/Changelog'
 import Network from './pages/Network'
 import Feed from './pages/Feed'
 import Messages from './pages/Messages'
+import Rooms from './pages/Rooms'
 import Typing from './pages/Typing'
 import Premium from './pages/Premium'
 import PremiumWelcome from './pages/PremiumWelcome'
@@ -46,6 +47,7 @@ export default function App() {
         <Route path="/network" element={<Network />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
+        <Route path="/rooms" element={<Rooms />} />
         <Route path="/typing" element={<Typing />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/premium/welcome" element={<PremiumWelcome />} />
