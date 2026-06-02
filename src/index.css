@@ -233,6 +233,10 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   100% { transform: scale(2.6); opacity: 0; }
 }
 
+/* Lock body scroll on messages/rooms pages — driven by class so it's
+   always in sync with component mount state, never stuck as an inline style. */
+body.messages-page { overflow: hidden; }
+
 /* On messages page, hide Ko-fi widget on mobile only */
 @media (max-width: 700px) {
   body.messages-page [id^="kofi-widget-overlay"],
