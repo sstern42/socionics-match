@@ -5,6 +5,7 @@ import { signOut } from '../lib/auth'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import IOSInstallBanner from './IOSInstallBanner'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
+import { getRoomLastVisited } from '../pages/Rooms'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
@@ -14,6 +15,17 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
+  // Room unread dot: true if user has never visited /rooms, or last visit was
+  // before the component mounted (i.e. new room activity since last session).
+  // Cleared when the user navigates to /rooms via the markRoomVisited() call
+  // in Rooms.jsx, which dispatches 'socion-room-visited'.
+  const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
+
+  useEffect(() => {
+    function handleRoomVisited() { setRoomUnread(false) }
+    window.addEventListener('socion-room-visited', handleRoomVisited)
+    return () => window.removeEventListener('socion-room-visited', handleRoomVisited)
+  }, [])
 
   useEffect(() => {
     document.title = unread > 0 ? `(${unread}) Socion` : 'Socion'
@@ -48,6 +60,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
                       {unread > 99 ? '99+' : unread}
                     </span>
+                  )}
+                </Link>
+                <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), position: 'relative' }}>
+                  Rooms
+                  {roomUnread && !isActive('/rooms') && (
+                    <span style={{ position: 'absolute', top: -3, right: -7, width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
                   )}
                 </Link>
                 <Link to="/profile/edit" style={navStyle(isActive('/profile/edit'))}>Profile</Link>
@@ -102,6 +120,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
                       {unread > 99 ? '99+' : unread}
                     </span>
+                  )}
+                </Link>
+                <Link to="/rooms" onClick={closeMenu} style={{ ...mobileNavStyle(isActive('/rooms')), display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  Rooms
+                  {roomUnread && !isActive('/rooms') && (
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
                   )}
                 </Link>
                 <Link to="/profile/edit" onClick={closeMenu} style={mobileNavStyle(isActive('/profile/edit'))}>Profile</Link>
@@ -176,6 +200,7 @@ const navStyle = (active) => ({
   fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
   color: active ? 'var(--accent)' : 'var(--muted)',
   textDecoration: 'none', transition: 'color 0.2s',
+  position: 'relative',
 })
 
 const signOutStyle = {
