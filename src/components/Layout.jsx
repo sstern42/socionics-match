@@ -146,7 +146,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <IOSInstallBanner />
 
-        <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: noScroll ? 'hidden' : undefined }}>
           {children}
         </main>
 
