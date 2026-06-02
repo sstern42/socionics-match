@@ -351,8 +351,12 @@ export default function Rooms() {
   }, [])
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden'
     document.body.classList.add('messages-page')
-    return () => document.body.classList.remove('messages-page')
+    return () => {
+      document.body.style.overflow = ''
+      document.body.classList.remove('messages-page')
+    }
   }, [])
 
   // Typing indicator — broadcast channel, one per room
