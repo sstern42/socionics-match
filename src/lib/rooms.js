@@ -167,7 +167,7 @@ export async function getRoomActiveMembers(roomId) {
   if (usersError) throw usersError
 
   return (users ?? [])
-    .filter(u => !u.profile_data?.hide_activity && !u.profile_data?.anonymous)
+    .filter(u => !u.profile_data?.anonymous)
     .map(u => ({ ...u, last_active: latestByUser.get(u.id) }))
     .sort((a, b) => new Date(b.last_active) - new Date(a.last_active))
 }
