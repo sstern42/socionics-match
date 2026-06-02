@@ -627,7 +627,7 @@ export default function Rooms() {
             )}
 
             {/* Room notifications prompt */}
-            {pushSupported && pushPermission !== 'denied' && !roomNotifsEnabled && (
+            {profile && pushSupported && pushPermission !== 'denied' && !roomNotifsEnabled && (
               <button
                 type="button"
                 onClick={enableRoomNotifications}
