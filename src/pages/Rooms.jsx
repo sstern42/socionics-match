@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase'
 import { getQuadra } from '../data/relations'
 import SIWebview from '../components/SIWebview'
 import { usePushNotifications } from '../lib/usePushNotifications'
+import { getRoomActiveMembers } from '../lib/rooms'
 import { updateProfileData } from '../lib/profile'
 
 // ── Constants ────────────────────────────────────────────────
@@ -100,21 +101,6 @@ function RoomMessage({
     >
       {/* Sender row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-
-        {/* Mini avatar */}
-        <div style={{
-          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-          overflow: 'hidden', background: 'var(--surface)',
-          border: '1px solid var(--border)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '0.55rem', fontWeight: 600, color: 'var(--accent)',
-          userSelect: 'none',
-        }}>
-          {msg.sender?.avatar_url && !isAnon
-            ? <img src={msg.sender.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <span>{senderName ? senderName[0].toUpperCase() : '?'}</span>
-          }
-        </div>
 
         {/* Name — links to profile if not anonymous */}
         {senderId && !isAnon ? (
@@ -319,6 +305,9 @@ export default function Rooms() {
     }
   }
 
+  // Active members strip
+  const [activeMembers, setActiveMembers]     = useState([])
+
   const [text, setText]                       = useState('')
   const [replyTo, setReplyTo]                 = useState(null)
   const [editingId, setEditingId]             = useState(null)
@@ -405,6 +394,12 @@ export default function Rooms() {
   useEffect(() => {
     if (!roomId) return
     supabase.from('users').select('id', { count: 'exact', head: true }).eq('room_id', roomId).then(({ count }) => setMemberCount(count))
+    function fetchActive() {
+      getRoomActiveMembers(roomId).then(setActiveMembers).catch(() => {})
+    }
+    fetchActive()
+    const activeInterval = setInterval(fetchActive, 60000)
+    return () => clearInterval(activeInterval)
   }, [roomId])
 
   useEffect(() => {
@@ -574,6 +569,53 @@ export default function Rooms() {
                 }}
               >{profile?.type} →</button>
             </div>
+
+            {/* Active members strip */}
+            {activeMembers.length > 0 && (() => {
+              const now = Date.now()
+              const online = activeMembers.filter(u => now - new Date(u.last_active).getTime() < 15 * 60 * 1000)
+              const today  = activeMembers.filter(u => {
+                const diff = now - new Date(u.last_active).getTime()
+                return diff >= 15 * 60 * 1000 && diff < 24 * 60 * 60 * 1000
+              })
+              const MAX_SHOWN = 8
+              const shown = activeMembers.slice(0, MAX_SHOWN)
+              const overflow = activeMembers.length - MAX_SHOWN
+              return (
+                <div style={{ padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#fff', flexShrink: 0, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                    {shown.map(u => {
+                      const isOnline = now - new Date(u.last_active).getTime() < 15 * 60 * 1000
+                      const initial = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
+                      const dotColour = isOnline ? '#4caf50' : '#f5a623'
+                      return (
+                        <div
+                          key={u.id}
+                          title={`${u.profile_data?.name ?? u.type} (${u.type}) — ${isOnline ? 'online now' : 'active today'}`}
+                          style={{ position: 'relative', flexShrink: 0 }}
+                        >
+                          <div style={{ width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 600, color: 'var(--accent)' }}>
+                            {u.avatar_url
+                              ? <img src={u.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              : <span>{initial}</span>
+                            }
+                          </div>
+                          <span style={{ position: 'absolute', bottom: 0, right: 0, width: 7, height: 7, borderRadius: '50%', background: dotColour, border: '1.5px solid #fff', display: 'block' }} />
+                        </div>
+                      )
+                    })}
+                    {overflow > 0 && (
+                      <span style={{ fontSize: '0.68rem', color: 'var(--muted)', marginLeft: '0.25rem' }}>+{overflow}</span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+                    {online.length > 0 && <span style={{ color: '#4caf50', fontWeight: 500 }}>{online.length} online</span>}
+                    {online.length > 0 && today.length > 0 && <span style={{ color: 'var(--border)' }}> · </span>}
+                    {today.length > 0 && <span>{today.length} active today</span>}
+                  </span>
+                </div>
+              )
+            })()}
 
             {/* Load more */}
             {hasMore && (
