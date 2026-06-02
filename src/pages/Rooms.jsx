@@ -316,6 +316,11 @@ export default function Rooms() {
   }, [])
 
   useEffect(() => {
+    document.body.classList.add('messages-page')
+    return () => document.body.classList.remove('messages-page')
+  }, [])
+
+  useEffect(() => {
     if (!roomId) return
     supabase.from('users').select('id', { count: 'exact', head: true }).eq('room_id', roomId).then(({ count }) => setMemberCount(count))
   }, [roomId])
@@ -456,8 +461,8 @@ export default function Rooms() {
   return (
     <Layout hideFooter noScroll>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
-        <div style={{ maxWidth: 720, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column', padding: '0 1.5rem', minHeight: 0, boxSizing: 'border-box' }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderTop: 'none', background: '#fff', overflow: 'hidden', minHeight: 0 }}>
+        <div className="messages-outer" style={{ maxWidth: 720, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column', padding: '0 1.5rem', minHeight: 0, boxSizing: 'border-box' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', border: '1px solid var(--border)', borderLeft: isMobile ? 'none' : undefined, borderRight: isMobile ? 'none' : undefined, borderTop: 'none', background: '#fff', overflow: 'hidden', minHeight: 0 }}>
 
             {/* Header */}
             <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--border)', background: '#fff', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
@@ -528,7 +533,7 @@ export default function Rooms() {
                   </button>
                 </div>
               )}
-              <div style={{ padding: '1rem 1.5rem' }}>
+              <div style={{ padding: isMobile ? '0.6rem 0.75rem' : '1rem 1.5rem' }}>
                 {isAnonymous ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'var(--surface)', borderRadius: 4, border: '1px solid var(--border)' }}>
                     <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>🕵️ Anonymous mode — switch to your profile to chat in the room.</span>
@@ -547,7 +552,7 @@ export default function Rooms() {
                         value={text} rows={1} maxLength={2000}
                         onChange={e => { setText(e.target.value); e.target.style.height = 'auto'; e.target.style.height = `${e.target.scrollHeight}px` }}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-                        style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: '0.92rem', fontWeight: 300, color: 'var(--text)', background: 'transparent', border: 'none', outline: 'none', padding: '0.9rem 1.25rem', maxHeight: '8rem' }}
+                        style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: isMobile ? '0.85rem' : '0.92rem', fontWeight: 300, color: 'var(--text)', background: 'transparent', border: 'none', outline: 'none', padding: isMobile ? '0.7rem 0.9rem' : '0.9rem 1.25rem', maxHeight: '8rem' }}
                       />
                       {text.length > 1800 && <span style={{ fontSize: '0.68rem', color: 'var(--muted)', padding: '0 0.5rem 0.75rem', alignSelf: 'flex-end' }}>{2000 - text.length}</span>}
                       <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, alignSelf: 'stretch', opacity: (!text.trim() || sending) ? 0.5 : 1 }}>Send</button>
