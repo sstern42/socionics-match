@@ -27,36 +27,37 @@ export default function ProfileNav() {
   return (
     <div style={{
       display: 'flex',
+      flexWrap: 'wrap',
       gap: 0,
       borderBottom: '1px solid var(--border)',
       marginBottom: '2rem',
       width: '100%',
     }}>
-      {TABS.map(tab => (
-        <Link key={tab.to} to={tab.to} style={linkStyle(pathname === tab.to)}>
-          {tab.label}
-        </Link>
-      ))}
+      {/* Main tabs — natural width, never grow */}
+      <div style={{ display: 'flex', flex: '0 0 auto' }}>
+        {TABS.map(tab => (
+          <Link key={tab.to} to={tab.to} style={linkStyle(pathname === tab.to)}>
+            {tab.label}
+          </Link>
+        ))}
+      </div>
 
-      {/* View public profile — opens the page others see, including the gallery.
-          Pushed to the right alongside Help. Only shown once we know the id. */}
-      {profile?.id && (
-        <Link
-          to={`/profile/${profile.id}`}
-          onClick={() => window.umami?.track('view-own-profile-clicked')}
-          style={{ ...linkStyle(pathname === `/profile/${profile.id}`), marginLeft: 'auto' }}
-          title="See your profile as others do"
-        >
-          View profile
+      {/* View profile + Help — pushed right on desktop, wrap to next line on mobile */}
+      <div style={{ display: 'flex', marginLeft: 'auto' }}>
+        {profile?.id && (
+          <Link
+            to={`/profile/${profile.id}`}
+            onClick={() => window.umami?.track('view-own-profile-clicked')}
+            style={linkStyle(pathname === `/profile/${profile.id}`)}
+            title="See your profile as others do"
+          >
+            View profile
+          </Link>
+        )}
+        <Link to="/help" style={linkStyle(false)}>
+          Help
         </Link>
-      )}
-
-      <Link
-        to="/help"
-        style={{ ...linkStyle(false), marginLeft: profile?.id ? 0 : 'auto' }}
-      >
-        Help
-      </Link>
+      </div>
     </div>
   )
 }
