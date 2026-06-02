@@ -42,16 +42,7 @@ export async function sendRoomMessage({ roomId, senderId, content }) {
   const { data, error } = await supabase
     .from('room_messages')
     .insert({ room_id: roomId, sender_id: senderId, content })
-    .select(`
-      id,
-      room_id,
-      sender_id,
-      content,
-      created_at,
-      edited_at,
-      deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by )
-    `)
+    .select('id, room_id, sender_id, content, created_at, edited_at, deleted_at')
     .single()
 
   if (error) throw error

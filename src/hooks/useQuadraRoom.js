@@ -155,7 +155,7 @@ export function useQuadraRoom({ profile }) {
 
       // Replace optimistic with the real row
       setMessages((prev) =>
-        prev.map((m) => (m.id === tempId ? real : m))
+        prev.map((m) => (m.id === tempId ? { ...real, sender: optimistic.sender } : m))
       )
     } catch (err) {
       // Roll back
