@@ -31,7 +31,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
   const [feedResult, blocks, swipedResult] = await Promise.all([
     query,
     getActiveBlocks(currentUserId),
-    supabase.from('already_swiped').select('swiped_profile_id'),
+    supabase.from('swipes').select('target_id').eq('direction', 'left'),
   ])
 
   if (feedResult.error) throw feedResult.error
@@ -41,7 +41,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
   ))
 
   const swipedIds = new Set(
-    (swipedResult.data ?? []).map(r => r.swiped_profile_id)
+    (swipedResult.data ?? []).map(r => r.target_id)
   )
 
   return feedResult.data
