@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabase'
 import { signOut } from '../lib/auth'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import IOSInstallBanner from './IOSInstallBanner'
@@ -20,6 +21,40 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   // Cleared when the user navigates to /rooms via the markRoomVisited() call
   // in Rooms.jsx, which dispatches 'socion-room-visited'.
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
+
+  // Load-time check: are there room messages newer than the last visit?
+  useEffect(() => {
+    if (!profile?.room_id) return
+    const lastVisited = getRoomLastVisited()
+    if (!lastVisited) { setRoomUnread(true); return }
+    supabase
+      .from('room_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('room_id', profile.room_id)
+      .neq('sender_id', profile.id)
+      .is('deleted_at', null)
+      .gt('created_at', lastVisited)
+      .then(({ count }) => { if (count > 0) setRoomUnread(true) })
+  }, [profile?.room_id])
+
+  // Realtime: light up the dot instantly when a new room message arrives
+  useEffect(() => {
+    if (!profile?.room_id || !profile?.id) return
+    const channel = supabase
+      .channel(`room-unread:${profile.room_id}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'room_messages',
+        filter: `room_id=eq.${profile.room_id}`,
+      }, payload => {
+        if (payload.new?.sender_id !== profile.id && window.location.pathname !== '/rooms') {
+          setRoomUnread(true)
+        }
+      })
+      .subscribe()
+    return () => channel.unsubscribe()
+  }, [profile?.room_id, profile?.id])
 
   useEffect(() => {
     function handleRoomVisited() { setRoomUnread(false) }
