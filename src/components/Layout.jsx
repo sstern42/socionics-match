@@ -47,7 +47,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         {TYPES.map(t => <span key={t}>{t}</span>)}
       </div>
       <div className="page" style={noScroll ? { height: '100dvh', overflow: 'hidden', display: 'flex', flexDirection: 'column' } : undefined}>
-        <header className="site-header">
+        <header className="site-header" style={{ position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg)' }}>
           <Link className="wordmark" to="/" onClick={closeMenu}>Socion™ <span style={{ fontSize: '0.55em', fontFamily: 'var(--sans)', fontWeight: 500, letterSpacing: '0.08em', color: 'var(--muted)', verticalAlign: 'middle', textTransform: 'uppercase' }}>Beta</span></Link>
 
           {/* Desktop nav */}
