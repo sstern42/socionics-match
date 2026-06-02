@@ -131,14 +131,36 @@ export async function enrichRoomMessage(messageId) {
 // Fetch members of a room who are online (< 15 min) or active today (< 24 hr).
 // Excludes members with hide_activity set. Capped at 20; caller renders a +N overflow.
 export async function getRoomActiveMembers(roomId) {
-  const activeThreshold = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, type, profile_data, avatar_url, last_active')
+  // Derive presence from recent room messages — last_active is only updated
+  // on app load, so it goes stale for active chatters. Message activity is
+  // the true signal of who's present in the room right now.
+  const threshold24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const threshold15m  = new Date(Date.now() - 15 * 60 * 1000).toISOString()
+
+  // Fetch unique senders from the last 24h, ordered by most recent message
+  const { data: msgs, error } = await supabase
+    .from('room_messages')
+    .select('sender_id, created_at, sender:sender_id ( id, type, profile_data, avatar_url )')
     .eq('room_id', roomId)
-    .gte('last_active', activeThreshold)
-    .order('last_active', { ascending: false })
-    .limit(20)
+    .is('deleted_at', null)
+    .gte('created_at', threshold24h)
+    .order('created_at', { ascending: false })
+    .limit(200)
+
   if (error) throw error
-  return (data ?? []).filter(u => !u.profile_data?.hide_activity && !u.profile_data?.anonymous)
+
+  // Deduplicate by sender, keeping the most recent message time per sender
+  const seen = new Map()
+  for (const msg of (msgs ?? [])) {
+    if (!msg.sender || seen.has(msg.sender_id)) continue
+    if (msg.sender.profile_data?.hide_activity) continue
+    if (msg.sender.profile_data?.anonymous) continue
+    seen.set(msg.sender_id, { ...msg.sender, lastMessageAt: msg.created_at })
+  }
+
+  return Array.from(seen.values()).map(u => ({
+    ...u,
+    // Expose lastMessageAt as last_active so the strip's online/today logic works
+    last_active: u.lastMessageAt,
+  }))
 }
