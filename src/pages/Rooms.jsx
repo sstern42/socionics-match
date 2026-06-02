@@ -6,6 +6,8 @@ import { useQuadraRoom } from '../hooks/useQuadraRoom'
 import { supabase } from '../lib/supabase'
 import { getQuadra } from '../data/relations'
 import SIWebview from '../components/SIWebview'
+import { usePushNotifications } from '../lib/usePushNotifications'
+import { updateProfileData } from '../lib/profile'
 
 // ── Constants ────────────────────────────────────────────────
 
@@ -267,7 +269,7 @@ function ReportModal({ onSubmit, onClose, submitting }) {
 // ── Main page ─────────────────────────────────────────────────
 
 export default function Rooms() {
-  const { session, profile, loading } = useAuth()
+  const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
   const {
@@ -277,6 +279,30 @@ export default function Rooms() {
     send, sending, sendError,
     edit, softDelete, report,
   } = useQuadraRoom({ profile })
+
+  // Push notifications for room prompt
+  const { supported: pushSupported, permission: pushPermission, subscribed: pushSubscribed, subscribe: pushSubscribe } = usePushNotifications(profile?.id)
+  const [enablingRoomNotif, setEnablingRoomNotif] = useState(false)
+  const roomNotifsEnabled = profile?.profile_data?.room_notifications === true
+
+  async function enableRoomNotifications() {
+    if (!profile || enablingRoomNotif) return
+    setEnablingRoomNotif(true)
+    try {
+      // Subscribe to push first if not already
+      if (!pushSubscribed) await pushSubscribe()
+      // Enable room notifications preference
+      await updateProfileData(profile.id, {
+        profileData: { ...profile.profile_data, room_notifications: true },
+      })
+      await refreshProfile()
+      window.umami?.track('room-notifications-enabled-from-prompt')
+    } catch (err) {
+      console.error('Failed to enable room notifications:', err)
+    } finally {
+      setEnablingRoomNotif(false)
+    }
+  }
 
   const [text, setText]                       = useState('')
   const [replyTo, setReplyTo]                 = useState(null)
@@ -541,6 +567,34 @@ export default function Rooms() {
                   {loadingMore ? 'Loading…' : 'Load earlier messages'}
                 </button>
               </div>
+            )}
+
+            {/* Room notifications prompt */}
+            {pushSupported && pushPermission !== 'denied' && !roomNotifsEnabled && (
+              <button
+                type="button"
+                onClick={enableRoomNotifications}
+                disabled={enablingRoomNotif}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  width: '100%', padding: '0.6rem 0',
+                  background: 'none', border: 'none',
+                  borderBottom: '1px solid var(--border)',
+                  cursor: enablingRoomNotif ? 'default' : 'pointer',
+                  fontSize: '0.75rem', color: 'var(--muted)',
+                  textAlign: 'left', transition: 'color 0.2s',
+                  opacity: enablingRoomNotif ? 0.6 : 1,
+                  flexShrink: 0,
+                }}
+                onMouseEnter={e => { if (!enablingRoomNotif) e.currentTarget.style.color = 'var(--accent)' }}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+              >
+                <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 1.5a4 4 0 0 1 4 4v2.5l1 1.5H2l1-1.5V5.5a4 4 0 0 1 4-4z"/>
+                  <path d="M5.5 11a1.5 1.5 0 0 0 3 0"/>
+                </svg>
+                {enablingRoomNotif ? 'Enabling…' : 'Enable room notifications'}
+              </button>
             )}
 
             {/* Messages */}
