@@ -560,11 +560,13 @@ export default function Rooms() {
   }
 
   function handleImageFileChange(e) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file) return
-    uploadImage(file)
-  }
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+  const caption = text.trim()
+  setText('')
+  uploadImage(file, caption)
+}
 
   function handleStartEdit(messageId, currentContent) {
     setEditingId(messageId)
