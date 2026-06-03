@@ -95,6 +95,7 @@ export default function Feed() {
   const [fetching, setFetching] = useState(false)
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
+  const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filterLocation, setFilterLocation] = useState('anywhere')
   const [activeOnly, setActiveOnly] = useState(false)
@@ -141,8 +142,6 @@ export default function Feed() {
   }, [profile?.id, loading])
 
   // Realtime: fire match modal when someone else's swipe creates a match for us.
-  // The DB trigger always sets us as user_b_id when we're the second liker,
-  // so we only need to filter on that column.
   useEffect(() => {
     if (!profile?.id) return
 
@@ -157,10 +156,8 @@ export default function Feed() {
         const matchRow = payload.new
         const otherId = matchRow.user_a_id
 
-        // Don't re-trigger if we already have this match in state
         if (otherId in matchedMap) return
 
-        // Fetch the other user's profile to populate the modal
         const { data: otherProfile } = await supabase
           .from('users')
           .select('id, type, profile_data, avatar_url, verified_by')
@@ -425,7 +422,7 @@ export default function Feed() {
           </div>
         )}
 
-        {/* Who's looking for you — premium insight panel (pure matrix, no query) */}
+        {/* Who's looking for you */}
         <SeekingYou
           userType={profile?.type}
           isPremium={isPremium}
@@ -463,24 +460,46 @@ export default function Feed() {
         ) : (
         /* ── BROWSE MODE ─────────────────────────────────────── */
         <>
-          {/* Relation filter pills */}
+          {/* Relation filter + secondary filters */}
           {feedDisplayRelations.length > 1 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => setFilterRelation('ALL')}>
-                  All ({profiles.length})
+
+              {/* Top row: Relations toggle + Filters toggle */}
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+
+                {/* Relations toggle */}
+                <button
+                  type="button"
+                  className={`rel-pill clickable${filterRelation !== 'ALL' || showRelations ? ' active' : ''}`}
+                  onClick={() => setShowRelations(v => !v)}
+                  style={{ fontSize: '0.7rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+                >
+                  <svg width="11" height="11" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}><circle cx="8" cy="8" r="6.5" stroke="currentColor" strokeWidth="1.8"/><line x1="5" y1="8" x2="11" y2="8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/><line x1="8" y1="5" x2="8" y2="11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/></svg>
+                  Relations
+                  {filterRelation !== 'ALL' && (
+                    <span style={{ background: 'var(--accent)', color: '#fff', fontSize: '0.6rem', fontWeight: 600, padding: '0.05rem 0.35rem', borderRadius: 10, lineHeight: 1.6 }}>
+                      {RELATIONS[filterRelation]?.name}
+                    </span>
+                  )}
+                  <span style={{ color: 'var(--muted)', fontSize: '0.65rem' }}>{showRelations ? '▲' : '▼'}</span>
                 </button>
-                {feedDisplayRelations.map(rel => (
-                  <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => setFilterRelation(rel)}>
-                    {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
+
+                {filterRelation !== 'ALL' && (
+                  <button
+                    type="button"
+                    onClick={() => setFilterRelation('ALL')}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}
+                  >
+                    Clear
                   </button>
-                ))}
-              </div>
-              {(() => {
-                const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
-                return (
-                  <>
-                    <div style={{ borderTop: '1px solid var(--border)', paddingTop: '0.6rem', display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                )}
+
+                {/* Filters toggle — separated by a thin divider on the same row */}
+                {(() => {
+                  const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
+                  return (
+                    <>
+                      <span style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0, margin: '0 0.1rem' }} />
                       <button
                         type="button"
                         className={`rel-pill clickable${showFilters || activeCount > 0 ? ' active' : ''}`}
@@ -502,41 +521,68 @@ export default function Feed() {
                           Clear
                         </button>
                       )}
+                    </>
+                  )
+                })()}
+              </div>
+
+              {/* Expandable: relation pills */}
+              {showRelations && (
+                <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: '0.65rem 0.85rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`}
+                      onClick={() => { setFilterRelation('ALL'); setShowRelations(false) }}
+                    >
+                      All ({profiles.length})
+                    </button>
+                    {feedDisplayRelations.map(rel => (
+                      <button
+                        type="button"
+                        key={rel}
+                        className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`}
+                        onClick={() => { setFilterRelation(rel); setShowRelations(false) }}
+                      >
+                        {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Expandable: secondary filters */}
+              {showFilters && (
+                <div style={{ border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
+                  <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
+                      <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Known users only</button>
+                      <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
                     </div>
-                    {showFilters && (
-                      <div style={{ border: '1px solid var(--border)', borderRadius: 6, overflow: 'hidden' }}>
-                        <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
-                          <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
-                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                            <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
-                            <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Known users only</button>
-                            <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
-                          </div>
-                        </div>
-                        <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
-                          <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Activity</p>
-                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                            <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeOnly ? '✓ ' : ''}This week</button>
-                            <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeToday ? '✓ ' : ''}Today</button>
-                            <button type="button" className={`rel-pill clickable${onlineNow ? ' active' : ''}`} onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }} style={{ fontSize: '0.7rem' }}>
-                              <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
-                              {onlineNow ? '✓ ' : ''}Online now
-                            </button>
-                          </div>
-                        </div>
-                        <div style={{ padding: '0.65rem 0.85rem' }}>
-                          <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Location</p>
-                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                            <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>🌍 Anywhere</button>
-                            <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '✓ ' : ''}Same country</button>
-                            <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '✓ ' : ''}Same city</button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </>
-                )
-              })()}
+                  </div>
+                  <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Activity</p>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeOnly ? '✓ ' : ''}This week</button>
+                      <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeToday ? '✓ ' : ''}Today</button>
+                      <button type="button" className={`rel-pill clickable${onlineNow ? ' active' : ''}`} onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }} style={{ fontSize: '0.7rem' }}>
+                        <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
+                        {onlineNow ? '✓ ' : ''}Online now
+                      </button>
+                    </div>
+                  </div>
+                  <div style={{ padding: '0.65rem 0.85rem' }}>
+                    <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Location</p>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>🌍 Anywhere</button>
+                      <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '✓ ' : ''}Same country</button>
+                      <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '✓ ' : ''}Same city</button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -606,14 +652,14 @@ export default function Feed() {
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
 
-      {/* Match modal — swipe mode and incoming realtime matches */}
+      {/* Match modal */}
       <MatchModal
         matchData={matchData}
         currentProfile={profile}
         onDismiss={() => setMatchData(null)}
       />
 
-      {/* Connect modal — browse mode */}
+      {/* Connect modal */}
       {connectPrompt && (() => {
         const { targetProfile } = connectPrompt
         const isAnon = targetProfile.profile_data?.anonymous ?? false
@@ -662,7 +708,8 @@ export default function Feed() {
           </div>
         )
       })()}
-      {/* Connection cap modal — free tier */}
+
+      {/* Connection cap modal */}
       {capModal && (
         <div
           onClick={() => setCapModal(false)}
