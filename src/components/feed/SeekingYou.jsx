@@ -15,8 +15,8 @@ import { getTypesSeekingMe, RELATIONS, getQuadra } from '../../data/relations'
 // — so theySeeMeAs equals the feed's displayRelation, and the Filter button
 // targets theySeeMeAs so every row lands on real feed results.
 
-const STRONG_RELATIONS = ['DUAL', 'ACTIVITY', 'MIRROR', 'SEMI_DUAL']
-const STRONG_ORDER = { DUAL: 0, ACTIVITY: 1, MIRROR: 2, SEMI_DUAL: 3 }
+const STRONG_RELATIONS = ['DUAL', 'ACTIVITY', 'MIRROR', 'SEMI_DUAL', 'BENEFICIARY']
+const STRONG_ORDER = { DUAL: 0, ACTIVITY: 1, MIRROR: 2, SEMI_DUAL: 3, BENEFICIARY: 4 }
 
 const QUADRA_COLOURS = {
   Alpha: '#BA7517', Beta: '#791F1F', Gamma: '#0F6E56', Delta: '#185FA5',
