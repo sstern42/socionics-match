@@ -429,6 +429,7 @@ export default function Rooms() {
 
   const [activeMembers, setActiveMembers]     = useState([])
   const [text, setText]                       = useState('')
+  const [pendingImage, setPendingImage]       = useState(null) // { file, previewUrl }
   const [replyTo, setReplyTo]                 = useState(null)
   const [editingId, setEditingId]             = useState(null)
   const [editText, setEditText]               = useState('')
@@ -544,11 +545,20 @@ export default function Rooms() {
     if (!roomLoading && messages.length > 0) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [roomLoading])
 
+  // Clean up object URL when pending image is cleared
+  useEffect(() => {
+    return () => {
+      if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl)
+    }
+  }, [pendingImage])
+
   async function handleSend() {
-    if (!text.trim() || sending) return
-    const content = text
+    if ((!text.trim() && !pendingImage) || sending || imageUploading) return
+    const caption = text.trim()
+    const imageFile = pendingImage?.file ?? null
     const replyToId = replyTo?.id ?? null
     setText('')
+    setPendingImage(null)
     setReplyTo(null)
     inputRef.current?.focus()
     clearTimeout(typingTimer.current)
@@ -556,17 +566,27 @@ export default function Rooms() {
       type: 'broadcast', event: 'typing',
       payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
     })
-    await send(content, replyToId)
+    if (imageFile) {
+      await uploadImage(imageFile, caption)
+    } else {
+      await send(caption, replyToId)
+    }
   }
 
   function handleImageFileChange(e) {
-  const file = e.target.files?.[0]
-  e.target.value = ''
-  if (!file) return
-  const caption = text.trim()
-  setText('')
-  uploadImage(file, caption)
-}
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    // Revoke any existing preview URL before replacing
+    if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl)
+    setPendingImage({ file, previewUrl: URL.createObjectURL(file) })
+    inputRef.current?.focus()
+  }
+
+  function handleClearPendingImage() {
+    if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl)
+    setPendingImage(null)
+  }
 
   function handleStartEdit(messageId, currentContent) {
     setEditingId(messageId)
@@ -575,22 +595,22 @@ export default function Rooms() {
   }
 
   async function handleEditSave(messageId) {
-  if (!editText.trim()) return
-  try {
-    await supabase
-      .from('room_messages')
-      .update({ content: editText.trim(), edited_at: new Date().toISOString() })
-      .eq('id', messageId)
-    setMessages(prev => prev.map(m =>
-      m.id === messageId ? { ...m, content: editText.trim(), edited_at: new Date().toISOString() } : m
-    ))
-    setEditingId(null)
-    setEditText('')
-    window.umami?.track('room-message-edited')
-  } catch {
-    setActionError('Could not save edit — try again.')
+    if (!editText.trim()) return
+    try {
+      await supabase
+        .from('room_messages')
+        .update({ content: editText.trim(), edited_at: new Date().toISOString() })
+        .eq('id', messageId)
+      setMessages(prev => prev.map(m =>
+        m.id === messageId ? { ...m, content: editText.trim(), edited_at: new Date().toISOString() } : m
+      ))
+      setEditingId(null)
+      setEditText('')
+      window.umami?.track('room-message-edited')
+    } catch {
+      setActionError('Could not save edit — try again.')
+    }
   }
-}
 
   async function handleDeleteConfirm(messageId) {
     setDeleting(true)
@@ -853,7 +873,33 @@ export default function Rooms() {
                   </div>
                 ) : (
                   <>
-                    {/* Image uploading indicator */}
+                    {/* Pending image preview */}
+                    {pendingImage && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem', padding: '0.5rem 0.75rem', background: 'rgba(154,111,56,0.05)', border: '1px solid var(--accent-lt)', borderRadius: 4 }}>
+                        <div style={{ flexShrink: 0 }}>
+                          <img
+                            src={pendingImage.previewUrl}
+                            alt="pending"
+                            style={{ height: 56, maxWidth: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)', display: 'block' }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.78rem', color: 'var(--muted)', flex: 1 }}>
+                          Add a caption or hit Send
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleClearPendingImage}
+                          aria-label="Remove image"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                            <line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/>
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Uploading indicator */}
                     {imageUploading && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', padding: '0.4rem 0.75rem', background: 'rgba(154,111,56,0.07)', borderRadius: 4, border: '1px solid var(--accent-lt)' }}>
                         <span style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(154,111,56,0.25)', borderTopColor: 'var(--accent)', animation: 'bootSpin 0.8s linear infinite', flexShrink: 0 }} />
@@ -878,15 +924,15 @@ export default function Rooms() {
                           background: 'none', border: 'none',
                           padding: isMobile ? '0.7rem 0.5rem 0.7rem 0.75rem' : '0.9rem 0.5rem 0.9rem 1rem',
                           cursor: (imageUploading || sending) ? 'default' : 'pointer',
-                          color: 'var(--muted)', flexShrink: 0, alignSelf: 'flex-end',
+                          color: pendingImage ? 'var(--accent)' : 'var(--muted)',
+                          flexShrink: 0, alignSelf: 'flex-end',
                           opacity: (imageUploading || sending) ? 0.4 : 1,
                           transition: 'color 0.15s, opacity 0.15s',
                           lineHeight: 0,
                         }}
                         onMouseEnter={e => { if (!imageUploading && !sending) e.currentTarget.style.color = 'var(--accent)' }}
-                        onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+                        onMouseLeave={e => { e.currentTarget.style.color = pendingImage ? 'var(--accent)' : 'var(--muted)' }}
                       >
-                        {/* Image / GIF icon */}
                         <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                           <rect x="2" y="4" width="16" height="13" rx="2"/>
                           <circle cx="7" cy="9" r="1.5"/>
@@ -905,7 +951,7 @@ export default function Rooms() {
 
                       <textarea
                         ref={inputRef}
-                        placeholder={`Message the ${quadra} quadra…`}
+                        placeholder={pendingImage ? 'Add a caption (optional)…' : `Message the ${quadra} quadra…`}
                         value={text} rows={1} maxLength={2000}
                         onChange={e => {
                           setText(e.target.value)
@@ -936,8 +982,8 @@ export default function Rooms() {
                       <button
                         className="btn-primary"
                         onClick={handleSend}
-                        disabled={!text.trim() || sending}
-                        style={{ borderRadius: 0, alignSelf: 'stretch', opacity: (!text.trim() || sending) ? 0.5 : 1 }}
+                        disabled={(!text.trim() && !pendingImage) || sending || imageUploading}
+                        style={{ borderRadius: 0, alignSelf: 'stretch', opacity: ((!text.trim() && !pendingImage) || sending || imageUploading) ? 0.5 : 1 }}
                       >
                         Send
                       </button>
