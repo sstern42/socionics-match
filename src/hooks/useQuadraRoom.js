@@ -56,16 +56,21 @@ export function useQuadraRoom({ profile }) {
   }, [roomId])
 
   // ── Real-time subscription ────────────────────────────────────
+  // Deduplication: `optimisticIdsRef` tracks real IDs we sent ourselves.
+  // We add the real ID BEFORE replacing the optimistic message so the
+  // realtime handler (which may fire concurrently) always sees it in the set.
   useEffect(() => {
     if (!roomId) return
 
     channelRef.current = subscribeToRoom(roomId, async (rawMsg) => {
+      // Skip messages we sent — handled via the optimistic flow in send()
       if (optimisticIdsRef.current.has(rawMsg.id)) return
 
       try {
         const enriched = await enrichRoomMessage(rawMsg.id)
         if (!enriched) return
         setMessages((prev) => {
+          // Strict dedup: if the real row is already present, skip
           if (prev.some((m) => m.id === enriched.id)) return prev
           return [...prev, enriched]
         })
@@ -158,16 +163,16 @@ export function useQuadraRoom({ profile }) {
       content:     content?.trim() || null,
       image_url:   imageUrl || null,
       reply_to_id: replyToId || null,
-      reply_to:    null, // optimistic messages don't show the reply quote — real row will have it
+      reply_to:    null,
       created_at:  new Date().toISOString(),
       edited_at:   null,
       deleted_at:  null,
       sender: {
-        id:          profile.id,
-        type:        profile.type,
+        id:           profile.id,
+        type:         profile.type,
         profile_data: profile.profile_data,
-        avatar_url:  profile.avatar_url,
-        verified_by: profile.verified_by ?? null,
+        avatar_url:   profile.avatar_url,
+        verified_by:  profile.verified_by ?? null,
       },
       _optimistic: true,
     }
@@ -177,16 +182,23 @@ export function useQuadraRoom({ profile }) {
     try {
       const real = await sendRoomMessage({
         roomId,
-        senderId:   profile.id,
-        content:    content?.trim() || null,
-        imageUrl:   imageUrl || null,
-        replyToId:  replyToId || null,
+        senderId:  profile.id,
+        content:   content?.trim() || null,
+        imageUrl:  imageUrl || null,
+        replyToId: replyToId || null,
       })
 
+      // Register the real ID BEFORE updating state so the realtime handler
+      // (which may already be in-flight) sees it and skips the duplicate.
       optimisticIdsRef.current.add(real.id)
       setTimeout(() => optimisticIdsRef.current.delete(real.id), 10000)
 
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? real : m)))
+      // Replace the optimistic placeholder, AND remove any copy the realtime
+      // handler may have already added (race condition when both devices open).
+      setMessages((prev) => {
+        const filtered = prev.filter(m => m.id !== tempId && m.id !== real.id)
+        return [...filtered, real]
+      })
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
       setSendError(err.message)
@@ -258,7 +270,6 @@ export function useQuadraRoom({ profile }) {
     }
   }, [messages, profile?.id])
 
-  // ── Expose setMessages for local edits in Rooms.jsx ──────────
   return {
     roomId,
     messages,
