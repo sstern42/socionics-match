@@ -573,19 +573,22 @@ export default function Rooms() {
   }
 
   async function handleEditSave(messageId) {
-    if (!editText.trim()) return
-    try {
-      // Rooms edit: direct supabase update (same pattern as before)
-      const { supabase: sb } = await import('../lib/supabase')
-      await sb.from('room_messages').update({ content: editText.trim(), edited_at: new Date().toISOString() }).eq('id', messageId)
-      // Reflect locally
-      const { useQuadraRoom: _h } = await import('../hooks/useQuadraRoom')
-      setEditingId(null)
-      setEditText('')
-    } catch {
-      setActionError('Could not save edit — try again.')
-    }
+  if (!editText.trim()) return
+  try {
+    await supabase
+      .from('room_messages')
+      .update({ content: editText.trim(), edited_at: new Date().toISOString() })
+      .eq('id', messageId)
+    setMessages(prev => prev.map(m =>
+      m.id === messageId ? { ...m, content: editText.trim(), edited_at: new Date().toISOString() } : m
+    ))
+    setEditingId(null)
+    setEditText('')
+    window.umami?.track('room-message-edited')
+  } catch {
+    setActionError('Could not save edit — try again.')
   }
+}
 
   async function handleDeleteConfirm(messageId) {
     setDeleting(true)
