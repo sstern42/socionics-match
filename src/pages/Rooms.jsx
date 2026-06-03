@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import { getQuadra } from '../data/relations'
 import SIWebview from '../components/SIWebview'
 import { usePushNotifications } from '../lib/usePushNotifications'
-import { getRoomActiveMembers } from '../lib/rooms'
+import { getRoomActiveMembers, ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES } from '../lib/rooms'
 import { updateProfileData } from '../lib/profile'
 
 // ── Constants ────────────────────────────────────────────────
@@ -61,7 +61,7 @@ function dateDividerLabel(dateStr) {
 
 function RoomMessage({
   msg, isMine, currentUserId,
-  onReply, onEdit, onReport, onTypeClick, onReact,
+  onReply, onEdit, onReport, onTypeClick, onReact, onImageClick,
   editingId, editText, setEditText, onEditSave, onEditCancel,
   deleteConfirmId, setDeleteConfirmId, deleting, onDeleteConfirm,
   isMobile,
@@ -87,6 +87,9 @@ function RoomMessage({
     ? (replyMsg.sender?.profile_data?.name ?? replyMsg.sender?.type ?? 'Unknown')
     : null
 
+  const hasImage = !!msg.image_url && !isDeleted
+  const hasText  = !!msg.content && !isDeleted
+
   function startLongPress() {
     longPressTimer.current = setTimeout(() => {
       if (!isDeleted) onReply({ id: msg.id, content: msg.content, sender_id: msg.sender_id, senderName })
@@ -104,8 +107,6 @@ function RoomMessage({
     >
       {/* Sender row */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-
-        {/* Mini avatar */}
         <div style={{
           width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
           overflow: 'hidden', background: 'var(--surface)',
@@ -120,7 +121,6 @@ function RoomMessage({
           }
         </div>
 
-        {/* Name — links to profile if not anonymous */}
         {senderId && !isAnon ? (
           <Link
             to={`/profile/${senderId}`}
@@ -135,7 +135,6 @@ function RoomMessage({
           <span style={{ fontSize: '0.82rem', fontWeight: 500, color: 'var(--text)' }}>{senderName}</span>
         )}
 
-        {/* Type badge — opens SI webview */}
         <button
           type="button"
           onClick={() => onTypeClick(`https://socionicsinsight.com/types/${senderType.toLowerCase()}/`)}
@@ -175,11 +174,12 @@ function RoomMessage({
             color: isMine ? '#fff' : isDeleted ? 'var(--muted)' : 'var(--text)',
             border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
             borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-            padding: '0.6rem 0.9rem',
+            padding: hasImage && !hasText ? '0.4rem' : '0.6rem 0.9rem',
             fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
             fontStyle: isDeleted ? 'italic' : 'normal',
             maxWidth: '75%',
             whiteSpace: 'pre-wrap', wordBreak: 'break-word',
+            overflow: 'hidden',
           }}
         >
           {/* Reply quote */}
@@ -192,12 +192,32 @@ function RoomMessage({
                 {replyMsg.sender_id === currentUserId ? 'You' : replySender}
               </p>
               <p style={{ fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
-                {replyMsg.content}
+                {replyMsg.content ?? '🖼 Image'}
               </p>
             </div>
           )}
 
-          {/* Content or edit input */}
+          {/* Image */}
+          {hasImage && (
+            <img
+              src={msg.image_url}
+              alt="shared image"
+              onClick={() => onImageClick(msg.image_url)}
+              style={{
+                display: 'block',
+                maxWidth: '100%',
+                maxHeight: 280,
+                width: 'auto',
+                height: 'auto',
+                borderRadius: 6,
+                cursor: 'zoom-in',
+                marginBottom: hasText ? '0.5rem' : 0,
+                objectFit: 'contain',
+              }}
+            />
+          )}
+
+          {/* Text / edit */}
           {isEditing ? (
             <div onClick={e => e.stopPropagation()} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: 180 }}>
               <textarea
@@ -221,7 +241,11 @@ function RoomMessage({
               </div>
             </div>
           ) : (
-            isDeleted ? '[message removed]' : msg.content
+            isDeleted
+              ? '[message removed]'
+              : hasText
+                ? msg.content
+                : null
           )}
         </div>
 
@@ -235,7 +259,7 @@ function RoomMessage({
             pointerEvents: showActions ? 'auto' : (isMobile ? 'auto' : 'none'),
             position: 'relative',
           }}>
-            {/* Reaction picker — floats above */}
+            {/* Reaction picker */}
             {showPicker && (
               <div
                 onPointerDown={e => e.stopPropagation()}
@@ -282,7 +306,7 @@ function RoomMessage({
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 9.5s.75 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/><circle cx="5.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/></svg>
             </button>
             {isMine && (
-              <button type="button" onClick={() => onEdit(msg.id, msg.content)} aria-label="Edit" style={iconBtnStyle}>
+              <button type="button" onClick={() => onEdit(msg.id, msg.content ?? '')} aria-label="Edit" style={iconBtnStyle}>
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/></svg>
               </button>
             )}
@@ -378,10 +402,10 @@ export default function Rooms() {
     loading: roomLoading, error: roomError,
     hasMore, loadMore, loadingMore,
     send, sending, sendError,
-    edit, softDelete, report, toggleReaction,
+    uploadImage, imageUploading, imageUploadError,
+    softDelete, report, toggleReaction,
   } = useQuadraRoom({ profile })
 
-  // Push notifications for room prompt
   const { supported: pushSupported, permission: pushPermission, subscribed: pushSubscribed, subscribe: pushSubscribe } = usePushNotifications(profile?.id)
   const [enablingRoomNotif, setEnablingRoomNotif] = useState(false)
   const roomNotifsEnabled = profile?.profile_data?.room_notifications === true
@@ -390,9 +414,7 @@ export default function Rooms() {
     if (!profile || enablingRoomNotif) return
     setEnablingRoomNotif(true)
     try {
-      // Subscribe to push first if not already
       if (!pushSubscribed) await pushSubscribe()
-      // Enable room notifications preference
       await updateProfileData(profile.id, {
         profileData: { ...profile.profile_data, room_notifications: true },
       })
@@ -405,9 +427,7 @@ export default function Rooms() {
     }
   }
 
-  // Active members strip
   const [activeMembers, setActiveMembers]     = useState([])
-
   const [text, setText]                       = useState('')
   const [replyTo, setReplyTo]                 = useState(null)
   const [editingId, setEditingId]             = useState(null)
@@ -420,17 +440,19 @@ export default function Rooms() {
   const [reportSuccess, setReportSuccess]     = useState(false)
   const [actionError, setActionError]         = useState(null)
   const [webviewUrl, setWebviewUrl]           = useState(null)
+  const [lightboxUrl, setLightboxUrl]         = useState(null)
   const [isMobile, setIsMobile]               = useState(() => window.innerWidth <= 700)
 
+  const imageInputRef    = useRef(null)
   const bottomRef        = useRef(null)
   const inputRef         = useRef(null)
   const listRef          = useRef(null)
   const prevScrollHeight = useRef(0)
   const typingChannel    = useRef(null)
-  const typingTimer      = useRef(null)    // debounce own stop-typing
-  const typingTimers     = useRef({})      // per-user auto-clear timers
+  const typingTimer      = useRef(null)
+  const typingTimers     = useRef({})
   const tabId            = useRef(Math.random().toString(36).slice(2))
-  const [typingUsers, setTypingUsers] = useState({}) // { userId: { name, type } }
+  const [typingUsers, setTypingUsers] = useState({})
 
   const quadra       = profile?.type ? getQuadra(profile.type) : null
   const quadraColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
@@ -455,18 +477,16 @@ export default function Rooms() {
     return () => document.body.classList.remove('messages-page')
   }, [])
 
-  // Typing indicator — broadcast channel, one per room
   useEffect(() => {
     if (!roomId || !profile?.id) return
 
     typingChannel.current = supabase
       .channel(`room_typing:${roomId}`)
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
-        if (payload.tab_id === tabId.current) return // ignore own echo
+        if (payload.tab_id === tabId.current) return
         const userId = payload.user_id
         if (payload.typing) {
           setTypingUsers(prev => ({ ...prev, [userId]: { name: payload.name, userType: payload.user_type } }))
-          // Auto-clear if no follow-up within 4s (handles tab close / network drop)
           clearTimeout(typingTimers.current[userId])
           typingTimers.current[userId] = setTimeout(() => {
             setTypingUsers(prev => { const n = { ...prev }; delete n[userId]; return n })
@@ -479,14 +499,12 @@ export default function Rooms() {
       .subscribe()
 
     return () => {
-      // Broadcast stop-typing on unmount so others' indicators clear immediately
       typingChannel.current?.send({
         type: 'broadcast', event: 'typing',
         payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
       })
       typingChannel.current?.unsubscribe()
       typingChannel.current = null
-      // Clear all timers
       Object.values(typingTimers.current).forEach(clearTimeout)
     }
   }, [roomId, profile?.id])
@@ -533,13 +551,19 @@ export default function Rooms() {
     setText('')
     setReplyTo(null)
     inputRef.current?.focus()
-    // Clear own typing indicator for others
     clearTimeout(typingTimer.current)
     typingChannel.current?.send({
       type: 'broadcast', event: 'typing',
       payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
     })
     await send(content, replyToId)
+  }
+
+  function handleImageFileChange(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    uploadImage(file)
   }
 
   function handleStartEdit(messageId, currentContent) {
@@ -551,10 +575,16 @@ export default function Rooms() {
   async function handleEditSave(messageId) {
     if (!editText.trim()) return
     try {
-      await edit(messageId, editText)
+      // Rooms edit: direct supabase update (same pattern as before)
+      const { supabase: sb } = await import('../lib/supabase')
+      await sb.from('room_messages').update({ content: editText.trim(), edited_at: new Date().toISOString() }).eq('id', messageId)
+      // Reflect locally
+      const { useQuadraRoom: _h } = await import('../hooks/useQuadraRoom')
       setEditingId(null)
       setEditText('')
-    } catch { setActionError('Could not save edit — try again.') }
+    } catch {
+      setActionError('Could not save edit — try again.')
+    }
   }
 
   async function handleDeleteConfirm(messageId) {
@@ -606,6 +636,7 @@ export default function Rooms() {
           onReport={id => setReportTarget(id)}
           onReact={toggleReaction}
           onTypeClick={url => { window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
+          onImageClick={url => setLightboxUrl(url)}
           editingId={editingId}
           editText={editText}
           setEditText={setEditText}
@@ -658,7 +689,6 @@ export default function Rooms() {
                 </div>
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.2rem' }}>{profile?.type} — your quadra room</p>
               </div>
-              {/* Header type badge → opens SI webview */}
               <button
                 type="button"
                 onClick={() => { window.umami?.track('room-header-type-clicked', { type: profile?.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }}
@@ -690,11 +720,7 @@ export default function Rooms() {
                       const initial = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
                       const dotColour = isOnline ? '#4caf50' : '#f5a623'
                       return (
-                        <div
-                          key={u.id}
-                          title={`${u.profile_data?.name ?? u.type} (${u.type}) — ${isOnline ? 'online now' : 'active today'}`}
-                          style={{ position: 'relative', flexShrink: 0 }}
-                        >
+                        <div key={u.id} title={`${u.profile_data?.name ?? u.type} (${u.type}) — ${isOnline ? 'online now' : 'active today'}`} style={{ position: 'relative', flexShrink: 0 }}>
                           <div style={{ width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 600, color: 'var(--accent)' }}>
                             {u.avatar_url
                               ? <img src={u.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -705,9 +731,7 @@ export default function Rooms() {
                         </div>
                       )
                     })}
-                    {overflow > 0 && (
-                      <span style={{ fontSize: '0.68rem', color: 'var(--muted)', marginLeft: '0.25rem' }}>+{overflow}</span>
-                    )}
+                    {overflow > 0 && <span style={{ fontSize: '0.68rem', color: 'var(--muted)', marginLeft: '0.25rem' }}>+{overflow}</span>}
                   </div>
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
                     {online.length > 0 && <span style={{ color: '#4caf50', fontWeight: 500 }}>{online.length} online</span>}
@@ -735,7 +759,7 @@ export default function Rooms() {
                 disabled={enablingRoomNotif}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.5rem',
-                  width: '100%', padding: '0.6rem 0',
+                  width: '100%', padding: '0.6rem 1.5rem',
                   background: 'none', border: 'none',
                   borderBottom: '1px solid var(--border)',
                   cursor: enablingRoomNotif ? 'default' : 'pointer',
@@ -771,10 +795,10 @@ export default function Rooms() {
             </div>
 
             {/* Errors */}
-            {(actionError || sendError || reportSuccess) && (
+            {(actionError || sendError || imageUploadError || reportSuccess) && (
               <div style={{ padding: '0.4rem 1.5rem', background: reportSuccess ? 'rgba(154,111,56,0.07)' : 'rgba(192,57,43,0.07)', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
                 <p style={{ fontSize: '0.78rem', color: reportSuccess ? 'var(--accent)' : '#c0392b' }}>
-                  {reportSuccess ? 'Report submitted.' : actionError || sendError}
+                  {reportSuccess ? 'Report submitted.' : actionError || sendError || imageUploadError}
                 </p>
               </div>
             )}
@@ -785,13 +809,13 @@ export default function Rooms() {
               {Object.keys(typingUsers).length > 0 && (() => {
                 const entries = Object.values(typingUsers)
                 const names = entries.map(u => u.name)
-                let text
-                if (names.length === 1) text = `${names[0]} is typing…`
-                else if (names.length === 2) text = `${names[0]} and ${names[1]} are typing…`
-                else text = `${names[0]}, ${names[1]} and ${names.length - 2} other${names.length - 2 > 1 ? 's' : ''} are typing…`
+                let label
+                if (names.length === 1) label = `${names[0]} is typing…`
+                else if (names.length === 2) label = `${names[0]} and ${names[1]} are typing…`
+                else label = `${names[0]}, ${names[1]} and ${names.length - 2} other${names.length - 2 > 1 ? 's' : ''} are typing…`
                 return (
                   <div style={{ padding: '0.3rem 1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontStyle: 'italic' }}>{text}</span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontStyle: 'italic' }}>{label}</span>
                     <span style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
                       {[0, 1, 2].map(i => (
                         <span key={i} style={{ width: 4, height: 4, borderRadius: '50%', background: 'var(--muted)', display: 'inline-block', animation: `typingDot 1.2s ${i * 0.2}s infinite ease-in-out` }} />
@@ -800,17 +824,22 @@ export default function Rooms() {
                   </div>
                 )
               })()}
+
+              {/* Reply quote bar */}
               {replyTo && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
                   <div style={{ flex: 1, borderLeft: '2px solid var(--accent)', paddingLeft: '0.5rem' }}>
                     <p style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.1rem' }}>{replyTo.sender_id === profile?.id ? 'You' : replyTo.senderName}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>{replyTo.content}</p>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>
+                      {replyTo.content ?? '🖼 Image'}
+                    </p>
                   </div>
                   <button type="button" onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }} aria-label="Cancel reply">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
                   </button>
                 </div>
               )}
+
               <div style={{ padding: isMobile ? '0.6rem 0.75rem' : '1rem 1.5rem' }}>
                 {isAnonymous ? (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', background: 'var(--surface)', borderRadius: 4, border: '1px solid var(--border)' }}>
@@ -819,11 +848,56 @@ export default function Rooms() {
                   </div>
                 ) : (
                   <>
+                    {/* Image uploading indicator */}
+                    {imageUploading && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', padding: '0.4rem 0.75rem', background: 'rgba(154,111,56,0.07)', borderRadius: 4, border: '1px solid var(--accent-lt)' }}>
+                        <span style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid rgba(154,111,56,0.25)', borderTopColor: 'var(--accent)', animation: 'bootSpin 0.8s linear infinite', flexShrink: 0 }} />
+                        <span style={{ fontSize: '0.78rem', color: 'var(--accent)' }}>Uploading image…</span>
+                      </div>
+                    )}
+
+                    {/* Text input row with image button */}
                     <div
                       style={{ display: 'flex', alignItems: 'flex-end', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', background: '#fff', transition: 'border-color 0.2s' }}
                       onFocusCapture={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                       onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border)'}
                     >
+                      {/* Image attach button */}
+                      <button
+                        type="button"
+                        onClick={() => imageInputRef.current?.click()}
+                        disabled={imageUploading || sending}
+                        title="Share image or GIF (JPEG, PNG, GIF, WebP · max 15 MB)"
+                        aria-label="Attach image"
+                        style={{
+                          background: 'none', border: 'none',
+                          padding: isMobile ? '0.7rem 0.5rem 0.7rem 0.75rem' : '0.9rem 0.5rem 0.9rem 1rem',
+                          cursor: (imageUploading || sending) ? 'default' : 'pointer',
+                          color: 'var(--muted)', flexShrink: 0, alignSelf: 'flex-end',
+                          opacity: (imageUploading || sending) ? 0.4 : 1,
+                          transition: 'color 0.15s, opacity 0.15s',
+                          lineHeight: 0,
+                        }}
+                        onMouseEnter={e => { if (!imageUploading && !sending) e.currentTarget.style.color = 'var(--accent)' }}
+                        onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+                      >
+                        {/* Image / GIF icon */}
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="2" y="4" width="16" height="13" rx="2"/>
+                          <circle cx="7" cy="9" r="1.5"/>
+                          <polyline points="2,17 7,11 11,15 14,12 18,17"/>
+                        </svg>
+                      </button>
+
+                      {/* Hidden file input */}
+                      <input
+                        ref={imageInputRef}
+                        type="file"
+                        accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                        onChange={handleImageFileChange}
+                        style={{ display: 'none' }}
+                      />
+
                       <textarea
                         ref={inputRef}
                         placeholder={`Message the ${quadra} quadra…`}
@@ -832,7 +906,6 @@ export default function Rooms() {
                           setText(e.target.value)
                           e.target.style.height = 'auto'
                           e.target.style.height = `${e.target.scrollHeight}px`
-                          // Broadcast typing
                           typingChannel.current?.send({
                             type: 'broadcast', event: 'typing',
                             payload: {
@@ -852,10 +925,17 @@ export default function Rooms() {
                           }, 2000)
                         }}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-                        style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: isMobile ? '0.85rem' : '0.92rem', fontWeight: 300, color: 'var(--text)', background: 'transparent', border: 'none', outline: 'none', padding: isMobile ? '0.7rem 0.9rem' : '0.9rem 1.25rem', maxHeight: '8rem' }}
+                        style={{ flex: 1, resize: 'none', overflow: 'hidden', lineHeight: 1.5, fontFamily: 'var(--sans)', fontSize: isMobile ? '0.85rem' : '0.92rem', fontWeight: 300, color: 'var(--text)', background: 'transparent', border: 'none', outline: 'none', padding: isMobile ? '0.7rem 0.4rem' : '0.9rem 0.5rem', maxHeight: '8rem' }}
                       />
                       {text.length > 1800 && <span style={{ fontSize: '0.68rem', color: 'var(--muted)', padding: '0 0.5rem 0.75rem', alignSelf: 'flex-end' }}>{2000 - text.length}</span>}
-                      <button className="btn-primary" onClick={handleSend} disabled={!text.trim() || sending} style={{ borderRadius: 0, alignSelf: 'stretch', opacity: (!text.trim() || sending) ? 0.5 : 1 }}>Send</button>
+                      <button
+                        className="btn-primary"
+                        onClick={handleSend}
+                        disabled={!text.trim() || sending}
+                        style={{ borderRadius: 0, alignSelf: 'stretch', opacity: (!text.trim() || sending) ? 0.5 : 1 }}
+                      >
+                        Send
+                      </button>
                     </div>
                     {text && <p style={{ fontSize: '0.68rem', color: 'var(--muted)', textAlign: 'right', margin: '0.25rem 0.5rem 0' }}>Shift + Enter for new line</p>}
                   </>
@@ -867,6 +947,27 @@ export default function Rooms() {
       </div>
 
       {reportTarget && <ReportModal onSubmit={handleReport} onClose={() => setReportTarget(null)} submitting={reporting} />}
+
+      {/* Image lightbox */}
+      {lightboxUrl && (
+        <div
+          onClick={() => setLightboxUrl(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.88)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}
+        >
+          <img
+            src={lightboxUrl}
+            alt="shared image"
+            style={{ maxWidth: '92vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }}
+            onClick={e => e.stopPropagation()}
+          />
+          <button
+            type="button"
+            onClick={() => setLightboxUrl(null)}
+            style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >×</button>
+        </div>
+      )}
+
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
     </Layout>
   )

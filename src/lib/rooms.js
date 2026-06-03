@@ -16,6 +16,7 @@ export async function getRoomMessages(roomId, { before = null, after = null } = 
       room_id,
       sender_id,
       content,
+      image_url,
       created_at,
       edited_at,
       deleted_at,
@@ -40,17 +41,23 @@ export async function getRoomMessages(roomId, { before = null, after = null } = 
   return (data ?? []).reverse()
 }
 
-// Send a message to a room.
+// Send a message to a room. Supports optional image_url.
 // sender_id must be the caller's internal users.id (not auth.uid()).
-export async function sendRoomMessage({ roomId, senderId, content }) {
+export async function sendRoomMessage({ roomId, senderId, content, imageUrl = null }) {
   const { data, error } = await supabase
     .from('room_messages')
-    .insert({ room_id: roomId, sender_id: senderId, content })
+    .insert({
+      room_id: roomId,
+      sender_id: senderId,
+      content: content || null,
+      image_url: imageUrl || null,
+    })
     .select(`
       id,
       room_id,
       sender_id,
       content,
+      image_url,
       created_at,
       edited_at,
       deleted_at,
@@ -62,6 +69,33 @@ export async function sendRoomMessage({ roomId, senderId, content }) {
   if (error) throw error
   window.umami?.track('room-message-sent')
   return data
+}
+
+// Upload an image to the room-images bucket.
+// Returns the public URL on success.
+// Accepts JPEG, PNG, GIF, WebP up to MAX_IMAGE_BYTES.
+export const MAX_IMAGE_BYTES = 15 * 1024 * 1024 // 15 MB — covers animated GIFs
+export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
+export async function uploadRoomImage(roomId, file) {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Only JPEG, PNG, GIF, and WebP images are supported.')
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    throw new Error(`Image too large — please keep it under 15 MB.`)
+  }
+
+  const ext = file.name.split('.').pop().toLowerCase() || 'jpg'
+  const path = `${roomId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('room-images')
+    .upload(path, file, { contentType: file.type, upsert: false })
+
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from('room-images').getPublicUrl(path)
+  return data.publicUrl
 }
 
 // Soft-delete a message. Sets deleted_at to now().
@@ -140,6 +174,7 @@ export async function enrichRoomMessage(messageId) {
       room_id,
       sender_id,
       content,
+      image_url,
       created_at,
       edited_at,
       deleted_at,
@@ -156,12 +191,8 @@ export async function enrichRoomMessage(messageId) {
 // Fetch members of a room who are online (< 15 min) or active today (< 24 hr).
 // Excludes members with hide_activity set. Capped at 20; caller renders a +N overflow.
 export async function getRoomActiveMembers(roomId) {
-  // Derive presence from recent room messages — last_active is only updated
-  // on app load so it goes stale for active chatters. Two queries avoids
-  // the embedded-join RLS issue where sender data returns null for other users.
   const threshold24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-  // 1. Get recent message activity — sender_id + timestamp only
   const { data: msgs, error: msgsError } = await supabase
     .from('room_messages')
     .select('sender_id, created_at')
@@ -173,7 +204,6 @@ export async function getRoomActiveMembers(roomId) {
 
   if (msgsError) throw msgsError
 
-  // Deduplicate — keep the most recent message time per sender
   const latestByUser = new Map()
   for (const msg of (msgs ?? [])) {
     if (!latestByUser.has(msg.sender_id)) {
@@ -183,7 +213,6 @@ export async function getRoomActiveMembers(roomId) {
 
   if (latestByUser.size === 0) return []
 
-  // 2. Fetch user profiles for those senders in one query
   const { data: users, error: usersError } = await supabase
     .from('users')
     .select('id, type, profile_data, avatar_url')
