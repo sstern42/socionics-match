@@ -2,6 +2,22 @@ import { supabase } from './supabase'
 
 const PAGE_SIZE = 50
 
+// Shared select fragment — keeps all three query sites in sync
+const ROOM_MESSAGE_SELECT = `
+  id,
+  room_id,
+  sender_id,
+  content,
+  image_url,
+  reply_to_id,
+  created_at,
+  edited_at,
+  deleted_at,
+  sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
+  reply_to:reply_to_id ( id, content, image_url, sender_id, sender:sender_id ( id, profile_data, type ) ),
+  reactions:room_message_reactions ( user_id, emoji )
+`
+
 // Fetch a page of messages for a room.
 // Default: latest PAGE_SIZE messages (before = null).
 // For pagination, pass the created_at of the oldest currently-loaded message
@@ -11,28 +27,13 @@ const PAGE_SIZE = 50
 export async function getRoomMessages(roomId, { before = null, after = null } = {}) {
   let query = supabase
     .from('room_messages')
-    .select(`
-      id,
-      room_id,
-      sender_id,
-      content,
-      image_url,
-      created_at,
-      edited_at,
-      deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
-      reactions:room_message_reactions ( user_id, emoji )
-    `)
+    .select(ROOM_MESSAGE_SELECT)
     .eq('room_id', roomId)
     .order('created_at', { ascending: false })
     .limit(PAGE_SIZE)
 
-  if (before) {
-    query = query.lt('created_at', before)
-  }
-  if (after) {
-    query = query.gt('created_at', after)
-  }
+  if (before) query = query.lt('created_at', before)
+  if (after)  query = query.gt('created_at', after)
 
   const { data, error } = await query
   if (error) throw error
@@ -41,29 +42,19 @@ export async function getRoomMessages(roomId, { before = null, after = null } = 
   return (data ?? []).reverse()
 }
 
-// Send a message to a room. Supports optional image_url.
+// Send a message to a room. Supports optional imageUrl and replyToId.
 // sender_id must be the caller's internal users.id (not auth.uid()).
-export async function sendRoomMessage({ roomId, senderId, content, imageUrl = null }) {
+export async function sendRoomMessage({ roomId, senderId, content, imageUrl = null, replyToId = null }) {
   const { data, error } = await supabase
     .from('room_messages')
     .insert({
-      room_id: roomId,
-      sender_id: senderId,
-      content: content || null,
-      image_url: imageUrl || null,
+      room_id:     roomId,
+      sender_id:   senderId,
+      content:     content || null,
+      image_url:   imageUrl || null,
+      reply_to_id: replyToId || null,
     })
-    .select(`
-      id,
-      room_id,
-      sender_id,
-      content,
-      image_url,
-      created_at,
-      edited_at,
-      deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
-      reactions:room_message_reactions ( user_id, emoji )
-    `)
+    .select(ROOM_MESSAGE_SELECT)
     .single()
 
   if (error) throw error
@@ -85,7 +76,7 @@ export async function uploadRoomImage(roomId, file) {
     throw new Error(`Image too large — please keep it under 15 MB.`)
   }
 
-  const ext = file.name.split('.').pop().toLowerCase() || 'jpg'
+  const ext  = file.name.split('.').pop().toLowerCase() || 'jpg'
   const path = `${roomId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
 
   const { error: uploadError } = await supabase.storage
@@ -99,8 +90,6 @@ export async function uploadRoomImage(roomId, file) {
 }
 
 // Soft-delete a message. Sets deleted_at to now().
-// Content replacement ('[message removed]') is handled in the UI layer.
-// RLS ensures only the sender can call this (or service role for admin).
 export async function softDeleteRoomMessage(messageId) {
   const { error } = await supabase
     .from('room_messages')
@@ -112,7 +101,6 @@ export async function softDeleteRoomMessage(messageId) {
 }
 
 // Submit a report against a message.
-// reporter_id must be the caller's internal users.id.
 export async function reportRoomMessage({ messageId, reporterId, reason = null }) {
   const { error } = await supabase
     .from('room_reports')
@@ -122,7 +110,7 @@ export async function reportRoomMessage({ messageId, reporterId, reason = null }
   window.umami?.track('room-message-reported')
 }
 
-// Add a reaction to a message. user_id must be the caller's internal users.id.
+// Add a reaction to a message.
 export async function addReaction({ messageId, userId, emoji }) {
   const { error } = await supabase
     .from('room_message_reactions')
@@ -145,42 +133,23 @@ export async function removeReaction({ messageId, userId, emoji }) {
 }
 
 // Subscribe to new messages in a room.
-// Calls onMessage(newMsg) on each INSERT.
-// Returns the channel — caller must call channel.unsubscribe() on cleanup.
 export function subscribeToRoom(roomId, onMessage) {
   return supabase
     .channel(`room_messages:${roomId}`)
     .on(
       'postgres_changes',
-      {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'room_messages',
-        filter: `room_id=eq.${roomId}`,
-      },
+      { event: 'INSERT', schema: 'public', table: 'room_messages', filter: `room_id=eq.${roomId}` },
       (payload) => onMessage(payload.new)
     )
     .subscribe()
 }
 
-// Fetch the full sender record for a newly-broadcast message.
-// Realtime INSERT payloads don't include joined data, so we re-fetch the
-// full row with the sender join after a broadcast arrives.
+// Fetch the full row (with joins) for a newly-broadcast message.
+// Realtime INSERT payloads don't include joined data.
 export async function enrichRoomMessage(messageId) {
   const { data, error } = await supabase
     .from('room_messages')
-    .select(`
-      id,
-      room_id,
-      sender_id,
-      content,
-      image_url,
-      created_at,
-      edited_at,
-      deleted_at,
-      sender:sender_id ( id, type, profile_data, avatar_url, verified_by ),
-      reactions:room_message_reactions ( user_id, emoji )
-    `)
+    .select(ROOM_MESSAGE_SELECT)
     .eq('id', messageId)
     .maybeSingle()
 
@@ -188,8 +157,7 @@ export async function enrichRoomMessage(messageId) {
   return data
 }
 
-// Fetch members of a room who are online (< 15 min) or active today (< 24 hr).
-// Excludes members with hide_activity set. Capped at 20; caller renders a +N overflow.
+// Fetch members of a room who are online or active today.
 export async function getRoomActiveMembers(roomId) {
   const threshold24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 

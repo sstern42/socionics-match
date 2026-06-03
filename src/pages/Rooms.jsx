@@ -57,6 +57,18 @@ function dateDividerLabel(dateStr) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 }
 
+// Renders text with clickable URLs — same pattern as DM Conversation.jsx
+function renderContent(text) {
+  if (!text) return null
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts = text.split(urlRegex)
+  return parts.map((part, i) =>
+    urlRegex.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline', wordBreak: 'break-all' }}>{part}</a>
+      : part
+  )
+}
+
 // ── RoomMessage ───────────────────────────────────────────────
 
 function RoomMessage({
@@ -70,29 +82,32 @@ function RoomMessage({
   const [showPicker, setShowPicker] = useState(false)
   const longPressTimer = useRef(null)
 
-  const isDeleted    = !!msg.deleted_at
-  const isOptimistic = !!msg._optimistic
-  const isEditing    = editingId === msg.id
+  const isDeleted       = !!msg.deleted_at
+  const isOptimistic    = !!msg._optimistic
+  const isEditing       = editingId === msg.id
   const isDeleteConfirm = deleteConfirmId === msg.id
 
-  const senderName   = getSenderName(msg)
-  const senderType   = msg.sender?.type ?? '?'
-  const isAnon       = msg.sender?.profile_data?.anonymous ?? false
-  const senderId     = msg.sender?.id
-  const quadra       = getQuadra(senderType)
-  const badgeColour  = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
+  const senderName  = getSenderName(msg)
+  const senderType  = msg.sender?.type ?? '?'
+  const isAnon      = msg.sender?.profile_data?.anonymous ?? false
+  const senderId    = msg.sender?.id
+  const quadra      = getQuadra(senderType)
+  const badgeColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
 
-  const replyMsg    = msg.reply_to
-  const replySender = replyMsg
-    ? (replyMsg.sender?.profile_data?.name ?? replyMsg.sender?.type ?? 'Unknown')
+  // Reply-to data — joined from DB
+  const replyMsg = msg.reply_to ?? null
+  const replySenderName = replyMsg
+    ? (replyMsg.sender_id === currentUserId
+        ? 'You'
+        : (replyMsg.sender?.profile_data?.name ?? replyMsg.sender?.type ?? 'Unknown'))
     : null
 
   const hasImage = !!msg.image_url && !isDeleted
-  const hasText  = !!msg.content && !isDeleted
+  const hasText  = !!msg.content  && !isDeleted
 
   function startLongPress() {
     longPressTimer.current = setTimeout(() => {
-      if (!isDeleted) onReply({ id: msg.id, content: msg.content, sender_id: msg.sender_id, senderName })
+      if (!isDeleted) onReply({ id: msg.id, content: msg.content, image_url: msg.image_url, sender_id: msg.sender_id, senderName })
     }, 500)
   }
   function cancelLongPress() { clearTimeout(longPressTimer.current) }
@@ -174,7 +189,7 @@ function RoomMessage({
             color: isMine ? '#fff' : isDeleted ? 'var(--muted)' : 'var(--text)',
             border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
             borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
-            padding: hasImage && !hasText ? '0.4rem' : '0.6rem 0.9rem',
+            padding: hasImage && !hasText && !replyMsg ? '0.4rem' : '0.6rem 0.9rem',
             fontSize: '0.9rem', lineHeight: 1.6, fontWeight: 300,
             fontStyle: isDeleted ? 'italic' : 'normal',
             maxWidth: '75%',
@@ -182,18 +197,34 @@ function RoomMessage({
             overflow: 'hidden',
           }}
         >
-          {/* Reply quote */}
+          {/* Reply quote — shows original message content */}
           {replyMsg && !isDeleted && (
             <div style={{
               borderLeft: `2px solid ${isMine ? 'rgba(255,255,255,0.5)' : 'var(--accent-lt)'}`,
-              paddingLeft: '0.5rem', marginBottom: '0.5rem', opacity: 0.8,
+              paddingLeft: '0.5rem', marginBottom: '0.5rem', opacity: 0.85,
+              background: isMine ? 'rgba(0,0,0,0.08)' : 'rgba(154,111,56,0.06)',
+              borderRadius: '0 4px 4px 0',
+              padding: '0.3rem 0.5rem',
+              margin: '-0.1rem -0.1rem 0.5rem -0.1rem',
             }}>
-              <p style={{ fontSize: '0.72rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--muted)', marginBottom: '0.1rem', fontWeight: 500 }}>
-                {replyMsg.sender_id === currentUserId ? 'You' : replySender}
+              <p style={{ fontSize: '0.72rem', color: isMine ? 'rgba(255,255,255,0.75)' : 'var(--accent)', marginBottom: '0.15rem', fontWeight: 600 }}>
+                {replySenderName}
               </p>
-              <p style={{ fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 200 }}>
-                {replyMsg.content ?? '🖼 Image'}
-              </p>
+              {/* Show thumbnail if the original was an image */}
+              {replyMsg.image_url && (
+                <img
+                  src={replyMsg.image_url}
+                  alt=""
+                  style={{ height: 36, width: 'auto', maxWidth: 60, objectFit: 'cover', borderRadius: 3, display: 'block', marginBottom: replyMsg.content ? '0.2rem' : 0 }}
+                />
+              )}
+              {replyMsg.content ? (
+                <p style={{ fontSize: '0.78rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 220, opacity: 0.9 }}>
+                  {replyMsg.content}
+                </p>
+              ) : replyMsg.image_url ? (
+                <p style={{ fontSize: '0.72rem', opacity: 0.7 }}>🖼 Image</p>
+              ) : null}
             </div>
           )}
 
@@ -244,7 +275,7 @@ function RoomMessage({
             isDeleted
               ? '[message removed]'
               : hasText
-                ? msg.content
+                ? renderContent(msg.content)
                 : null
           )}
         </div>
@@ -293,7 +324,7 @@ function RoomMessage({
                 ))}
               </div>
             )}
-            <button type="button" onClick={() => onReply({ id: msg.id, content: msg.content, sender_id: msg.sender_id, senderName })} aria-label="Reply" style={iconBtnStyle}>
+            <button type="button" onClick={() => onReply({ id: msg.id, content: msg.content, image_url: msg.image_url, sender_id: msg.sender_id, senderName })} aria-label="Reply" style={iconBtnStyle}>
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
             </button>
             <button
@@ -398,7 +429,7 @@ export default function Rooms() {
   const navigate = useNavigate()
 
   const {
-    roomId, messages,
+    roomId, messages, setMessages,
     loading: roomLoading, error: roomError,
     hasMore, loadMore, loadingMore,
     send, sending, sendError,
@@ -554,9 +585,9 @@ export default function Rooms() {
 
   async function handleSend() {
     if ((!text.trim() && !pendingImage) || sending || imageUploading) return
-    const caption = text.trim()
-    const imageFile = pendingImage?.file ?? null
-    const replyToId = replyTo?.id ?? null
+    const caption    = text.trim()
+    const imageFile  = pendingImage?.file ?? null
+    const replyToId  = replyTo?.id ?? null
     setText('')
     setPendingImage(null)
     setReplyTo(null)
@@ -567,7 +598,7 @@ export default function Rooms() {
       payload: { tab_id: tabId.current, user_id: profile.id, typing: false },
     })
     if (imageFile) {
-      await uploadImage(imageFile, caption)
+      await uploadImage(imageFile, caption, replyToId)
     } else {
       await send(caption, replyToId)
     }
@@ -577,7 +608,6 @@ export default function Rooms() {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    // Revoke any existing preview URL before replacing
     if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl)
     setPendingImage({ file, previewUrl: URL.createObjectURL(file) })
     inputRef.current?.focus()
@@ -735,15 +765,15 @@ export default function Rooms() {
                 return diff >= 15 * 60 * 1000 && diff < 24 * 60 * 60 * 1000
               })
               const MAX_SHOWN = 8
-              const shown = activeMembers.slice(0, MAX_SHOWN)
+              const shown    = activeMembers.slice(0, MAX_SHOWN)
               const overflow = activeMembers.length - MAX_SHOWN
               return (
                 <div style={{ padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#fff', flexShrink: 0, flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     {shown.map(u => {
-                      const isOnline = now - new Date(u.last_active).getTime() < 15 * 60 * 1000
-                      const initial = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
-                      const dotColour = isOnline ? '#4caf50' : '#f5a623'
+                      const isOnline   = now - new Date(u.last_active).getTime() < 15 * 60 * 1000
+                      const initial    = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
+                      const dotColour  = isOnline ? '#4caf50' : '#f5a623'
                       return (
                         <div key={u.id} title={`${u.profile_data?.name ?? u.type} (${u.type}) — ${isOnline ? 'online now' : 'active today'}`} style={{ position: 'relative', flexShrink: 0 }}>
                           <div style={{ width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 600, color: 'var(--accent)' }}>
@@ -854,10 +884,17 @@ export default function Rooms() {
               {replyTo && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
                   <div style={{ flex: 1, borderLeft: '2px solid var(--accent)', paddingLeft: '0.5rem' }}>
-                    <p style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.1rem' }}>{replyTo.sender_id === profile?.id ? 'You' : replyTo.senderName}</p>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>
-                      {replyTo.content ?? '🖼 Image'}
+                    <p style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.1rem' }}>
+                      {replyTo.sender_id === profile?.id ? 'You' : replyTo.senderName}
                     </p>
+                    {replyTo.image_url && !replyTo.content && (
+                      <p style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>🖼 Image</p>
+                    )}
+                    {replyTo.content && (
+                      <p style={{ fontSize: '0.75rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 320 }}>
+                        {replyTo.content}
+                      </p>
+                    )}
                   </div>
                   <button type="button" onClick={() => setReplyTo(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }} aria-label="Cancel reply">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
@@ -1024,7 +1061,7 @@ export default function Rooms() {
   )
 }
 
-const centreStyle = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', padding: '2rem', textAlign: 'center' }
+const centreStyle  = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.25rem', padding: '2rem', textAlign: 'center' }
 const overlayStyle = { position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }
-const modalStyle = { background: '#fff', borderRadius: 6, padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }
+const modalStyle   = { background: '#fff', borderRadius: 6, padding: '2rem', width: '100%', maxWidth: 420, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }
 const iconBtnStyle = { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '0.25rem', lineHeight: 1, flexShrink: 0 }
