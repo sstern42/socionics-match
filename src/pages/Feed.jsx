@@ -18,6 +18,55 @@ const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 const FEED_MODE_KEY = 'socion_feed_mode'
 
+const FEED_LOADER_STEPS = [
+  'Reading your type preferences…',
+  'Computing intertype relations…',
+  'Finding your dynamics…',
+  'Almost there…',
+]
+
+function FeedLoader() {
+  const [step, setStep] = useState(0)
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    // Progress bar: fill to 85% over ~2.4s then hold
+    const progressInterval = setInterval(() => {
+      setProgress(p => {
+        if (p >= 85) { clearInterval(progressInterval); return p }
+        return p + 2
+      })
+    }, 55)
+
+    // Step text: cycle every 700ms
+    const stepInterval = setInterval(() => {
+      setStep(s => Math.min(s + 1, FEED_LOADER_STEPS.length - 1))
+    }, 700)
+
+    return () => {
+      clearInterval(progressInterval)
+      clearInterval(stepInterval)
+    }
+  }, [])
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem', padding: '4rem 2rem' }}>
+      <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.05rem', color: 'var(--text)', transition: 'opacity 0.3s' }}>
+        {FEED_LOADER_STEPS[step]}
+      </p>
+      <div style={{ width: 220, height: 2, background: 'var(--border)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{
+          height: '100%',
+          width: `${progress}%`,
+          background: 'var(--accent)',
+          borderRadius: 2,
+          transition: 'width 0.08s linear',
+        }} />
+      </div>
+    </div>
+  )
+}
+
 export default function Feed() {
   const { session, profile, loading, refreshProfile, isPremium } = useAuth()
   const navigate = useNavigate()
@@ -436,7 +485,7 @@ export default function Feed() {
         {/* ── SWIPE MODE ───────────────────────────────────────── */}
         {swipeMode ? (
           fetching ? (
-            <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '4rem 0' }}>Finding matches…</p>
+            <FeedLoader />
           ) : error ? (
             <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
               <p style={{ color: '#c0392b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Something went wrong loading the feed:</p>
@@ -601,7 +650,7 @@ export default function Feed() {
           )}
 
           {fetching ? (
-            <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '4rem 0' }}>Finding matches…</p>
+            <FeedLoader />
           ) : displayed.length === 0 && !error ? (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
               <p className="eyebrow" style={{ marginBottom: '1rem' }}>No matches yet</p>
