@@ -1,6 +1,17 @@
 import Layout from '../components/Layout'
 
 export const ENTRIES = [
+    {
+    date: '3 June 2026',
+    label: 'Update',
+    items: [
+      'Quadra rooms — share images and GIFs directly in the room. Tap the image icon in the message bar, add an optional caption, and hit Send. JPEG, PNG, GIF (including animated), and WebP supported up to 15 MB',
+      'Quadra rooms — tap any image to view it full size',
+      'Quadra rooms — reply to a message containing an image, caption, or both. Tap the reply quote in any message to jump back to the original',
+      'Quadra rooms — URLs in messages are now clickable',
+      'Quadra rooms — messages now sync in real time across all your open devices and tabs without needing to refresh',
+    ],
+  },
   {
     date: '2 June 2026',
     label: 'Update',
