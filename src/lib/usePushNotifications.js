@@ -36,10 +36,35 @@ export function usePushNotifications(userId) {
   const [subscribed, setSubscribed] = useState(false)
   const [subscribeError, setSubscribeError] = useState(null)
 
+  // On every load: check for an existing browser subscription.
+  // If one exists, re-upsert it to Supabase — this keeps the row fresh
+  // and recovers from DB loss, subscription renewal, or a new device session
+  // where the user previously granted permission.
   useEffect(() => {
     if (!supported || !userId) return
     navigator.serviceWorker.ready.then(reg =>
-      reg.pushManager.getSubscription().then(sub => setSubscribed(!!sub))
+      reg.pushManager.getSubscription().then(async sub => {
+        if (!sub) { setSubscribed(false); return }
+        setSubscribed(true)
+        // Re-upsert to keep the row alive and handle subscription renewal
+        try {
+          const authUid = await getAuthUid()
+          if (!authUid) return
+          await supabase
+            .from('push_subscriptions')
+            .upsert(
+              {
+                user_id: authUid,
+                subscription: sub.toJSON(),
+                device_hint: getDeviceHint(),
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: 'endpoint' }
+            )
+        } catch (err) {
+          console.warn('Push re-registration failed silently:', err)
+        }
+      })
     )
   }, [userId, supported])
 
@@ -61,7 +86,6 @@ export function usePushNotifications(userId) {
       const authUid = await getAuthUid()
       if (!authUid) throw new Error('No auth session')
 
-      // Upsert by endpoint — one row per device
       const { error } = await supabase
         .from('push_subscriptions')
         .upsert(
