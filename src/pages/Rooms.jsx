@@ -233,19 +233,19 @@ function RoomMessage({
             <img
               src={msg.image_url}
               alt="shared image"
-              onClick={() => onImageClick(msg.image_url)}
-              style={{
-                display: 'block',
-                maxWidth: '100%',
-                maxHeight: 280,
-                width: 'auto',
-                height: 'auto',
-                borderRadius: 6,
-                cursor: 'zoom-in',
-                marginBottom: hasText ? '0.5rem' : 0,
-                objectFit: 'contain',
+              crossOrigin="anonymous"
+              onError={e => {
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.nextSibling?.style && (e.currentTarget.nextSibling.style.display = 'flex')
               }}
+              onClick={() => onImageClick(msg.image_url)}
+              style={{ ... }} // unchanged
             />
+            {/* Fallback shown if image fails to load */}
+            <div style={{ display: 'none', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--muted)', padding: '0.5rem' }}>
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><polyline points="2,17 7,11 11,15 14,12 18,17"/></svg>
+              Image unavailable
+            </div>
           )}
 
           {/* Text / edit */}
