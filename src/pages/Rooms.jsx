@@ -833,9 +833,9 @@ export default function Rooms() {
                   </div>
                   {/* Clarified label: quadra name + activity counts */}
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                    <span style={{ fontWeight: 500, color: quadraColour }}>{quadra} quadra</span>
-                    {online.length > 0 && <span style={{ color: '#4caf50' }}> · {online.length} online now</span>}
-                    {today.length > 0 && <span> · {today.length} active today</span>}
+                    {online.length > 0 && <span style={{ color: '#4caf50', fontWeight: 500 }}>{online.length} online now</span>}
+                    {online.length > 0 && today.length > 0 && <span style={{ color: 'var(--muted)' }}> · </span>}
+                    {today.length > 0 && <span>{today.length} active in this room today</span>}
                   </span>
                 </div>
               )
