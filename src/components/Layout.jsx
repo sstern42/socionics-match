@@ -16,13 +16,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
-  // Room unread dot: true if user has never visited /rooms, or last visit was
-  // before the component mounted (i.e. new room activity since last session).
-  // Cleared when the user navigates to /rooms via the markRoomVisited() call
-  // in Rooms.jsx, which dispatches 'socion-room-visited'.
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
 
-  // Load-time check: are there room messages newer than the last visit?
   useEffect(() => {
     if (!profile?.room_id) return
     const lastVisited = getRoomLastVisited()
@@ -37,7 +32,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .then(({ count }) => { if (count > 0) setRoomUnread(true) })
   }, [profile?.room_id])
 
-  // Realtime: light up the dot instantly when a new room message arrives
   useEffect(() => {
     if (!profile?.room_id || !profile?.id) return
     const channel = supabase
@@ -97,10 +91,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     </span>
                   )}
                 </Link>
-                <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), position: 'relative' }}>
+                {/* Rooms — inline dot, no position:absolute (avoids sticky header clipping) */}
+                <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                   Rooms
                   {roomUnread && !isActive('/rooms') && (
-                    <span style={{ position: 'absolute', top: -3, right: -7, width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
                   )}
                 </Link>
                 <Link to="/profile/edit" style={navStyle(isActive('/profile/edit'))}>Profile</Link>
@@ -185,7 +180,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           {children}
         </main>
 
-        {/* Help button — fixed bottom right */}
+        {/* Help button */}
         <Link
           to="/help"
           onClick={() => window.umami?.track('help-button-clicked', { from: location.pathname })}
@@ -235,7 +230,6 @@ const navStyle = (active) => ({
   fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
   color: active ? 'var(--accent)' : 'var(--muted)',
   textDecoration: 'none', transition: 'color 0.2s',
-  position: 'relative',
 })
 
 const signOutStyle = {

@@ -57,7 +57,7 @@ function dateDividerLabel(dateStr) {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 }
 
-// Renders text with clickable URLs — same pattern as DM Conversation.jsx
+// Renders text with clickable URLs
 function renderContent(text) {
   if (!text) return null
   const urlRegex = /(https?:\/\/[^\s]+)/g
@@ -74,6 +74,7 @@ function renderContent(text) {
 function RoomMessage({
   msg, isMine, currentUserId,
   onReply, onEdit, onReport, onTypeClick, onReact, onImageClick,
+  onScrollToMessage,
   editingId, editText, setEditText, onEditSave, onEditCancel,
   deleteConfirmId, setDeleteConfirmId, deleting, onDeleteConfirm,
   isMobile,
@@ -94,7 +95,6 @@ function RoomMessage({
   const quadra      = getQuadra(senderType)
   const badgeColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
 
-  // Reply-to data — joined from DB
   const replyMsg = msg.reply_to ?? null
   const replySenderName = replyMsg
     ? (replyMsg.sender_id === currentUserId
@@ -197,24 +197,31 @@ function RoomMessage({
             overflow: 'hidden',
           }}
         >
-          {/* Reply quote — shows original message content */}
+          {/* Reply quote — click scrolls to the original message */}
           {replyMsg && !isDeleted && (
-            <div style={{
-              borderLeft: `2px solid ${isMine ? 'rgba(255,255,255,0.5)' : 'var(--accent-lt)'}`,
-              paddingLeft: '0.5rem', marginBottom: '0.5rem', opacity: 0.85,
-              background: isMine ? 'rgba(0,0,0,0.08)' : 'rgba(154,111,56,0.06)',
-              borderRadius: '0 4px 4px 0',
-              padding: '0.3rem 0.5rem',
-              margin: '-0.1rem -0.1rem 0.5rem -0.1rem',
-            }}>
+            <div
+              onClick={() => onScrollToMessage?.(replyMsg.id)}
+              title="Jump to original message"
+              style={{
+                cursor: 'pointer',
+                borderLeft: `2px solid ${isMine ? 'rgba(255,255,255,0.5)' : 'var(--accent-lt)'}`,
+                background: isMine ? 'rgba(0,0,0,0.08)' : 'rgba(154,111,56,0.06)',
+                borderRadius: '0 4px 4px 0',
+                padding: '0.3rem 0.5rem',
+                margin: '-0.1rem -0.1rem 0.5rem -0.1rem',
+                transition: 'opacity 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.75'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
               <p style={{ fontSize: '0.72rem', color: isMine ? 'rgba(255,255,255,0.75)' : 'var(--accent)', marginBottom: '0.15rem', fontWeight: 600 }}>
-                {replySenderName}
+                ↑ {replySenderName}
               </p>
-              {/* Show thumbnail if the original was an image */}
               {replyMsg.image_url && (
                 <img
                   src={replyMsg.image_url}
                   alt=""
+                  crossOrigin="anonymous"
                   style={{ height: 36, width: 'auto', maxWidth: 60, objectFit: 'cover', borderRadius: 3, display: 'block', marginBottom: replyMsg.content ? '0.2rem' : 0 }}
                 />
               )}
@@ -236,13 +243,26 @@ function RoomMessage({
               crossOrigin="anonymous"
               onError={e => {
                 e.currentTarget.style.display = 'none'
-                e.currentTarget.nextSibling?.style && (e.currentTarget.nextSibling.style.display = 'flex')
+                if (e.currentTarget.nextSibling?.dataset?.fallback) {
+                  e.currentTarget.nextSibling.style.display = 'flex'
+                }
               }}
               onClick={() => onImageClick(msg.image_url)}
-              style={{ ... }} // unchanged
+              style={{
+                display: 'block',
+                maxWidth: '100%',
+                maxHeight: 280,
+                width: 'auto',
+                height: 'auto',
+                borderRadius: 6,
+                cursor: 'zoom-in',
+                marginBottom: hasText ? '0.5rem' : 0,
+                objectFit: 'contain',
+              }}
             />
-            {/* Fallback shown if image fails to load */}
-            <div style={{ display: 'none', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--muted)', padding: '0.5rem' }}>
+          )}
+          {hasImage && (
+            <div data-fallback="1" style={{ display: 'none', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: isMine ? 'rgba(255,255,255,0.7)' : 'var(--muted)', padding: '0.25rem 0' }}>
               <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><polyline points="2,17 7,11 11,15 14,12 18,17"/></svg>
               Image unavailable
             </div>
@@ -460,7 +480,7 @@ export default function Rooms() {
 
   const [activeMembers, setActiveMembers]     = useState([])
   const [text, setText]                       = useState('')
-  const [pendingImage, setPendingImage]       = useState(null) // { file, previewUrl }
+  const [pendingImage, setPendingImage]       = useState(null)
   const [replyTo, setReplyTo]                 = useState(null)
   const [editingId, setEditingId]             = useState(null)
   const [editText, setEditText]               = useState('')
@@ -473,6 +493,7 @@ export default function Rooms() {
   const [actionError, setActionError]         = useState(null)
   const [webviewUrl, setWebviewUrl]           = useState(null)
   const [lightboxUrl, setLightboxUrl]         = useState(null)
+  const [highlightedMsgId, setHighlightedMsgId] = useState(null)
   const [isMobile, setIsMobile]               = useState(() => window.innerWidth <= 700)
 
   const imageInputRef    = useRef(null)
@@ -576,18 +597,26 @@ export default function Rooms() {
     if (!roomLoading && messages.length > 0) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [roomLoading])
 
-  // Clean up object URL when pending image is cleared
   useEffect(() => {
     return () => {
       if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl)
     }
   }, [pendingImage])
 
+  // Scroll to a specific message and briefly highlight it
+  function handleScrollToMessage(msgId) {
+    const el = document.getElementById(`room-msg-${msgId}`)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    setHighlightedMsgId(msgId)
+    setTimeout(() => setHighlightedMsgId(null), 1400)
+  }
+
   async function handleSend() {
     if ((!text.trim() && !pendingImage) || sending || imageUploading) return
-    const caption    = text.trim()
-    const imageFile  = pendingImage?.file ?? null
-    const replyToId  = replyTo?.id ?? null
+    const caption   = text.trim()
+    const imageFile = pendingImage?.file ?? null
+    const replyToId = replyTo?.id ?? null
     setText('')
     setPendingImage(null)
     setReplyTo(null)
@@ -679,29 +708,43 @@ export default function Rooms() {
           </div>
         )
       }
+      const isHighlighted = msg.id === highlightedMsgId
       items.push(
-        <RoomMessage
+        // Wrapper gives each message a stable DOM id for scroll-to-reply
+        <div
           key={msg.id}
-          msg={msg}
-          isMine={msg.sender_id === profile?.id}
-          currentUserId={profile?.id}
-          isMobile={isMobile}
-          onReply={setReplyTo}
-          onEdit={handleStartEdit}
-          onReport={id => setReportTarget(id)}
-          onReact={toggleReaction}
-          onTypeClick={url => { window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
-          onImageClick={url => setLightboxUrl(url)}
-          editingId={editingId}
-          editText={editText}
-          setEditText={setEditText}
-          onEditSave={handleEditSave}
-          onEditCancel={() => { setEditingId(null); setEditText('') }}
-          deleteConfirmId={deleteConfirmId}
-          setDeleteConfirmId={setDeleteConfirmId}
-          deleting={deleting}
-          onDeleteConfirm={handleDeleteConfirm}
-        />
+          id={`room-msg-${msg.id}`}
+          style={{
+            borderRadius: 6,
+            margin: '0 -0.4rem',
+            padding: '0 0.4rem',
+            transition: 'background 0.25s',
+            background: isHighlighted ? 'rgba(154,111,56,0.13)' : 'transparent',
+          }}
+        >
+          <RoomMessage
+            msg={msg}
+            isMine={msg.sender_id === profile?.id}
+            currentUserId={profile?.id}
+            isMobile={isMobile}
+            onReply={setReplyTo}
+            onEdit={handleStartEdit}
+            onReport={id => setReportTarget(id)}
+            onReact={toggleReaction}
+            onTypeClick={url => { window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
+            onImageClick={url => setLightboxUrl(url)}
+            onScrollToMessage={handleScrollToMessage}
+            editingId={editingId}
+            editText={editText}
+            setEditText={setEditText}
+            onEditSave={handleEditSave}
+            onEditCancel={() => { setEditingId(null); setEditText('') }}
+            deleteConfirmId={deleteConfirmId}
+            setDeleteConfirmId={setDeleteConfirmId}
+            deleting={deleting}
+            onDeleteConfirm={handleDeleteConfirm}
+          />
+        </div>
       )
     }
     return items
@@ -756,9 +799,9 @@ export default function Rooms() {
               >{profile?.type} →</button>
             </div>
 
-            {/* Active members strip */}
+            {/* Active members strip — labelled with quadra name so it's clear this is room activity */}
             {activeMembers.length > 0 && (() => {
-              const now = Date.now()
+              const now    = Date.now()
               const online = activeMembers.filter(u => now - new Date(u.last_active).getTime() < 15 * 60 * 1000)
               const today  = activeMembers.filter(u => {
                 const diff = now - new Date(u.last_active).getTime()
@@ -771,9 +814,9 @@ export default function Rooms() {
                 <div style={{ padding: '0.5rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '0.6rem', background: '#fff', flexShrink: 0, flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     {shown.map(u => {
-                      const isOnline   = now - new Date(u.last_active).getTime() < 15 * 60 * 1000
-                      const initial    = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
-                      const dotColour  = isOnline ? '#4caf50' : '#f5a623'
+                      const isOnline  = now - new Date(u.last_active).getTime() < 15 * 60 * 1000
+                      const initial   = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
+                      const dotColour = isOnline ? '#4caf50' : '#f5a623'
                       return (
                         <div key={u.id} title={`${u.profile_data?.name ?? u.type} (${u.type}) — ${isOnline ? 'online now' : 'active today'}`} style={{ position: 'relative', flexShrink: 0 }}>
                           <div style={{ width: 24, height: 24, borderRadius: '50%', overflow: 'hidden', border: '1px solid var(--border)', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.55rem', fontWeight: 600, color: 'var(--accent)' }}>
@@ -788,10 +831,11 @@ export default function Rooms() {
                     })}
                     {overflow > 0 && <span style={{ fontSize: '0.68rem', color: 'var(--muted)', marginLeft: '0.25rem' }}>+{overflow}</span>}
                   </div>
+                  {/* Clarified label: quadra name + activity counts */}
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                    {online.length > 0 && <span style={{ color: '#4caf50', fontWeight: 500 }}>{online.length} online</span>}
-                    {online.length > 0 && today.length > 0 && <span style={{ color: 'var(--border)' }}> · </span>}
-                    {today.length > 0 && <span>{today.length} active today</span>}
+                    <span style={{ fontWeight: 500, color: quadraColour }}>{quadra} quadra</span>
+                    {online.length > 0 && <span style={{ color: '#4caf50' }}> · {online.length} online now</span>}
+                    {today.length > 0 && <span> · {today.length} active today</span>}
                   </span>
                 </div>
               )
@@ -944,13 +988,12 @@ export default function Rooms() {
                       </div>
                     )}
 
-                    {/* Text input row with image button */}
+                    {/* Text input row */}
                     <div
                       style={{ display: 'flex', alignItems: 'flex-end', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', background: '#fff', transition: 'border-color 0.2s' }}
                       onFocusCapture={e => e.currentTarget.style.borderColor = 'var(--accent)'}
                       onBlurCapture={e => e.currentTarget.style.borderColor = 'var(--border)'}
                     >
-                      {/* Image attach button */}
                       <button
                         type="button"
                         onClick={() => imageInputRef.current?.click()}
@@ -977,7 +1020,6 @@ export default function Rooms() {
                         </svg>
                       </button>
 
-                      {/* Hidden file input */}
                       <input
                         ref={imageInputRef}
                         type="file"
@@ -1045,6 +1087,7 @@ export default function Rooms() {
           <img
             src={lightboxUrl}
             alt="shared image"
+            crossOrigin="anonymous"
             style={{ maxWidth: '92vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }}
             onClick={e => e.stopPropagation()}
           />
