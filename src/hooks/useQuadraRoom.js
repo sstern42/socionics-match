@@ -9,6 +9,7 @@ import {
   enrichRoomMessage,
   addReaction,
   removeReaction,
+  uploadRoomImage,
 } from '../lib/rooms'
 
 // useQuadraRoom — encapsulates all data logic for the quadra group room UI.
@@ -18,22 +19,23 @@ import {
 //     messages, loading, error,
 //     hasMore, loadMore, loadingMore,
 //     send, sending, sendError,
+//     uploadImage, imageUploading, imageUploadError,
 //     softDelete, report,
 //     roomId,
 //   } = useQuadraRoom({ profile })
-//
-// profile must be the AuthContext profile object (needs profile.id and profile.room_id).
 
 export function useQuadraRoom({ profile }) {
   const roomId = profile?.room_id ?? null
 
-  const [messages, setMessages]       = useState([])
-  const [loading, setLoading]         = useState(false)
-  const [error, setError]             = useState(null)
-  const [hasMore, setHasMore]         = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const [sending, setSending]         = useState(false)
-  const [sendError, setSendError]     = useState(null)
+  const [messages, setMessages]             = useState([])
+  const [loading, setLoading]               = useState(false)
+  const [error, setError]                   = useState(null)
+  const [hasMore, setHasMore]               = useState(false)
+  const [loadingMore, setLoadingMore]       = useState(false)
+  const [sending, setSending]               = useState(false)
+  const [sendError, setSendError]           = useState(null)
+  const [imageUploading, setImageUploading] = useState(false)
+  const [imageUploadError, setImageUploadError] = useState(null)
 
   const channelRef       = useRef(null)
   const optimisticIdsRef = useRef(new Set())
@@ -66,21 +68,16 @@ export function useQuadraRoom({ profile }) {
   }, [roomId])
 
   // ── Real-time subscription ───────────────────────────────────
-  // Realtime INSERT payloads don't include JOIN data, so we enrich each
-  // incoming message before appending it. The enrichment round-trip is
-  // fast (~50ms) and invisible — far better than showing a bare payload.
   useEffect(() => {
     if (!roomId) return
 
     channelRef.current = subscribeToRoom(roomId, async (rawMsg) => {
-      // Skip our own optimistic messages — they're already in state.
       if (optimisticIdsRef.current.has(rawMsg.id)) return
 
       try {
         const enriched = await enrichRoomMessage(rawMsg.id)
         if (!enriched) return
         setMessages((prev) => {
-          // Deduplicate by id (idempotent if enrich raced with initial load)
           if (prev.some((m) => m.id === enriched.id)) return prev
           return [...prev, enriched]
         })
@@ -95,7 +92,7 @@ export function useQuadraRoom({ profile }) {
     }
   }, [roomId])
 
-  // ── Visibility refetch — recover missed messages after tab wake ─
+  // ── Visibility refetch ──────────────────────────────────────
   useEffect(() => {
     if (!roomId) return
     async function handleVisibilityChange() {
@@ -103,7 +100,6 @@ export function useQuadraRoom({ profile }) {
       setMessages(prev => {
         if (!prev.length) return prev
         const latest = prev[prev.length - 1].created_at
-        // Fire async fetch outside the setState callback
         getRoomMessages(roomId, { after: latest }).then(fresh => {
           if (!fresh.length) return
           setMessages(current => {
@@ -142,7 +138,7 @@ export function useQuadraRoom({ profile }) {
     return () => channel.unsubscribe()
   }, [roomId])
 
-  // ── Load older messages (pagination) ────────────────────────
+  // ── Load older messages ──────────────────────────────────────
   const loadMore = useCallback(async () => {
     if (!roomId || loadingMore || !hasMore) return
     setLoadingMore(true)
@@ -159,24 +155,21 @@ export function useQuadraRoom({ profile }) {
     }
   }, [roomId, loadingMore, hasMore, messages])
 
-  // ── Send message ─────────────────────────────────────────────
-  // Optimistic: builds a temporary message object using the sender's
-  // profile data. Replaces itself with the real row on success, or
-  // rolls back with a sendError on failure.
-  const send = useCallback(async (content) => {
+  // ── Send text message (with optional imageUrl) ───────────────
+  const send = useCallback(async (content, replyToId, imageUrl = null) => {
     if (!roomId || !profile?.id || sending) return
-    if (!content?.trim()) return
+    if (!content?.trim() && !imageUrl) return
 
     setSendError(null)
     setSending(true)
 
-    // Build an optimistic message — matches the shape returned by getRoomMessages
     const tempId = `optimistic-${Date.now()}`
     const optimistic = {
       id: tempId,
       room_id: roomId,
       sender_id: profile.id,
-      content: content.trim(),
+      content: content?.trim() || null,
+      image_url: imageUrl || null,
       created_at: new Date().toISOString(),
       edited_at: null,
       deleted_at: null,
@@ -196,19 +189,17 @@ export function useQuadraRoom({ profile }) {
       const real = await sendRoomMessage({
         roomId,
         senderId: profile.id,
-        content: content.trim(),
+        content: content?.trim() || null,
+        imageUrl: imageUrl || null,
       })
 
-      // Track the real ID so the realtime broadcast doesn't double-add it
       optimisticIdsRef.current.add(real.id)
       setTimeout(() => optimisticIdsRef.current.delete(real.id), 10000)
 
-      // Replace optimistic with the real row
       setMessages((prev) =>
         prev.map((m) => (m.id === tempId ? real : m))
       )
     } catch (err) {
-      // Roll back
       setMessages((prev) => prev.filter((m) => m.id !== tempId))
       setSendError(err.message)
     } finally {
@@ -216,8 +207,25 @@ export function useQuadraRoom({ profile }) {
     }
   }, [roomId, profile, sending])
 
+  // ── Upload image then send ───────────────────────────────────
+  // Uploads the file, then calls send() with the resulting URL.
+  // Caption is optional — pass empty string for image-only.
+  const uploadImage = useCallback(async (file, caption = '') => {
+    if (!roomId || !profile?.id || imageUploading) return
+    setImageUploadError(null)
+    setImageUploading(true)
+    try {
+      const url = await uploadRoomImage(roomId, file)
+      await send(caption, null, url)
+      window.umami?.track('room-image-sent', { type: file.type })
+    } catch (err) {
+      setImageUploadError(err.message)
+    } finally {
+      setImageUploading(false)
+    }
+  }, [roomId, profile, imageUploading, send])
+
   // ── Soft delete ──────────────────────────────────────────────
-  // Updates local state immediately; the RLS enforces server-side.
   const softDelete = useCallback(async (messageId) => {
     const now = new Date().toISOString()
     setMessages((prev) =>
@@ -229,7 +237,6 @@ export function useQuadraRoom({ profile }) {
     try {
       await softDeleteRoomMessage(messageId)
     } catch (err) {
-      // Roll back optimistic delete
       setMessages((prev) =>
         prev.map((m) =>
           m.id === messageId ? { ...m, deleted_at: null } : m
@@ -254,7 +261,6 @@ export function useQuadraRoom({ profile }) {
     const hasReacted = reactions.some(r => r.user_id === profile.id && r.emoji === emoji)
     const snapshot = reactions
 
-    // Optimistic update
     setMessages(prev => prev.map(m => {
       if (m.id !== messageId) return m
       const updated = hasReacted
@@ -271,7 +277,6 @@ export function useQuadraRoom({ profile }) {
       }
       window.umami?.track('room-reaction', { emoji, action: hasReacted ? 'remove' : 'add' })
     } catch {
-      // Roll back
       setMessages(prev => prev.map(m =>
         m.id === messageId ? { ...m, reactions: snapshot } : m
       ))
@@ -289,6 +294,9 @@ export function useQuadraRoom({ profile }) {
     send,
     sending,
     sendError,
+    uploadImage,
+    imageUploading,
+    imageUploadError,
     softDelete,
     report,
     toggleReaction,
