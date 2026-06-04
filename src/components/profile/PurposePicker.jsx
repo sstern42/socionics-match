@@ -1,24 +1,8 @@
 const PURPOSES = [
-  {
-    key: 'dating',
-    name: 'Dating',
-    description: 'Find someone whose type creates natural complementarity.',
-  },
-  {
-    key: 'friendship',
-    name: 'Friendship',
-    description: 'Meet people whose type creates natural rapport and easy energy.',
-  },
-  {
-    key: 'networking',
-    name: 'Networking',
-    description: 'Find collaborators whose type complements yours professionally.',
-  },
-  {
-    key: 'team',
-    name: 'Team building',
-    description: 'Assemble groups with intentional type diversity or complementarity.',
-  },
+  { key: 'dating', name: 'Dating', description: 'Find someone whose type creates natural complementarity.' },
+  { key: 'friendship', name: 'Friendship', description: 'Meet people whose type creates natural rapport and easy energy.' },
+  { key: 'networking', name: 'Networking', description: 'Find collaborators whose type complements yours professionally.' },
+  { key: 'team', name: 'Team building', description: 'Assemble groups with intentional type diversity or complementarity.' },
 ]
 
 export default function PurposePicker({ selected, onChange }) {
@@ -43,7 +27,7 @@ export default function PurposePicker({ selected, onChange }) {
               padding: '1rem 1.25rem',
               border: `1px solid ${isSelected ? 'var(--accent)' : 'var(--border)'}`,
               borderRadius: 4,
-              background: isSelected ? 'rgba(154,111,56,0.08)' : '#fff',
+              background: isSelected ? 'rgba(154,111,56,0.08)' : 'var(--card-bg)',
               textAlign: 'left',
               cursor: 'pointer',
               transition: 'all 0.15s',

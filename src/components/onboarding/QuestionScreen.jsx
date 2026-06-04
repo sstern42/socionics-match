@@ -7,7 +7,6 @@ export default function QuestionScreen({ questionIndex, answers, onAnswer }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2.5rem', padding: '2rem', maxWidth: 580, margin: '0 auto', width: '100%' }}>
-      {/* Progress */}
       <div style={{ width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
           <span className="eyebrow">Question {questionIndex + 1} of {total}</span>
@@ -18,12 +17,10 @@ export default function QuestionScreen({ questionIndex, answers, onAnswer }) {
         </div>
       </div>
 
-      {/* Question */}
       <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.4rem,3.5vw,2.2rem)', fontWeight: 500, lineHeight: 1.3, textAlign: 'center' }}>
         {q.text}
       </h2>
 
-      {/* Options */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
         {['a', 'b'].map(opt => (
           <button
@@ -33,7 +30,7 @@ export default function QuestionScreen({ questionIndex, answers, onAnswer }) {
               padding: '1.25rem 1.5rem',
               border: `1px solid ${answers[q.id] === opt ? 'var(--accent)' : 'var(--border)'}`,
               borderRadius: 4,
-              background: answers[q.id] === opt ? 'rgba(154,111,56,0.08)' : '#fff',
+              background: answers[q.id] === opt ? 'rgba(154,111,56,0.08)' : 'var(--card-bg)',
               color: answers[q.id] === opt ? 'var(--accent)' : 'var(--text)',
               fontFamily: 'var(--sans)',
               fontSize: '0.95rem',

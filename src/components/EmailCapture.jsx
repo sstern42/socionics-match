@@ -1,11 +1,8 @@
-// EmailCapture.jsx — drop into src/components/
-// Add VITE_MAILERLITE_API_KEY to Netlify env vars
-
 import { useState } from 'react'
 
 export default function EmailCapture() {
   const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('idle') // idle | loading | success | error
+  const [status, setStatus] = useState('idle')
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -36,7 +33,7 @@ export default function EmailCapture() {
       borderTop: '1px solid var(--border)',
       padding: '4rem 2rem',
       textAlign: 'center',
-      background: '#fff',
+      background: 'var(--card-bg)',
     }}>
       <div style={{ maxWidth: 480, margin: '0 auto' }}>
         <p className="eyebrow" style={{ marginBottom: '0.75rem' }}>Follow the experiment</p>

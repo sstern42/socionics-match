@@ -8,7 +8,7 @@ function Avatar({ profile, size = 72 }) {
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%',
-      border: '3px solid #fff',
+      border: '3px solid var(--card-bg)',
       background: 'var(--surface)',
       overflow: 'hidden',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -61,13 +61,12 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#fff', borderRadius: 12, padding: '2rem 1.75rem',
+          background: 'var(--card-bg)', borderRadius: 12, padding: '2rem 1.75rem',
           width: '100%', maxWidth: 380,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem',
           textAlign: 'center',
         }}
       >
-        {/* Overlapping avatars */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', height: 80 }}>
           <div style={{ position: 'absolute', left: '50%', transform: 'translateX(calc(-50% - 28px)', zIndex: 2 }}>
             <Avatar profile={currentProfile} size={72} />
@@ -77,7 +76,6 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
           </div>
         </div>
 
-        {/* Headline */}
         <div>
           <p className="eyebrow" style={{ marginBottom: '0.4rem' }}>It's a match</p>
           <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', fontWeight: 500, margin: 0 }}>
@@ -88,7 +86,6 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
           )}
         </div>
 
-        {/* Relation badge */}
         {relInfo && (
           <div style={{
             width: '100%', background: colours.bg,
@@ -104,22 +101,11 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
           </div>
         )}
 
-        {/* CTAs */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', width: '100%' }}>
-          <button
-            type="button"
-            className="btn-primary"
-            onClick={handleMessage}
-            style={{ width: '100%' }}
-          >
+          <button type="button" className="btn-primary" onClick={handleMessage} style={{ width: '100%' }}>
             Send first message →
           </button>
-          <button
-            type="button"
-            className="btn-ghost"
-            onClick={onDismiss}
-            style={{ width: '100%' }}
-          >
+          <button type="button" className="btn-ghost" onClick={onDismiss} style={{ width: '100%' }}>
             Keep swiping
           </button>
         </div>

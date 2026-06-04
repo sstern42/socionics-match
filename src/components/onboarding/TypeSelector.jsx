@@ -41,7 +41,7 @@ export default function TypeSelector({ onConfirm }) {
               padding: '0.85rem 0.5rem',
               border: `1px solid ${selected === type ? 'var(--accent)' : 'var(--border)'}`,
               borderRadius: 4,
-              background: selected === type ? 'rgba(154,111,56,0.08)' : '#fff',
+              background: selected === type ? 'rgba(154,111,56,0.08)' : 'var(--card-bg)',
               color: selected === type ? 'var(--accent)' : 'var(--text)',
               fontFamily: 'var(--sans)',
               fontSize: '0.85rem',
