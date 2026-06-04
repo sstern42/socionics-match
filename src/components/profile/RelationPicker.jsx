@@ -1,33 +1,12 @@
 import { RELATIONS, MATRIX } from '../../data/relations'
 
 const RELATION_GROUPS = [
-  {
-    label: 'Complementary',
-    key: 'complementary',
-    relations: ['DUAL', 'SEMI_DUAL', 'ACTIVITY', 'MIRROR'],
-  },
-  {
-    label: 'Compatible',
-    key: 'compatible',
-    relations: ['KINDRED', 'BUSINESS', 'BENEFACTOR', 'BENEFICIARY'],
-  },
-  {
-    label: 'Challenging',
-    key: 'challenging',
-    relations: ['QUASI_IDENTITY', 'ILLUSIONARY', 'CONTRARY', 'SUPERVISOR', 'SUPERVISEE'],
-  },
-  {
-    label: 'Difficult',
-    key: 'difficult',
-    relations: ['SUPER_EGO', 'CONFLICT', 'IDENTITY'],
-  },
+  { label: 'Complementary', key: 'complementary', relations: ['DUAL', 'SEMI_DUAL', 'ACTIVITY', 'MIRROR'] },
+  { label: 'Compatible',    key: 'compatible',    relations: ['KINDRED', 'BUSINESS', 'BENEFACTOR', 'BENEFICIARY'] },
+  { label: 'Challenging',   key: 'challenging',   relations: ['QUASI_IDENTITY', 'ILLUSIONARY', 'CONTRARY', 'SUPERVISOR', 'SUPERVISEE'] },
+  { label: 'Difficult',     key: 'difficult',     relations: ['SUPER_EGO', 'CONFLICT', 'IDENTITY'] },
 ]
 
-// The feed displays cards using displayRelation (other->me), which inverts asymmetric keys.
-// To align stored prefs with displayed labels, we save the inverse key for asymmetric relations.
-// e.g. SEI clicks "Benefactor" (label) → saves BENEFICIARY (key) → getMatchingTypes finds EII
-//      EII displayRelation = BENEFACTOR → EII card appears under Benefactor pill ✓
-// The bracket hint uses the same inverse so the shown type matches the feed result.
 const ASYMMETRIC_INVERSE = {
   BENEFACTOR:  'BENEFICIARY',
   BENEFICIARY: 'BENEFACTOR',
@@ -36,36 +15,19 @@ const ASYMMETRIC_INVERSE = {
 }
 
 export default function RelationPicker({ selected, onChange, userType }) {
-  // For asymmetric relations, the stored key is the inverse of the label key
-  // so that getMatchingTypes returns types that displayRelation shows with the label.
-  function storedKey(rel) {
-    return ASYMMETRIC_INVERSE[rel] ?? rel
-  }
-
+  function storedKey(rel) { return ASYMMETRIC_INVERSE[rel] ?? rel }
   function toggle(rel) {
     const key = storedKey(rel)
-    if (selected.includes(key)) {
-      onChange(selected.filter(r => r !== key))
-    } else {
-      onChange([...selected, key])
-    }
+    if (selected.includes(key)) { onChange(selected.filter(r => r !== key)) }
+    else { onChange([...selected, key]) }
   }
-
   function toggleGroup(rels) {
     const keys = rels.map(storedKey)
     const allSelected = keys.every(k => selected.includes(k))
-    if (allSelected) {
-      onChange(selected.filter(r => !keys.includes(r)))
-    } else {
-      const toAdd = keys.filter(k => !selected.includes(k))
-      onChange([...selected, ...toAdd])
-    }
+    if (allSelected) { onChange(selected.filter(r => !keys.includes(r))) }
+    else { const toAdd = keys.filter(k => !selected.includes(k)); onChange([...selected, ...toAdd]) }
   }
-
-  // A button is selected if its stored key is in the current selection
-  function isSelected(rel) {
-    return selected.includes(storedKey(rel))
-  }
+  function isSelected(rel) { return selected.includes(storedKey(rel)) }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -86,13 +48,10 @@ export default function RelationPicker({ selected, onChange, userType }) {
             {group.relations.map(rel => {
               const sel = isSelected(rel)
               const info = RELATIONS[rel]
-
-              // Bracket: inverse lookup → type that will appear in feed under this label
               const lookupRel = ASYMMETRIC_INVERSE[rel] ?? rel
               const partnerType = userType
                 ? Object.entries(MATRIX[userType] ?? {}).find(([, r]) => r === lookupRel)?.[0]
                 : null
-
               return (
                 <button
                   key={rel}
@@ -102,7 +61,7 @@ export default function RelationPicker({ selected, onChange, userType }) {
                     padding: '0.75rem 1rem',
                     border: `1px solid ${sel ? 'var(--accent)' : 'var(--border)'}`,
                     borderRadius: 4,
-                    background: sel ? 'rgba(154,111,56,0.08)' : '#fff',
+                    background: sel ? 'rgba(154,111,56,0.08)' : 'var(--card-bg)',
                     textAlign: 'left',
                     cursor: 'pointer',
                     transition: 'all 0.15s',
@@ -123,7 +82,6 @@ export default function RelationPicker({ selected, onChange, userType }) {
           </div>
         </div>
       ))}
-
       {selected.length > 0 && (
         <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center' }}>
           {selected.length} relation{selected.length !== 1 ? 's' : ''} selected

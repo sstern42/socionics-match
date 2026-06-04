@@ -33,7 +33,6 @@ function ratingColour(avgRating) {
   return '#e74c3c'
 }
 
-// Simple force simulation without D3
 function useForceSimulation(nodes, edges, width, height) {
   const posRef = useRef({})
   const velRef = useRef({})
@@ -45,7 +44,6 @@ function useForceSimulation(nodes, edges, width, height) {
   useEffect(() => {
     if (!nodes.length || !width) return
 
-    // Initialise positions in a circle
     const cx = width / 2, cy = height / 2, r = Math.min(width, height) * 0.35
     nodes.forEach((n, i) => {
       const angle = (i / nodes.length) * 2 * Math.PI
@@ -70,7 +68,6 @@ function useForceSimulation(nodes, edges, width, height) {
 
       const ids = nodes.map(n => n.id)
 
-      // Repulsion between all pairs
       for (let i = 0; i < ids.length; i++) {
         for (let j = i + 1; j < ids.length; j++) {
           const a = posRef.current[ids[i]]
@@ -88,7 +85,6 @@ function useForceSimulation(nodes, edges, width, height) {
         }
       }
 
-      // Attraction along edges
       for (const edge of edges) {
         const a = posRef.current[edge.source]
         const b = posRef.current[edge.target]
@@ -105,14 +101,12 @@ function useForceSimulation(nodes, edges, width, height) {
         velRef.current[edge.target].vy -= fy
       }
 
-      // Centering force
       for (const id of ids) {
         const p = posRef.current[id]
         velRef.current[id].vx += (cx - p.x) * CENTER_FORCE * alphaRef.current
         velRef.current[id].vy += (cy - p.y) * CENTER_FORCE * alphaRef.current
       }
 
-      // Update positions
       for (const id of ids) {
         const p = posRef.current[id]
         const v = velRef.current[id]
@@ -169,7 +163,6 @@ export default function Network() {
   const [fullscreen, setFullscreen] = useState(false)
   const HEIGHT = fullscreen ? (window.innerHeight - 0) : 560
 
-  // Lock body scroll in fullscreen
   useEffect(() => {
     document.body.style.overflow = fullscreen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -240,7 +233,6 @@ export default function Network() {
     fullscreen ? window.innerHeight : HEIGHT
   )
 
-  // Drag handling
   function handleMouseDown(e, id) {
     e.preventDefault()
     setDragging(id)
@@ -302,9 +294,9 @@ export default function Network() {
           ref={containerRef}
           style={fullscreen ? {
             position: 'fixed', inset: 0, zIndex: 200,
-            background: '#fff', overflow: 'hidden',
+            background: 'var(--card-bg)', overflow: 'hidden',
           } : {
-            position: 'relative', background: '#fff',
+            position: 'relative', background: 'var(--card-bg)',
             border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden',
           }}
         >
@@ -316,7 +308,7 @@ export default function Network() {
             title={settled ? 'Spread nodes' : 'Settling…'}
             style={{
               position: 'absolute', top: 10, right: fullscreen ? 80 : 110, zIndex: 10,
-              background: 'rgba(255,255,255,0.92)', border: '1px solid var(--border)',
+              background: 'var(--surface)', border: '1px solid var(--border)',
               borderRadius: 4, padding: '0.35rem 0.6rem',
               cursor: settled ? 'pointer' : 'default', fontSize: '0.75rem',
               color: settled ? 'var(--muted)' : 'var(--border)',
@@ -339,7 +331,7 @@ export default function Network() {
             className="network-fullscreen-btn"
             style={{
               position: 'absolute', top: 10, right: 10, zIndex: 10,
-              background: 'rgba(255,255,255,0.92)', border: '1px solid var(--border)',
+              background: 'var(--surface)', border: '1px solid var(--border)',
               borderRadius: 4, padding: '0.35rem 0.6rem',
               cursor: 'pointer', fontSize: '0.75rem',
               color: 'var(--muted)', alignItems: 'center', gap: '0.3rem',
@@ -353,7 +345,7 @@ export default function Network() {
             )}
           </button>
           {loading && (
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', zIndex: 2 }}>
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--card-bg)', zIndex: 2 }}>
               <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>Loading network data…</p>
             </div>
           )}
@@ -367,7 +359,6 @@ export default function Network() {
             style={{ display: 'block', width: '100%', height: fullscreen ? '100vh' : HEIGHT, cursor: dragging ? 'grabbing' : 'default', touchAction: 'none' }}
             viewBox={`0 0 ${width || 800} ${fullscreen ? window.innerHeight : HEIGHT}`}
           >
-            {/* Edges */}
             {width > 0 && edges.map(edge => {
               const src = positions[edge.source]
               const tgt = positions[edge.target]
@@ -390,7 +381,6 @@ export default function Network() {
               )
             })}
 
-            {/* Nodes */}
             {width > 0 && TYPES.map(id => {
               const pos = positions[id]
               if (!pos) return null
@@ -433,7 +423,6 @@ export default function Network() {
           </svg>
         </div>
 
-        {/* Legend */}
         <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
             <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Rating</span>
@@ -488,14 +477,12 @@ export default function Network() {
         )}
       </section>
 
-      {/* Tooltip */}
       {tooltip && (
         <div style={{
           position: 'fixed',
           left: tooltip.x + 14,
           top: tooltip.y - 10,
-          background: '#fff',
-          border: '1px solid var(--border)',
+          background: 'var(--card-bg)', border: '1px solid var(--border)',
           borderRadius: 6,
           padding: '0.75rem 1rem',
           fontSize: '0.82rem',

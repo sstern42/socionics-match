@@ -24,7 +24,7 @@ export default function SIWebview({ url, onClose }) {
       <div
         onClick={e => e.stopPropagation()}
         style={{
-          background: '#fff',
+          background: 'var(--card-bg)',
           borderRadius: '12px 12px 0 0',
           height: '85vh',
           display: 'flex', flexDirection: 'column',

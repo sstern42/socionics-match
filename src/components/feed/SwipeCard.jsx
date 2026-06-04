@@ -23,7 +23,6 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
   const startRef = useRef(null)
 
   const { profile_data, type, displayRelation, relation, avatar_url, verified_by } = profile
-
   const relKey   = displayRelation ?? relation
   const relInfo  = RELATIONS[relKey]
   const colours  = getColours(relKey)
@@ -57,21 +56,16 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
     if (!isDragging) return
     setIsDragging(false)
     startRef.current = null
-
     if (Math.abs(dragX) >= SWIPE_THRESHOLD) {
       const direction = dragX > 0 ? 'right' : 'left'
       if (direction === 'right' && blockRightSwipe) {
-        setDragX(0)
-        setDragY(0)
-        onBlockedRightSwipe?.()
-        return
+        setDragX(0); setDragY(0); onBlockedRightSwipe?.(); return
       }
       setIsFlying(true)
       setDragX(dragX > 0 ? FLY_DISTANCE : -FLY_DISTANCE)
       setTimeout(() => onSwipe(direction), 320)
     } else {
-      setDragX(0)
-      setDragY(0)
+      setDragX(0); setDragY(0)
     }
   }, [isDragging, dragX, onSwipe, blockRightSwipe, onBlockedRightSwipe])
 
@@ -85,24 +79,14 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
 
   return (
     <div
-      style={{
-        position:  'absolute',
-        inset:     0,
-        zIndex,
-        transform,
-        transition,
-        cursor:    isTop ? (isDragging ? 'grabbing' : 'grab') : 'default',
-        touchAction: 'none',
-        userSelect: 'none',
-        willChange: isTop ? 'transform' : 'auto',
-      }}
+      style={{ position:'absolute',inset:0,zIndex,transform,transition,cursor:isTop?(isDragging?'grabbing':'grab'):'default',touchAction:'none',userSelect:'none',willChange:isTop?'transform':'auto' }}
       onPointerDown={isTop ? handlePointerDown : undefined}
       onPointerMove={isTop ? handlePointerMove : undefined}
       onPointerUp={isTop ? handlePointerUp : undefined}
       onPointerCancel={isTop ? handlePointerUp : undefined}
     >
       <div style={{
-        background:   '#fff',
+        background:   'var(--card-bg)',
         border:       `1px solid ${colours.border}`,
         borderRadius: 12,
         height:       '100%',
@@ -110,195 +94,64 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
         flexDirection: 'column',
         overflow:     'hidden',
         position:     'relative',
-        boxShadow:    isTop
-          ? '0 8px 32px rgba(0,0,0,0.10)'
-          : '0 2px 8px rgba(0,0,0,0.04)',
+        boxShadow:    isTop ? '0 8px 32px rgba(0,0,0,0.10)' : '0 2px 8px rgba(0,0,0,0.04)',
       }}>
-
-        {/* LIKE stamp */}
-        <div aria-hidden="true" style={{
-          position:       'absolute', top: 24, left: 20, zIndex: 10,
-          opacity:        likeOpacity,
-          border:         '3px solid #4caf50',
-          borderRadius:   6,
-          padding:        '3px 12px',
-          transform:      'rotate(-16deg)',
-          pointerEvents:  'none',
-          transition:     'opacity 0.05s',
-        }}>
-          <span style={{ color: '#4caf50', fontWeight: 700, fontSize: '1.4rem', letterSpacing: '0.12em', fontFamily: 'var(--sans)' }}>
-            LIKE
-          </span>
+        <div aria-hidden="true" style={{ position:'absolute',top:24,left:20,zIndex:10,opacity:likeOpacity,border:'3px solid #4caf50',borderRadius:6,padding:'3px 12px',transform:'rotate(-16deg)',pointerEvents:'none',transition:'opacity 0.05s' }}>
+          <span style={{ color:'#4caf50',fontWeight:700,fontSize:'1.4rem',letterSpacing:'0.12em',fontFamily:'var(--sans)' }}>LIKE</span>
+        </div>
+        <div aria-hidden="true" style={{ position:'absolute',top:24,right:20,zIndex:10,opacity:passOpacity,border:'3px solid #e53935',borderRadius:6,padding:'3px 12px',transform:'rotate(16deg)',pointerEvents:'none',transition:'opacity 0.05s' }}>
+          <span style={{ color:'#e53935',fontWeight:700,fontSize:'1.4rem',letterSpacing:'0.12em',fontFamily:'var(--sans)' }}>PASS</span>
         </div>
 
-        {/* PASS stamp */}
-        <div aria-hidden="true" style={{
-          position:       'absolute', top: 24, right: 20, zIndex: 10,
-          opacity:        passOpacity,
-          border:         '3px solid #e53935',
-          borderRadius:   6,
-          padding:        '3px 12px',
-          transform:      'rotate(16deg)',
-          pointerEvents:  'none',
-          transition:     'opacity 0.05s',
-        }}>
-          <span style={{ color: '#e53935', fontWeight: 700, fontSize: '1.4rem', letterSpacing: '0.12em', fontFamily: 'var(--sans)' }}>
-            PASS
-          </span>
-        </div>
-
-        {/* Photo */}
         {avatar_url && !isAnon ? (
-          <div style={{ height: 220, flexShrink: 0, overflow: 'hidden', background: 'var(--surface)' }}>
-            <img
-              src={avatar_url}
-              alt={displayName}
-              draggable={false}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', pointerEvents: 'none' }}
-            />
+          <div style={{ height:220,flexShrink:0,overflow:'hidden',background:'var(--surface)' }}>
+            <img src={avatar_url} alt={displayName} draggable={false} style={{ width:'100%',height:'100%',objectFit:'cover',pointerEvents:'none' }} />
           </div>
         ) : (
-          <div style={{
-            height: 130, flexShrink: 0,
-            background: 'var(--surface)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontFamily: 'var(--serif)', fontSize: '3.5rem', color: 'var(--accent-lt)', lineHeight: 1 }}>
-              {isAnon ? '🕵️' : (profile_data?.name?.[0]?.toUpperCase() ?? '?')}
-            </span>
+          <div style={{ height:130,flexShrink:0,background:'var(--surface)',display:'flex',alignItems:'center',justifyContent:'center' }}>
+            <span style={{ fontFamily:'var(--serif)',fontSize:'3.5rem',color:'var(--accent-lt)',lineHeight:1 }}>{isAnon ? '🕵️' : (profile_data?.name?.[0]?.toUpperCase() ?? '?')}</span>
           </div>
         )}
 
-        {/* Body */}
-        <div style={{
-          flex: 1, padding: '1rem 1.1rem',
-          display: 'flex', flexDirection: 'column', gap: '0.65rem',
-          overflowY: 'auto', minHeight: 0,
-        }}>
-
-          {/* Name + type badge */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-            <div style={{ minWidth: 0 }}>
-              <h3 style={{
-                fontFamily: 'var(--serif)', fontSize: '1.2rem',
-                fontWeight: 500, margin: 0, lineHeight: 1.2,
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-              }}>
-                {displayName}{age ? `, ${age}` : ''}{genderEmoji && !isAnon ? ` ${genderEmoji}` : ''}
+        <div style={{ flex:1,padding:'1rem 1.1rem',display:'flex',flexDirection:'column',gap:'0.65rem',overflowY:'auto',minHeight:0 }}>
+          <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'0.5rem' }}>
+            <div style={{ minWidth:0 }}>
+              <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0,lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
+                {displayName}{age?`, ${age}`:''}{genderEmoji && !isAnon ? ` ${genderEmoji}` : ''}
               </h3>
               {(flag || (profile_data?.city && !isAnon)) && (
-                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.15rem' }}>
+                <p style={{ fontSize:'0.78rem',color:'var(--muted)',marginTop:'0.15rem' }}>
                   {flag}{flag && profile_data?.city && !isAnon ? ' ' : ''}
                   {profile_data?.city && !isAnon ? profile_data.city : ''}
                 </p>
               )}
             </div>
-
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: '0.25rem', flexShrink: 0,
-              fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase',
-              fontWeight: 500, color: colours.text,
-              background: colours.bg, border: `1px solid ${colours.border}`,
-              padding: '0.22rem 0.55rem', borderRadius: 3,
-            }}>
+            <div style={{ display:'flex',alignItems:'center',gap:'0.25rem',flexShrink:0,fontSize:'0.7rem',letterSpacing:'0.08em',textTransform:'uppercase',fontWeight:500,color:colours.text,background:colours.bg,border:`1px solid ${colours.border}`,padding:'0.22rem 0.55rem',borderRadius:3 }}>
               {type}
-              {verified_by && !isAnon && (
-                <span style={{
-                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                  width: 11, height: 11, borderRadius: '50%',
-                  background: 'var(--accent)', color: '#fff',
-                  fontSize: '0.42rem', fontWeight: 700, lineHeight: 1,
-                }}>✓</span>
-              )}
+              {verified_by && !isAnon && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:11,height:11,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.42rem',fontWeight:700,lineHeight:1 }}>✓</span>}
             </div>
           </div>
 
-          {/* Relation badge */}
           {relInfo && (
-            <div style={{
-              background: colours.bg, border: `1px solid ${colours.border}`,
-              borderRadius: 4, padding: '0.5rem 0.75rem', flexShrink: 0,
-            }}>
-              <p style={{
-                fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase',
-                color: colours.text, fontWeight: 500, margin: 0,
-              }}>
-                {relInfo.name}
-              </p>
-              <p style={{ fontSize: '0.74rem', color: 'var(--muted)', marginTop: '0.18rem', lineHeight: 1.5, margin: '0.18rem 0 0' }}>
-                {relInfo.description}
-              </p>
+            <div style={{ background:colours.bg,border:`1px solid ${colours.border}`,borderRadius:4,padding:'0.5rem 0.75rem',flexShrink:0 }}>
+              <p style={{ fontSize:'0.68rem',letterSpacing:'0.12em',textTransform:'uppercase',color:colours.text,fontWeight:500,margin:0 }}>{relInfo.name}</p>
+              <p style={{ fontSize:'0.74rem',color:'var(--muted)',marginTop:'0.18rem',lineHeight:1.5,margin:'0.18rem 0 0' }}>{relInfo.description}</p>
             </div>
           )}
 
-          {/* Bio — FIX: whiteSpace pre-wrap preserves line breaks */}
-          <p style={{
-            fontSize: '0.84rem',
-            lineHeight: 1.65, fontWeight: 300, margin: 0,
-            fontStyle: profile_data?.bio ? 'normal' : 'italic',
-            color: profile_data?.bio ? 'var(--text)' : 'var(--border)',
-            whiteSpace: 'pre-wrap',
-          }}>
-            {profile_data?.bio
-              ? (profile_data.bio.length > 160 ? profile_data.bio.slice(0, 160) + '…' : profile_data.bio)
-              : 'No bio yet.'}
+          <p style={{ fontSize:'0.84rem',lineHeight:1.65,fontWeight:300,margin:0,fontStyle:profile_data?.bio?'normal':'italic',color:profile_data?.bio?'var(--text)':'var(--border)',whiteSpace:'pre-wrap' }}>
+            {profile_data?.bio ? (profile_data.bio.length > 160 ? profile_data.bio.slice(0,160)+'…' : profile_data.bio) : 'No bio yet.'}
           </p>
         </div>
 
-        {/* Pass / Skip / Like buttons — shown only on top card */}
         {isTop && (
           <div
             onPointerDown={e => e.stopPropagation()}
-            style={{
-              display: 'flex', gap: '0.5rem',
-              padding: '0.75rem 1.1rem',
-              borderTop: '1px solid var(--border)',
-              background: '#fff', flexShrink: 0,
-            }}
+            style={{ display:'flex',gap:'0.5rem',padding:'0.75rem 1.1rem',borderTop:'1px solid var(--border)',background:'var(--card-bg)',flexShrink:0 }}
           >
-            <button
-              type="button"
-              onClick={() => onSwipe('left')}
-              style={{
-                flex: 1, border: '1px solid #e53935', borderRadius: 4,
-                background: 'transparent', color: '#e53935',
-                padding: '0.55rem', cursor: 'pointer',
-                fontSize: '0.78rem', fontFamily: 'var(--sans)',
-                fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase',
-              }}
-            >
-              ✕  Pass
-            </button>
-            <button
-              type="button"
-              onClick={() => onSkip?.()}
-              title="Show again later this session"
-              style={{
-                flex: '0 0 auto', border: '1px solid var(--border)', borderRadius: 4,
-                background: 'transparent', color: 'var(--muted)',
-                padding: '0.55rem 0.85rem', cursor: 'pointer',
-                fontSize: '0.78rem', fontFamily: 'var(--sans)',
-                fontWeight: 500, letterSpacing: '0.04em',
-              }}
-            >
-              ↩
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                if (blockRightSwipe) { onBlockedRightSwipe?.(); return }
-                onSwipe('right')
-              }}
-              style={{
-                flex: 1, border: '1px solid #4caf50', borderRadius: 4,
-                background: 'transparent', color: '#4caf50',
-                padding: '0.55rem', cursor: 'pointer',
-                fontSize: '0.78rem', fontFamily: 'var(--sans)',
-                fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase',
-              }}
-            >
-              ♥  Like
-            </button>
+            <button type="button" onClick={() => onSwipe('left')} style={{ flex:1,border:'1px solid #e53935',borderRadius:4,background:'transparent',color:'#e53935',padding:'0.55rem',cursor:'pointer',fontSize:'0.78rem',fontFamily:'var(--sans)',fontWeight:500,letterSpacing:'0.06em',textTransform:'uppercase' }}>✕  Pass</button>
+            <button type="button" onClick={() => onSkip?.()} title="Show again later this session" style={{ flex:'0 0 auto',border:'1px solid var(--border)',borderRadius:4,background:'transparent',color:'var(--muted)',padding:'0.55rem 0.85rem',cursor:'pointer',fontSize:'0.78rem',fontFamily:'var(--sans)',fontWeight:500,letterSpacing:'0.04em' }}>↩</button>
+            <button type="button" onClick={() => { if (blockRightSwipe) { onBlockedRightSwipe?.(); return } onSwipe('right') }} style={{ flex:1,border:'1px solid #4caf50',borderRadius:4,background:'transparent',color:'#4caf50',padding:'0.55rem',cursor:'pointer',fontSize:'0.78rem',fontFamily:'var(--sans)',fontWeight:500,letterSpacing:'0.06em',textTransform:'uppercase' }}>♥  Like</button>
           </div>
         )}
       </div>
