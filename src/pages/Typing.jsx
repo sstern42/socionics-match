@@ -36,21 +36,23 @@ export default function Typing() {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
 
-  // Fetch birth years for all typists via SECURITY DEFINER RPC (bypasses RLS)
+  // Fetch birth years — each typist's own row is readable by themselves via RLS
   useEffect(() => {
-    const typists = TYPIST_LIST.filter(t => t.authId)
+    if (!session) return
+    const typists = TYPIST_LIST.filter(t => t.authId === session.user.id)
     if (!typists.length) return
-    Promise.all(
-      typists.map(t =>
-        supabase.rpc('get_typist_birth_year', { p_auth_id: t.authId })
-          .then(({ data }) => [t.authId, data])
-      )
-    ).then(results => {
-      const map = {}
-      results.forEach(([authId, year]) => { if (year) map[authId] = year })
-      setBirthYears(map)
-    })
-  }, [])
+    supabase
+      .from('users')
+      .select('auth_id, birth_year')
+      .eq('auth_id', session.user.id)
+      .single()
+      .then(({ data }) => {
+        if (!data?.birth_year) return
+        const map = {}
+        map[data.auth_id] = data.birth_year
+        setBirthYears(map)
+      })
+  }, [session])
 
   if (loading || !profile) return null
 
