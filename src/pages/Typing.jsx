@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { TYPIST_LIST } from '../lib/typists'
+import { TYPIST_LIST, countryFlag, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
+import { supabase } from '../lib/supabaseClient'
 
 const AVAILABILITY = {
   active: { label: 'Available', colour: '#4caf50' },
@@ -17,9 +18,15 @@ function viewerRelation(typistBaseType, viewerType) {
   catch { return null }
 }
 
+function calcAge(birthYear) {
+  if (!birthYear) return null
+  return new Date().getFullYear() - birthYear
+}
+
 export default function Typing() {
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
+  const [birthYears, setBirthYears] = useState({}) // { username: birth_year }
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -28,6 +35,22 @@ export default function Typing() {
   useEffect(() => {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
+
+  // Fetch birth years for all typists in one query
+  useEffect(() => {
+    const usernames = TYPIST_LIST.map(t => t.username).filter(Boolean)
+    if (!usernames.length) return
+    supabase
+      .from('users')
+      .select('username, birth_year')
+      .in('username', usernames)
+      .then(({ data }) => {
+        if (!data) return
+        const map = {}
+        data.forEach(row => { map[row.username] = row.birth_year })
+        setBirthYears(map)
+      })
+  }, [])
 
   if (loading || !profile) return null
 
@@ -48,6 +71,9 @@ export default function Typing() {
             const relation = viewerRelation(typist.type, profile.type)
             const relInfo  = relation ? RELATIONS[relation] : null
             const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
+            const flag     = countryFlag(typist.country)
+            const yrs      = yearsExperience(typist.studyingSince)
+            const age      = calcAge(birthYears[typist.username])
 
             return (
               <div
@@ -72,6 +98,8 @@ export default function Typing() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                       <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', fontWeight: 500, margin: 0 }}>
                         {typist.displayName}
+                        {flag && <span style={{ marginLeft: '0.4rem', fontSize: '1rem' }}>{flag}</span>}
+                        {age  && <span style={{ fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 300, color: 'var(--muted)', marginLeft: '0.25rem' }}>{age}</span>}
                       </h2>
                       <span style={{
                         fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
@@ -130,15 +158,24 @@ export default function Typing() {
                     </div>
                   )}
 
-                  {/* Method + availability */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {/* Method + experience + availability */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                     <span style={{
                       fontSize: '0.72rem', color: 'var(--muted)',
                       border: '1px solid var(--border)',
                       padding: '0.2rem 0.6rem', borderRadius: 3,
                     }}>
-                      📝 {typist.method}
+                      Delivery: {typist.method}
                     </span>
+                    {yrs && (
+                      <span style={{
+                        fontSize: '0.72rem', color: 'var(--muted)',
+                        border: '1px solid var(--border)',
+                        padding: '0.2rem 0.6rem', borderRadius: 3,
+                      }}>
+                        {yrs}+ years studying Socionics
+                      </span>
+                    )}
                     <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', color: avail.colour }}>
                       <span style={{ width: 6, height: 6, borderRadius: '50%', background: avail.colour, flexShrink: 0, display: 'inline-block' }} />
                       {avail.label}
