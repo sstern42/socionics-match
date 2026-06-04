@@ -330,3 +330,19 @@ html.dark input::placeholder { color: var(--muted); }
 
 /* BootSpin animation used by BootGate */
 @keyframes bootSpin { to { transform: rotate(360deg); } }
+
+/* ── Dark mode rel-pill contrast fix ──────────────────────────── */
+/* In dark mode the default muted colour is too dim — lift pills  */
+/* to var(--text) so they're readable against the dark surface.   */
+html.dark .rel-pill {
+  color: var(--text);
+  border-color: rgba(220,200,160,0.2);
+}
+html.dark .rel-pill.active {
+  border-color: var(--accent-lt);
+  color: var(--accent);
+}
+html.dark .rel-pill.clickable:hover {
+  border-color: var(--accent-lt);
+  color: var(--accent);
+}

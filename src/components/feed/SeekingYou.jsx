@@ -2,19 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getTypesSeekingMe, RELATIONS, getQuadra } from '../../data/relations'
 
-// "Your strongest matches" — premium panel. Pure matrix derivation, no query.
-//
-// Symmetric strong band only: Dual, Activity, Mirror, Semi-Dual. Both sides
-// experience the same relation toward each other, so there is no pursuer/pursued
-// direction to disambiguate — each row reads cleanly without a caveat. The
-// asymmetric Benefactor/Beneficiary relations are deliberately excluded here;
-// they belong in the full compatibility breakdown where the direction can be
-// explained properly.
-//
-// getTypesSeekingMe reads getRelation(other, me) — the other party's view of you
-// — so theySeeMeAs equals the feed's displayRelation, and the Filter button
-// targets theySeeMeAs so every row lands on real feed results.
-
 const STRONG_RELATIONS = ['DUAL', 'ACTIVITY', 'MIRROR', 'SEMI_DUAL', 'BENEFICIARY']
 const STRONG_ORDER = { DUAL: 0, ACTIVITY: 1, MIRROR: 2, SEMI_DUAL: 3, BENEFICIARY: 4 }
 
@@ -30,7 +17,7 @@ function Row({ entry, onExploreRelation }) {
     <button
       type="button"
       onClick={() => { window.umami?.track('seeking-you-relation-clicked', { type, relation: theySeeMeAs }); onExploreRelation?.(theySeeMeAs) }}
-      style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left', background: '#fff', border: '1px solid var(--border)', borderRadius: 6, padding: '0.6rem 0.75rem', cursor: 'pointer', transition: 'border-color 0.15s' }}
+      style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', width: '100%', textAlign: 'left', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.6rem 0.75rem', cursor: 'pointer', transition: 'border-color 0.15s' }}
       onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-lt)'}
       onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
     >
@@ -73,7 +60,7 @@ export default function SeekingYou({ userType, isPremium, onExploreRelation }) {
           </span>
           {!isPremium && <span aria-hidden="true" style={{ fontSize: '0.85rem', lineHeight: 1 }}>&#128274;</span>}
         </span>
-        <span style={{ color: 'var(--accent)', fontSize: '0.7rem', flexShrink: 0 }}>{open ? '\u25B2' : '\u25BC'}</span>
+        <span style={{ color: 'var(--accent)', fontSize: '0.7rem', flexShrink: 0 }}>{open ? '▲' : '▼'}</span>
       </button>
 
       {open && (
@@ -91,7 +78,7 @@ export default function SeekingYou({ userType, isPremium, onExploreRelation }) {
             <div style={{ position: 'relative', borderRadius: 6, overflow: 'hidden' }}>
               <div aria-hidden="true" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', filter: 'blur(5px)', opacity: 0.55, userSelect: 'none', pointerEvents: 'none' }}>
                 {matches.map(({ type, theySeeMeAs }) => (
-                  <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#fff', border: '1px solid var(--border)', borderRadius: 6, padding: '0.6rem 0.75rem' }}>
+                  <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 6, padding: '0.6rem 0.75rem' }}>
                     <span style={{ fontSize: '0.78rem', fontWeight: 600, width: 38 }}>{type}</span>
                     <span style={{ fontSize: '0.82rem', color: 'var(--text)' }}>Your {RELATIONS[theySeeMeAs]?.name ?? theySeeMeAs}</span>
                   </div>
