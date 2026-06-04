@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { TYPISTS, countryFlag, yearsExperience } from '../lib/typists'
+import { TYPISTS, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
@@ -37,17 +37,11 @@ export default function TypistProfile() {
     if (!loading && !typist) navigate('/typing', { replace: true })
   }, [loading, typist])
 
-  // Fetch typist's birth year from their user record
+  // Fetch typist's birth year via SECURITY DEFINER RPC (bypasses RLS)
   useEffect(() => {
-    if (!typist?.username) return
-    supabase
-      .from('users')
-      .select('birth_year')
-      .eq('username', typist.username)
-      .single()
-      .then(({ data }) => {
-        if (data?.birth_year) setBirthYear(data.birth_year)
-      })
+    if (!typist?.authId) return
+    supabase.rpc('get_typist_birth_year', { p_auth_id: typist.authId })
+      .then(({ data }) => { if (data) setBirthYear(data) })
   }, [typist])
 
   if (loading || !profile || !typist) return null
@@ -55,7 +49,7 @@ export default function TypistProfile() {
   const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
   const relation = viewerRelation(typist.type, profile.type)
   const relInfo  = relation ? RELATIONS[relation] : null
-  const flag     = countryFlag(typist.country)
+  const flag     = typist.flag ?? ''
   const yrs      = yearsExperience(typist.studyingSince)
   const age      = calcAge(birthYear)
 

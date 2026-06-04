@@ -12,8 +12,8 @@ export const TYPISTS = {
     role:            'Founder',
     verifiedBy:      'Spencer',     // value stored in profile.verified_by
     avatarUrl:       'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/00bbbfed-a5ce-497c-a667-8cb86b72ba83/avatar.jpg',
-    username:        'Spencer',     // must match username field in users table (for birth_year lookup)
-    country:         'GB',          // ISO 3166-1 alpha-2 — renders as flag emoji
+    authId:          '00bbbfed-a5ce-497c-a667-8cb86b72ba83', // auth_id in users table — used for birth_year lookup
+    flag:            '🇬🇧',           // literal emoji — reliable cross-platform
     studyingSince:   2004,          // year — experience calculated dynamically
     bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
     credibilityLine: 'Spencer has delivered typing reports to clients across Socionics Insight and Socion.',
@@ -66,12 +66,6 @@ export const TYPISTS = {
 export const TYPIST_LIST = Object.values(TYPISTS)
 
 // Helpers
-export function countryFlag(code) {
-  if (!code || code.length !== 2) return ''
-  return [...code.toUpperCase()]
-    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
-    .join('')
-}
 
 export function yearsExperience(studyingSince) {
   if (!studyingSince) return null
