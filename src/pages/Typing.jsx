@@ -42,7 +42,6 @@ export default function Typing() {
           Most people mistype themselves, especially early on. A typing report from a specialist gives you a considered, reasoned answer — so every match you make rests on the right type.
         </p>
 
-        {/* Typist cards */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {TYPIST_LIST.map(typist => {
             const avail    = AVAILABILITY[typist.availability] ?? AVAILABILITY.active
@@ -58,35 +57,46 @@ export default function Typing() {
                 {/* Header */}
                 <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderBottom: '1px solid var(--border)' }}>
 
-                  {/* Name row */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                    <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', fontWeight: 500, margin: 0 }}>
-                      {typist.displayName}
-                    </h2>
-                    <span style={{
-                      fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
-                      color: '#fff', background: typist.role === 'Founder' ? '#2c2a22' : 'var(--accent)',
-                      padding: '0.15rem 0.5rem', borderRadius: 2,
+                  {/* Avatar + name row */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                      background: 'var(--surface)', border: '1px solid var(--border)',
+                      overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      {typist.role}
-                    </span>
-                    <span style={{
-                      fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
-                      color: 'var(--accent)', border: '1px solid var(--accent-lt)',
-                      padding: '0.15rem 0.5rem', borderRadius: 2,
-                    }}>
-                      {typist.typeLabel}
-                    </span>
-                    {/* Relation chip */}
-                    {relInfo && profile.type !== typist.type && (
+                      {typist.avatarUrl
+                        ? <img src={typist.avatarUrl} alt={typist.displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--muted)', lineHeight: 1 }}>{typist.displayName[0]}</span>
+                      }
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                      <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', fontWeight: 500, margin: 0 }}>
+                        {typist.displayName}
+                      </h2>
                       <span style={{
-                        fontSize: '0.68rem', color: 'var(--muted)',
-                        border: '1px solid var(--border)',
+                        fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
+                        color: '#fff', background: typist.role === 'Founder' ? '#2c2a22' : 'var(--accent)',
                         padding: '0.15rem 0.5rem', borderRadius: 2,
                       }}>
-                        Your {relInfo.name}
+                        {typist.role}
                       </span>
-                    )}
+                      <span style={{
+                        fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
+                        color: 'var(--accent)', border: '1px solid var(--accent-lt)',
+                        padding: '0.15rem 0.5rem', borderRadius: 2,
+                      }}>
+                        {typist.typeLabel}
+                      </span>
+                      {relInfo && profile.type !== typist.type && (
+                        <span style={{
+                          fontSize: '0.68rem', color: 'var(--muted)',
+                          border: '1px solid var(--border)',
+                          padding: '0.15rem 0.5rem', borderRadius: 2,
+                        }}>
+                          Your {relInfo.name}
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Relation context line */}
@@ -110,17 +120,12 @@ export default function Typing() {
 
                   {/* Testimonial preview */}
                   {typist.testimonial && (
-                    <div style={{
-                      borderLeft: '2px solid var(--accent-lt)',
-                      paddingLeft: '0.75rem',
-                      margin: '0.25rem 0 0',
-                    }}>
+                    <div style={{ borderLeft: '2px solid var(--accent-lt)', paddingLeft: '0.75rem', margin: '0.25rem 0 0' }}>
                       <p style={{ fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
                         "{typist.testimonial.quote}"
                       </p>
                       <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                        — {typist.testimonial.name}
-                        {typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
+                        — {typist.testimonial.name}{typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
                       </p>
                     </div>
                   )}
@@ -169,7 +174,7 @@ export default function Typing() {
                   </Link>
                 </div>
 
-                {/* Already verified by this typist */}
+                {/* Already verified */}
                 {alreadyVerifiedByThis && (
                   <div style={{ padding: '0.65rem 1.5rem', background: 'rgba(154,111,56,0.06)', borderTop: '1px solid var(--accent-lt)' }}>
                     <p style={{ fontSize: '0.8rem', color: 'var(--accent)', margin: 0 }}>

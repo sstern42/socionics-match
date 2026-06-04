@@ -58,11 +58,25 @@ export default function TypistProfile() {
         </button>
 
         <p className="eyebrow">Socion · Get typed</p>
-        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '0.6rem' }}>
-          Typed by <em>{typist.displayName}</em>
-        </h1>
 
-        {/* Typist meta */}
+        {/* Avatar + heading */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem', marginBottom: '0.6rem' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {typist.avatarUrl
+              ? <img src={typist.avatarUrl} alt={typist.displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', color: 'var(--muted)', lineHeight: 1 }}>{typist.displayName[0]}</span>
+            }
+          </div>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', margin: 0 }}>
+            Typed by <em>{typist.displayName}</em>
+          </h1>
+        </div>
+
+        {/* Typist meta badges */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
           <span style={{
             fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
@@ -157,17 +171,12 @@ export default function TypistProfile() {
 
         {/* Testimonial — hidden until populated */}
         {typist.testimonial && (
-          <div style={{
-            borderLeft: '3px solid var(--accent-lt)',
-            paddingLeft: '1.25rem',
-            marginBottom: '2.5rem',
-          }}>
+          <div style={{ borderLeft: '3px solid var(--accent-lt)', paddingLeft: '1.25rem', marginBottom: '2.5rem' }}>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
               "{typist.testimonial.quote}"
             </p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-              — {typist.testimonial.name}
-              {typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
+              — {typist.testimonial.name}{typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
             </p>
           </div>
         )}
