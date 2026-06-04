@@ -2,7 +2,7 @@ import { supabase } from './supabase'
 import { getRelation, getMatchingTypes, sameQuadraTypes } from '../data/relations'
 import { getActiveBlocks } from './blocks'
 
-export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 200, isPremium = true }) {
+export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 30, offset = 0, isPremium = true }) {
   let compatibleTypes = getMatchingTypes(userType, relationPreferences)
 
   // Free-tier gate: restrict the feed to same-quadra types only.
@@ -22,7 +22,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     .not('profile_data', 'is', null)
     .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
     .order('last_active', { ascending: false, nullsFirst: false })
-    .limit(200)
+    .range(offset, offset + limit - 1)
 
   if (userPurpose.length > 0) {
     query = query.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
@@ -36,6 +36,11 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
 
   if (feedResult.error) throw feedResult.error
 
+  // If the DB returned a full page there are likely more rows available.
+  // hasMore being true does not guarantee a subsequent page will be non-empty
+  // after JS-level filtering — the caller should handle that gracefully.
+  const rawCount = feedResult.data.length
+
   const blockedIds = new Set(blocks.map(b =>
     b.blocker_id === currentUserId ? b.blocked_id : b.blocker_id
   ))
@@ -44,7 +49,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     (swipedResult.data ?? []).map(r => r.target_id)
   )
 
-  return feedResult.data
+  const profiles = feedResult.data
     .filter(profile => !blockedIds.has(profile.id))
     .filter(profile => !swipedIds.has(profile.id))
     .map(profile => ({
@@ -56,7 +61,8 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
       !profile.profile_data?.hidden &&
       profile.relation && relationPreferences.includes(profile.relation)
     )
-    .slice(0, limit)
+
+  return { profiles, hasMore: rawCount === limit }
 }
 
 // Only live (non-unmatched) matches. This drives both the free-tier cap count

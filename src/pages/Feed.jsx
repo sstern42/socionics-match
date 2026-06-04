@@ -17,6 +17,7 @@ const BANNER_KEY = 'socion_announcement_dismissed_v'
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 const FEED_MODE_KEY = 'socion_feed_mode'
+const PAGE_SIZE = 30
 
 const FEED_LOADER_STEPS = [
   'Reading your type preferences…',
@@ -142,6 +143,8 @@ export default function Feed() {
   const [profiles, setProfiles] = useState([])
   const [matchedMap, setMatchedMap] = useState({})
   const [fetching, setFetching] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(false)
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
@@ -162,6 +165,9 @@ export default function Feed() {
   const [showCard, setShowCard] = useState(false)
   const [retrying, setRetrying] = useState(false)
   const [retried, setRetried] = useState(false)
+
+  // Tracks the DB offset for the next page fetch
+  const offsetRef = useRef(0)
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -228,22 +234,28 @@ export default function Feed() {
     return () => channel.unsubscribe()
   }, [profile?.id])
 
+  // Initial load or hard reset (e.g. retry after error).
   async function loadFeed() {
     if (!profile) return
     setFetching(true)
     setError(null)
+    offsetRef.current = 0
     try {
-      const [feedData, existingMatches] = await Promise.all([
+      const [feedResult, existingMatches] = await Promise.all([
         getFeedProfiles({
           userType: profile.type,
           relationPreferences: profile.relation_preferences ?? [],
           userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
           currentUserId: profile.id,
           isPremium,
+          limit: PAGE_SIZE,
+          offset: 0,
         }),
         getExistingMatches(profile.id),
       ])
-      setProfiles(feedData)
+      setProfiles(feedResult.profiles)
+      setHasMore(feedResult.hasMore)
+      offsetRef.current = PAGE_SIZE
       const map = {}
       for (const m of existingMatches) {
         const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
@@ -254,6 +266,32 @@ export default function Feed() {
       setError(err.message)
     } finally {
       setFetching(false)
+    }
+  }
+
+  // Appends the next page of profiles without resetting state.
+  async function loadMore() {
+    if (!profile || loadingMore || !hasMore) return
+    setLoadingMore(true)
+    try {
+      const feedResult = await getFeedProfiles({
+        userType: profile.type,
+        relationPreferences: profile.relation_preferences ?? [],
+        userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
+        currentUserId: profile.id,
+        isPremium,
+        limit: PAGE_SIZE,
+        offset: offsetRef.current,
+      })
+      setProfiles(prev => [...prev, ...feedResult.profiles])
+      setHasMore(feedResult.hasMore)
+      offsetRef.current += PAGE_SIZE
+      window.umami?.track('feed-load-more', { offset: offsetRef.current })
+    } catch (err) {
+      // Non-fatal — existing profiles remain, user can retry
+      setError(err.message)
+    } finally {
+      setLoadingMore(false)
     }
   }
 
@@ -662,38 +700,55 @@ export default function Feed() {
               <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
-              {displayed.map((p, i) => (
-                <>
-                  <ProfileCard
-                    key={p.id}
-                    profile={p}
-                    onConnect={handleConnect}
-                    alreadyMatched={p.id in matchedMap}
-                    matchId={matchedMap[p.id] ?? null}
-                    connecting={connectingId === p.id}
-                  />
-                  {i === 4 && !dismissedAds.share && (
-                    <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
-                  )}
-                  {i === 7 && !dismissedAds['get-typed'] && (
-                    <FeedAd id="get-typed" eyebrow="Verify your type" headline="Working hypothesis or final answer?" body="A written typing report from Spencer Stern confirms your type and updates your profile to match." ctaLabel="Book a session →" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
-                  )}
-                  {i === 9 && !dismissedAds.discord && (
-                    <FeedAd id="discord" eyebrow="Community" headline="Chat beyond the app" body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
-                  )}
-                  {i === 12 && !dismissedAds['si-type'] && profile?.type && (
-                    <FeedAd id="si-type" eyebrow="Read more" headline="Get to know your type" body={`Functions, quadras, blind spots, and how others see you — the full ${profile.type} profile on Socionics Insight.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
-                  )}
-                  {i === 14 && !dismissedAds.support && (
-                    <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion's core is free and always will be. If it's been useful, there are a few ways to help." ctaLabel="Support Socion →" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
-                  )}
-                  {i === 17 && !dismissedAds.shop && (
-                    <FeedAd id="shop" eyebrow="Treat yourself" headline="A mug for every type" body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand." ctaLabel="Browse the shop →" onClick={() => { window.umami?.track('feed-shop-clicked'); window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('shop')} />
-                  )}
-                </>
-              ))}
-            </div>
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+                {displayed.map((p, i) => (
+                  <>
+                    <ProfileCard
+                      key={p.id}
+                      profile={p}
+                      onConnect={handleConnect}
+                      alreadyMatched={p.id in matchedMap}
+                      matchId={matchedMap[p.id] ?? null}
+                      connecting={connectingId === p.id}
+                    />
+                    {i === 4 && !dismissedAds.share && (
+                      <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
+                    )}
+                    {i === 7 && !dismissedAds['get-typed'] && (
+                      <FeedAd id="get-typed" eyebrow="Verify your type" headline="Working hypothesis or final answer?" body="A written typing report from Spencer Stern confirms your type and updates your profile to match." ctaLabel="Book a session →" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
+                    )}
+                    {i === 9 && !dismissedAds.discord && (
+                      <FeedAd id="discord" eyebrow="Community" headline="Chat beyond the app" body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
+                    )}
+                    {i === 12 && !dismissedAds['si-type'] && profile?.type && (
+                      <FeedAd id="si-type" eyebrow="Read more" headline="Get to know your type" body={`Functions, quadras, blind spots, and how others see you — the full ${profile.type} profile on Socionics Insight.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
+                    )}
+                    {i === 14 && !dismissedAds.support && (
+                      <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion's core is free and always will be. If it's been useful, there are a few ways to help." ctaLabel="Support Socion →" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
+                    )}
+                    {i === 17 && !dismissedAds.shop && (
+                      <FeedAd id="shop" eyebrow="Treat yourself" headline="A mug for every type" body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand." ctaLabel="Browse the shop →" onClick={() => { window.umami?.track('feed-shop-clicked'); window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('shop')} />
+                    )}
+                  </>
+                ))}
+              </div>
+
+              {/* Load more */}
+              {hasMore && (
+                <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    onClick={loadMore}
+                    disabled={loadingMore}
+                    style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
+                  >
+                    {loadingMore ? 'Loading…' : 'Load more'}
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </>
         )}
