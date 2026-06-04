@@ -145,6 +145,7 @@ export default function Feed() {
   const [fetching, setFetching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
+  const [feedExhausted, setFeedExhausted] = useState(false)
   const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
@@ -239,6 +240,7 @@ export default function Feed() {
     if (!profile) return
     setFetching(true)
     setError(null)
+    setFeedExhausted(false)
     offsetRef.current = 0
     try {
       const [feedResult, existingMatches] = await Promise.all([
@@ -285,6 +287,7 @@ export default function Feed() {
       })
       setProfiles(prev => [...prev, ...feedResult.profiles])
       setHasMore(feedResult.hasMore)
+      if (!feedResult.hasMore) setFeedExhausted(true)
       offsetRef.current += PAGE_SIZE
       window.umami?.track('feed-load-more', { offset: offsetRef.current })
     } catch (err) {
@@ -734,8 +737,14 @@ export default function Feed() {
                 ))}
               </div>
 
-              {/* Load more */}
-              {hasMore && (
+              {/* Load more / end of feed */}
+              {feedExhausted ? (
+                <div style={{ textAlign: 'center', marginTop: '2.5rem', paddingBottom: '1rem' }}>
+                  <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1rem', color: 'var(--muted)' }}>
+                    You've seen everyone — check back as the community grows.
+                  </p>
+                </div>
+              ) : hasMore && (
                 <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
                   <button
                     type="button"
