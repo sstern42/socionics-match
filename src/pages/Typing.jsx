@@ -45,6 +45,7 @@ export default function Typing() {
           Most people mistype themselves, especially early on. A typing report from a specialist gives you a considered, reasoned answer — so every match you make rests on the right type.
         </p>
 
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }`}</style>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {TYPIST_LIST.map(typist => {
             const avail    = AVAILABILITY[typist.availability] ?? AVAILABILITY.active
@@ -75,7 +76,7 @@ export default function Typing() {
                         : <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--muted)', lineHeight: 1 }}>{typist.displayName[0]}</span>
                       }
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', flex: 1 }}>
                       <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', fontWeight: 500, margin: 0 }}>
                         {typist.displayName}
                         {flag && <span style={{ marginLeft: '0.4rem', fontSize: '1rem' }}>{flag}</span>}
@@ -103,6 +104,19 @@ export default function Typing() {
                         }}>
                           Your {relInfo.name}
                         </span>
+                      )}
+                      {typist.linkedin && (
+                        <a
+                          href={typist.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="LinkedIn"
+                          style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', color: 'var(--muted)', textDecoration: 'none', opacity: 0.55 }}
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.447 20.452H17.1v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.765V9.196h3.204v1.558h.046c.446-.845 1.536-1.736 3.162-1.736 3.382 0 4.007 2.226 4.007 5.121v6.313zM5.337 7.433a1.857 1.857 0 1 1 0-3.714 1.857 1.857 0 0 1 0 3.714zm1.604 13.019H3.733V9.196h3.208v11.256zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                          </svg>
+                        </a>
                       )}
                     </div>
                   </div>
@@ -156,10 +170,15 @@ export default function Typing() {
                         {yrs}+ years studying Socionics
                       </span>
                     )}
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.72rem', color: avail.colour }}>
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: avail.colour, flexShrink: 0, display: 'inline-block' }} />
-                      {avail.label}
-                    </span>
+                  </div>
+                  {/* Availability — own line with pulse */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <span style={{
+                      width: 7, height: 7, borderRadius: '50%', background: avail.colour,
+                      flexShrink: 0, display: 'inline-block',
+                      animation: avail.label === 'Available' ? 'pulse 2s ease-in-out infinite' : 'none',
+                    }} />
+                    <span style={{ fontSize: '0.72rem', color: avail.colour }}>{avail.label}</span>
                   </div>
                 </div>
 
