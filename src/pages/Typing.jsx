@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { TYPIST_LIST, countryFlag, yearsExperience } from '../lib/typists'
+import { TYPIST_LIST, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
@@ -36,20 +36,20 @@ export default function Typing() {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
 
-  // Fetch birth years for all typists in one query
+  // Fetch birth years for all typists via SECURITY DEFINER RPC (bypasses RLS)
   useEffect(() => {
-    const usernames = TYPIST_LIST.map(t => t.username).filter(Boolean)
-    if (!usernames.length) return
-    supabase
-      .from('users')
-      .select('username, birth_year')
-      .in('username', usernames)
-      .then(({ data }) => {
-        if (!data) return
-        const map = {}
-        data.forEach(row => { map[row.username] = row.birth_year })
-        setBirthYears(map)
-      })
+    const typists = TYPIST_LIST.filter(t => t.authId)
+    if (!typists.length) return
+    Promise.all(
+      typists.map(t =>
+        supabase.rpc('get_typist_birth_year', { p_auth_id: t.authId })
+          .then(({ data }) => [t.authId, data])
+      )
+    ).then(results => {
+      const map = {}
+      results.forEach(([authId, year]) => { if (year) map[authId] = year })
+      setBirthYears(map)
+    })
   }, [])
 
   if (loading || !profile) return null
@@ -71,9 +71,9 @@ export default function Typing() {
             const relation = viewerRelation(typist.type, profile.type)
             const relInfo  = relation ? RELATIONS[relation] : null
             const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
-            const flag     = countryFlag(typist.country)
+            const flag     = typist.flag ?? ''
             const yrs      = yearsExperience(typist.studyingSince)
-            const age      = calcAge(birthYears[typist.username])
+            const age      = calcAge(birthYears[typist.authId])
 
             return (
               <div
