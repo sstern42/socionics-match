@@ -18,6 +18,7 @@ import Feed from './pages/Feed'
 import Messages from './pages/Messages'
 import Rooms from './pages/Rooms'
 import Typing from './pages/Typing'
+import TypistProfile from './pages/TypistProfile'
 import Premium from './pages/Premium'
 import PremiumWelcome from './pages/PremiumWelcome'
 import Settings from './pages/Settings'
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/messages" element={<Messages />} />
         <Route path="/rooms" element={<Rooms />} />
         <Route path="/typing" element={<Typing />} />
+        <Route path="/typing/:slug" element={<TypistProfile />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/premium/welcome" element={<PremiumWelcome />} />
         <Route path="/settings" element={<Settings />} />
