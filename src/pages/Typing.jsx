@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { TYPIST_LIST, countryFlag, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabase'
 
 const AVAILABILITY = {
   active: { label: 'Available', colour: '#4caf50' },

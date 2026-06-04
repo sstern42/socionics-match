@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { TYPISTS, countryFlag, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabase'
 
 function viewerRelation(typistBaseType, viewerType) {
   if (!typistBaseType || !viewerType) return null
