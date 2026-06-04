@@ -11,7 +11,7 @@ export const TYPISTS = {
     typeLabel:   'ILE-C',    // display label
     role:        'Founder',
     verifiedBy:  'Spencer',  // value stored in profile.verified_by
-    bio:         'Founder of Socion and Socionics Insight. Written reports based on a 20-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
+    bio:         'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
     method:      'Questionnaire → written report (async)',
     outputTypes: ['Written report'],
     availability: 'active',  // 'active' | 'paused' | 'full'
