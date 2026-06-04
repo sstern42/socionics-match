@@ -113,7 +113,7 @@ export default function UserProfile() {
   const galleryPhotos = isAnon ? [] : [other.avatar_url, ...(other.photos ?? [])].filter(Boolean)
 
   const myType    = profile?.type
-  const relation  = !isSelf && myType ? MATRIX[myType]?.[other.type] : null
+  const relation  = !isSelf && myType ? MATRIX[other.type]?.[myType] : null
   const relInfo   = relation ? RELATIONS[relation] : null
 
   // Determine connect button state
