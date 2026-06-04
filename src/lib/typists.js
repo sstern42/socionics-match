@@ -12,7 +12,7 @@ export const TYPISTS = {
     role:            'Founder',
     verifiedBy:      'Spencer',     // value stored in profile.verified_by
     avatarUrl:       'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/00bbbfed-a5ce-497c-a667-8cb86b72ba83/avatar.jpg',
-    authId:          '00bbbfed-a5ce-497c-a667-8cb86b72ba83', // auth_id in users table — used for birth_year lookup
+    birthYear:       1982,
     flag:            '🇬🇧',           // literal emoji — reliable cross-platform
     studyingSince:   2004,          // year — experience calculated dynamically
     bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
