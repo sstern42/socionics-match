@@ -84,14 +84,7 @@ export default function TypistProfile() {
 
         {/* Badges */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-          <span style={{
-            fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
-            color: '#fff', background: typist.role === 'Founder' ? '#2c2a22' : 'var(--accent)',
-            padding: '0.15rem 0.5rem', borderRadius: 2,
-          }}>
-            {typist.role}
-          </span>
-          <span style={{
+<span style={{
             fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
             color: 'var(--accent)', border: '1px solid var(--accent-lt)',
             padding: '0.15rem 0.5rem', borderRadius: 2,

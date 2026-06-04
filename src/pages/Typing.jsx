@@ -82,14 +82,7 @@ export default function Typing() {
                         {flag && <span style={{ marginLeft: '0.4rem', fontSize: '1rem' }}>{flag}</span>}
                         {age  && <span style={{ fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 300, color: 'var(--muted)', marginLeft: '0.25rem' }}>{age}</span>}
                       </h2>
-                      <span style={{
-                        fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
-                        color: '#fff', background: typist.role === 'Founder' ? '#2c2a22' : 'var(--accent)',
-                        padding: '0.15rem 0.5rem', borderRadius: 2,
-                      }}>
-                        {typist.role}
-                      </span>
-                      <span style={{
+<span style={{
                         fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
                         color: 'var(--accent)', border: '1px solid var(--accent-lt)',
                         padding: '0.15rem 0.5rem', borderRadius: 2,
