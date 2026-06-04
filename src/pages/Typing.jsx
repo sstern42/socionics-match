@@ -70,7 +70,7 @@ export default function Typing() {
                       {typist.role}
                     </span>
                     <span style={{
-                      fontSize: '0.68rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 500,
+                      fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
                       color: 'var(--accent)', border: '1px solid var(--accent-lt)',
                       padding: '0.15rem 0.5rem', borderRadius: 2,
                     }}>
