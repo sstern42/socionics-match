@@ -26,7 +26,6 @@ export default function TypistProfile() {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
 
-  // Unknown slug → back to marketplace
   useEffect(() => {
     if (!loading && !typist) navigate('/typing', { replace: true })
   }, [loading, typist])
@@ -40,6 +39,7 @@ export default function TypistProfile() {
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 560, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
+
         {/* Back */}
         <button
           type="button"
@@ -63,7 +63,7 @@ export default function TypistProfile() {
         </h1>
 
         {/* Typist meta */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.75rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
           <span style={{
             fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
             color: '#fff', background: typist.role === 'Founder' ? '#2c2a22' : 'var(--accent)',
@@ -89,9 +89,24 @@ export default function TypistProfile() {
           )}
         </div>
 
-        <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '2.5rem' }}>
+        {/* Relation context line */}
+        {relInfo && profile.type !== typist.type && (
+          <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+            A {relInfo.name.toLowerCase()}'s perspective on {profile.type} — {relInfo.description.toLowerCase()}
+          </p>
+        )}
+
+        {/* Bio */}
+        <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '0.75rem' }}>
           {typist.bio}
         </p>
+
+        {/* Credibility line */}
+        {typist.credibilityLine && (
+          <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: '2.5rem' }}>
+            {typist.credibilityLine}
+          </p>
+        )}
 
         {/* Already verified */}
         {alreadyVerifiedByThis && (
@@ -133,10 +148,32 @@ export default function TypistProfile() {
               <li key={i} style={{ fontSize: '0.86rem', color: 'var(--text)', lineHeight: 1.6 }}>{item}</li>
             ))}
           </ul>
+          {typist.reportLength && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+              Reports run {typist.reportLength}.
+            </p>
+          )}
         </div>
 
+        {/* Testimonial — hidden until populated */}
+        {typist.testimonial && (
+          <div style={{
+            borderLeft: '3px solid var(--accent-lt)',
+            paddingLeft: '1.25rem',
+            marginBottom: '2.5rem',
+          }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
+              "{typist.testimonial.quote}"
+            </p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
+              — {typist.testimonial.name}
+              {typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
+            </p>
+          </div>
+        )}
+
         {/* Tiers */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1rem' }}>
           {typist.tiers.map(tier => (
             <a
               key={tier.key}
@@ -154,7 +191,7 @@ export default function TypistProfile() {
             >
               <div>
                 <p style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.2rem' }}>{tier.name}</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Delivered within {tier.turnaround}</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Delivered within {tier.turnaround} of questionnaire completion</p>
               </div>
               <div style={{ textAlign: 'right', flexShrink: 0 }}>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{tier.price}</p>
@@ -165,7 +202,7 @@ export default function TypistProfile() {
         </div>
 
         <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
-          Payment is taken by Stripe. Straight after, you'll be taken to a short questionnaire to complete in your own time. Your report is written by hand and delivered by email, so confidence is honest rather than instant.
+          Payment is taken by Stripe. Straight after, you'll be taken to the questionnaire to complete in your own time. The clock on your turnaround starts once you submit it — not at payment.
         </p>
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
@@ -174,6 +211,7 @@ export default function TypistProfile() {
             <a href={`mailto:${typist.contact}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{typist.contact}</a>
           </p>
         </div>
+
       </section>
     </Layout>
   )

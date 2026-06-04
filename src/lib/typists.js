@@ -5,34 +5,39 @@
 
 export const TYPISTS = {
   spencer: {
-    slug:        'spencer',
-    displayName: 'Spencer',
-    type:        'ILE',      // base type — used for MATRIX relation lookup
-    typeLabel:   'ILE-ENTp',    // display label
-    role:        'Founder',
-    verifiedBy:  'Spencer',  // value stored in profile.verified_by
-    bio:         'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
-    method:      'Questionnaire → written report (async)',
-    outputTypes: ['Written report'],
-    availability: 'active',  // 'active' | 'paused' | 'full'
-    currency:    'USD',
-    contact:     'hello@socion.app',
+    slug:             'spencer',
+    displayName:      'Spencer',
+    type:             'ILE',         // base type — used for MATRIX relation lookup
+    typeLabel:        'ILE-ENTp',    // display label
+    role:             'Founder',
+    verifiedBy:       'Spencer',     // value stored in profile.verified_by
+    bio:              'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
+    credibilityLine:  'Spencer has delivered typing reports to clients across Socionics Insight and Socion.',
+    method:           'Questionnaire → written report (async)',
+    outputTypes:      ['Written report'],
+    reportLength:     '3,500–5,000 words',
+    availability:     'active',      // 'active' | 'paused' | 'full'
+    currency:         'USD',
+    contact:          'hello@socion.app',
+    // Populate when Yosaka's testimonial comes in:
+    // testimonial: { quote: '...', name: 'YOSAKA', type: 'XXX' }
+    testimonial:      null,
     tiers: [
       {
-        key:       'standard',
-        name:      'Standard',
-        price:     '$29',
+        key:        'standard',
+        name:       'Standard',
+        price:      '$29',
         turnaround: '5 days',
-        href:      'https://buy.stripe.com/fZu14m91Pfwl163fIudIA00',
-        highlight: false,
+        href:       'https://buy.stripe.com/fZu14m91Pfwl163fIudIA00',
+        highlight:  false,
       },
       {
-        key:       'express',
-        name:      'Express',
-        price:     '$49',
+        key:        'express',
+        name:       'Express',
+        price:      '$49',
         turnaround: '48 hours',
-        href:      'https://buy.stripe.com/bJefZg7XL4RH6qnbsedIA01',
-        highlight: true,
+        href:       'https://buy.stripe.com/bJefZg7XL4RH6qnbsedIA01',
+        highlight:  true,
       },
     ],
     steps: [
