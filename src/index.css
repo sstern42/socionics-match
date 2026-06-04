@@ -2,6 +2,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Light mode tokens ──────────────────────────────────────────── */
 :root {
   --bg:        #f7f4ef;
   --surface:   #eeeae3;
@@ -13,6 +14,22 @@
   --muted:     #7a7268;
   --serif:     'Cormorant Garamond', Georgia, serif;
   --sans:      'DM Sans', system-ui, sans-serif;
+  /* card-bg is used by CSS class rules that previously had hardcoded #fff */
+  --card-bg:   #ffffff;
+}
+
+/* ── Dark mode tokens ───────────────────────────────────────────── */
+html.dark {
+  --bg:        #13120e;
+  --surface:   #1e1c17;
+  --surface2:  rgba(30,28,23,0.85);
+  --border:    rgba(220,200,160,0.12);
+  --accent:    #b8884a;
+  --accent-lt: #7a5e2e;
+  --text:      #ede9e0;
+  --muted:     #8c8275;
+  --card-bg:   #1e1c17;
+  color-scheme: dark;
 }
 
 html { scroll-behavior: smooth; }
@@ -107,13 +124,26 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
 }
 .btn-ghost:hover { border-color: var(--accent); }
 
+/* field-group and input-standalone now use --card-bg so they switch in dark mode */
 .field-group { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
 .field-group:focus-within { border-color: var(--accent); }
-.field-group input { flex: 1; background: #fff; border: none; outline: none; padding: 0.9rem 1.25rem; font-family: var(--sans); font-size: 0.92rem; font-weight: 300; color: var(--text); }
+.field-group input {
+  flex: 1; background: var(--card-bg); border: none; outline: none;
+  padding: 0.9rem 1.25rem; font-family: var(--sans); font-size: 0.92rem;
+  font-weight: 300; color: var(--text);
+}
 .field-group input::placeholder { color: var(--muted); }
 
-.input-standalone { width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 4px; outline: none; padding: 0.9rem 1.25rem; font-family: var(--sans); font-size: 0.92rem; font-weight: 300; color: var(--text); transition: border-color 0.2s; }
+.input-standalone {
+  width: 100%; background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 4px; outline: none; padding: 0.9rem 1.25rem;
+  font-family: var(--sans); font-size: 0.92rem; font-weight: 300;
+  color: var(--text); transition: border-color 0.2s;
+}
 .input-standalone:focus { border-color: var(--accent); }
+
+/* select elements inside forms inherit card-bg */
+select.input-standalone { background: var(--card-bg); }
 
 .rel-pill { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.3rem 0.75rem; border: 1px solid var(--border); border-radius: 2px; color: var(--muted); }
 .rel-pill.active { border-color: var(--accent-lt); color: var(--accent); }
@@ -153,7 +183,6 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   .hidden-mobile { display: none !important; }
   .footer-desktop-only { display: none !important; }
 
-  /* Messages — single column, full viewport height */
   .messages-grid {
     grid-template-columns: 1fr !important;
     height: 100% !important;
@@ -168,14 +197,12 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
     border-right: none !important;
   }
 
-    /* Sidebar fills full width when visible */
   .messages-sidebar {
     border-right: none !important;
     height: 100%;
     overflow-y: auto;
   }
 
-  /* Compact mobile conversation header */
   .convo-header-mobile {
     display: flex;
     align-items: center;
@@ -184,7 +211,7 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
     height: 52px;
     min-height: 52px;
     border-bottom: 1px solid var(--border);
-    background: #fff;
+    background: var(--card-bg);
     flex-shrink: 0;
   }
 
@@ -219,8 +246,6 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   }
 }
 
-
-
 @keyframes typingDot {
   0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
   30% { opacity: 1; transform: translateY(-3px); }
@@ -233,11 +258,8 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
   100% { transform: scale(2.6); opacity: 0; }
 }
 
-/* Lock body scroll on messages/rooms pages — driven by class so it's
-   always in sync with component mount state, never stuck as an inline style. */
 body.messages-page { overflow: hidden; }
 
-/* On messages page, hide Ko-fi widget on mobile only */
 @media (max-width: 700px) {
   body.messages-page [id^="kofi-widget-overlay"],
   body.messages-page .floatingchat-container-wrap,
@@ -245,3 +267,66 @@ body.messages-page { overflow: hidden; }
     display: none !important;
   }
 }
+
+/* ── Theme toggle button ──────────────────────────────────────── */
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px 4px;
+  transition: border-color 0.2s;
+}
+.theme-toggle:hover { border-color: var(--accent-lt); }
+
+.theme-toggle-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  transition: background 0.15s, color 0.15s;
+  padding: 0;
+}
+.theme-toggle-option.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* ── Dark mode surface overrides for CSS-class-driven elements ── */
+/* These cover elements whose background is set via CSS class rather
+   than inline styles. Inline-style overrides (the #fff scattered
+   across JSX) will need a follow-up pass to use var(--card-bg). */
+
+html.dark .site-header { background: var(--bg); }
+html.dark .site-footer { background: var(--bg); }
+
+/* Textarea auto-colours */
+html.dark textarea {
+  background: var(--card-bg);
+  color: var(--text);
+  border-color: var(--border);
+}
+html.dark textarea::placeholder { color: var(--muted); }
+html.dark select { background: var(--card-bg); color: var(--text); }
+html.dark input[type="text"],
+html.dark input[type="email"],
+html.dark input[type="date"],
+html.dark input[type="number"],
+html.dark input[type="password"] {
+  background: var(--card-bg);
+  color: var(--text);
+}
+html.dark input::placeholder { color: var(--muted); }
+
+/* BootSpin animation used by BootGate */
+@keyframes bootSpin { to { transform: rotate(360deg); } }

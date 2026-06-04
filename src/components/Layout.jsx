@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
+import { useTheme } from '../lib/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { signOut } from '../lib/auth'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
@@ -9,6 +10,32 @@ import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
+
+// ── Three-way theme toggle (system / light / dark) ───────────────
+function ThemeToggle() {
+  const { preference, setTheme } = useTheme()
+  const opts = [
+    { value: 'system', icon: '⬡', label: 'System' },
+    { value: 'light',  icon: '☀',  label: 'Light' },
+    { value: 'dark',   icon: '☽',  label: 'Dark' },
+  ]
+  return (
+    <div className="theme-toggle" title="Colour theme" aria-label="Colour theme">
+      {opts.map(o => (
+        <button
+          key={o.value}
+          type="button"
+          className={`theme-toggle-option${preference === o.value ? ' active' : ''}`}
+          onClick={() => setTheme(o.value)}
+          title={o.label}
+          aria-label={o.label}
+        >
+          {o.icon}
+        </button>
+      ))}
+    </div>
+  )
+}
 
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile } = useAuth()
@@ -91,7 +118,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     </span>
                   )}
                 </Link>
-                {/* Rooms — inline dot, no position:absolute (avoids sticky header clipping) */}
                 <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
                   Rooms
                   {roomUnread && !isActive('/rooms') && (
@@ -109,6 +135,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               <Link to="/auth" style={navStyle(false)}>Sign in</Link>
             )}
             <Link to="/network" style={{ ...navStyle(isActive('/network')), fontSize: '0.72rem', letterSpacing: '0.06em' }}>Network</Link>
+            <ThemeToggle />
           </nav>
 
           {/* Mobile burger */}
@@ -138,7 +165,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         {menuOpen && (
           <nav style={{
             position: 'absolute', top: 72, left: 0, right: 0, zIndex: 100,
-            background: '#fff', borderBottom: '1px solid var(--border)',
+            background: 'var(--bg)', borderBottom: '1px solid var(--border)',
             display: 'flex', flexDirection: 'column',
             padding: '0.5rem 0',
           }} className="nav-mobile-open">
@@ -171,6 +198,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
             )}
             <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
+            {/* Theme toggle row in mobile menu */}
+            <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>Theme</span>
+              <ThemeToggle />
+            </div>
           </nav>
         )}
 
