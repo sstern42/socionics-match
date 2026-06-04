@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { TYPISTS } from '../lib/typists'
+import { TYPISTS, countryFlag, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
+import { supabase } from '../lib/supabaseClient'
 
 function viewerRelation(typistBaseType, viewerType) {
   if (!typistBaseType || !viewerType) return null
@@ -11,10 +12,16 @@ function viewerRelation(typistBaseType, viewerType) {
   catch { return null }
 }
 
+function calcAge(birthYear) {
+  if (!birthYear) return null
+  return new Date().getFullYear() - birthYear
+}
+
 export default function TypistProfile() {
   const { slug }                      = useParams()
   const { session, profile, loading } = useAuth()
   const navigate                      = useNavigate()
+  const [birthYear, setBirthYear]     = useState(null)
 
   const typist = TYPISTS[slug]
 
@@ -30,11 +37,27 @@ export default function TypistProfile() {
     if (!loading && !typist) navigate('/typing', { replace: true })
   }, [loading, typist])
 
+  // Fetch typist's birth year from their user record
+  useEffect(() => {
+    if (!typist?.username) return
+    supabase
+      .from('users')
+      .select('birth_year')
+      .eq('username', typist.username)
+      .single()
+      .then(({ data }) => {
+        if (data?.birth_year) setBirthYear(data.birth_year)
+      })
+  }, [typist])
+
   if (loading || !profile || !typist) return null
 
   const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
   const relation = viewerRelation(typist.type, profile.type)
   const relInfo  = relation ? RELATIONS[relation] : null
+  const flag     = countryFlag(typist.country)
+  const yrs      = yearsExperience(typist.studyingSince)
+  const age      = calcAge(birthYear)
 
   return (
     <Layout noScroll hideFooter>
@@ -76,8 +99,8 @@ export default function TypistProfile() {
           </h1>
         </div>
 
-        {/* Typist meta badges */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+        {/* Badges */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
           <span style={{
             fontSize: '0.6rem', letterSpacing: '0.12em', textTransform: 'uppercase', fontWeight: 600,
             color: '#fff', background: typist.role === 'Founder' ? '#2c2a22' : 'var(--accent)',
@@ -102,6 +125,33 @@ export default function TypistProfile() {
             </span>
           )}
         </div>
+
+        {/* About row — flag, age, experience, links */}
+        {(flag || age || yrs || (typist.links && typist.links.length > 0)) && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+            {(flag || age) && (
+              <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                {flag}{age ? <>{flag ? ' ' : ''}{age}</> : null}
+              </span>
+            )}
+            {yrs && (
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                Studying Socionics since {typist.studyingSince} <span style={{ color: 'var(--border)' }}>·</span> {yrs}+ years
+              </span>
+            )}
+            {typist.links && typist.links.map(link => (
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none' }}
+              >
+                {link.label} ↗
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Relation context line */}
         {relInfo && profile.type !== typist.type && (
