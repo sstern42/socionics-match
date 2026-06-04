@@ -57,6 +57,7 @@ export default function Typing() {
               >
                 {/* Header */}
                 <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderBottom: '1px solid var(--border)' }}>
+
                   {/* Name row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                     <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', fontWeight: 500, margin: 0 }}>
@@ -76,7 +77,7 @@ export default function Typing() {
                     }}>
                       {typist.typeLabel}
                     </span>
-                    {/* Relation chip — only if viewer has a different type */}
+                    {/* Relation chip */}
                     {relInfo && profile.type !== typist.type && (
                       <span style={{
                         fontSize: '0.68rem', color: 'var(--muted)',
@@ -88,10 +89,41 @@ export default function Typing() {
                     )}
                   </div>
 
+                  {/* Relation context line */}
+                  {relInfo && profile.type !== typist.type && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.55, margin: 0 }}>
+                      A {relInfo.name.toLowerCase()}'s perspective on {profile.type} — {relInfo.description.toLowerCase()}
+                    </p>
+                  )}
+
                   {/* Bio */}
                   <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
                     {typist.bio}
                   </p>
+
+                  {/* Credibility line */}
+                  {typist.credibilityLine && (
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.55, margin: 0, fontStyle: 'italic' }}>
+                      {typist.credibilityLine}
+                    </p>
+                  )}
+
+                  {/* Testimonial preview */}
+                  {typist.testimonial && (
+                    <div style={{
+                      borderLeft: '2px solid var(--accent-lt)',
+                      paddingLeft: '0.75rem',
+                      margin: '0.25rem 0 0',
+                    }}>
+                      <p style={{ fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
+                        "{typist.testimonial.quote}"
+                      </p>
+                      <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
+                        — {typist.testimonial.name}
+                        {typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Method + availability */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
