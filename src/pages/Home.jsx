@@ -8,10 +8,6 @@ import EmailCapture from '../components/EmailCapture'
 import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
 
-// Founding window closes at the end of 15 June (London midnight, 15→16 June).
-// MUST match the timestamp used in the founding-member SQL trigger/backfill,
-// with strict `created_at < cutoff`, or the homepage promises a window the
-// database won't honour. Everything founding-related auto-hides past this.
 const FOUNDING_CUTOFF = new Date('2026-06-15T23:00:00Z')
 
 const RELATION_PILLS = [
@@ -27,30 +23,17 @@ const RELATION_PILLS = [
 
 const TESTIMONIALS = [
   {
-    name: 'Intrion',
-    type: 'ILE',
-    relation: null,
-    gender: 'male',
-    avatar: null,
+    name: 'Intrion', type: 'ILE', relation: null, gender: 'male', avatar: null,
     quote: "An innovative experiment and tool in one — real utility, real potential.",
   },
   {
-    name: 'Lena',
-    type: 'ILE',
-    relation: null,
-    gender: 'female',
-    avatar: null,
+    name: 'Lena', type: 'ILE', relation: null, gender: 'female', avatar: null,
     quote: "Finally a place to connect with people who are as serious about Socionics as you are — and the app shows you the nature of each relation before you even say hello. A refreshing initiative. I hope it helps bring Socionics west.",
   },
   {
-    name: 'Memes',
-    type: 'EIE',
-    relation: null,
-    gender: 'female',
-    avatar: null,
+    name: 'Memes', type: 'EIE', relation: null, gender: 'female', avatar: null,
     quote: "Clear, convenient, curated. A chance worth taking.",
   },
-  // Add more testimonials here as you collect them with permission
 ]
 
 function Avatar({ gender, avatar, name }) {
@@ -90,7 +73,6 @@ function TestimonialsCarousel() {
   return (
     <div style={{ maxWidth: 620, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.75rem' }}>
       <p className="eyebrow">What members say</p>
-
       <div style={{ minHeight: 160, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
         <Avatar gender={t.gender} avatar={t.avatar} name={t.name} />
         <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1rem,2.5vw,1.25rem)', fontStyle: 'italic', lineHeight: 1.7, color: 'var(--text)', margin: 0, maxWidth: 520 }}>
@@ -102,43 +84,16 @@ function TestimonialsCarousel() {
           {t.relation && <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{t.relation}</span>}
         </div>
       </div>
-
       {TESTIMONIALS.length > 1 && (
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {TESTIMONIALS.map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => goTo(i)}
-              aria-label={`Testimonial ${i + 1}`}
-              style={{
-                width: i === active ? 20 : 8,
-                height: 8,
-                borderRadius: 4,
-                background: i === active ? 'var(--accent)' : 'var(--border)',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                transition: 'width 0.3s, background 0.3s',
-              }}
-            />
+            <button key={i} type="button" onClick={() => goTo(i)} aria-label={`Testimonial ${i + 1}`} style={{ width: i === active ? 20 : 8, height: 8, borderRadius: 4, background: i === active ? 'var(--accent)' : 'var(--border)', border: 'none', cursor: 'pointer', padding: 0, transition: 'width 0.3s, background 0.3s' }} />
           ))}
         </div>
       )}
     </div>
   )
 }
-
-
-
-
-// ── Homepage swipe demo ──────────────────────────────────────────────────────
-// A non-authenticated taste of the real swipe deck. Reuses the production
-// SwipeCard for visual fidelity and the real intertype matrix (getRelation) so
-// the dynamic shown on each card is genuine, not faked. No DB writes — swipes
-// are handled locally; a right-swipe (or running out of cards) is the signup
-// moment. The visitor picks a type first so the relations are computed against
-// a real perspective.
 
 const DEMO_PROFILES = [
   { id: 'demo-ese', type: 'ESE', avatar_url: null, profile_data: { name: 'Elena',  dob: '1998-04-12', gender: 'Woman', country: 'DE', bio: 'Curious about people, loves deep conversations and figuring out what makes someone tick.' } },
@@ -162,7 +117,7 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
 
   function start(type) {
     const withRel = DEMO_PROFILES
-      .filter(p => p.type !== type) // skip a same-type Identity card so the demo opens on a stronger dynamic
+      .filter(p => p.type !== type)
       .map(p => ({ ...p, relation: getRelation(type, p.type), displayRelation: getRelation(p.type, type) }))
     setChosenType(type)
     setQueue(withRel)
@@ -200,13 +155,10 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
     setMatched(null)
   }
 
-  // ── Type picker ──
   if (!chosenType) {
     return (
       <div style={{ maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
-        <p style={{ fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.4rem' }}>
-          Try it
-        </p>
+        <p style={{ fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.4rem' }}>Try it</p>
         <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
           Pick your type — or your best guess — and swipe a few profiles to see the dynamic you'd have with each.
         </p>
@@ -216,7 +168,7 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
               key={t}
               type="button"
               onClick={() => start(t)}
-              style={{ padding: '0.7rem 0.3rem', border: '1px solid var(--border)', borderRadius: 4, background: '#fff', color: 'var(--text)', fontFamily: 'var(--sans)', fontSize: '0.82rem', fontWeight: 500, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s' }}
+              style={{ padding: '0.7rem 0.3rem', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--card-bg)', color: 'var(--text)', fontFamily: 'var(--sans)', fontSize: '0.82rem', fontWeight: 500, letterSpacing: '0.06em', cursor: 'pointer', transition: 'all 0.15s' }}
               onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent)' }}
               onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text)' }}
             >
@@ -232,12 +184,11 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
     )
   }
 
-  // ── Match moment ──
   if (matched) {
     const relInfo = RELATIONS[matched.displayRelation ?? matched.relation]
     const name = matched.profile_data?.name ?? matched.type
     return (
-      <div style={{ maxWidth: 380, margin: '0 auto', background: '#fff', border: '1px solid var(--accent)', borderRadius: 10, padding: '1.75rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div style={{ maxWidth: 380, margin: '0 auto', background: 'var(--card-bg)', border: '1px solid var(--accent)', borderRadius: 10, padding: '1.75rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <p style={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>It's a match</p>
         <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500 }}>You and <em>{name}</em></h3>
         {relInfo && (
@@ -267,20 +218,15 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
     )
   }
 
-  // ── End of demo deck ──
   if (done) {
     return (
       <div style={{ maxWidth: 380, margin: '0 auto', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', padding: '2rem 0' }}>
         <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.2rem', color: 'var(--muted)' }}>That's the demo.</p>
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 300 }}>
-          {loggedIn
-            ? 'These were sample profiles. Head to your feed to swipe through real members.'
-            : 'These were sample profiles. Sign up free to swipe through real members whose type fits the dynamics you want.'}
+          {loggedIn ? 'These were sample profiles. Head to your feed to swipe through real members.' : 'These were sample profiles. Sign up free to swipe through real members whose type fits the dynamics you want.'}
         </p>
         {loggedIn ? (
-          <Link to="/feed" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-to-feed', { from: 'end' })}>
-            View your matches →
-          </Link>
+          <Link to="/feed" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-to-feed', { from: 'end' })}>View your matches →</Link>
         ) : (
           <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'end' })}>
             {foundingActive ? 'Claim founding access →' : 'Sign up free →'}
@@ -293,7 +239,6 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
     )
   }
 
-  // ── The deck ──
   const visible = queue.slice(0, 3)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
@@ -329,14 +274,9 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
 export default function Home() {
   const { session, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
-
   const [stats, setStats] = useState(null)
   const [selectedPill, setSelectedPill] = useState(null)
 
-  // Founding-member countdown. Ticks each minute; days + hours is enough
-  // resolution and reads calmer than a seconds timer. foundingActive gates
-  // every founding element in the hero, so the page reverts to its standard
-  // state automatically the instant the window closes — no launch-day switch.
   const [now, setNow] = useState(Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 60000)
@@ -348,14 +288,6 @@ export default function Home() {
   const hoursLeft = Math.floor((msLeft % 86400000) / 3600000)
   const foundingDay = new Date(FOUNDING_CUTOFF.getTime() - 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
 
-  // Live founding-member count. While the window is open every existing member
-  // is, by definition, pre-cutoff — so a live count of users IS the founding
-  // count. We query users directly (head:true, count:'exact' — no rows pulled,
-  // just the number) rather than reading the stats snapshot, so the figure is
-  // accurate to the moment during the founding push rather than lagging the
-  // ~6-hourly compute-stats refresh. Falls back to the stats snapshot if the
-  // live count fails. Past the cutoff the whole card unmounts, so this query
-  // simply stops running once foundingActive flips false.
   const [liveFoundingCount, setLiveFoundingCount] = useState(null)
   const foundingCount = liveFoundingCount ?? stats?.users ?? null
 
@@ -368,12 +300,10 @@ export default function Home() {
       .then(({ data }) => {
         if (data) {
           setStats(data)
-          // Refresh if stats are older than 6 hours
           const age = Date.now() - new Date(data.updated_at).getTime()
           if (age > 6 * 60 * 60 * 1000) {
             fetch('https://hetjmvwhyibsxrkkgury.supabase.co/functions/v1/compute-stats', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
             }).then(() => {
               supabase.from('stats').select('users, countries, connections, types, messages').eq('id', 1).single()
                 .then(({ data: fresh }) => { if (fresh) setStats(fresh) })
@@ -383,28 +313,13 @@ export default function Home() {
       })
   }, [])
 
-  // Live founding-member count — only while the window is open and only for
-  // logged-out visitors (the card never shows otherwise). One count on mount,
-  // then a light refresh every 60s so the number ticks up during a push
-  // without a realtime subscription. Cleans up on unmount / when the window
-  // closes.
-  //
-  // Uses the founding_member_count() SECURITY DEFINER RPC rather than a direct
-  // count on `users`: a restrictive RLS select policy makes an anon table count
-  // return 0 (not an error), and a literal 0 would short-circuit the
-  // `?? stats?.users` fallback (nullish coalescing passes 0 through), blanking
-  // the line. The RPC returns the integer to logged-out visitors without
-  // exposing any rows. We still only accept a POSITIVE result; 0, null, or an
-  // error all leave liveFoundingCount null and we fall back to the snapshot.
   useEffect(() => {
     if (!foundingActive || session) return
     let cancelled = false
-
     async function fetchCount() {
       const { data, error } = await supabase.rpc('founding_member_count')
       if (!cancelled && !error && typeof data === 'number' && data > 0) setLiveFoundingCount(data)
     }
-
     fetchCount()
     const id = setInterval(fetchCount, 60000)
     return () => { cancelled = true; clearInterval(id) }
@@ -415,7 +330,6 @@ export default function Home() {
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(3rem,8vw,6rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
 
-        {/* Eyebrow — founding urgency for logged-out visitors while the window is open, else live stats */}
         {foundingActive && !session ? (
           <p className="eyebrow fade-up-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
             <span>✦ Founding member offer</span>
@@ -434,16 +348,8 @@ export default function Home() {
           Socionics maps 16 named dynamics between every type pair. You choose the dynamic — the app shows you who fits.
         </p>
 
-        {/* Founding member card — the centrepiece, logged-out + window open only */}
         {foundingActive && !session && (
-          <div className="fade-up-4" style={{
-            maxWidth: 520, width: '100%',
-            background: 'rgba(154,111,56,0.08)',
-            border: '1px solid var(--accent)',
-            borderRadius: 10,
-            padding: 'clamp(1.25rem,3vw,1.75rem)',
-            display: 'flex', flexDirection: 'column', gap: '0.85rem',
-          }}>
+          <div className="fade-up-4" style={{ maxWidth: 520, width: '100%', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent)', borderRadius: 10, padding: 'clamp(1.25rem,3vw,1.75rem)', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
             <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.15rem,3vw,1.45rem)', color: 'var(--text)', lineHeight: 1.4 }}>
               Join now, keep <em>Premium free — forever.</em>
             </p>
@@ -451,7 +357,6 @@ export default function Home() {
               Every account created before midnight on {foundingDay} becomes a founding member: unlimited connections, all 16 relation filters, and full compatibility breakdowns — permanently free, no card needed.
             </p>
 
-            {/* Live founding-member count — how many have claimed it so far */}
             {foundingCount != null && foundingCount > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
                 <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7, flexShrink: 0 }}>
@@ -465,10 +370,9 @@ export default function Home() {
               </div>
             )}
 
-            {/* Countdown */}
             <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginTop: '0.15rem' }}>
               {[{ n: daysLeft, l: daysLeft === 1 ? 'day' : 'days' }, { n: hoursLeft, l: hoursLeft === 1 ? 'hour' : 'hours' }].map(({ n, l }) => (
-                <div key={l} style={{ minWidth: 72, background: '#fff', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.5rem 0.75rem' }}>
+                <div key={l} style={{ minWidth: 72, background: 'var(--card-bg)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.5rem 0.75rem' }}>
                   <div style={{ fontFamily: 'var(--serif)', fontSize: '1.75rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{n}</div>
                   <div style={{ fontSize: '0.62rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.3rem' }}>{l} left</div>
                 </div>
@@ -477,7 +381,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* CTAs */}
         <div className="fade-up-4" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           {session && profile ? (
             <Link to="/feed" className="btn-primary">View your matches</Link>
@@ -518,10 +421,7 @@ export default function Home() {
             ))}
           </div>
           {selectedPill && RELATIONS[selectedPill] && (
-            <div style={{
-              background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)',
-              borderRadius: 4, padding: '0.65rem 1rem', maxWidth: 420, textAlign: 'center',
-            }}>
+            <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.65rem 1rem', maxWidth: 420, textAlign: 'center' }}>
               <p style={{ fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.3rem' }}>
                 {RELATIONS[selectedPill].name}
               </p>
@@ -587,7 +487,8 @@ export default function Home() {
 
       {!session && <EmailCapture />}
 
-      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: '#fff' }}>
+      {/* THE FEED section — was background: 'var(--card-bg)', now 'var(--card-bg)' */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--card-bg)' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>The feed</p>
           <h2 style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
@@ -620,8 +521,7 @@ export default function Home() {
         <TestimonialsCarousel />
       </section>
 
-
-
+      {/* FEATURE CARDS — was background: 'var(--card-bg)', now 'var(--card-bg)' */}
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
         <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
         <h2 style={{ textAlign: 'center', marginBottom: '3.5rem' }}>Built differently<br />from the ground up</h2>
@@ -634,7 +534,7 @@ export default function Home() {
             { title: '🕵️ Browse anonymously', body: "Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them." },
             { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
           ].map(({ title, body }) => (
-            <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: '#fff' }}>
+            <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)' }}>
               <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
               <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300 }}>{body}</p>
             </div>
