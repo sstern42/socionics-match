@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { TYPISTS, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
-import { supabase } from '../lib/supabase'
-
 function viewerRelation(typistBaseType, viewerType) {
   if (!typistBaseType || !viewerType) return null
   try { return MATRIX?.[typistBaseType]?.[viewerType] ?? null }
@@ -21,8 +19,6 @@ export default function TypistProfile() {
   const { slug }                      = useParams()
   const { session, profile, loading } = useAuth()
   const navigate                      = useNavigate()
-  const [birthYear, setBirthYear]     = useState(null)
-
   const typist = TYPISTS[slug]
 
   useEffect(() => {
@@ -37,18 +33,6 @@ export default function TypistProfile() {
     if (!loading && !typist) navigate('/typing', { replace: true })
   }, [loading, typist])
 
-  // Fetch birth year — readable via RLS when the typist is the current user
-  useEffect(() => {
-    if (!typist?.authId || !session) return
-    if (typist.authId !== session.user.id) return
-    supabase
-      .from('users')
-      .select('birth_year')
-      .eq('auth_id', session.user.id)
-      .single()
-      .then(({ data }) => { if (data?.birth_year) setBirthYear(data.birth_year) })
-  }, [typist, session])
-
   if (loading || !profile || !typist) return null
 
   const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
@@ -56,7 +40,7 @@ export default function TypistProfile() {
   const relInfo  = relation ? RELATIONS[relation] : null
   const flag     = typist.flag ?? ''
   const yrs      = yearsExperience(typist.studyingSince)
-  const age      = calcAge(birthYear)
+  const age      = calcAge(typist.birthYear)
 
   return (
     <Layout noScroll hideFooter>

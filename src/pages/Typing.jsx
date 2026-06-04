@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { TYPIST_LIST, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
-import { supabase } from '../lib/supabase'
-
 const AVAILABILITY = {
   active: { label: 'Available', colour: '#4caf50' },
   paused: { label: 'Paused',    colour: '#f5a623' },
@@ -26,8 +24,6 @@ function calcAge(birthYear) {
 export default function Typing() {
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
-  const [birthYears, setBirthYears] = useState({}) // { username: birth_year }
-
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
@@ -35,24 +31,6 @@ export default function Typing() {
   useEffect(() => {
     if (!loading && session && !profile) navigate('/auth')
   }, [loading, session, profile])
-
-  // Fetch birth years — each typist's own row is readable by themselves via RLS
-  useEffect(() => {
-    if (!session) return
-    const typists = TYPIST_LIST.filter(t => t.authId === session.user.id)
-    if (!typists.length) return
-    supabase
-      .from('users')
-      .select('auth_id, birth_year')
-      .eq('auth_id', session.user.id)
-      .single()
-      .then(({ data }) => {
-        if (!data?.birth_year) return
-        const map = {}
-        map[data.auth_id] = data.birth_year
-        setBirthYears(map)
-      })
-  }, [session])
 
   if (loading || !profile) return null
 
@@ -75,7 +53,7 @@ export default function Typing() {
             const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
             const flag     = typist.flag ?? ''
             const yrs      = yearsExperience(typist.studyingSince)
-            const age      = calcAge(birthYears[typist.authId])
+            const age      = calcAge(typist.birthYear)
 
             return (
               <div
