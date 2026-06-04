@@ -37,12 +37,17 @@ export default function TypistProfile() {
     if (!loading && !typist) navigate('/typing', { replace: true })
   }, [loading, typist])
 
-  // Fetch typist's birth year via SECURITY DEFINER RPC (bypasses RLS)
+  // Fetch birth year — readable via RLS when the typist is the current user
   useEffect(() => {
-    if (!typist?.authId) return
-    supabase.rpc('get_typist_birth_year', { p_auth_id: typist.authId })
-      .then(({ data }) => { if (data) setBirthYear(data) })
-  }, [typist])
+    if (!typist?.authId || !session) return
+    if (typist.authId !== session.user.id) return
+    supabase
+      .from('users')
+      .select('birth_year')
+      .eq('auth_id', session.user.id)
+      .single()
+      .then(({ data }) => { if (data?.birth_year) setBirthYear(data.birth_year) })
+  }, [typist, session])
 
   if (loading || !profile || !typist) return null
 
