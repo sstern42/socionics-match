@@ -11,6 +11,7 @@ export const TYPISTS = {
     typeLabel:        'ILE-ENTp',    // display label
     role:             'Founder',
     verifiedBy:       'Spencer',     // value stored in profile.verified_by
+    avatarUrl:        null,           // set to your Supabase avatar URL
     bio:              'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
     credibilityLine:  'Spencer has delivered typing reports to clients across Socionics Insight and Socion.',
     method:           'Questionnaire → written report (async)',
