@@ -39,13 +39,6 @@ export default function ProfileEdit() {
   const [deleteError, setDeleteError] = useState(null)
   const [hydrated, setHydrated] = useState(!!profile)
 
-  // Seed the form from the profile once it's available. The useState
-  // initialisers above only run on first render, and on a hard refresh the
-  // profile is usually null at that point (the session resolves before the
-  // users row is fetched), which leaves every field blank and never recovers.
-  // This seeds exactly once, when the profile first arrives, so it fixes the
-  // blank-on-refresh case without clobbering unsaved edits if AuthContext
-  // later re-emits the profile (e.g. on tab focus).
   useEffect(() => {
     if (!profile || hydrated) return
     const pd = profile.profile_data ?? {}
@@ -70,10 +63,9 @@ export default function ProfileEdit() {
 
   async function handleSave() {
     if (!profile) return
-    if (dob) {
-      const age = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000))
-      if (age < 18) { setError('You must be 18 or over to use Socion.'); return }
-    }
+    if (!dob) { setError('Date of birth is required.'); return }
+    const age = Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000))
+    if (age < 18) { setError('You must be 18 or over to use Socion.'); return }
     setSaving(true)
     setError(null)
     try {
@@ -116,7 +108,7 @@ export default function ProfileEdit() {
 
   async function handleAddPhoto(e) {
     const file = e.target.files?.[0]
-    e.target.value = '' // allow re-selecting the same file
+    e.target.value = ''
     if (!file || !profile) return
     if (photos.length >= MAX_EXTRA_PHOTOS) return
     setPhotoUploading(true)
@@ -134,7 +126,7 @@ export default function ProfileEdit() {
 
   async function handleRemovePhoto(url) {
     setPhotos(prev => prev.filter(u => u !== url))
-    deletePhoto(url) // fire and forget; URL already dropped from state
+    deletePhoto(url)
     window.umami?.track('profile-photo-removed')
   }
 
@@ -253,7 +245,7 @@ export default function ProfileEdit() {
                 onChange={e => setDob(e.target.value)}
               />
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                Date of birth — only your age is shown on your card, never your DOB. Optional, but your age won't show without it.
+                Date of birth — only your age is shown on your card, never your DOB. Required for age verification.
               </p>
             </div>
             <select className="input-standalone" value={gender} onChange={e => setGender(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
@@ -365,7 +357,7 @@ export default function ProfileEdit() {
 
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate('/feed')}>Cancel</button>
-            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || (!isVerified && !typeValid)} style={{ opacity: (saving || !name || (!isVerified && !typeValid)) ? 0.5 : 1 }}>
+            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !dob || (!isVerified && !typeValid)} style={{ opacity: (saving || !name || !dob || (!isVerified && !typeValid)) ? 0.5 : 1 }}>
               {saving ? 'Saving…' : 'Save details'}
             </button>
           </div>
