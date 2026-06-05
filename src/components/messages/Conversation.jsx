@@ -111,6 +111,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     : null
   const breakdownUnlocked = isPremium && !!breakdown
 
+  // Member since formatted string
+  const memberSince = match.other.created_at
+    ? new Date(match.other.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+    : null
+
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 700px)')
     const handler = e => setIsMobile(e.matches)
@@ -277,6 +282,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           </button>
           {relInfo && <span style={{ fontSize:'0.68rem',color:'var(--muted)',letterSpacing:'0.04em' }}>· {relInfo.name}</span>}
           {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
+          {memberSince && <span style={{ fontSize:'0.62rem',color:'var(--muted)' }}>· Member since {memberSince}</span>}
           <div style={{ position:'relative' }} ref={menuRef}>
             <button type="button" onClick={() => setMenuOpen(o=>!o)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'1.1rem',padding:'0.25rem 0.25rem 0.25rem 0.5rem',lineHeight:1 }} aria-label="Options">···</button>
             {menuOpen && (
@@ -326,6 +332,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   </button>
                 </p>
                 {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:13,height:13,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.5rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
+                {memberSince && <span style={{ fontSize:'0.65rem',color:'var(--muted)',letterSpacing:'0.02em' }}>· Member since {memberSince}</span>}
               </div>
             </div>
           </div>
