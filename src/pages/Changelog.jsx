@@ -2,6 +2,14 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
     {
+      date: '5 June 2026',
+      label: 'Update',
+      items: [
+        'Dark mode — switch between light, dark, and system default via the toggle in the header',
+        'Tapping a type badge on a profile now opens the Socionics reference inline, without leaving the app',
+      ],
+    },
+    {
     date: '3 June 2026',
     label: 'Update',
     items: [
