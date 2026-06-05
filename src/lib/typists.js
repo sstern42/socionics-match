@@ -28,9 +28,7 @@ export const TYPISTS = {
     availability:    'active',      // 'active' | 'paused' | 'full'
     currency:        'USD',
     contact:         'hello@socion.app',
-    // Populate when Yosaka's testimonial comes in:
-    // testimonial: { quote: '...', name: 'YOSAKA', type: 'XXX' }
-    testimonial:     null,
+    testimonial:     { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
     tiers: [
       {
         key:        'standard',
