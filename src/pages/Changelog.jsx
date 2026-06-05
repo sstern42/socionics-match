@@ -7,6 +7,7 @@ export const ENTRIES = [
       items: [
         'Dark mode — switch between light, dark, and system default via the toggle in the header',
         'Tapping a type badge on a profile now opens the Socionics reference inline, without leaving the app',
+        'Get Typed page — choose your typist and book directly from the app',
       ],
     },
     {
