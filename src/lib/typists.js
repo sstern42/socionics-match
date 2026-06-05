@@ -15,7 +15,7 @@ export const TYPISTS = {
     birthYear:       1982,
     flag:            '🇬🇧',           // literal emoji — reliable cross-platform
     studyingSince:   2004,          // year — experience calculated dynamically
-    bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned. Classical Model A throughout.',
+    bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned.',
     credibilityLine: 'Spencer has delivered typing reports to clients across Socionics Insight and Socion.',
     linkedin:        'https://www.linkedin.com/in/spencerstern/',
     links: [
