@@ -7,6 +7,7 @@ import { RELATIONS, MATRIX } from '../data/relations'
 import { countryFlag, COUNTRIES } from '../data/countries'
 import { createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
+import SIWebview from '../components/SIWebview'
 
 export default function UserProfile() {
   const { userId } = useParams()
@@ -17,9 +18,10 @@ export default function UserProfile() {
   const [fetching, setFetching]     = useState(true)
   const [copied, setCopied]         = useState(false)
   const [lightbox, setLightbox]     = useState(null)
+  const [webviewUrl, setWebviewUrl] = useState(null)
 
   // Connection state
-  const [existingMatchId, setExistingMatchId] = useState(null)  // null = not connected, string = match id
+  const [existingMatchId, setExistingMatchId] = useState(null)
   const [checkingMatch, setCheckingMatch]     = useState(false)
   const [connectPrompt, setConnectPrompt]     = useState(false)
   const [connectMessage, setConnectMessage]   = useState('')
@@ -37,7 +39,6 @@ export default function UserProfile() {
       .then(({ data }) => { setOther(data); setFetching(false) })
   }, [userId])
 
-  // Check for existing match once we have both profiles
   useEffect(() => {
     if (!profile?.id || !userId || profile.id === userId) return
     setCheckingMatch(true)
@@ -116,7 +117,6 @@ export default function UserProfile() {
   const relation  = !isSelf && myType ? MATRIX[other.type]?.[myType] : null
   const relInfo   = relation ? RELATIONS[relation] : null
 
-  // Determine connect button state
   const canConnect = !isSelf && !isAnon && profile && !checkingMatch
   const isConnected = !!existingMatchId || justConnected
 
@@ -140,7 +140,6 @@ export default function UserProfile() {
           Back
         </button>
 
-        {/* Self-view banner */}
         {isSelf && (
           <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.6rem 0.9rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>This is how your profile looks to others.</p>
@@ -148,7 +147,6 @@ export default function UserProfile() {
           </div>
         )}
 
-        {/* Just connected toast */}
         {justConnected && (
           <div style={{ background: 'rgba(154,111,56,0.1)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.6rem 0.9rem', marginBottom: '1.5rem' }}>
             <p style={{ fontSize: '0.82rem', color: 'var(--accent)' }}>
@@ -179,19 +177,21 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Type badge */}
+          {/* Type badge — opens SI webview */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <a
-              href={`https://socionicsinsight.com/types/${other.type.toLowerCase()}/`}
-              target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--accent)', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent-lt)', padding: '0.3rem 0.75rem', borderRadius: 3, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-              onClick={() => window.umami?.track('profile-type-link-clicked', { type: other.type })}
+            <button
+              type="button"
+              onClick={() => {
+                setWebviewUrl(`https://socionicsinsight.com/types/${other.type.toLowerCase()}/`)
+                window.umami?.track('profile-type-link-clicked', { type: other.type })
+              }}
+              style={{ fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500, color: 'var(--accent)', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent-lt)', padding: '0.3rem 0.75rem', borderRadius: 3, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
             >
               {other.type}
               {other.verified_by && !isAnon && (
                 <span title={`Verified by ${other.verified_by}`} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
               )}
-            </a>
+            </button>
             {other.verified_by && !isAnon && (
               <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>Verified by {other.verified_by}</span>
             )}
@@ -207,25 +207,15 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* ── Connect / Message button ─────────────────────── */}
+          {/* Connect / Message button */}
           {canConnect && (
             <div>
               {isConnected ? (
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => navigate(`/messages?match=${existingMatchId}`)}
-                  style={{ width: '100%' }}
-                >
+                <button type="button" className="btn-ghost" onClick={() => navigate(`/messages?match=${existingMatchId}`)} style={{ width: '100%' }}>
                   Message {name} →
                 </button>
               ) : (
-                <button
-                  type="button"
-                  className="btn-primary"
-                  onClick={() => { setConnectPrompt(true); setConnectError(null) }}
-                  style={{ width: '100%' }}
-                >
+                <button type="button" className="btn-primary" onClick={() => { setConnectPrompt(true); setConnectError(null) }} style={{ width: '100%' }}>
                   Connect with {name}
                 </button>
               )}
@@ -238,11 +228,7 @@ export default function UserProfile() {
               <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Photos</p>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.4rem' }}>
                 {galleryPhotos.map((url, i) => (
-                  <button
-                    key={i} type="button"
-                    onClick={() => { setLightbox(url); window.umami?.track('profile-photo-opened') }}
-                    style={{ padding: 0, border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', cursor: 'zoom-in', background: 'var(--surface)', aspectRatio: '1 / 1' }}
-                  >
+                  <button key={i} type="button" onClick={() => { setLightbox(url); window.umami?.track('profile-photo-opened') }} style={{ padding: 0, border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', cursor: 'zoom-in', background: 'var(--surface)', aspectRatio: '1 / 1' }}>
                     <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </button>
                 ))}
@@ -272,7 +258,6 @@ export default function UserProfile() {
             </div>
           )}
 
-          {/* No discord nudge */}
           {!discordHandle && !isSelf && (
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
               This member hasn't added a Discord handle yet. You can ask them to add one in your conversation — they'll find it under Profile → Details.
@@ -283,31 +268,15 @@ export default function UserProfile() {
 
       {/* Connect modal */}
       {connectPrompt && (
-        <div
-          onClick={() => !connecting && (setConnectPrompt(false), setConnectMessage(''))}
-          style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}
-          >
+        <div onClick={() => !connecting && (setConnectPrompt(false), setConnectMessage(''))} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Connecting with {name}</p>
               <p style={{ fontSize: '0.95rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
                 {other.profile_data?.connection_question || 'Introduce yourself — what brings you to Socion?'}
               </p>
             </div>
-            <textarea
-              className="input-standalone"
-              placeholder="Write your message…"
-              value={connectMessage}
-              onChange={e => setConnectMessage(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && e.ctrlKey && connectMessage.trim().length >= 10 && handleConnectSubmit()}
-              rows={4}
-              autoFocus
-              disabled={connecting}
-              style={{ resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
-            />
+            <textarea className="input-standalone" placeholder="Write your message…" value={connectMessage} onChange={e => setConnectMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && connectMessage.trim().length >= 10 && handleConnectSubmit()} rows={4} autoFocus disabled={connecting} style={{ resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
             {connectMessage.trim().length < 10 && (
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', margin: 0, textAlign: 'right' }}>
                 {10 - connectMessage.trim().length} more character{10 - connectMessage.trim().length !== 1 ? 's' : ''} to unlock Send
@@ -316,12 +285,7 @@ export default function UserProfile() {
             {connectError && <p style={{ fontSize: '0.82rem', color: '#c0392b', margin: 0 }}>{connectError}</p>}
             <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
               <button type="button" className="btn-ghost" onClick={() => { setConnectPrompt(false); setConnectMessage('') }} disabled={connecting}>Cancel</button>
-              <button
-                type="button" className="btn-primary"
-                onClick={handleConnectSubmit}
-                disabled={connecting || connectMessage.trim().length < 10}
-                style={{ opacity: (connecting || connectMessage.trim().length < 10) ? 0.5 : 1 }}
-              >
+              <button type="button" className="btn-primary" onClick={handleConnectSubmit} disabled={connecting || connectMessage.trim().length < 10} style={{ opacity: (connecting || connectMessage.trim().length < 10) ? 0.5 : 1 }}>
                 {connecting ? 'Connecting…' : 'Send & connect'}
               </button>
             </div>
@@ -337,6 +301,10 @@ export default function UserProfile() {
           <button type="button" onClick={() => setLightbox(null)} style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       )}
+
+      {/* SI Webview */}
+      <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
+
     </Layout>
   )
 }
