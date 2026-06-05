@@ -49,7 +49,7 @@ export default function Support() {
             <em>Or grab a type mug.</em>
           </p>
           <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 420 }}>
-            16 type-specific mugs — one for every Socionics type. Dictionary-definition style, printed on demand.
+            Type mugs, prints, and stickers — one for every Socionics type. Dictionary-definition style, printed on demand.
           </p>
           <a
             href="https://shop.socionicsinsight.com"
@@ -74,7 +74,7 @@ export default function Support() {
             <em>Want your type pinned down?</em>
           </p>
           <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 440 }}>
-            Get a written typing report from Spencer Stern — a considered, reasoned read on your type, with your Socion profile updated to match. Not a donation, a genuinely useful thing you can buy, and it happens to support the project too.
+            Get a typing report from a Socion typist — a considered, reasoned read on your type, with your profile updated to match. Not a donation, a genuinely useful thing you can buy, and it happens to support the project too.
           </p>
           <a
             href="/typing"
@@ -82,7 +82,7 @@ export default function Support() {
             style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2rem', display: 'inline-block' }}
             onClick={() => window.umami?.track('support-get-typed-clicked')}
           >
-            Get typed
+            Browse typists
           </a>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>From $29. Written report, delivered by email.</p>
         </div>
@@ -101,8 +101,6 @@ export default function Support() {
               No ads. No selling your data. No proprietary algorithm deciding who you see. The intertype relations matrix is published and auditable. That's the commitment.
             </p>
           </div>
-
-
         </div>
 
         <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
