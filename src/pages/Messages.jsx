@@ -151,13 +151,7 @@ export default function Messages() {
   return (
     <Layout hideFooter noScroll>
       <PushModal userId={profile?.id} />
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        minHeight: 0,
-      }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 0 }}>
         <div
           style={{ maxWidth: 900, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column', padding: '0 1.5rem', minHeight: 0, boxSizing: 'border-box' }}
           className="messages-outer"
@@ -167,7 +161,7 @@ export default function Messages() {
             gridTemplateColumns: '260px 1fr',
             border: '1px solid var(--border)',
             borderTop: 'none',
-            background: '#fff',
+            background: 'var(--card-bg)',
             overflow: 'hidden',
             minHeight: 0,
           }}>
