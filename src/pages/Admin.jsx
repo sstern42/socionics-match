@@ -820,10 +820,10 @@ function VerificationPanel({ users, onUpdate }) {
 }
 
 const centreStyle    = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '2rem' }
-const cardStyle      = { background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem' }
+const cardStyle      = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem' }
 const founderCardStyle = { background: 'rgba(154,111,56,0.04)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '1.25rem' }
 const cardTitleStyle = { fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }
-const statCardStyle  = { background: '#fff', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }
+const statCardStyle  = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }
 const statValueStyle = { fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }
 const statDeltaStyle = { fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }
 const statLabelStyle = { fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)' }
