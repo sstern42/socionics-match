@@ -13,7 +13,7 @@ const FAQS = [
       },
       {
         q: 'Can I change my type after signing up?',
-        a: "Yes. Go to Profile → Details and update your type at any time. If you want a considered, reasoned answer, the Get Typed service provides a written typing report and updates your profile to match.",
+        a: "Yes. Go to Profile → Details and update your type at any time. If you want a considered, reasoned answer, the Get Typed service provides a typing report and updates your profile to match.",
       },
       {
         q: 'How accurate is the typing questionnaire?',
@@ -30,39 +30,35 @@ const FAQS = [
     items: [
       {
         q: 'What is the Get Typed service?',
-        a: 'Get Typed is a written Socionics typing report from Spencer Stern. You answer a short questionnaire, and a few days later you receive a written report confirming your type, explaining the reasoning, and your Socion profile is updated to match.',
+        a: 'Get Typed is a marketplace of Socionics typists — each with their own method, pricing, and availability. You choose a typist, pay securely via Stripe, and receive a considered read on your type with your Socion profile updated to match.',
       },
       {
         q: 'How does it work?',
-        a: 'Choose Standard or Express on the Get Typed page and pay securely via Stripe. Straight after payment you are taken to a short questionnaire — twelve questions about how you think and relate. Answer in your own words, and your report is written and delivered by email within the timeframe you chose.',
-      },
-      {
-        q: 'What typing method is used?',
-        a: 'Classical Model A — the original Socionics framework developed by Aushra Augusta.',
+        a: 'Browse the typists on the Get Typed page and choose one that suits you. Each typist has their own method — some work via a written questionnaire, others via voice call on Discord. After payment you are taken through their process, and your report or session outcome is delivered within the timeframe they specify.',
       },
       {
         q: 'How much does it cost?',
-        a: 'Standard is $29 with delivery within 5 days. Express is $49 with delivery within 48 hours. Both include the same written report and a profile update on completion.',
+        a: 'Pricing varies by typist and tier. Written report sessions start from $29. Each typist sets their own rates, which are shown clearly on their profile before you book.',
       },
       {
         q: 'How long does the questionnaire take?',
-        a: "Most people take 20–30 minutes. There are twelve questions and you answer in your own words — two or three honest sentences each is plenty. You can take as long as you like; there's no timer.",
+        a: "For written report typists, most people take 20–30 minutes. There are twelve questions and you answer in your own words — two or three honest sentences each is plenty. You can take as long as you like; there's no timer. Voice-based typists will discuss their session format on their profile page.",
       },
       {
         q: 'How is the report delivered?',
-        a: "By email, to the address you provide in the questionnaire. It's a written report of roughly 1,500–2,500 words covering your type, the reasoning behind it, and what it means for the relations that fit you.",
+        a: "Written reports are delivered by email, typically running 3,500–5,000 words and covering your type, the reasoning behind it, and what it means for the relations that fit you. Voice-based typists may deliver a summary separately — check their profile for details.",
       },
       {
         q: 'Is fluent English required?',
-        a: 'The questionnaire and report are in English, so a good working level of written English helps. You answer in writing in your own time, so there is no live conversation involved.',
+        a: 'The questionnaire and written reports are in English, so a good working level of written English helps. Voice sessions require spoken English. You answer in your own time for written reports, so there is no live pressure involved.',
       },
       {
         q: 'What happens to my Socion profile?',
-        a: 'Once your report is complete, your Socion type is updated to match and a confirmed marker is added to your profile, so your feed and compatibility breakdowns reflect the right type.',
+        a: 'Once your typing is complete, your Socion type is updated to match and a confirmed marker is added to your profile, so your feed and compatibility breakdowns reflect the right type.',
       },
       {
         q: 'What if my report says my type is uncertain?',
-        a: "If the evidence is genuinely split, the report says so honestly — naming the most likely candidates and explaining what distinguishes them — rather than forcing a single answer. A frank \u2018between these two\u2019 is more useful than false certainty, and you're welcome to reply with anything that might resolve it.",
+        a: "If the evidence is genuinely split, the report says so honestly — naming the most likely candidates and explaining what distinguishes them — rather than forcing a single answer. A frank 'between these two' is more useful than false certainty, and you're welcome to reply with anything that might resolve it.",
       },
     ],
   },
@@ -159,7 +155,7 @@ const FAQS = [
       },
       {
         q: 'Push notifications not working?',
-        a: null, // handled separately below
+        a: null,
         isNotifications: true,
       },
     ],
