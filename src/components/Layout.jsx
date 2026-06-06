@@ -138,6 +138,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   // Timer refs so we can reset the dismiss timer when a toast is updated
   const toastTimers = useRef({})
   const pushToastRef = useRef(null)
+  const profileIdRef = useRef(profile?.id)
 
   function pushToast(toast) {
     // For message toasts: collapse same-sender (same matchId) into one with a count
@@ -172,6 +173,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   }
   // Always keep ref pointing to latest version so effects use current closure
   pushToastRef.current = pushToast
+  profileIdRef.current = profile?.id
 
   // Join toast — new profile completed
   useEffect(() => {
@@ -181,7 +183,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
         const record = payload.new
         if (!record?.type) return
-        if (profile?.id && record.id === profile.id) return
+        if (profileIdRef.current && record.id === profileIdRef.current) return
         const isAnon = record.profile_data?.anonymous === true
         const name   = isAnon ? null : (record.profile_data?.name ?? null)
         const quadra = TYPE_QUADRA[record.type]
@@ -201,7 +203,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .channel('message-toasts')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
         const msg = payload.new
-        if (msg.sender_id === profile.id) return
+        if (msg.sender_id === profileIdRef.current) return
         // Suppress if viewing this exact thread
         const onMessages = window.location.pathname === '/messages'
         const activeMatch = new URLSearchParams(window.location.search).get('match')
