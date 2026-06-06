@@ -11,7 +11,7 @@ import { getRoomLastVisited } from '../pages/Rooms'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
 
-// ── Three-way theme toggle (system / light / dark) ───────────────
+// ── Three-way theme toggle ────────────────────────────────────────────
 function ThemeToggle() {
   const { preference, setTheme } = useTheme()
   const opts = [
@@ -42,6 +42,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
 
@@ -88,14 +89,21 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     return () => { document.title = 'Socion' }
   }, [unread])
 
+  // Close menu on route change
+  useEffect(() => {
+    setMenuOpen(false)
+    setProfileOpen(false)
+  }, [location.pathname])
+
   async function handleSignOut() {
     navigate('/', { replace: true })
     await signOut()
   }
 
-  function closeMenu() { setMenuOpen(false) }
+  function closeMenu() { setMenuOpen(false); setProfileOpen(false) }
 
   const isActive = (to) => location.pathname === to
+  const hasNewChangelog = localStorage.getItem('socion_changelog_seen') !== CHANGELOG_ENTRIES[0].date
 
   return (
     <>
@@ -161,48 +169,142 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           </button>
         </header>
 
-        {/* Mobile dropdown menu */}
+        {/* ── Mobile dropdown menu ─────────────────────────────────────────── */}
         {menuOpen && (
           <nav style={{
             position: 'absolute', top: 72, left: 0, right: 0, zIndex: 100,
             background: 'var(--bg)', borderBottom: '1px solid var(--border)',
             display: 'flex', flexDirection: 'column',
-            padding: '0.5rem 0',
           }} className="nav-mobile-open">
+
             {session && profile ? (
               <>
-                <Link to="/feed" onClick={closeMenu} style={mobileNavStyle(isActive('/feed'))}>Matches</Link>
+                {/* ── Primary nav ─────────────────────────────────────── */}
+                <Link to="/feed" onClick={closeMenu} style={mobileNavStyle(isActive('/feed'))}>
+                  Matches
+                </Link>
+
                 <Link to="/messages" onClick={() => { closeMenu(); markMessagesRead() }} style={mobileNavStyle(isActive('/messages'))}>
-                  Messages{unread > 0 && (
+                  Messages
+                  {unread > 0 && (
                     <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
                       {unread > 99 ? '99+' : unread}
                     </span>
                   )}
                 </Link>
+
                 <Link to="/rooms" onClick={closeMenu} style={{ ...mobileNavStyle(isActive('/rooms')), display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   Rooms
                   {roomUnread && !isActive('/rooms') && (
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
                   )}
                 </Link>
-                <Link to="/profile/edit" onClick={closeMenu} style={mobileNavStyle(isActive('/profile/edit'))}>Profile</Link>
+
+                {/* ── Profile submenu ──────────────────────────────────── */}
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen(o => !o)}
+                  style={{
+                    ...mobileNavStyle(isActive('/profile/edit') || isActive(`/profile/${profile.id}`) || isActive('/settings')),
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
+                  }}
+                >
+                  <span>Profile</span>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--muted)', transition: 'transform 0.15s', display: 'inline-block', transform: profileOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+                </button>
+
+                {profileOpen && (
+                  <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
+                    {profile?.id && (
+                      <Link to={`/profile/${profile.id}`} onClick={closeMenu} style={mobileSubNavStyle(isActive(`/profile/${profile.id}`))}>
+                        View profile
+                      </Link>
+                    )}
+                    <Link to="/profile/edit" onClick={closeMenu} style={mobileSubNavStyle(isActive('/profile/edit'))}>
+                      Edit details
+                    </Link>
+                    <Link to="/profile/dynamics" onClick={closeMenu} style={mobileSubNavStyle(isActive('/profile/dynamics'))}>
+                      Dynamics
+                    </Link>
+                    <Link to="/profile/notifications" onClick={closeMenu} style={mobileSubNavStyle(isActive('/profile/notifications'))}>
+                      Notifications
+                    </Link>
+                    <Link to="/settings" onClick={closeMenu} style={mobileSubNavStyle(isActive('/settings'))}>
+                      Settings
+                    </Link>
+                  </div>
+                )}
+
+                {/* ── Secondary nav ────────────────────────────────────── */}
                 <Link to="/typing" onClick={closeMenu} style={mobileNavStyle(isActive('/typing'))}>Get typed</Link>
+                <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" onClick={closeMenu} style={mobileNavStyle(isActive('/admin'))}>Admin</Link>
                 )}
-                <button onClick={() => { closeMenu(); handleSignOut() }} style={{ ...mobileNavStyle(false), textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', width: '100%' }}>
+
+                {/* ── Footer links section ─────────────────────────────── */}
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: '0.25rem' }}>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', padding: '0.75rem 1.5rem', gap: '0 1.5rem' }}>
+                    <Link
+                      to="/premium"
+                      onClick={closeMenu}
+                      style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', padding: '0.4rem 0', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                    >
+                      Premium ✦
+                    </Link>
+                    <Link
+                      to="/changelog"
+                      onClick={() => { closeMenu(); localStorage.setItem('socion_changelog_seen', CHANGELOG_ENTRIES[0].date) }}
+                      style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0', position: 'relative', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
+                      What's new
+                      {hasNewChangelog && (
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
+                      )}
+                    </Link>
+                    <Link to="/support" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                      Support ☕
+                    </Link>
+                    <Link to="/help" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                      Help
+                    </Link>
+                    <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                      Discord
+                    </a>
+                    <Link to="/privacy" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Privacy</Link>
+                    <Link to="/terms" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Terms</Link>
+                  </div>
+                </div>
+
+                {/* ── Theme + Sign out ─────────────────────────────────── */}
+                <div style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>Theme</span>
+                  <ThemeToggle />
+                </div>
+
+                <button
+                  onClick={() => { closeMenu(); handleSignOut() }}
+                  style={{
+                    ...mobileNavStyle(false),
+                    textAlign: 'left', background: 'none', border: 'none',
+                    cursor: 'pointer', width: '100%',
+                    color: 'var(--muted)', borderTop: '1px solid var(--border)',
+                  }}
+                >
                   Sign out
                 </button>
               </>
             ) : (
-              <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
+              <>
+                <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
+                <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
+                <div style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>Theme</span>
+                  <ThemeToggle />
+                </div>
+              </>
             )}
-            <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
-            {/* Theme toggle row in mobile menu */}
-            <div style={{ padding: '0.75rem 1.5rem', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>Theme</span>
-              <ThemeToggle />
-            </div>
           </nav>
         )}
 
@@ -274,6 +376,15 @@ const mobileNavStyle = (active) => ({
   display: 'block',
   padding: '0.85rem 1.5rem',
   fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
+  color: active ? 'var(--accent)' : 'var(--text)',
+  textDecoration: 'none',
+  borderBottom: '1px solid var(--border)',
+})
+
+const mobileSubNavStyle = (active) => ({
+  display: 'block',
+  padding: '0.7rem 1.5rem 0.7rem 2.25rem',
+  fontSize: '0.78rem', letterSpacing: '0.06em', textTransform: 'uppercase',
   color: active ? 'var(--accent)' : 'var(--muted)',
   textDecoration: 'none',
   borderBottom: '1px solid var(--border)',
