@@ -188,7 +188,7 @@ export default function UserProfile() {
         )
       }
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%' }}>
           {views.map((row, i) => {
             const viewer    = row.viewer
             const isViewerAnon = viewer?.profile_data?.anonymous ?? false
@@ -210,7 +210,7 @@ export default function UserProfile() {
                   borderBottom: i < views.length - 1 ? '1px solid var(--border)' : 'none',
                   background: 'none', border: 'none',
                   cursor: isViewerAnon ? 'default' : 'pointer',
-                  textAlign: 'left', width: '100%',
+                  textAlign: 'left', width: '100%', boxSizing: 'border-box',
                 }}
               >
                 {/* Avatar */}
