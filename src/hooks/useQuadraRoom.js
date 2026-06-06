@@ -12,8 +12,8 @@ import {
   uploadRoomImage,
 } from '../lib/rooms'
 
-export function useQuadraRoom({ profile }) {
-  const roomId = profile?.room_id ?? null
+export function useQuadraRoom({ profile, roomIdOverride = null }) {
+  const roomId = roomIdOverride ?? profile?.room_id ?? null
 
   const [messages, setMessages]             = useState([])
   const [loading, setLoading]               = useState(false)
