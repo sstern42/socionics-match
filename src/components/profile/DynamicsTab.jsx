@@ -71,12 +71,16 @@ export default function DynamicsTab({ myType, isPremium }) {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         const userId = session?.user?.id
+        console.log('[DynamicsTab] userId:', userId, 'myType:', myType)
         if (!userId) { setLoading(false); return }
 
         const [{ data: userRows, error: ue }, { data: globalRows, error: ge }] = await Promise.all([
           supabase.rpc('get_user_relation_stats', { p_user_id: userId }),
           supabase.rpc('get_global_relation_averages'),
         ])
+
+        console.log('[DynamicsTab] userRows:', userRows, 'ue:', ue)
+        console.log('[DynamicsTab] globalRows:', globalRows, 'ge:', ge)
 
         if (ue || ge) throw ue ?? ge
 
