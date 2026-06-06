@@ -173,13 +173,12 @@ export default function UserProfile() {
   // ── Views tab content ────────────────────────────────────────────────────
 
   function ViewsTab() {
-    const _isPremium = false // TEMP: remove before shipping to prod
     if (viewsLoading) {
       return <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', padding: '2rem 0' }}>Loading…</p>
     }
 
     // Premium: full viewer list
-    if (_isPremium) {
+    if (isPremium) {
       if (views.length === 0) {
         return (
           <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
