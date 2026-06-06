@@ -54,7 +54,7 @@ export default function Typing() {
             return (
               <div
                 key={typist.slug}
-                style={{ border: '1px solid var(--border)', borderRadius: 8, background: '#fff', overflow: 'hidden' }}
+                style={{ border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card-bg)', overflow: 'hidden' }}
               >
                 {/* Header */}
                 <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderBottom: '1px solid var(--border)' }}>
