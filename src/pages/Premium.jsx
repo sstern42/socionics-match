@@ -17,7 +17,7 @@ const FEATURES = [
   ['Dynamics', 'Per-relation ratings, message volumes, and site average comparison', '—'],
 ]
 
-const PRICE_LABEL = '$12.99 / year'
+const PRICE_LABEL = '$14.99 / year'
 
 export default function Premium() {
   const { session, profile, isPremium, loading } = useAuth()
@@ -139,8 +139,11 @@ export default function Premium() {
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', color: 'var(--text)', marginBottom: '0.25rem' }}>
               {PRICE_LABEL}
             </p>
-            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
               Billed annually. Cancel anytime.
+            </p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '1.5rem', fontStyle: 'italic' }}>
+              Launch price — will increase as the product grows.
             </p>
             <button
               type="button"
