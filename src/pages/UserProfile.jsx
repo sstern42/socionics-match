@@ -188,7 +188,7 @@ export default function UserProfile() {
         )
       }
       return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {views.map((row, i) => {
             const viewer    = row.viewer
             const isViewerAnon = viewer?.profile_data?.anonymous ?? false
@@ -200,17 +200,18 @@ export default function UserProfile() {
             const viewerRelInfo = viewerRelKey ? RELATIONS[viewerRelKey] : null
 
             return (
-              <button
+              <div
                 key={`${row.viewer_id}-${i}`}
-                type="button"
                 onClick={() => !isViewerAnon && navigate(`/profile/${viewer?.id}`)}
+                onKeyDown={e => e.key === 'Enter' && !isViewerAnon && navigate(`/profile/${viewer?.id}`)}
+                role={!isViewerAnon ? 'button' : undefined}
+                tabIndex={!isViewerAnon ? 0 : undefined}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '0.75rem',
                   padding: '0.85rem 0',
                   borderBottom: i < views.length - 1 ? '1px solid var(--border)' : 'none',
-                  background: 'none', border: 'none',
                   cursor: isViewerAnon ? 'default' : 'pointer',
-                  textAlign: 'left', width: '100%', boxSizing: 'border-box',
+                  width: '100%',
                 }}
               >
                 {/* Avatar */}
@@ -239,7 +240,7 @@ export default function UserProfile() {
 
                 {/* Time */}
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(row.viewed_at)}</span>
-              </button>
+              </div>
             )
           })}
         </div>
