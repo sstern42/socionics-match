@@ -8,6 +8,7 @@ import { countryFlag, COUNTRIES } from '../data/countries'
 import { createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
 import { logProfileView, getProfileViews, getProfileViewCount } from '../lib/profileViews'
+import DynamicsTab from '../components/profile/DynamicsTab'
 import SIWebview from '../components/SIWebview'
 
 function timeAgo(dateStr) {
@@ -172,12 +173,13 @@ export default function UserProfile() {
   // ── Views tab content ────────────────────────────────────────────────────
 
   function ViewsTab() {
+    const _isPremium = false // TEMP: remove before shipping to prod
     if (viewsLoading) {
       return <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', padding: '2rem 0' }}>Loading…</p>
     }
 
     // Premium: full viewer list
-    if (isPremium) {
+    if (_isPremium) {
       if (views.length === 0) {
         return (
           <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
@@ -328,11 +330,23 @@ export default function UserProfile() {
               Views
               {!isPremium && <span aria-hidden="true" style={{ marginLeft: '0.35rem', fontSize: '0.75rem', verticalAlign: 'middle' }}>&#128274;</span>}
             </button>
+            <button
+              style={tabStyle(activeTab === 'dynamics')}
+              onClick={() => { setActiveTab('dynamics'); window.umami?.track('profile-dynamics-tab-opened') }}
+            >
+              Dynamics
+              {!isPremium && <span aria-hidden="true" style={{ marginLeft: '0.35rem', fontSize: '0.75rem', verticalAlign: 'middle' }}>&#128274;</span>}
+            </button>
           </div>
         )}
 
         {/* Views tab */}
         {isSelf && activeTab === 'views' && <ViewsTab />}
+
+        {/* Dynamics tab */}
+        {isSelf && activeTab === 'dynamics' && (
+          <DynamicsTab myType={profile?.type} isPremium={isPremium} />
+        )}
 
         {/* Profile tab (always shown for non-self; shown when tab = 'profile' for self) */}
         {(!isSelf || activeTab === 'profile') && (
