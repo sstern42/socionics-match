@@ -8,7 +8,7 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 // fully retained for everyone (lapsed principle: nothing is ever deleted), so
 // it is NOT a premium limitation and is not listed as one.
 const FEATURES = [
-  ['Connections', 'Unlimited active connections', '5 active'],
+  ['Connections', 'Unlimited active connections', '3 active'],
   ['Relation filters', 'All 16 relation types in your feed', 'Same quadra only'],
   ['Compatibility breakdown', 'Full Model A breakdown for every connection', '—'],
   ['Read receipts', 'See when your messages are read', '—'],
