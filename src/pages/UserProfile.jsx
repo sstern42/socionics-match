@@ -344,9 +344,10 @@ export default function UserProfile() {
         {isSelf && activeTab === 'views' && <ViewsTab />}
 
         {/* Dynamics tab */}
-        {isSelf && activeTab === 'dynamics' && (
-          <DynamicsTab myType={profile?.type} isPremium={isPremium} />
-        )}
+        {isSelf && activeTab === 'dynamics' && (() => {
+          console.log('[DynamicsTab render] isPremium:', isPremium, 'myType:', profile?.type)
+          return <DynamicsTab myType={profile?.type} isPremium={isPremium} />
+        })()}
 
         {/* Profile tab (always shown for non-self; shown when tab = 'profile' for self) */}
         {(!isSelf || activeTab === 'profile') && (
