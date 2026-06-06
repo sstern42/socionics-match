@@ -295,7 +295,7 @@ export default function UserProfile() {
 
   return (
     <Layout>
-      <section style={{ maxWidth: 480, margin: '0 auto', padding: '3rem 1.5rem' }}>
+      <section style={{ maxWidth: 480, width: '100%', margin: '0 auto', padding: '3rem 1.5rem' }}>
         {!isSelf && (
           <button
             onClick={() => navigate(-1)}
