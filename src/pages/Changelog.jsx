@@ -2,6 +2,14 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
     {
+      date: '6 June 2026',
+      label: 'Update',
+      items: [
+        'Who viewed — see who has visited your profile. Premium members get the full list with name, type, relation type, and timestamp. Free accounts see a 7-day view count. Find it under Profile → Views',
+        'Dynamics — a breakdown of your connection history by relation type. Ratings you gave, ratings you received, message volumes, and how each relation compares to the site average. Premium only. Find it under Profile → Dynamics',
+      ],
+    },
+    {
       date: '5 June 2026',
       label: 'Update',
       items: [
