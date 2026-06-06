@@ -13,6 +13,8 @@ const FEATURES = [
   ['Compatibility breakdown', 'Full Model A breakdown for every connection', '—'],
   ['Read receipts', 'See when your messages are read', '—'],
   ['Your strongest matches', 'See the relation types that fit you most naturally, and filter to them', '—'],
+  ['Who viewed you', 'Full viewer list — name, type, relation, and when they visited', '7-day count only'],
+  ['Dynamics', 'Per-relation ratings, message volumes, and site average comparison', '—'],
 ]
 
 const PRICE_LABEL = '$12.99 / year'
