@@ -7,14 +7,14 @@ export const TYPISTS = {
   spencer: {
     slug:            'spencer',
     displayName:     'Spencer',
-    type:            'ILE',         // base type — used for MATRIX relation lookup
-    typeLabel:       'ILE-ENTp',    // display label
+    type:            'ILE',
+    typeLabel:       'ILE-ENTp',
     role:            'Founder',
-    verifiedBy:      'Spencer',     // value stored in profile.verified_by
+    verifiedBy:      'Spencer',
     avatarUrl:       'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/00bbbfed-a5ce-497c-a667-8cb86b72ba83/avatar.jpg',
     birthYear:       1982,
-    flag:            '🇬🇧',           // literal emoji — reliable cross-platform
-    studyingSince:   2004,          // year — experience calculated dynamically
+    flag:            '🇬🇧',
+    studyingSince:   2004,
     bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned.',
     credibilityLine: 'Spencer has delivered typing reports to clients across Socionics Insight and Socion.',
     linkedin:        'https://www.linkedin.com/in/spencerstern/',
@@ -25,7 +25,7 @@ export const TYPISTS = {
     method:          'Questionnaire → written report (async)',
     outputTypes:     ['Written report'],
     reportLength:    '3,500–5,000 words',
-    availability:    'active',      // 'active' | 'paused' | 'full'
+    availability:    'active',
     currency:        'USD',
     contact:         'hello@socion.app',
     testimonial:     { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
@@ -54,6 +54,52 @@ export const TYPISTS = {
     ],
     whatYouGet: [
       'A written report confirming your type, with the reasoning behind it',
+      'A clear read on your function stack and what it means for how you relate',
+      'Practical guidance on the relations that fit you, for the Socion feed',
+      'Your Socion type updated to match, so your matches are built on solid ground',
+    ],
+  },
+
+  'uncle-sam': {
+    slug:            'uncle-sam',
+    displayName:     'Uncle Sam',
+    type:            'SLE',
+    typeLabel:       'SLE-ESTp',    // confirm subtype with him
+    role:            'Typist',
+    verifiedBy:      'Uncle Sam',
+    avatarUrl:       'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/5b62646f-7ee7-40ff-8aec-48ff56684a21/avatar.jpg',
+    birthYear:       1992,          // age 33 → approximate, confirm with him
+    flag:            '🇺🇸',
+    studyingSince:   null,          // confirm with him — TT shows 3 years but likely longer
+    bio:             'B.S. Applied Psychology. Socionics and MBTI practitioner specialising in voice-based typing sessions — calm, thorough, and willing to discuss nuance rather than just hand you a label.',
+    credibilityLine: '422 clients typed. 4.50 rating across verified reviews on Typology Testing.',
+    linkedin:        null,
+    links:           [],
+    method:          'Voice call',
+    outputTypes:     ['Voice session'],
+    reportLength:    null,
+    availability:    'active',
+    currency:        'USD',
+    contact:         null,          // confirm preferred contact email
+    testimonial:     { quote: 'Uncle Sam was very calm and considerate when it came to explaining my type to me. He allowed me to feel comfortable enough to ask questions freely and express my concerns or disagreements.', name: 'Luna, Typology Testing' },
+    tiers: [
+      // Stripe links and pricing TBC — awaiting from Uncle Sam
+      // {
+      //   key:        'standard',
+      //   name:       'Standard',
+      //   price:      '$TBC',
+      //   turnaround: 'TBC',
+      //   href:       'https://buy.stripe.com/...',
+      //   highlight:  false,
+      // },
+    ],
+    steps: [
+      ['01', 'Pay',     'Choose your session tier. Payment is handled securely by Stripe.'],
+      ['02', 'Schedule', 'After payment you\'ll be taken to a booking page to pick a time that works for you.'],
+      ['03', 'Session',  'Join a voice call with Uncle Sam. He\'ll walk you through his read on your type, explain the reasoning, and your Socion profile is updated to match.'],
+    ],
+    whatYouGet: [
+      'A live voice session walking through your type and the reasoning behind it',
       'A clear read on your function stack and what it means for how you relate',
       'Practical guidance on the relations that fit you, for the Socion feed',
       'Your Socion type updated to match, so your matches are built on solid ground',
