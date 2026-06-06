@@ -84,7 +84,7 @@ export default function Support() {
           >
             Browse typists
           </a>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>From $29. Written report, delivered by email.</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>From $29. Written report or voice session.</p>
         </div>
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
