@@ -67,17 +67,6 @@ export default function DynamicsTab({ myType, isPremium }) {
     if (!isPremium || !myType) return
     setLoading(true)
 
-    Promise.all([
-      supabase.rpc('get_user_relation_stats', { p_user_id: (async () => {
-        const { data } = await supabase.auth.getSession()
-        return data.session?.user?.id
-      })() }),
-      supabase.rpc('get_global_relation_averages'),
-    ]).then(async ([userRes, globalRes]) => {
-      // user_id resolution happens async above — re-fetch properly
-    }).catch(() => {})
-
-    // Fetch user id first, then both RPCs
     ;(async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
