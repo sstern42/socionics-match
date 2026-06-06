@@ -227,7 +227,7 @@ export default function TypistProfile() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
                 border: `1px solid ${tier.highlight ? 'var(--accent)' : 'var(--border)'}`,
-                background: tier.highlight ? 'rgba(154,111,56,0.05)' : '#fff',
+                background: tier.highlight ? 'rgba(154,111,56,0.05)' : 'var(--card-bg)',
                 borderRadius: 8, padding: '1.25rem 1.5rem', textDecoration: 'none',
                 transition: 'border-color 0.15s',
               }}
