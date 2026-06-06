@@ -81,7 +81,7 @@ export const TYPISTS = {
     reportLength:    null,
     availability:    'paused',
     currency:        'USD',
-    contact:         'uncle-sam@socion.app', // forwarding to: ustypologyservice@gmail.com
+    contact:         'uncle.sam@socion.app', // forwarding to: ustypologyservice@gmail.com
     paymentNote:     "Payment is taken by Stripe. Straight after, you'll be taken to a booking page to schedule your session with Uncle Sam.",
     testimonial:     { quote: 'Uncle Sam was very calm and considerate when it came to explaining my type to me. He allowed me to feel comfortable enough to ask questions freely and express my concerns or disagreements.', name: 'Luna, Typology Testing' },
     tiers: [],       // Stripe links and pricing TBC
