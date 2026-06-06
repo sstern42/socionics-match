@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { TYPIST_LIST, yearsExperience } from '../lib/typists'
+import { TYPIST_LIST, calcAge, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 const AVAILABILITY = {
   active: { label: 'Available', colour: '#4caf50' },
@@ -14,11 +14,6 @@ function viewerRelation(typistBaseType, viewerType) {
   if (!typistBaseType || !viewerType) return null
   try { return MATRIX?.[typistBaseType]?.[viewerType] ?? null }
   catch { return null }
-}
-
-function calcAge(birthYear) {
-  if (!birthYear) return null
-  return new Date().getFullYear() - birthYear
 }
 
 export default function Typing() {
@@ -54,12 +49,12 @@ export default function Typing() {
             const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
             const flag     = typist.flag ?? ''
             const yrs      = yearsExperience(typist.studyingSince)
-            const age      = calcAge(typist.birthYear)
+            const age      = calcAge(typist.dob)
 
             return (
               <div
                 key={typist.slug}
-                style={{ border: '1px solid var(--border)', borderRadius: 8, background: 'var(--card-bg)', overflow: 'hidden' }}
+                style={{ border: '1px solid var(--border)', borderRadius: 8, background: '#fff', overflow: 'hidden' }}
               >
                 {/* Header */}
                 <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', borderBottom: '1px solid var(--border)' }}>
@@ -82,7 +77,7 @@ export default function Typing() {
                         {flag && <span style={{ marginLeft: '0.4rem', fontSize: '1rem' }}>{flag}</span>}
                         {age  && <span style={{ fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 300, color: 'var(--muted)', marginLeft: '0.25rem' }}>{age}</span>}
                       </h2>
-                      <span style={{
+<span style={{
                         fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
                         color: 'var(--accent)', border: '1px solid var(--accent-lt)',
                         padding: '0.15rem 0.5rem', borderRadius: 2,
@@ -114,22 +109,26 @@ export default function Typing() {
                     </div>
                   </div>
 
+                  {/* Relation context line */}
                   {relInfo && profile.type !== typist.type && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.55, margin: 0 }}>
                       A {relInfo.name.toLowerCase()}'s perspective on {profile.type} — {relInfo.description.toLowerCase()}
                     </p>
                   )}
 
+                  {/* Bio */}
                   <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
                     {typist.bio}
                   </p>
 
+                  {/* Credibility line */}
                   {typist.credibilityLine && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.55, margin: 0, fontStyle: 'italic' }}>
                       {typist.credibilityLine}
                     </p>
                   )}
 
+                  {/* Testimonial preview */}
                   {typist.testimonial && (
                     <div style={{ borderLeft: '2px solid var(--accent-lt)', paddingLeft: '0.75rem', margin: '0.25rem 0 0' }}>
                       <p style={{ fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
@@ -141,16 +140,26 @@ export default function Typing() {
                     </div>
                   )}
 
+                  {/* Method + experience + availability */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', border: '1px solid var(--border)', padding: '0.2rem 0.6rem', borderRadius: 3 }}>
+                    <span style={{
+                      fontSize: '0.72rem', color: 'var(--muted)',
+                      border: '1px solid var(--border)',
+                      padding: '0.2rem 0.6rem', borderRadius: 3,
+                    }}>
                       Delivery: {typist.method}
                     </span>
                     {yrs && (
-                      <span style={{ fontSize: '0.72rem', color: 'var(--muted)', border: '1px solid var(--border)', padding: '0.2rem 0.6rem', borderRadius: 3 }}>
+                      <span style={{
+                        fontSize: '0.72rem', color: 'var(--muted)',
+                        border: '1px solid var(--border)',
+                        padding: '0.2rem 0.6rem', borderRadius: 3,
+                      }}>
                         {yrs}+ years studying Socionics
                       </span>
                     )}
                   </div>
+                  {/* Availability — own line with pulse */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <span style={{
                       width: 7, height: 7, borderRadius: '50%', background: avail.colour,
@@ -189,6 +198,7 @@ export default function Typing() {
                   </Link>
                 </div>
 
+                {/* Already verified */}
                 {alreadyVerifiedByThis && (
                   <div style={{ padding: '0.65rem 1.5rem', background: 'rgba(154,111,56,0.06)', borderTop: '1px solid var(--accent-lt)' }}>
                     <p style={{ fontSize: '0.8rem', color: 'var(--accent)', margin: 0 }}>

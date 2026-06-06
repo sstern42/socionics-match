@@ -12,7 +12,7 @@ export const TYPISTS = {
     role:            'Founder',
     verifiedBy:      'Spencer',
     avatarUrl:       'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/00bbbfed-a5ce-497c-a667-8cb86b72ba83/avatar.jpg',
-    birthYear:       1982,
+    dob:             '1982-05-24',
     flag:            '🇬🇧',
     studyingSince:   2004,
     bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned.',
@@ -27,7 +27,7 @@ export const TYPISTS = {
     reportLength:    '3,500–5,000 words',
     availability:    'active',
     currency:        'USD',
-    contact:         'hello@socion.app',
+    contact:         'spencer@socion.app',
     testimonial:     { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
     tiers: [
       {
@@ -68,9 +68,9 @@ export const TYPISTS = {
     role:            'Typist',
     verifiedBy:      'Uncle Sam',
     avatarUrl:       'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/5b62646f-7ee7-40ff-8aec-48ff56684a21/avatar.jpg',
-    birthYear:       1992,          // age 33 → approximate, confirm with him
+    dob:             '1993-03-22',
     flag:            '🇺🇸',
-    studyingSince:   null,          // confirm with him — TT shows 3 years but likely longer
+    studyingSince:   null,          // confirm with him
     bio:             'B.S. Applied Psychology. Socionics and MBTI practitioner specialising in voice-based typing sessions — calm, thorough, and willing to discuss nuance rather than just hand you a label.',
     credibilityLine: '422 clients typed. 4.50 rating across verified reviews on Typology Testing.',
     linkedin:        null,
@@ -80,23 +80,13 @@ export const TYPISTS = {
     reportLength:    null,
     availability:    'active',
     currency:        'USD',
-    contact:         null,          // confirm preferred contact email
+    contact:         'uncle-sam@socion.app', // forwarding to: ustypologyservice@gmail.com
     testimonial:     { quote: 'Uncle Sam was very calm and considerate when it came to explaining my type to me. He allowed me to feel comfortable enough to ask questions freely and express my concerns or disagreements.', name: 'Luna, Typology Testing' },
-    tiers: [
-      // Stripe links and pricing TBC — awaiting from Uncle Sam
-      // {
-      //   key:        'standard',
-      //   name:       'Standard',
-      //   price:      '$TBC',
-      //   turnaround: 'TBC',
-      //   href:       'https://buy.stripe.com/...',
-      //   highlight:  false,
-      // },
-    ],
+    tiers: [],       // Stripe links and pricing TBC
     steps: [
-      ['01', 'Pay',     'Choose your session tier. Payment is handled securely by Stripe.'],
-      ['02', 'Schedule', 'After payment you\'ll be taken to a booking page to pick a time that works for you.'],
-      ['03', 'Session',  'Join a voice call with Uncle Sam. He\'ll walk you through his read on your type, explain the reasoning, and your Socion profile is updated to match.'],
+      ['01', 'Pay',      'Choose your session tier. Payment is handled securely by Stripe.'],
+      ['02', 'Schedule', "After payment you'll be taken to a booking page to pick a time that works for you."],
+      ['03', 'Session',  "Join a voice call with Uncle Sam. He'll walk you through his read on your type, explain the reasoning, and your Socion profile is updated to match."],
     ],
     whatYouGet: [
       'A live voice session walking through your type and the reasoning behind it',
@@ -111,6 +101,16 @@ export const TYPISTS = {
 export const TYPIST_LIST = Object.values(TYPISTS)
 
 // Helpers
+
+export function calcAge(dob) {
+  if (!dob) return null
+  const birth = new Date(dob)
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  const m = today.getMonth() - birth.getMonth()
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--
+  return age
+}
 
 export function yearsExperience(studyingSince) {
   if (!studyingSince) return null

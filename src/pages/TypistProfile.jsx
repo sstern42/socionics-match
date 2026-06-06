@@ -2,18 +2,12 @@ import { useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { TYPISTS, yearsExperience } from '../lib/typists'
+import { TYPISTS, calcAge, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
-
 function viewerRelation(typistBaseType, viewerType) {
   if (!typistBaseType || !viewerType) return null
   try { return MATRIX?.[typistBaseType]?.[viewerType] ?? null }
   catch { return null }
-}
-
-function calcAge(birthYear) {
-  if (!birthYear) return null
-  return new Date().getFullYear() - birthYear
 }
 
 export default function TypistProfile() {
@@ -41,16 +35,22 @@ export default function TypistProfile() {
   const relInfo  = relation ? RELATIONS[relation] : null
   const flag     = typist.flag ?? ''
   const yrs      = yearsExperience(typist.studyingSince)
-  const age      = calcAge(typist.birthYear)
+  const age      = calcAge(typist.dob)
 
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 560, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
 
+        {/* Back */}
         <button
           type="button"
           onClick={() => navigate('/typing')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '2rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--muted)', fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
+            marginBottom: '2rem', padding: 0,
+            display: 'flex', alignItems: 'center', gap: '0.4rem',
+          }}
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="9,3 5,7 9,11"/>
@@ -60,8 +60,13 @@ export default function TypistProfile() {
 
         <p className="eyebrow">Socion · Get typed</p>
 
+        {/* Avatar + heading */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem', marginBottom: '0.6rem' }}>
-          <div style={{ width: 56, height: 56, borderRadius: '50%', flexShrink: 0, background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: '50%', flexShrink: 0,
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
             {typist.avatarUrl
               ? <img src={typist.avatarUrl} alt={typist.displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : <span style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', color: 'var(--muted)', lineHeight: 1 }}>{typist.displayName[0]}</span>
@@ -72,17 +77,32 @@ export default function TypistProfile() {
           </h1>
         </div>
 
+        {/* Badges */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
-          <span style={{ fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500, color: 'var(--accent)', border: '1px solid var(--accent-lt)', padding: '0.15rem 0.5rem', borderRadius: 2 }}>
+<span style={{
+            fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500,
+            color: 'var(--accent)', border: '1px solid var(--accent-lt)',
+            padding: '0.15rem 0.5rem', borderRadius: 2,
+          }}>
             {typist.typeLabel}
           </span>
           {relInfo && profile.type !== typist.type && (
-            <span style={{ fontSize: '0.68rem', color: 'var(--muted)', border: '1px solid var(--border)', padding: '0.15rem 0.5rem', borderRadius: 2 }}>
+            <span style={{
+              fontSize: '0.68rem', color: 'var(--muted)',
+              border: '1px solid var(--border)',
+              padding: '0.15rem 0.5rem', borderRadius: 2,
+            }}>
               Your {relInfo.name}
             </span>
           )}
           {typist.linkedin && (
-            <a href={typist.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', color: 'var(--muted)', textDecoration: 'none', opacity: 0.55 }}>
+            <a
+              href={typist.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="LinkedIn"
+              style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', color: 'var(--muted)', textDecoration: 'none', opacity: 0.55 }}
+            >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M20.447 20.452H17.1v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.765V9.196h3.204v1.558h.046c.446-.845 1.536-1.736 3.162-1.736 3.382 0 4.007 2.226 4.007 5.121v6.313zM5.337 7.433a1.857 1.857 0 1 1 0-3.714 1.857 1.857 0 0 1 0 3.714zm1.604 13.019H3.733V9.196h3.208v11.256zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
               </svg>
@@ -90,34 +110,58 @@ export default function TypistProfile() {
           )}
         </div>
 
+        {/* About row — flag, age, experience, links */}
         {(flag || age || yrs || (typist.links && typist.links.length > 0)) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-            {(flag || age) && <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>{flag}{age ? <>{flag ? ' ' : ''}{age}</> : null}</span>}
-            {yrs && <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>Studying Socionics since {typist.studyingSince} <span style={{ color: 'var(--border)' }}>·</span> {yrs}+ years</span>}
+            {(flag || age) && (
+              <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                {flag}{age ? <>{flag ? ' ' : ''}{age}</> : null}
+              </span>
+            )}
+            {yrs && (
+              <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
+                Studying Socionics since {typist.studyingSince} <span style={{ color: 'var(--border)' }}>·</span> {yrs}+ years
+              </span>
+            )}
             {typist.links && typist.links.map(link => (
-              <a key={link.href} href={link.href} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none' }}>{link.label} ↗</a>
+              <a
+                key={link.href}
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none' }}
+              >
+                {link.label} ↗
+              </a>
             ))}
           </div>
         )}
 
+        {/* Relation context line */}
         {relInfo && profile.type !== typist.type && (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
             A {relInfo.name.toLowerCase()}'s perspective on {profile.type} — {relInfo.description.toLowerCase()}
           </p>
         )}
 
+        {/* Bio */}
         <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '0.75rem' }}>
           {typist.bio}
         </p>
 
+        {/* Credibility line */}
         {typist.credibilityLine && (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, fontStyle: 'italic', marginBottom: '2.5rem' }}>
             {typist.credibilityLine}
           </p>
         )}
 
+        {/* Already verified */}
         {alreadyVerifiedByThis && (
-          <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.25rem 1.5rem', marginBottom: '2.5rem' }}>
+          <div style={{
+            background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
+            borderRadius: 8, padding: '1.25rem 1.5rem', marginBottom: '2.5rem',
+          }}>
             <p style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--accent)', marginBottom: '0.35rem' }}>
               Your type is already confirmed ✓
             </p>
@@ -131,7 +175,9 @@ export default function TypistProfile() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2.5rem' }}>
           {typist.steps.map(([num, title, body]) => (
             <div key={num} style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
-              <span style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 400, color: 'var(--accent-lt)', lineHeight: 1, flexShrink: 0, width: 32 }}>{num}</span>
+              <span style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 400, color: 'var(--accent-lt)', lineHeight: 1, flexShrink: 0, width: 32 }}>
+                {num}
+              </span>
               <div>
                 <p style={{ fontSize: '0.92rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.2rem' }}>{title}</p>
                 <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>{body}</p>
@@ -141,7 +187,7 @@ export default function TypistProfile() {
         </div>
 
         {/* What you get */}
-        <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--card-bg)' }}>
+        <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginBottom: '2.5rem' }}>
           <p style={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, marginBottom: '1rem' }}>
             What you get
           </p>
@@ -157,6 +203,7 @@ export default function TypistProfile() {
           )}
         </div>
 
+        {/* Testimonial — hidden until populated */}
         {typist.testimonial && (
           <div style={{ borderLeft: '3px solid var(--accent-lt)', paddingLeft: '1.25rem', marginBottom: '2.5rem' }}>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
@@ -180,7 +227,7 @@ export default function TypistProfile() {
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
                 border: `1px solid ${tier.highlight ? 'var(--accent)' : 'var(--border)'}`,
-                background: tier.highlight ? 'rgba(154,111,56,0.05)' : 'var(--card-bg)',
+                background: tier.highlight ? 'rgba(154,111,56,0.05)' : '#fff',
                 borderRadius: 8, padding: '1.25rem 1.5rem', textDecoration: 'none',
                 transition: 'border-color 0.15s',
               }}
