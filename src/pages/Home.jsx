@@ -521,6 +521,34 @@ export default function Home() {
         <TestimonialsCarousel />
       </section>
 
+      {/* DISCORD COMMUNITY */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', background: 'var(--card-bg)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', alignItems: 'center' }}>
+          <div>
+            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Community</p>
+            <h2 style={{ marginBottom: '1rem' }}>Join the <em>conversation</em></h2>
+            <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, marginBottom: '1.5rem' }}>
+              The Socion Discord is where members discuss dynamics, debate typings, and go deeper than a profile card allows. Active, free, and worth joining.
+            </p>
+            <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" className="btn-ghost" style={{ textDecoration: 'none', display: 'inline-block' }} onClick={() => window.umami?.track('home-discord-join-clicked')}>
+              Join Discord →
+            </a>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <iframe
+              src="https://discord.com/widget?id=1487147121630122088&theme=dark"
+              width="350"
+              height="500"
+              allowTransparency="true"
+              frameBorder="0"
+              sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+              style={{ borderRadius: 8, border: 'none', maxWidth: '100%' }}
+              title="Socion Discord"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* FEATURE CARDS — was background: 'var(--card-bg)', now 'var(--card-bg)' */}
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
         <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
