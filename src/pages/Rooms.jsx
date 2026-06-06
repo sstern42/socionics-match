@@ -271,7 +271,11 @@ export default function Rooms() {
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
-  const { roomId, messages, setMessages, loading:roomLoading, error:roomError, hasMore, loadMore, loadingMore, send, sending, sendError, uploadImage, imageUploading, imageUploadError, softDelete, report, toggleReaction } = useQuadraRoom({ profile })
+  // PATCH: viewingRoomId override for founder quadra switcher
+  const [viewingRoomId, setViewingRoomId]     = useState(null)
+  const [viewingQuadra, setViewingQuadra]     = useState(null)
+
+  const { roomId, messages, setMessages, loading:roomLoading, error:roomError, hasMore, loadMore, loadingMore, send, sending, sendError, uploadImage, imageUploading, imageUploadError, softDelete, report, toggleReaction } = useQuadraRoom({ profile, roomIdOverride: viewingRoomId })
 
   const { supported:pushSupported, permission:pushPermission, subscribed:pushSubscribed, subscribe:pushSubscribe } = usePushNotifications(profile?.id)
   const [enablingRoomNotif, setEnablingRoomNotif] = useState(false)
@@ -318,9 +322,12 @@ export default function Rooms() {
   const tabId            = useRef(Math.random().toString(36).slice(2))
   const [typingUsers, setTypingUsers] = useState({})
 
-  const quadra       = profile?.type ? getQuadra(profile.type) : null
+  // PATCH: quadra reflects viewed room when founder is browsing
+  const quadra       = viewingQuadra ?? (profile?.type ? getQuadra(profile.type) : null)
   const quadraColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
   const isAnonymous  = profile?.profile_data?.anonymous ?? false
+  const isFounder    = profile?.profile_data?.role === 'founder'
+  const isReadOnly   = isFounder && !!viewingRoomId
 
   useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading])
 
@@ -390,6 +397,21 @@ export default function Rooms() {
   useEffect(() => {
     return () => { if(pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl) }
   }, [pendingImage])
+
+  // PATCH: founder quadra switcher — looks up room_id for any quadra
+  async function handleQuadraSwitcher(q) {
+    const ownQuadra = profile?.type ? getQuadra(profile.type) : null
+    if (q === ownQuadra && !viewingRoomId) return // already on own room
+    if (q === ownQuadra) {
+      // return to own room
+      setViewingRoomId(null); setViewingQuadra(null); return
+    }
+    if (q === viewingQuadra) return // already viewing this one
+    try {
+      const { data, error } = await supabase.from('rooms').select('id').eq('quadra', q.toLowerCase()).single()
+      if (!error && data) { setViewingRoomId(data.id); setViewingQuadra(q) }
+    } catch (err) { console.error('Could not switch room:', err) }
+  }
 
   function handleScrollToMessage(msgId) {
     const el = document.getElementById(`room-msg-${msgId}`)
@@ -506,10 +528,9 @@ export default function Rooms() {
     <Layout hideFooter noScroll>
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0 }}>
         <div className="messages-outer" style={{ maxWidth:720, width:'100%', margin:'0 auto', flex:1, display:'flex', flexDirection:'column', padding:'0 1.5rem', minHeight:0, boxSizing:'border-box' }}>
-          {/* Main container — was background:'var(--card-bg)' */}
           <div style={{ flex:1, display:'flex', flexDirection:'column', border:'1px solid var(--border)', borderLeft:isMobile?'none':undefined, borderRight:isMobile?'none':undefined, borderTop:'none', background:'var(--card-bg)', overflow:'hidden', minHeight:0 }}>
 
-            {/* Header — was background:'var(--card-bg)' */}
+            {/* Header */}
             <div style={{ padding:'1rem 1.5rem', borderBottom:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
@@ -517,14 +538,30 @@ export default function Rooms() {
                   <h2 style={{ fontFamily:'var(--serif)', fontSize:'1.2rem', fontWeight:500, margin:0, color:quadraColour }}>{quadra} quadra</h2>
                   {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>· {memberCount} {memberCount===1?'member':'members'}</span>}
                 </div>
-                <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>{profile?.type} — your quadra room</p>
+                <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>
+                  {isReadOnly ? `Viewing as ${profile?.type} · read only` : `${profile?.type} — your quadra room`}
+                </p>
+                {/* PATCH: founder quadra switcher */}
+                {isFounder && (
+                  <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
+                    {['Alpha','Beta','Gamma','Delta'].map(q => {
+                      const ownQ  = profile?.type ? getQuadra(profile.type) : null
+                      const active = viewingQuadra ? viewingQuadra===q : ownQ===q
+                      return (
+                        <button key={q} type="button" onClick={() => handleQuadraSwitcher(q)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, padding:'0.15rem 0.5rem', borderRadius:2, border:`1px solid ${QUADRA_COLOURS[q]}55`, background:active?QUADRA_COLOURS[q]:'none', color:active?'#fff':QUADRA_COLOURS[q], cursor:'pointer', transition:'all 0.15s' }}>
+                          {q}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
               <button type="button" onClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }} style={{ fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer', flexShrink:0 }}>
                 {profile?.type} →
               </button>
             </div>
 
-            {/* Active members strip — was background:'var(--card-bg)' */}
+            {/* Active members strip */}
             {activeMembers.length > 0 && (() => {
               const now    = Date.now()
               const online = activeMembers.filter(u => now - new Date(u.last_active).getTime() < 15*60*1000)
@@ -566,8 +603,8 @@ export default function Rooms() {
               </div>
             )}
 
-            {/* Room notifications prompt */}
-            {profile && pushSupported && pushPermission!=='denied' && !roomNotifsEnabled && (
+            {/* Room notifications prompt — only show on own room */}
+            {!isReadOnly && profile && pushSupported && pushPermission!=='denied' && !roomNotifsEnabled && (
               <button type="button" onClick={enableRoomNotifications} disabled={enablingRoomNotif} style={{ display:'flex',alignItems:'center',gap:'0.5rem',width:'100%',padding:'0.6rem 1.5rem',background:'none',border:'none',borderBottom:'1px solid var(--border)',cursor:enablingRoomNotif?'default':'pointer',fontSize:'0.75rem',color:'var(--muted)',textAlign:'left',transition:'color 0.2s',opacity:enablingRoomNotif?0.6:1,flexShrink:0 }} onMouseEnter={e=>{if(!enablingRoomNotif)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color='var(--muted)'}>
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 1.5a4 4 0 0 1 4 4v2.5l1 1.5H2l1-1.5V5.5a4 4 0 0 1 4-4z"/><path d="M5.5 11a1.5 1.5 0 0 0 3 0"/></svg>
                 {enablingRoomNotif ? 'Enabling…' : 'Enable room notifications'}
@@ -598,91 +635,100 @@ export default function Rooms() {
               </div>
             )}
 
-            {/* Input area — was background:'var(--card-bg)' */}
+            {/* Input area — gated for read-only (founder viewing another room) */}
             <div style={{ borderTop:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0 }}>
-              {/* Typing indicator */}
-              {Object.keys(typingUsers).length > 0 && (() => {
-                const entries=Object.values(typingUsers), names=entries.map(u=>u.name)
-                let label
-                if(names.length===1) label=`${names[0]} is typing…`
-                else if(names.length===2) label=`${names[0]} and ${names[1]} are typing…`
-                else label=`${names[0]}, ${names[1]} and ${names.length-2} other${names.length-2>1?'s':''} are typing…`
-                return (
-                  <div style={{ padding:'0.3rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
-                    <span style={{ fontSize:'0.72rem',color:'var(--muted)',fontStyle:'italic' }}>{label}</span>
-                    <span style={{ display:'flex',gap:'3px',alignItems:'center' }}>
-                      {[0,1,2].map(i=><span key={i} style={{ width:4,height:4,borderRadius:'50%',background:'var(--muted)',display:'inline-block',animation:`typingDot 1.2s ${i*0.2}s infinite ease-in-out` }} />)}
-                    </span>
-                  </div>
-                )
-              })()}
-
-              {/* Reply bar */}
-              {replyTo && (
-                <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
-                  <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
-                    <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===profile?.id?'You':replyTo.senderName}</p>
-                    {replyTo.image_url && !replyTo.content && <p style={{ fontSize:'0.72rem',color:'var(--muted)' }}>🖼 Image</p>}
-                    {replyTo.content && <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:320 }}>{replyTo.content}</p>}
-                  </div>
-                  <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-                  </button>
+              {isReadOnly ? (
+                <div style={{ padding:'0.75rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
+                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:'var(--muted)', flexShrink:0 }}><rect x="3" y="6" width="8" height="7" rx="1"/><path d="M5 6V4a2 2 0 0 1 4 0v2"/></svg>
+                  <p style={{ fontSize:'0.82rem', color:'var(--muted)', fontStyle:'italic' }}>Viewing {viewingQuadra} room — read only</p>
                 </div>
-              )}
-
-              <div style={{ padding:isMobile?'0.6rem 0.75rem':'1rem 1.5rem' }}>
-                {isAnonymous ? (
-                  <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.75rem 1rem',background:'var(--surface)',borderRadius:4,border:'1px solid var(--border)' }}>
-                    <span style={{ fontSize:'0.85rem',color:'var(--muted)' }}>🕵️ Anonymous mode — switch to your profile to chat in the room.</span>
-                    <Link to="/profile/edit" style={{ fontSize:'0.78rem',color:'var(--accent)',textDecoration:'none',flexShrink:0 }}>Edit profile →</Link>
-                  </div>
-                ) : (
-                  <>
-                    {/* Pending image preview */}
-                    {pendingImage && (
-                      <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',marginBottom:'0.5rem',padding:'0.5rem 0.75rem',background:'rgba(154,111,56,0.05)',border:'1px solid var(--accent-lt)',borderRadius:4 }}>
-                        <div style={{ flexShrink:0 }}>
-                          <img src={pendingImage.previewUrl} alt="pending" style={{ height:56,maxWidth:80,objectFit:'cover',borderRadius:4,border:'1px solid var(--border)',display:'block' }} />
-                        </div>
-                        <span style={{ fontSize:'0.78rem',color:'var(--muted)',flex:1 }}>Add a caption or hit Send</span>
-                        <button type="button" onClick={handleClearPendingImage} aria-label="Remove image" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }}>
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-                        </button>
+              ) : (
+                <>
+                  {/* Typing indicator */}
+                  {Object.keys(typingUsers).length > 0 && (() => {
+                    const entries=Object.values(typingUsers), names=entries.map(u=>u.name)
+                    let label
+                    if(names.length===1) label=`${names[0]} is typing…`
+                    else if(names.length===2) label=`${names[0]} and ${names[1]} are typing…`
+                    else label=`${names[0]}, ${names[1]} and ${names.length-2} other${names.length-2>1?'s':''} are typing…`
+                    return (
+                      <div style={{ padding:'0.3rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
+                        <span style={{ fontSize:'0.72rem',color:'var(--muted)',fontStyle:'italic' }}>{label}</span>
+                        <span style={{ display:'flex',gap:'3px',alignItems:'center' }}>
+                          {[0,1,2].map(i=><span key={i} style={{ width:4,height:4,borderRadius:'50%',background:'var(--muted)',display:'inline-block',animation:`typingDot 1.2s ${i*0.2}s infinite ease-in-out` }} />)}
+                        </span>
                       </div>
-                    )}
+                    )
+                  })()}
 
-                    {imageUploading && (
-                      <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.5rem',padding:'0.4rem 0.75rem',background:'rgba(154,111,56,0.07)',borderRadius:4,border:'1px solid var(--accent-lt)' }}>
-                        <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',flexShrink:0 }} />
-                        <span style={{ fontSize:'0.78rem',color:'var(--accent)' }}>Uploading image…</span>
+                  {/* Reply bar */}
+                  {replyTo && (
+                    <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
+                      <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
+                        <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===profile?.id?'You':replyTo.senderName}</p>
+                        {replyTo.image_url && !replyTo.content && <p style={{ fontSize:'0.72rem',color:'var(--muted)' }}>🖼 Image</p>}
+                        {replyTo.content && <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:320 }}>{replyTo.content}</p>}
                       </div>
-                    )}
-
-                    {/* Text input row — was background:'var(--card-bg)' */}
-                    <div style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }} onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'} onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}>
-                      <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading||sending} title="Share image or GIF" aria-label="Attach image" style={{ background:'none',border:'none',padding:isMobile?'0.7rem 0.5rem 0.7rem 0.75rem':'0.9rem 0.5rem 0.9rem 1rem',cursor:(imageUploading||sending)?'default':'pointer',color:pendingImage?'var(--accent)':'var(--muted)',flexShrink:0,alignSelf:'flex-end',opacity:(imageUploading||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',lineHeight:0 }} onMouseEnter={e=>{if(!imageUploading&&!sending)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}>
-                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><polyline points="2,17 7,11 11,15 14,12 18,17"/></svg>
+                      <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
                       </button>
-                      <input ref={imageInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={handleImageFileChange} style={{ display:'none' }} />
-                      <textarea ref={inputRef} placeholder={pendingImage?'Add a caption (optional)…':`Message the ${quadra} quadra…`} value={text} rows={1} maxLength={2000}
-                        onChange={e => {
-                          setText(e.target.value)
-                          e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
-                          typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,name:profile.profile_data?.anonymous?'Anonymous':(profile.profile_data?.name??profile.type),user_type:profile.type,typing:true } })
-                          clearTimeout(typingTimer.current)
-                          typingTimer.current = setTimeout(() => { typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,typing:false } }) }, 2000)
-                        }}
-                        onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend()} }}
-                        style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:isMobile?'0.85rem':'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.5rem',maxHeight:'8rem' }}
-                      />
-                      {text.length>1800 && <span style={{ fontSize:'0.68rem',color:'var(--muted)',padding:'0 0.5rem 0.75rem',alignSelf:'flex-end' }}>{2000-text.length}</span>}
-                      <button className="btn-primary" onClick={handleSend} disabled={(!text.trim()&&!pendingImage)||sending||imageUploading} style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||imageUploading)?0.5:1 }}>Send</button>
                     </div>
-                    {text && <p style={{ fontSize:'0.68rem',color:'var(--muted)',textAlign:'right',margin:'0.25rem 0.5rem 0' }}>Shift + Enter for new line</p>}
-                  </>
-                )}
-              </div>
+                  )}
+
+                  <div style={{ padding:isMobile?'0.6rem 0.75rem':'1rem 1.5rem' }}>
+                    {isAnonymous ? (
+                      <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.75rem 1rem',background:'var(--surface)',borderRadius:4,border:'1px solid var(--border)' }}>
+                        <span style={{ fontSize:'0.85rem',color:'var(--muted)' }}>🕵️ Anonymous mode — switch to your profile to chat in the room.</span>
+                        <Link to="/profile/edit" style={{ fontSize:'0.78rem',color:'var(--accent)',textDecoration:'none',flexShrink:0 }}>Edit profile →</Link>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Pending image preview */}
+                        {pendingImage && (
+                          <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',marginBottom:'0.5rem',padding:'0.5rem 0.75rem',background:'rgba(154,111,56,0.05)',border:'1px solid var(--accent-lt)',borderRadius:4 }}>
+                            <div style={{ flexShrink:0 }}>
+                              <img src={pendingImage.previewUrl} alt="pending" style={{ height:56,maxWidth:80,objectFit:'cover',borderRadius:4,border:'1px solid var(--border)',display:'block' }} />
+                            </div>
+                            <span style={{ fontSize:'0.78rem',color:'var(--muted)',flex:1 }}>Add a caption or hit Send</span>
+                            <button type="button" onClick={handleClearPendingImage} aria-label="Remove image" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }}>
+                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+                            </button>
+                          </div>
+                        )}
+
+                        {imageUploading && (
+                          <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.5rem',padding:'0.4rem 0.75rem',background:'rgba(154,111,56,0.07)',borderRadius:4,border:'1px solid var(--accent-lt)' }}>
+                            <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',flexShrink:0 }} />
+                            <span style={{ fontSize:'0.78rem',color:'var(--accent)' }}>Uploading image…</span>
+                          </div>
+                        )}
+
+                        {/* Text input row */}
+                        <div style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }} onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'} onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}>
+                          <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading||sending} title="Share image or GIF" aria-label="Attach image" style={{ background:'none',border:'none',padding:isMobile?'0.7rem 0.5rem 0.7rem 0.75rem':'0.9rem 0.5rem 0.9rem 1rem',cursor:(imageUploading||sending)?'default':'pointer',color:pendingImage?'var(--accent)':'var(--muted)',flexShrink:0,alignSelf:'flex-end',opacity:(imageUploading||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',lineHeight:0 }} onMouseEnter={e=>{if(!imageUploading&&!sending)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}>
+                            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><polyline points="2,17 7,11 11,15 14,12 18,17"/></svg>
+                          </button>
+                          <input ref={imageInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={handleImageFileChange} style={{ display:'none' }} />
+                          <textarea ref={inputRef} placeholder={pendingImage?'Add a caption (optional)…':`Message the ${quadra} quadra…`} value={text} rows={1} maxLength={2000}
+                            onChange={e => {
+                              setText(e.target.value)
+                              e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
+                              typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,name:profile.profile_data?.anonymous?'Anonymous':(profile.profile_data?.name??profile.type),user_type:profile.type,typing:true } })
+                              clearTimeout(typingTimer.current)
+                              typingTimer.current = setTimeout(() => { typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,typing:false } }) }, 2000)
+                            }}
+                            onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend()} }}
+                            style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:isMobile?'0.85rem':'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.5rem',maxHeight:'8rem' }}
+                          />
+                          {text.length>1800 && <span style={{ fontSize:'0.68rem',color:'var(--muted)',padding:'0 0.5rem 0.75rem',alignSelf:'flex-end' }}>{2000-text.length}</span>}
+                          <button className="btn-primary" onClick={handleSend} disabled={(!text.trim()&&!pendingImage)||sending||imageUploading} style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||imageUploading)?0.5:1 }}>Send</button>
+                        </div>
+                        {text && <p style={{ fontSize:'0.68rem',color:'var(--muted)',textAlign:'right',margin:'0.25rem 0.5rem 0' }}>Shift + Enter for new line</p>}
+                      </>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
