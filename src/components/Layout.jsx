@@ -510,17 +510,25 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               else if (toast.matchId) navigate(`/messages?match=${toast.matchId}`)
             } : undefined
 
-            const label = (() => {
-              if (toast.kind === 'dual')       return `${toast.name ? toast.name + ' · ' : ''}your Dual just joined ✦`
-              if (toast.kind === 'join')       return toast.name ? `${toast.name} just joined` : 'just joined'
+            const heading = (() => {
+              if (toast.kind === 'message')    return 'new dm received'
+              if (toast.kind === 'room')       return 'new room message'
+              if (toast.kind === 'connection') return 'new connection'
+              if (toast.kind === 'dual')       return 'your dual just joined ✦'
+              if (toast.kind === 'join')       return 'new member'
+              return ''
+            })()
+
+            const body = (() => {
               if (toast.kind === 'message') {
                 const countBadge = (toast.count ?? 1) > 1 ? ` +${(toast.count ?? 1) - 1}` : ''
-                const preview = toast.name ? `${toast.name}: ${toast.preview}` : toast.preview
-                return preview + countBadge
+                return (toast.name ? `${toast.name}: ${toast.preview}` : toast.preview) + countBadge
               }
-              if (toast.kind === 'connection') return `connected with ${toast.name ?? 'someone'}`
-              if (toast.kind === 'room')       return `new message in your ${toast.label} room`
-              return ''
+              if (toast.kind === 'room')       return `${toast.label} quadra`
+              if (toast.kind === 'connection') return toast.name ?? 'someone'
+              if (toast.kind === 'dual')       return toast.name ?? null
+              if (toast.kind === 'join')       return toast.name ?? null
+              return null
             })()
 
             return (
@@ -532,33 +540,43 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   border: '1px solid var(--border)',
                   borderLeft: `3px solid ${toast.colour}`,
                   borderRadius: 6,
-                  padding: '0.55rem 0.85rem 0.55rem 0.75rem',
+                  padding: '0.6rem 0.85rem 0.6rem 0.75rem',
                   boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-                  display: 'flex', alignItems: 'center', gap: '0.55rem',
+                  display: 'flex', alignItems: 'flex-start', gap: '0.55rem',
                   animation: 'toast-in 0.2s ease',
                   maxWidth: 240,
                   pointerEvents: 'auto',
                   cursor: isClickable ? 'pointer' : 'default',
                 }}
               >
+                {/* Type badge */}
                 {toast.type && (
                   <span style={{
-                    fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                    fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
                     fontWeight: 600, color: toast.colour,
                     background: `${toast.colour}18`,
                     border: `1px solid ${toast.colour}55`,
                     padding: '0.12rem 0.38rem', borderRadius: 2, flexShrink: 0,
+                    marginTop: '0.1rem',
                   }}>
                     {toast.type}
                   </span>
                 )}
-                <span style={{ fontSize: '0.78rem', color: toast.kind === 'dual' ? 'var(--text)' : 'var(--muted)', lineHeight: 1.4, flex: 1 }}>
-                  {label}
-                </span>
+                {/* Text */}
+                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+                  <span style={{ fontSize: '0.65rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, color: toast.colour, lineHeight: 1 }}>
+                    {heading}
+                  </span>
+                  {body && (
+                    <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {body}
+                    </span>
+                  )}
+                </div>
                 <button
                   type="button"
                   onClick={e => { e.stopPropagation(); setToasts(prev => prev.filter(t => t.id !== toast.id)) }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.85rem', padding: 0, flexShrink: 0, lineHeight: 1, opacity: 0.6 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.85rem', padding: 0, flexShrink: 0, lineHeight: 1, opacity: 0.6, marginTop: '0.05rem' }}
                   aria-label="Dismiss"
                 >×</button>
               </div>
