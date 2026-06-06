@@ -613,11 +613,23 @@ export default function Feed() {
                 <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: '0.65rem 0.85rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => { setFilterRelation('ALL'); setShowRelations(false) }}>All ({profiles.length})</button>
-                    {feedDisplayRelations.map(rel => (
-                      <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => { setFilterRelation(rel); setShowRelations(false) }}>
-                        {RELATIONS[rel]?.name} ({profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length})
-                      </button>
-                    ))}
+                    {feedDisplayRelations.map(rel => {
+                      const relProfiles = profiles.filter(p => (p.displayRelation ?? p.relation) === rel)
+                      // Look up the single countertype for this relation from the MATRIX:
+                      // MATRIX[otherType][myType] === rel gives the correct countertype
+                      const ALL_TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
+                      const counterType = profile?.type
+                        ? ALL_TYPES.find(t => MATRIX[t]?.[profile.type] === rel) ?? null
+                        : null
+                      return (
+                        <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => { setFilterRelation(rel); setShowRelations(false) }}>
+                          <span>{RELATIONS[rel]?.name} ({relProfiles.length})</span>
+                          {counterType && (
+                            <span style={{ opacity: 0.6, fontSize: '0.62rem', marginLeft: '0.3rem' }}>· {counterType}</span>
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               )}
