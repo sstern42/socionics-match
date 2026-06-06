@@ -7,6 +7,8 @@ export const ENTRIES = [
       items: [
         'Who viewed — see who has visited your profile. Premium members get the full list with name, type, relation type, and timestamp. Free accounts see a 7-day view count. Find it under Profile → Views',
         'Dynamics — a breakdown of your connection history by relation type. Ratings you gave, ratings you received, message volumes, and how each relation compares to the site average. Premium only. Find it under Profile → Dynamics',
+        'Mobile nav — reorganised into primary nav (Matches, Messages, Rooms), a collapsible Profile submenu (View profile, Edit, Dynamics, Notifications, Settings), and a footer links section giving access to Premium, What\'s new, Support, Help, Discord, Privacy, and Terms from mobile for the first time',
+        'Offline support — the app now loads and navigates without a network connection. JS, CSS, and the app shell are cached on first visit and served instantly on repeat visits, including offline. Live data requires a connection as normal',
       ],
     },
     {
