@@ -183,10 +183,10 @@ export default function Typing() {
                 {/* Tiers + CTA */}
                 <div style={{
                   padding: '1rem 1.5rem',
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  display: 'flex', alignItems: 'center',
                   gap: '1rem', flexWrap: 'wrap',
                 }}>
-                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', flex: 1 }}>
                     {typist.tiers.map(tier => (
                       <span key={tier.key} style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
                         <strong style={{ color: 'var(--text)', fontWeight: 500 }}>{tier.name}</strong>
@@ -201,7 +201,7 @@ export default function Typing() {
                       display: 'inline-block',
                       background: 'var(--accent)', color: '#fff', textDecoration: 'none',
                       fontSize: '0.78rem', fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase',
-                      padding: '0.6rem 1.25rem', borderRadius: 2, whiteSpace: 'nowrap', flexShrink: 0,
+                      padding: '0.6rem 1.25rem', borderRadius: 2, whiteSpace: 'nowrap', flexShrink: 0, marginLeft: 'auto',
                     }}
                   >
                     View typist →
