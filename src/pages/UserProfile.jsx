@@ -295,18 +295,20 @@ export default function UserProfile() {
   return (
     <Layout>
       <section style={{ maxWidth: 480, margin: '0 auto', padding: '3rem 1.5rem' }}>
-        <button
-          onClick={() => navigate(-1)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '2rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9,3 5,7 9,11"/></svg>
-          Back
-        </button>
+        {!isSelf && (
+          <button
+            onClick={() => navigate(-1)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '2rem', padding: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9,3 5,7 9,11"/></svg>
+            Back
+          </button>
+        )}
 
         {isSelf && (
-          <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.6rem 0.9rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>This is how your profile looks to others.</p>
-            <button type="button" onClick={() => navigate('/profile/edit')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', whiteSpace: 'nowrap', padding: 0 }}>Edit →</button>
+          <div style={{ background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent)', borderRadius: 6, padding: '0.85rem 1.1rem', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.5, fontWeight: 500 }}>This is how your profile looks to others.</p>
+            <button type="button" onClick={() => navigate('/profile/edit')} style={{ background: 'none', border: '1px solid var(--accent)', borderRadius: 3, cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', whiteSpace: 'nowrap', padding: '0.35rem 0.75rem', flexShrink: 0 }}>Edit →</button>
           </div>
         )}
 
@@ -440,7 +442,7 @@ export default function UserProfile() {
                     {copied ? '✓ Copied' : 'Copy'}
                   </button>
                 </div>
-                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.5rem', lineHeight: 1.5 }}>Find them on Discord to continue the conversation there.</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.5rem', lineHeight: 1.5 }}>{!isSelf ? 'Find them on Discord to continue the conversation there.' : 'Your Discord handle — visible to your connections.'}</p>
               </div>
             )}
 
