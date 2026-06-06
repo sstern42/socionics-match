@@ -96,7 +96,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             const quadra = TYPE_QUADRA[profile.type] ?? 'alpha'
             const colour = QUADRA_COLOURS[quadra] ?? '#9a6f38'
             const label = quadra.charAt(0).toUpperCase() + quadra.slice(1)
-            pushToast({
+            pushToastRef.current({
               id: payload.new.id ?? String(Date.now()),
               kind: 'room',
               colour,
@@ -137,6 +137,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   // ── Toast helpers ────────────────────────────────────────────────────────
   // Timer refs so we can reset the dismiss timer when a toast is updated
   const toastTimers = useRef({})
+  const pushToastRef = useRef(null)
 
   function pushToast(toast) {
     // For message toasts: collapse same-sender (same matchId) into one with a count
@@ -169,6 +170,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       () => setToasts(prev => prev.filter(t => t.id !== toast.id)), 8000
     )
   }
+  // Always keep ref pointing to latest version so effects use current closure
+  pushToastRef.current = pushToast
 
   // Join toast — new profile completed
   useEffect(() => {
@@ -185,7 +188,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
         const isDual = profile?.type && DUAL_MAP[profile.type] === record.type
         const toastId = record.id ?? String(Date.now())
-        pushToast({ id: toastId, kind: isDual ? 'dual' : 'join', type: record.type, name, colour })
+        pushToastRef.current({ id: toastId, kind: isDual ? 'dual' : 'join', type: record.type, name, colour })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -212,7 +215,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const quadra = TYPE_QUADRA[type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
         const preview = msg.content?.length > 45 ? msg.content.slice(0, 45) + '…' : msg.content
-        pushToast({ id: msg.id ?? String(Date.now()), kind: 'message', name, type, colour, preview, matchId: msg.match_id })
+        pushToastRef.current({ id: msg.id ?? String(Date.now()), kind: 'message', name, type, colour, preview, matchId: msg.match_id })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -234,7 +237,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const type   = other?.type
         const quadra = TYPE_QUADRA[type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
-        pushToast({ id: match.id ?? String(Date.now()), kind: 'connection', name, type, colour, matchId: match.id })
+        pushToastRef.current({ id: match.id ?? String(Date.now()), kind: 'connection', name, type, colour, matchId: match.id })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
