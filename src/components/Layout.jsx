@@ -132,7 +132,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
                   )}
                 </Link>
-                <Link to="/profile/edit" style={navStyle(isActive('/profile/edit'))}>Profile</Link>
+                <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
                 <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
@@ -205,7 +205,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   type="button"
                   onClick={() => setProfileOpen(o => !o)}
                   style={{
-                    ...mobileNavStyle(isActive('/profile/edit') || isActive(`/profile/${profile.id}`) || isActive('/settings')),
+                    ...mobileNavStyle(isActive(`/profile/${profile.id}`) || isActive('/profile/edit') || isActive('/settings')),
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     background: 'none', border: 'none', cursor: 'pointer', width: '100%', textAlign: 'left',
                   }}
@@ -217,7 +217,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {profileOpen && (
                   <div style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
                     {profile?.id && (
-                      <Link to={`/profile/${profile.id}`} onClick={closeMenu} style={mobileSubNavStyle(isActive(`/profile/${profile.id}`))}>
+                      <Link to={`/profile/${profile.id}`} onClick={closeMenu} style={{ ...mobileSubNavStyle(isActive(`/profile/${profile.id}`)), color: 'var(--accent)', fontWeight: 500 }}>
                         View profile
                       </Link>
                     )}
