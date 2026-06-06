@@ -79,7 +79,7 @@ export const TYPISTS = {
     method:          'Voice call',
     outputTypes:     ['Voice session'],
     reportLength:    null,
-    availability:    'active',
+    availability:    'paused',
     currency:        'USD',
     contact:         'uncle-sam@socion.app', // forwarding to: ustypologyservice@gmail.com
     paymentNote:     "Payment is taken by Stripe. Straight after, you'll be taken to a booking page to schedule your session with Uncle Sam.",
