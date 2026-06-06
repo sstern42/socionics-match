@@ -92,7 +92,7 @@ export default function TypistProfile() {
               border: '1px solid var(--border)',
               padding: '0.15rem 0.5rem', borderRadius: 2,
             }}>
-              Your {relInfo.name}
+              Your {relInfo.name} relation
             </span>
           )}
           {typist.linkedin && (
@@ -140,7 +140,7 @@ export default function TypistProfile() {
         {/* Relation context line */}
         {relInfo && profile.type !== typist.type && (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-            A {relInfo.name.toLowerCase()}'s perspective on {profile.type} — {relInfo.description.toLowerCase()}
+            A {relInfo.name.toLowerCase()} relation's perspective on {profile.type} — {relInfo.description.toLowerCase()}
           </p>
         )}
 
