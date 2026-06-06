@@ -20,10 +20,10 @@ const FEED_MODE_KEY = 'socion_feed_mode'
 const PAGE_SIZE = 30
 
 const FEED_LOADER_STEPS = [
-  'Reading your type preferences\u2026',
-  'Computing intertype relations\u2026',
-  'Finding your dynamics\u2026',
-  'Almost there\u2026',
+  'Reading your type preferences…',
+  'Computing intertype relations…',
+  'Finding your dynamics…',
+  'Almost there…',
 ]
 
 function FeedLoader() {
@@ -123,7 +123,7 @@ export default function Feed() {
 
   function handleShare() {
     const url = 'https://socion.app'
-    const text = `Match by Socionics type, not algorithm \u2014 ${memberCount ? memberCount + ' members' : 'growing fast'}`
+    const text = `Match by Socionics type, not algorithm — ${memberCount ? memberCount + ' members' : 'growing fast'}`
     window.umami?.track('feed-share-clicked', { method: navigator.share ? 'native' : 'clipboard' })
     if (navigator.share) {
       navigator.share({ title: 'Socion', text, url }).catch(() => {})
@@ -339,7 +339,7 @@ export default function Feed() {
     return (
       <Layout noScroll hideFooter>
         <section style={centreStyle}>
-          <p style={{ color: 'var(--muted)' }}>Loading\u2026</p>
+          <p style={{ color: 'var(--muted)' }}>Loading…</p>
         </section>
       </Layout>
     )
@@ -381,7 +381,7 @@ export default function Feed() {
           <p className="eyebrow">Your matches</p>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginTop: '0.4rem' }}>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
-              {profile?.type} \u2014 <em>finding your dynamic</em>
+              {profile?.type} — <em>finding your dynamic</em>
             </h1>
             <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', flexShrink: 0, marginTop: '0.5rem' }}>
               <button
@@ -420,7 +420,7 @@ export default function Feed() {
           </p>
           {swipeMode && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              Profiles you swipe on won't appear in Browse either \u2014 swipes apply across both modes.
+              Profiles you swipe on won't appear in Browse either — swipes apply across both modes.
             </p>
           )}
           {!isPremium && (
@@ -441,7 +441,7 @@ export default function Feed() {
             onClick={() => setShowCard(c => !c)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '0.75rem', padding: 0 }}
           >
-            {showCard ? 'Hide your card \u2191' : 'How you appear to others \u2193'}
+            {showCard ? 'Hide your card ↑' : 'How you appear to others ↓'}
           </button>
           {showCard && (
             <div style={{ marginTop: '1rem', maxWidth: 340 }}>
@@ -458,7 +458,7 @@ export default function Feed() {
                 onClick={() => navigate('/profile/edit')}
                 style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
               >
-                Edit profile \u2192
+                Edit profile →
               </button>
             </div>
           )}
@@ -472,13 +472,13 @@ export default function Feed() {
             borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem',
           }}>
             <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
-              \ud83d\udc4b {announcement.split(/(https?:\/\/[^\s]+|discord\.gg\/[^\s]+)/g).map((part, i) =>
+              👋 {announcement.split(/(https?:\/\/[^\s]+|discord\.gg\/[^\s]+)/g).map((part, i) =>
                 /^https?:\/\/|^discord\.gg\//.test(part)
                   ? <a key={i} href={part.startsWith('http') ? part : `https://${part}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{part}</a>
                   : part
               )}
             </p>
-            <button type="button" onClick={dismissBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: '0 0.25rem', lineHeight: 1 }} aria-label="Dismiss">\xd7</button>
+            <button type="button" onClick={dismissBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: '0 0.25rem', lineHeight: 1 }} aria-label="Dismiss">×</button>
           </div>
         )}
 
@@ -515,14 +515,14 @@ export default function Feed() {
             }}
           >
             <p style={{ fontSize: '0.82rem', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>\u21bb</span> new members just joined \u2014 refresh your feed
+              <span>↻</span> new members just joined — refresh your feed
             </p>
             <button
               type="button"
               onClick={e => { e.stopPropagation(); setNewMembersAvailable(false) }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: 0, lineHeight: 1 }}
               aria-label="Dismiss"
-            >\xd7</button>
+            >×</button>
           </div>
         )}
 
@@ -626,28 +626,28 @@ export default function Feed() {
                   <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
                     <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '\u2713 ' : ''}With photos</button>
-                      <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '\u2713 ' : ''}Known users only</button>
-                      <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '\u2713 ' : ''}Verified types only</button>
+                      <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
+                      <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Known users only</button>
+                      <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
                     </div>
                   </div>
                   <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
                     <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Activity</p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeOnly ? '\u2713 ' : ''}This week</button>
-                      <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeToday ? '\u2713 ' : ''}Today</button>
+                      <button type="button" className={`rel-pill clickable${activeOnly ? ' active' : ''}`} onClick={() => { setActiveOnly(v => !v); setActiveToday(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeOnly ? '✓ ' : ''}This week</button>
+                      <button type="button" className={`rel-pill clickable${activeToday ? ' active' : ''}`} onClick={() => { setActiveToday(v => !v); setActiveOnly(false); setOnlineNow(false) }} style={{ fontSize: '0.7rem' }}>{activeToday ? '✓ ' : ''}Today</button>
                       <button type="button" className={`rel-pill clickable${onlineNow ? ' active' : ''}`} onClick={() => { setOnlineNow(v => !v); setActiveOnly(false); setActiveToday(false) }} style={{ fontSize: '0.7rem' }}>
                         <span style={{ display: 'inline-block', width: 6, height: 6, borderRadius: '50%', background: '#4caf50', marginRight: '0.3rem', verticalAlign: 'middle', marginBottom: 1 }} />
-                        {onlineNow ? '\u2713 ' : ''}Online now
+                        {onlineNow ? '✓ ' : ''}Online now
                       </button>
                     </div>
                   </div>
                   <div style={{ padding: '0.65rem 0.85rem' }}>
                     <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Location</p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                      <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>\ud83c\udf0d Anywhere</button>
-                      <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '\u2713 ' : ''}Same country</button>
-                      <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '\u2713 ' : ''}Same city</button>
+                      <button type="button" className={`rel-pill clickable${filterLocation === 'anywhere' ? ' active' : ''}`} onClick={() => setFilterLocation('anywhere')} style={{ fontSize: '0.7rem' }}>🌍 Anywhere</button>
+                      <button type="button" className={`rel-pill clickable${filterLocation === 'same_country' ? ' active' : ''}`} onClick={() => setFilterLocation('same_country')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_country' ? '✓ ' : ''}Same country</button>
+                      <button type="button" className={`rel-pill clickable${filterLocation === 'same_city' ? ' active' : ''}`} onClick={() => setFilterLocation('same_city')} style={{ fontSize: '0.7rem' }}>{filterLocation === 'same_city' ? '✓ ' : ''}Same city</button>
                     </div>
                   </div>
                 </div>
@@ -657,7 +657,7 @@ export default function Feed() {
 
           {justConnected && (
             <div style={{ background: 'rgba(154,111,56,0.1)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--accent)' }}>
-              Connected with {justConnected}. Click Message \u2192 to start a conversation.
+              Connected with {justConnected}. Click Message → to start a conversation.
             </div>
           )}
 
@@ -695,22 +695,22 @@ export default function Feed() {
                       connecting={connectingId === p.id}
                     />
                     {i === 4 && !dismissedAds.share && (
-                      <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`} ctaLabel={shareState === 'copied' ? '\u2713 Link copied' : navigator.share ? 'Share Socion \u2192' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
+                      <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`${memberCount ? memberCount + ' members and growing.' : 'Growing every day.'} Spread the word and help us find the missing types.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
                     )}
                     {i === 7 && !dismissedAds['get-typed'] && (
-                      <FeedAd id="get-typed" eyebrow="Verify your type" headline="Working hypothesis or final answer?" body="A written typing report from Spencer Stern confirms your type and updates your profile to match." ctaLabel="Book a session \u2192" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
+                      <FeedAd id="get-typed" eyebrow="Verify your type" headline="Working hypothesis or final answer?" body="A written typing report from Spencer Stern confirms your type and updates your profile to match." ctaLabel="Book a session →" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
                     )}
                     {i === 9 && !dismissedAds.discord && (
-                      <FeedAd id="discord" eyebrow="Community" headline="Chat beyond the app" body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community." ctaLabel="Join Discord \u2192" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
+                      <FeedAd id="discord" eyebrow="Community" headline="Chat beyond the app" body="Join the Socion Discord to discuss types, dynamics, and everything Socionics with the community." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
                     )}
                     {i === 12 && !dismissedAds['si-type'] && profile?.type && (
-                      <FeedAd id="si-type" eyebrow="Read more" headline="Get to know your type" body={`Functions, quadras, blind spots, and how others see you \u2014 the full ${profile.type} profile on Socionics Insight.`} ctaLabel={`Read about ${profile.type} \u2192`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
+                      <FeedAd id="si-type" eyebrow="Read more" headline="Get to know your type" body={`Functions, quadras, blind spots, and how others see you — the full ${profile.type} profile on Socionics Insight.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
                     )}
                     {i === 14 && !dismissedAds.support && (
-                      <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion's core is free and always will be. If it's been useful, there are a few ways to help." ctaLabel="Support Socion \u2192" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
+                      <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion's core is free and always will be. If it's been useful, there are a few ways to help." ctaLabel="Support Socion →" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
                     )}
                     {i === 17 && !dismissedAds.shop && (
-                      <FeedAd id="shop" eyebrow="Treat yourself" headline="A mug for every type" body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand." ctaLabel="Browse the shop \u2192" onClick={() => { window.umami?.track('feed-shop-clicked'); window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('shop')} />
+                      <FeedAd id="shop" eyebrow="Treat yourself" headline="A mug for every type" body="16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand." ctaLabel="Browse the shop →" onClick={() => { window.umami?.track('feed-shop-clicked'); window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('shop')} />
                     )}
                   </>
                 ))}
@@ -719,7 +719,7 @@ export default function Feed() {
               {feedExhausted ? (
                 <div style={{ textAlign: 'center', marginTop: '2.5rem', paddingBottom: '1rem' }}>
                   <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1rem', color: 'var(--muted)' }}>
-                    You've seen everyone \u2014 check back as the community grows.
+                    You've seen everyone — check back as the community grows.
                   </p>
                 </div>
               ) : hasMore && (
@@ -731,7 +731,7 @@ export default function Feed() {
                     disabled={loadingMore}
                     style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
                   >
-                    {loadingMore ? 'Loading\u2026' : 'Load more'}
+                    {loadingMore ? 'Loading…' : 'Load more'}
                   </button>
                 </div>
               )}
@@ -754,7 +754,7 @@ export default function Feed() {
         const isAnon = targetProfile.profile_data?.anonymous ?? false
         const targetName = isAnon ? 'Anonymous' : (targetProfile.profile_data?.name ?? targetProfile.type)
         const question = targetProfile.profile_data?.connection_question
-        const label = question || 'Introduce yourself \u2014 what brings you to Socion?'
+        const label = question || 'Introduce yourself — what brings you to Socion?'
         const isConnecting = connectingId === targetProfile.id
         return (
           <div
@@ -771,7 +771,7 @@ export default function Feed() {
               </div>
               <textarea
                 className="input-standalone"
-                placeholder="Write your message\u2026"
+                placeholder="Write your message…"
                 value={connectMessage}
                 onChange={e => setConnectMessage(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && e.ctrlKey && connectMessage.trim().length >= 10 && handleConnectSubmit()}
@@ -789,7 +789,7 @@ export default function Feed() {
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button type="button" className="btn-ghost" onClick={() => { setConnectPrompt(null); setConnectMessage('') }} disabled={isConnecting}>Cancel</button>
                 <button type="button" className="btn-primary" onClick={handleConnectSubmit} disabled={isConnecting || connectMessage.trim().length < 10} style={{ opacity: (isConnecting || connectMessage.trim().length < 10) ? 0.5 : 1 }}>
-                  {isConnecting ? 'Connecting\u2026' : 'Send & connect'}
+                  {isConnecting ? 'Connecting…' : 'Send & connect'}
                 </button>
               </div>
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', margin: 0 }}>Ctrl + Enter to send</p>
