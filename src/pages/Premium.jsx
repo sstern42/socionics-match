@@ -15,9 +15,9 @@ const FEATURES = [
   ['Your strongest matches', 'See the relation types that fit you most naturally, and filter to them', '—'],
   ['Who viewed you', 'Full viewer list — name, type, relation, and when they visited', '7-day count only'],
   ['Dynamics', 'Per-relation ratings, message volumes, and site average comparison', '—'],
+  ['Profile badge', 'Founding member ✦ or Premium subscriber ★ badge on your profile', '—'],
 ]
 
-const PRICE_LABEL = '$14.99 / year'
 
 export default function Premium() {
   const { session, profile, isPremium, loading } = useAuth()
@@ -136,14 +136,15 @@ export default function Premium() {
         {/* Price + CTA — only for free users */}
         {!isPremium && (
           <div style={{ border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.75rem', textAlign: 'center', marginBottom: '2rem', background: 'rgba(154,111,56,0.04)' }}>
-            <p style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', color: 'var(--text)', marginBottom: '0.25rem' }}>
-              {PRICE_LABEL}
-            </p>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
+              <span style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', color: 'var(--text)' }}>$14.99 / year</span>
+              <span style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--muted)', textDecoration: 'line-through', opacity: 0.6 }}>$29.99</span>
+            </div>
             <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginBottom: '0.35rem' }}>
               Billed annually. Cancel anytime.
             </p>
-            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '1.5rem', fontStyle: 'italic' }}>
-              Launch price — will increase as the product grows.
+            <p style={{ fontSize: '0.78rem', color: 'var(--accent)', marginBottom: '1.5rem', fontWeight: 500 }}>
+              Launch offer — price will rise as the product grows.
             </p>
             <button
               type="button"

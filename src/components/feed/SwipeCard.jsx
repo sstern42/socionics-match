@@ -22,7 +22,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
   const [isFlying, setIsFlying] = useState(false)
   const startRef = useRef(null)
 
-  const { profile_data, type, displayRelation, relation, avatar_url, verified_by } = profile
+  const { profile_data, type, displayRelation, relation, avatar_url, verified_by, is_founding_member, plan_status } = profile
   const relKey   = displayRelation ?? relation
   const relInfo  = RELATIONS[relKey]
   const colours  = getColours(relKey)
@@ -34,6 +34,14 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
     : null
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[profile_data?.gender]
   const flag = isAnon ? null : countryFlag(profile_data?.country)
+
+  const memberBadge = !isAnon && (
+    is_founding_member
+      ? <span title="Founding member" style={{ fontSize: '0.75rem', color: 'var(--accent)', marginLeft: '0.25rem', verticalAlign: 'middle', lineHeight: 1 }}>✦</span>
+      : (plan_status === 'active' || plan_status === 'past_due')
+        ? <span title="Premium subscriber" style={{ fontSize: '0.75rem', color: 'var(--accent)', marginLeft: '0.25rem', verticalAlign: 'middle', lineHeight: 1 }}>★</span>
+        : null
+  )
 
   const stampProgress = Math.min(Math.abs(dragX) / SWIPE_THRESHOLD, 1)
   const likeOpacity   = dragX > 0 ? stampProgress : 0
@@ -117,7 +125,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'0.5rem' }}>
             <div style={{ minWidth:0 }}>
               <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0,lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
-                {displayName}{age?`, ${age}`:''}{genderEmoji && !isAnon ? ` ${genderEmoji}` : ''}
+                {displayName}{age?`, ${age}`:''}{genderEmoji && !isAnon ? ` ${genderEmoji}` : ''}{memberBadge}
               </h3>
               {(flag || (profile_data?.city && !isAnon)) && (
                 <p style={{ fontSize:'0.78rem',color:'var(--muted)',marginTop:'0.15rem' }}>

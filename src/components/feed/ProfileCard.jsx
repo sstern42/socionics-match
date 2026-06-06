@@ -40,7 +40,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
   const [photoModal, setPhotoModal] = useState(false)
-  const { profile_data, type, relation, displayRelation, purpose, last_active, verified_by } = profile
+  const { profile_data, type, relation, displayRelation, purpose, last_active, verified_by, is_founding_member, plan_status } = profile
   const [webviewUrl, setWebviewUrl] = useState(null)
   const name = profile_data?.name ?? 'Unknown'
   const dob = profile_data?.dob
@@ -73,6 +73,14 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
 
   const relInfo = RELATIONS[displayRelation ?? relation]
   const colours = RELATION_COLOURS[displayRelation ?? relation] ?? RELATION_COLOURS.IDENTITY
+
+  const memberBadge = !isAnonymous && (
+    is_founding_member
+      ? <span title="Founding member" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>✦</span>
+      : (plan_status === 'active' || plan_status === 'past_due')
+        ? <span title="Premium subscriber" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>★</span>
+        : null
+  )
 
   function handleAction() {
     if (alreadyMatched && matchId) { navigate(`/messages?match=${matchId}`) }
@@ -112,10 +120,10 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           <div>
             {isLinkable ? (
               <Link to={`/profile/${profile.id}`} onClick={() => window.umami?.track('profile-card-name-clicked',{type})} style={{ textDecoration:'none',color:'inherit' }}>
-                <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayAge?`, ${displayAge}`:''}{displayGenderEmoji?` ${displayGenderEmoji}`:''}</h3>
+                <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayAge?`, ${displayAge}`:''}{displayGenderEmoji?` ${displayGenderEmoji}`:''}{memberBadge}</h3>
               </Link>
             ) : (
-              <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayAge?`, ${displayAge}`:''}{displayGenderEmoji?` ${displayGenderEmoji}`:''}</h3>
+              <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayAge?`, ${displayAge}`:''}{displayGenderEmoji?` ${displayGenderEmoji}`:''}{memberBadge}</h3>
             )}
             {role && <span style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.12em',textTransform:'uppercase',fontWeight:600,color:'#fff',background:role==='founder'?'#2c2a22':role==='typist'?'#185FA5':'var(--accent)',padding:'0.15rem 0.5rem',borderRadius:2 }}>{role}</span>}
             {isAnonymous && <span title="anonymous" style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--muted)',border:'1px solid var(--border)',padding:'0.15rem 0.5rem',borderRadius:2 }}>🕵️ Anonymous</span>}
@@ -125,7 +133,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
         </div>
         <button onClick={()=>{window.umami?.track('si-link-type',{type});setWebviewUrl(`https://socionicsinsight.com/types/${type.toLowerCase()}/`)}} title={verified_by?`Verified by ${verified_by}`:undefined} style={{ fontSize:'0.72rem',letterSpacing:'0.08em',textTransform:'uppercase',fontWeight:500,color:colours.text,background:colours.bg,border:`1px solid ${colours.border}`,padding:'0.25rem 0.6rem',borderRadius:3,flexShrink:0,textDecoration:'none',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:'0.3rem' }}>
           {type}
-          {verified_by && !isAnonymous && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
+          {verified_by && !isAnonymous && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1 }}>✓</span>}
         </button>
       </div>
 
