@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { useTheme } from '../lib/ThemeContext'
@@ -136,7 +136,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
   // ── Toast helpers ────────────────────────────────────────────────────────
   // Timer refs so we can reset the dismiss timer when a toast is updated
-  const toastTimers = {}
+  const toastTimers = useRef({})
 
   function pushToast(toast) {
     // For message toasts: collapse same-sender (same matchId) into one with a count
@@ -145,8 +145,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const existing = prev.find(t => t.kind === 'message' && t.matchId === toast.matchId)
         if (existing) {
           // Reset timer for this toast
-          clearTimeout(toastTimers[existing.id])
-          toastTimers[existing.id] = setTimeout(
+          clearTimeout(toastTimers.current[existing.id])
+          toastTimers.current[existing.id] = setTimeout(
             () => setToasts(p => p.filter(t => t.id !== existing.id)), 8000
           )
           return prev.map(t =>
@@ -156,7 +156,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           )
         }
         // New message toast
-        toastTimers[toast.id] = setTimeout(
+        toastTimers.current[toast.id] = setTimeout(
           () => setToasts(p => p.filter(t => t.id !== toast.id)), 8000
         )
         return [...prev.slice(-2), { ...toast, count: 1 }]
@@ -165,7 +165,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     }
     // All other toast kinds — simple push, 8s dismiss
     setToasts(prev => [...prev.slice(-2), toast])
-    toastTimers[toast.id] = setTimeout(
+    toastTimers.current[toast.id] = setTimeout(
       () => setToasts(prev => prev.filter(t => t.id !== toast.id)), 8000
     )
   }
