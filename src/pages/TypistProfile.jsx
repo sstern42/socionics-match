@@ -244,9 +244,11 @@ export default function TypistProfile() {
           ))}
         </div>
 
-        <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
-          Payment is taken by Stripe. Straight after, you'll be taken to the questionnaire to complete in your own time. The clock on your turnaround starts once you submit it — not at payment.
-        </p>
+        {typist.paymentNote && (
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
+            {typist.paymentNote}
+          </p>
+        )}
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7 }}>
