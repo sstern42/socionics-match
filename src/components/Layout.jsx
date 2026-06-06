@@ -135,9 +135,39 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
 
   // ── Toast helpers ────────────────────────────────────────────────────────
+  // Timer refs so we can reset the dismiss timer when a toast is updated
+  const toastTimers = {}
+
   function pushToast(toast) {
+    // For message toasts: collapse same-sender (same matchId) into one with a count
+    if (toast.kind === 'message') {
+      setToasts(prev => {
+        const existing = prev.find(t => t.kind === 'message' && t.matchId === toast.matchId)
+        if (existing) {
+          // Reset timer for this toast
+          clearTimeout(toastTimers[existing.id])
+          toastTimers[existing.id] = setTimeout(
+            () => setToasts(p => p.filter(t => t.id !== existing.id)), 8000
+          )
+          return prev.map(t =>
+            t.id === existing.id
+              ? { ...t, preview: toast.preview, count: (t.count ?? 1) + 1 }
+              : t
+          )
+        }
+        // New message toast
+        toastTimers[toast.id] = setTimeout(
+          () => setToasts(p => p.filter(t => t.id !== toast.id)), 8000
+        )
+        return [...prev.slice(-2), { ...toast, count: 1 }]
+      })
+      return
+    }
+    // All other toast kinds — simple push, 8s dismiss
     setToasts(prev => [...prev.slice(-2), toast])
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), 5000)
+    toastTimers[toast.id] = setTimeout(
+      () => setToasts(prev => prev.filter(t => t.id !== toast.id)), 8000
+    )
   }
 
   // Join toast — new profile completed
@@ -480,7 +510,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             const label = (() => {
               if (toast.kind === 'dual')       return `${toast.name ? toast.name + ' · ' : ''}your Dual just joined ✦`
               if (toast.kind === 'join')       return toast.name ? `${toast.name} just joined` : 'just joined'
-              if (toast.kind === 'message')    return toast.name ? `${toast.name}: ${toast.preview}` : toast.preview
+              if (toast.kind === 'message') {
+                const countBadge = (toast.count ?? 1) > 1 ? ` +${(toast.count ?? 1) - 1}` : ''
+                const preview = toast.name ? `${toast.name}: ${toast.preview}` : toast.preview
+                return preview + countBadge
+              }
               if (toast.kind === 'connection') return `connected with ${toast.name ?? 'someone'}`
               if (toast.kind === 'room')       return `new message in your ${toast.label} room`
               return ''
