@@ -291,7 +291,7 @@ export default function Feed() {
   }
 
   function handleConnect(targetProfile) {
-    if (!isPremium && Object.keys(matchedMap).length >= 5) {
+    if (!isPremium && Object.keys(matchedMap).length >= 3) {
       window.umami?.track('connection-cap-hit')
       setCapModal(true)
       return
@@ -425,7 +425,7 @@ export default function Feed() {
           )}
           {!isPremium && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              <strong style={{ color: connectionCount >= 5 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 5</strong> connections used.
+              <strong style={{ color: connectionCount >= 3 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 3</strong> connections used.
               {connectionCount >= 5 && (
                 <>
                   {' '}
@@ -812,7 +812,7 @@ export default function Feed() {
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You've reached 5 connections</h2>
             </div>
             <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
-              The free tier includes up to 5 active connections. Upgrade to Premium for unlimited connections, or end an existing connection to free up a slot.
+              The free tier includes up to 3 active connections. Upgrade to Premium for unlimited connections, or end an existing connection to free up a slot.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
               <Link to="/premium" onClick={() => window.umami?.track('connection-cap-upgrade-clicked')} className="btn-primary" style={{ textAlign: 'center', textDecoration: 'none' }}>
