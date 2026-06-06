@@ -6,8 +6,8 @@ export async function getMatches(userId) {
     .from('matches')
     .select(`
       id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b, unmatched_at,
-      user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by, created_at ),
-      user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by, created_at ),
+      user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status ),
+      user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status ),
       messages ( content, created_at, sender_id )
     `)
     .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)

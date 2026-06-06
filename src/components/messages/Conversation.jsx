@@ -106,12 +106,19 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const otherUserId = match.other.id
   const otherVerifiedBy = match.other.verified_by ?? null
 
+  const otherIsFounder = !isOtherAnonymous && match.other.is_founding_member === true
+  const otherIsPremium = !isOtherAnonymous && !otherIsFounder && (match.other.plan_status === 'active' || match.other.plan_status === 'past_due')
+  const otherBadge = otherIsFounder
+    ? <span title="Founding member" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>✦</span>
+    : otherIsPremium
+      ? <span title="Premium subscriber" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>★</span>
+      : null
+
   const breakdown = profile?.type
     ? getCompatibilityBreakdown(profile.type, match.other.type, match.displayRelationType ?? match.relation_type)
     : null
   const breakdownUnlocked = isPremium && !!breakdown
 
-  // Member since formatted string
   const memberSince = match.other.created_at
     ? new Date(match.other.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
     : null
@@ -275,7 +282,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             }
           </div>
         </Link>
-        <Link to={`/profile/${otherUserId}`} className="convo-header-name" style={{ color:'inherit',textDecoration:'none' }}>{otherName}</Link>
+        <Link to={`/profile/${otherUserId}`} className="convo-header-name" style={{ color:'inherit',textDecoration:'none' }}>{otherName}</Link>{otherBadge}
         <div className="convo-header-meta">
           <button onClick={() => { window.umami?.track('si-link-type',{type:match.other.type}); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ fontSize:'0.7rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--accent)',fontWeight:500,background:'none',border:'none',cursor:'pointer',padding:0 }}>
             {match.other.type}
@@ -324,7 +331,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               </div>
             </Link>
             <div>
-              <Link to={`/profile/${otherUserId}`} style={{ fontFamily:'var(--serif)',fontSize:'1.25rem',fontWeight:500,color:'var(--text)',textDecoration:'none' }}>{otherName}</Link>
+              <Link to={`/profile/${otherUserId}`} style={{ fontFamily:'var(--serif)',fontSize:'1.25rem',fontWeight:500,color:'var(--text)',textDecoration:'none' }}>{otherName}</Link>{otherBadge}
               <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',marginTop:'0.15rem' }}>
                 <p style={{ fontSize:'0.72rem',color:'var(--accent)',letterSpacing:'0.1em',textTransform:'uppercase',fontWeight:500,margin:0 }}>
                   <button onClick={() => { window.umami?.track('si-link-type',{type:match.other.type}); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,fontSize:'inherit',letterSpacing:'inherit',textTransform:'inherit',fontWeight:'inherit' }}>

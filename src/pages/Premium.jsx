@@ -8,13 +8,14 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 // fully retained for everyone (lapsed principle: nothing is ever deleted), so
 // it is NOT a premium limitation and is not listed as one.
 const FEATURES = [
-  ['Connections', 'Unlimited active connections', '3 active'],
+  ['Connections', 'Unlimited active connections', '5 active'],
   ['Relation filters', 'All 16 relation types in your feed', 'Same quadra only'],
   ['Compatibility breakdown', 'Full Model A breakdown for every connection', '—'],
   ['Read receipts', 'See when your messages are read', '—'],
   ['Your strongest matches', 'See the relation types that fit you most naturally, and filter to them', '—'],
   ['Who viewed you', 'Full viewer list — name, type, relation, and when they visited', '7-day count only'],
   ['Dynamics', 'Per-relation ratings, message volumes, and site average comparison', '—'],
+  ['Profile badge', 'Founding member ✦ or Premium subscriber ★ badge on your profile', '—'],
 ]
 
 const PRICE_LABEL = '$14.99 / year'

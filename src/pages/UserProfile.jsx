@@ -53,7 +53,7 @@ export default function UserProfile() {
     if (!userId) return
     supabase
       .from('users')
-      .select('id, type, profile_data, avatar_url, photos, verified_by')
+      .select('id, type, profile_data, avatar_url, photos, verified_by, is_founding_member, plan_status')
       .eq('id', userId)
       .maybeSingle()
       .then(({ data }) => { setOther(data); setFetching(false) })
@@ -157,6 +157,15 @@ export default function UserProfile() {
   const myType    = profile?.type
   const relation  = !isSelf && myType ? MATRIX[other.type]?.[myType] : null
   const relInfo   = relation ? RELATIONS[relation] : null
+
+
+  const isMemberFounder = !isAnon && other.is_founding_member === true
+  const isMemberPremium = !isAnon && !isMemberFounder && (other.plan_status === 'active' || other.plan_status === 'past_due')
+  const memberBadge = isMemberFounder
+    ? <span title="Founding member" style={{ fontSize: '0.9rem', color: 'var(--accent)', marginLeft: '0.4rem', verticalAlign: 'middle', lineHeight: 1 }}>✦</span>
+    : isMemberPremium
+      ? <span title="Premium subscriber" style={{ fontSize: '0.9rem', color: 'var(--accent)', marginLeft: '0.4rem', verticalAlign: 'middle', lineHeight: 1 }}>★</span>
+      : null
 
   const canConnect = !isSelf && !isAnon && profile && !checkingMatch
   const isConnected = !!existingMatchId || justConnected
@@ -364,7 +373,7 @@ export default function UserProfile() {
               </div>
               <div>
                 <h1 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, lineHeight: 1.2 }}>
-                  {name}{age ? `, ${age}` : ''}{genderEmoji ? ` ${genderEmoji}` : ''}
+                  {name}{age ? `, ${age}` : ''}{genderEmoji ? ` ${genderEmoji}` : ''}{memberBadge}
                 </h1>
                 {(flag || countryName || city) && (
                   <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.3rem' }}>

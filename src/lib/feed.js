@@ -5,11 +5,6 @@ import { getActiveBlocks } from './blocks'
 export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 30, offset = 0, isPremium = true }) {
   let compatibleTypes = getMatchingTypes(userType, relationPreferences)
 
-  // Free-tier gate: restrict the feed to same-quadra types only.
-  // Same quadra produces the Identity / Dual / Activity / Mirror relations.
-  // Premium and founding members (isPremium === true) see all 16.
-  // Default is true so callers that don't pass the flag keep the full feed —
-  // gating only kicks in where isPremium is explicitly passed as false.
   if (!isPremium) {
     const quadraTypes = new Set(sameQuadraTypes(userType))
     compatibleTypes = compatibleTypes.filter(t => quadraTypes.has(t))
@@ -17,7 +12,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
 
   let query = supabase
     .from('users')
-    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active, verified_by')
+    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active, verified_by, is_founding_member, plan_status')
     .neq('id', currentUserId)
     .not('profile_data', 'is', null)
     .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
@@ -36,9 +31,6 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
 
   if (feedResult.error) throw feedResult.error
 
-  // If the DB returned a full page there are likely more rows available.
-  // hasMore being true does not guarantee a subsequent page will be non-empty
-  // after JS-level filtering — the caller should handle that gracefully.
   const rawCount = feedResult.data.length
 
   const blockedIds = new Set(blocks.map(b =>
@@ -65,11 +57,6 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
   return { profiles, hasMore: rawCount === limit }
 }
 
-// Only live (non-unmatched) matches. This drives both the free-tier cap count
-// (Object.keys(matchedMap).length) and whether a profile shows "Message" vs
-// "Connect" in the feed — so unmatching frees a slot AND lets that person
-// reappear as connectable. The DB unmatch is a soft-delete; the row still
-// exists with unmatched_at set, but it no longer counts here.
 export async function getExistingMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
@@ -81,10 +68,6 @@ export async function getExistingMatches(userId) {
 }
 
 export async function createMatch({ userAId, userBId, relationType, purpose = 'dating' }) {
-  // Reconnecting a previously-unmatched pair revives the original row (keeps
-  // the thread + history continuous and avoids the duplicate-match constraint
-  // tripping on the soft-deleted row). revive_match returns the revived id, or
-  // null if there's nothing to revive — in which case we insert fresh.
   const { data: revivedId, error: reviveErr } = await supabase.rpc('revive_match', {
     p_user_a: userAId,
     p_user_b: userBId,
