@@ -191,6 +191,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const isDual = profile?.type && DUAL_MAP[profile.type] === record.type
         const toastId = record.id ?? String(Date.now())
         pushToastRef.current({ id: toastId, kind: isDual ? 'dual' : 'join', type: record.type, name, colour })
+        window.dispatchEvent(new CustomEvent('socion-new-member'))
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
