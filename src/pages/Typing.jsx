@@ -186,11 +186,11 @@ export default function Typing() {
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   gap: '1rem', flexWrap: 'wrap',
                 }}>
-                  <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                     {typist.tiers.map(tier => (
                       <span key={tier.key} style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
                         <strong style={{ color: 'var(--text)', fontWeight: 500 }}>{tier.name}</strong>
-                        {' '}· {tier.price} · {tier.turnaround}
+                        {' '}· {tier.price}
                       </span>
                     ))}
                   </div>
