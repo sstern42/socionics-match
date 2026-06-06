@@ -10,7 +10,7 @@ import SIWebview from '../components/SIWebview'
 import { useAuth } from '../lib/AuthContext'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
-import { RELATIONS } from '../data/relations'
+import { RELATIONS, MATRIX } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
 const BANNER_KEY = 'socion_announcement_dismissed_v'
