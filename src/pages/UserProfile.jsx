@@ -331,9 +331,9 @@ export default function UserProfile() {
             </button>
             <button
               style={tabStyle(activeTab === 'dynamics')}
-              onClick={() => { setActiveTab('dynamics'); window.umami?.track('profile-dynamics-tab-opened') }}
+              onClick={() => { setActiveTab('dynamics'); window.umami?.track('profile-stats-tab-opened') }}
             >
-              Dynamics
+              Stats
               {!isPremium && <span aria-hidden="true" style={{ marginLeft: '0.35rem', fontSize: '0.75rem', verticalAlign: 'middle' }}>&#128274;</span>}
             </button>
           </div>
