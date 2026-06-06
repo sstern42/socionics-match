@@ -23,6 +23,12 @@ const QUADRA_COLOURS = {
   gamma: '#0F6E56',
   delta: '#185FA5',
 }
+const DUAL_MAP = {
+  ILE: 'SEI', SEI: 'ILE', ESE: 'LII', LII: 'ESE',
+  EIE: 'LSI', LSI: 'EIE', SLE: 'IEI', IEI: 'SLE',
+  SEE: 'ILI', ILI: 'SEE', LIE: 'ESI', ESI: 'LIE',
+  LSE: 'EII', EII: 'LSE', IEE: 'SLI', SLI: 'IEE',
+}
 
 // ── Three-way theme toggle ────────────────────────────────────────────
 function ThemeToggle() {
@@ -58,7 +64,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const [profileOpen, setProfileOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
-  const [joinToasts, setJoinToasts] = useState([])
+  const [toasts, setToasts] = useState([])
 
   useEffect(() => {
     if (!profile?.room_id) return
@@ -84,8 +90,19 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         table: 'room_messages',
         filter: `room_id=eq.${profile.room_id}`,
       }, payload => {
-        if (payload.new?.sender_id !== profile.id && window.location.pathname !== '/rooms') {
-          setRoomUnread(true)
+        if (payload.new?.sender_id !== profile.id) {
+          if (window.location.pathname !== '/rooms') {
+            setRoomUnread(true)
+            const quadra = TYPE_QUADRA[profile.type] ?? 'alpha'
+            const colour = QUADRA_COLOURS[quadra] ?? '#9a6f38'
+            const label = quadra.charAt(0).toUpperCase() + quadra.slice(1)
+            pushToast({
+              id: payload.new.id ?? String(Date.now()),
+              kind: 'room',
+              colour,
+              label,
+            })
+          }
         }
       })
       .subscribe()
@@ -117,7 +134,13 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   function closeMenu() { setMenuOpen(false); setProfileOpen(false) }
 
 
-  // Live join toasts — fires on every new public.users INSERT
+  // ── Toast helpers ────────────────────────────────────────────────────────
+  function pushToast(toast) {
+    setToasts(prev => [...prev.slice(-2), toast])
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), 5000)
+  }
+
+  // Join toast — new profile completed
   useEffect(() => {
     if (!session) return
     const channel = supabase
@@ -125,14 +148,63 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'users' }, (payload) => {
         const record = payload.new
         if (!record?.type) return
-        if (profile?.id && record.id === profile.id) return  // skip own signup
+        if (profile?.id && record.id === profile.id) return
         const isAnon = record.profile_data?.anonymous === true
         const name   = isAnon ? null : (record.profile_data?.name ?? null)
         const quadra = TYPE_QUADRA[record.type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
+        const isDual = profile?.type && DUAL_MAP[profile.type] === record.type
         const toastId = record.id ?? String(Date.now())
-        setJoinToasts(prev => [...prev.slice(-2), { id: toastId, type: record.type, name, colour }])
-        setTimeout(() => setJoinToasts(prev => prev.filter(t => t.id !== toastId)), 5000)
+        pushToast({ id: toastId, kind: isDual ? 'dual' : 'join', type: record.type, name, colour })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [session, profile?.id, profile?.type])
+
+  // Message toast — incoming message, suppressed if already on that thread
+  useEffect(() => {
+    if (!session || !profile?.id) return
+    const channel = supabase
+      .channel('message-toasts')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
+        const msg = payload.new
+        if (msg.sender_id === profile.id) return
+        // Suppress if viewing this exact thread
+        const onMessages = window.location.pathname === '/messages'
+        const activeMatch = new URLSearchParams(window.location.search).get('match')
+        if (onMessages && activeMatch === msg.match_id) return
+        // Look up sender
+        const { data: sender } = await supabase
+          .from('users').select('type, profile_data').eq('id', msg.sender_id).maybeSingle()
+        const isAnon = sender?.profile_data?.anonymous === true
+        const name   = isAnon ? null : (sender?.profile_data?.name ?? null)
+        const type   = sender?.type
+        const quadra = TYPE_QUADRA[type]
+        const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
+        const preview = msg.content?.length > 45 ? msg.content.slice(0, 45) + '…' : msg.content
+        pushToast({ id: msg.id ?? String(Date.now()), kind: 'message', name, type, colour, preview, matchId: msg.match_id })
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [session, profile?.id])
+
+  // Connection toast — new match created involving current user
+  useEffect(() => {
+    if (!session || !profile?.id) return
+    const channel = supabase
+      .channel('connection-toasts')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'matches' }, async (payload) => {
+        const match = payload.new
+        const otherId = match.user_a_id === profile.id ? match.user_b_id : match.user_a_id
+        if (!otherId || otherId === profile.id) return
+        const { data: other } = await supabase
+          .from('users').select('type, profile_data').eq('id', otherId).maybeSingle()
+        const isAnon = other?.profile_data?.anonymous === true
+        const name   = isAnon ? null : (other?.profile_data?.name ?? null)
+        const type   = other?.type
+        const quadra = TYPE_QUADRA[type]
+        const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
+        pushToast({ id: match.id ?? String(Date.now()), kind: 'connection', name, type, colour, matchId: match.id })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -393,46 +465,68 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         </footer>
       </div>
 
-      {/* Join toasts — live profile completion notifications */}
-      {joinToasts.length > 0 && (
+      {/* Live toasts */}
+      {toasts.length > 0 && (
         <div style={{ position: 'fixed', bottom: '6rem', left: '1.25rem', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
-          <style>{`@keyframes toast-slide-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-          {joinToasts.map(toast => (
-            <div
-              key={toast.id}
-              style={{
-                background: 'var(--bg)',
-                border: '1px solid var(--border)',
-                borderLeft: `3px solid ${toast.colour}`,
-                borderRadius: 6,
-                padding: '0.55rem 0.85rem 0.55rem 0.75rem',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-                display: 'flex', alignItems: 'center', gap: '0.55rem',
-                animation: 'toast-slide-in 0.2s ease',
-                maxWidth: 220,
-                pointerEvents: 'auto',
-              }}
-            >
-              <span style={{
-                fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                fontWeight: 600, color: toast.colour,
-                background: `${toast.colour}18`,
-                border: `1px solid ${toast.colour}55`,
-                padding: '0.12rem 0.38rem', borderRadius: 2, flexShrink: 0,
-              }}>
-                {toast.type}
-              </span>
-              <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.4, flex: 1 }}>
-                {toast.name ? `${toast.name} just joined` : 'just joined'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setJoinToasts(prev => prev.filter(t => t.id !== toast.id))}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.85rem', padding: 0, flexShrink: 0, lineHeight: 1, opacity: 0.6 }}
-                aria-label="Dismiss"
-              >×</button>
-            </div>
-          ))}
+          <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+          {toasts.map(toast => {
+            const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room'
+            const onClick = isClickable ? () => {
+              setToasts(prev => prev.filter(t => t.id !== toast.id))
+              if (toast.kind === 'room') navigate('/rooms')
+              else if (toast.matchId) navigate(`/messages?match=${toast.matchId}`)
+            } : undefined
+
+            const label = (() => {
+              if (toast.kind === 'dual')       return `${toast.name ? toast.name + ' · ' : ''}your Dual just joined ✦`
+              if (toast.kind === 'join')       return toast.name ? `${toast.name} just joined` : 'just joined'
+              if (toast.kind === 'message')    return toast.name ? `${toast.name}: ${toast.preview}` : toast.preview
+              if (toast.kind === 'connection') return `connected with ${toast.name ?? 'someone'}`
+              if (toast.kind === 'room')       return `new message in your ${toast.label} room`
+              return ''
+            })()
+
+            return (
+              <div
+                key={toast.id}
+                onClick={onClick}
+                style={{
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  borderLeft: `3px solid ${toast.colour}`,
+                  borderRadius: 6,
+                  padding: '0.55rem 0.85rem 0.55rem 0.75rem',
+                  boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+                  display: 'flex', alignItems: 'center', gap: '0.55rem',
+                  animation: 'toast-in 0.2s ease',
+                  maxWidth: 240,
+                  pointerEvents: 'auto',
+                  cursor: isClickable ? 'pointer' : 'default',
+                }}
+              >
+                {toast.type && (
+                  <span style={{
+                    fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                    fontWeight: 600, color: toast.colour,
+                    background: `${toast.colour}18`,
+                    border: `1px solid ${toast.colour}55`,
+                    padding: '0.12rem 0.38rem', borderRadius: 2, flexShrink: 0,
+                  }}>
+                    {toast.type}
+                  </span>
+                )}
+                <span style={{ fontSize: '0.78rem', color: toast.kind === 'dual' ? 'var(--text)' : 'var(--muted)', lineHeight: 1.4, flex: 1 }}>
+                  {label}
+                </span>
+                <button
+                  type="button"
+                  onClick={e => { e.stopPropagation(); setToasts(prev => prev.filter(t => t.id !== toast.id)) }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.85rem', padding: 0, flexShrink: 0, lineHeight: 1, opacity: 0.6 }}
+                  aria-label="Dismiss"
+                >×</button>
+              </div>
+            )
+          })}
         </div>
       )}
     </>
