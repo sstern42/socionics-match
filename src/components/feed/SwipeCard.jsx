@@ -29,9 +29,6 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
   const isAnon   = profile_data?.anonymous ?? false
 
   const displayName = isAnon ? 'Anonymous' : (profile_data?.name ?? type)
-  const age = profile_data?.dob
-    ? Math.floor((Date.now() - new Date(profile_data.dob)) / (365.25 * 24 * 3600 * 1000))
-    : null
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[profile_data?.gender]
   const flag = isAnon ? null : countryFlag(profile_data?.country)
 
@@ -125,7 +122,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'0.5rem' }}>
             <div style={{ minWidth:0 }}>
               <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0,lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
-                {displayName}{age?`, ${age}`:''}{genderEmoji && !isAnon ? ` ${genderEmoji}` : ''}{memberBadge}
+                {displayName}{genderEmoji && !isAnon ? ` ${genderEmoji}` : ''}{memberBadge}
               </h3>
               {(flag || (profile_data?.city && !isAnon)) && (
                 <p style={{ fontSize:'0.78rem',color:'var(--muted)',marginTop:'0.15rem' }}>
