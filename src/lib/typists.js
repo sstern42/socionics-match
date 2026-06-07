@@ -38,7 +38,8 @@ export const TYPISTS = {
       {
         key:            'standard',
         name:           'Standard',
-        price:          '$49',
+        price:          '$29',
+        wasPrice:       '$49',
         turnaround:     '5 days',
         turnaroundLabel:'Delivered within 5 days of questionnaire completion',
         description:    null,
@@ -48,7 +49,8 @@ export const TYPISTS = {
       {
         key:            'express',
         name:           'Express',
-        price:          '$79',
+        price:          '$49',
+        wasPrice:       '$79',
         turnaround:     '48 hours',
         turnaroundLabel:'Delivered within 48 hours of questionnaire completion',
         description:    null,

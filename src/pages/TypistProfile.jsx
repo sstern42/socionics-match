@@ -252,6 +252,9 @@ export default function TypistProfile() {
                   )}
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  {tier.wasPrice && (
+                    <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', color: 'var(--muted)', lineHeight: 1, textDecoration: 'line-through', opacity: 0.5, marginBottom: '0.2rem' }}>{tier.wasPrice}</p>
+                  )}
                   <p style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{tier.price}</p>
                   <p style={{ fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: bookingReady ? 'var(--accent)' : 'var(--muted)', marginTop: '0.35rem' }}>
                     {bookingReady ? 'Book →' : 'Coming soon'}
