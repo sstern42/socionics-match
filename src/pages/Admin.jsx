@@ -47,6 +47,10 @@ export default function Admin() {
   const [savingAnnouncement, setSavingAnnouncement] = useState(false)
   const [trackingExcluded, setTrackingExcluded] = useState(() => localStorage.getItem('umami.disabled') === '1')
   const [announcementSaved, setAnnouncementSaved] = useState(false)
+  const [siteBanner, setSiteBanner] = useState('')
+  const [siteBannerActive, setSiteBannerActive] = useState(false)
+  const [savingSiteBanner, setSavingSiteBanner] = useState(false)
+  const [siteBannerSaved, setSiteBannerSaved] = useState(false)
 
   useEffect(() => {
     if (loading) return
@@ -81,6 +85,8 @@ export default function Admin() {
 
       setAnnouncement(statsRow?.announcement ?? '')
       setAnnouncementActive(statsRow?.announcement_active ?? false)
+      setSiteBanner(statsRow?.site_banner ?? '')
+      setSiteBannerActive(statsRow?.site_banner_active ?? false)
 
       const typeCounts = {}
       for (const u of users ?? []) {
@@ -191,6 +197,18 @@ export default function Admin() {
     setAnnouncementSaved(true)
     setTimeout(() => setAnnouncementSaved(false), 2500)
   }
+
+  async function saveSiteBanner() {
+    setSavingSiteBanner(true)
+    await supabase
+      .from('stats')
+      .update({ site_banner: siteBanner, site_banner_active: siteBannerActive })
+      .eq('id', 1)
+    setSavingSiteBanner(false)
+    setSiteBannerSaved(true)
+    setTimeout(() => setSiteBannerSaved(false), 2500)
+  }
+
 
   if (loading || fetching) {
     return (
@@ -573,6 +591,40 @@ export default function Admin() {
             </label>
             <button type="button" className="btn-ghost" onClick={saveAnnouncement} disabled={savingAnnouncement} style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingAnnouncement ? 0.5 : 1 }}>
               {savingAnnouncement ? 'Saving…' : announcementSaved ? '✓ Saved' : 'Save'}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+          <p style={cardTitleStyle}>Site-wide banner</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
+            Shown on every page above the nav — separate from the feed announcement. CTA always links to /support. Changing the message resets the dismiss state for all users.
+          </p>
+          <textarea
+            value={siteBanner}
+            onChange={e => { setSiteBanner(e.target.value); setSiteBannerSaved(false) }}
+            rows={2}
+            style={{ width: '100%', fontFamily: 'var(--sans)', fontSize: '0.88rem', lineHeight: 1.6, padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: 4, resize: 'vertical', boxSizing: 'border-box', background: 'var(--bg)' }}
+            placeholder="e.g. Socion is independent and community-built. If it's been useful, consider supporting it."
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={siteBannerActive}
+                onChange={e => setSiteBannerActive(e.target.checked)}
+                style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
+              />
+              Active (visible site-wide)
+            </label>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={saveSiteBanner}
+              disabled={savingSiteBanner}
+              style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingSiteBanner ? 0.5 : 1 }}
+            >
+              {savingSiteBanner ? 'Saving…' : siteBannerSaved ? '✓ Saved' : 'Save'}
             </button>
           </div>
         </div>
