@@ -6,10 +6,11 @@ import { supabase } from '../lib/supabase'
 import { signOut } from '../lib/auth'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import IOSInstallBanner from './IOSInstallBanner'
+import AnnouncementBanner from './AnnouncementBanner'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
 
-const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
+const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','IEE','SLI']
 
 const TYPE_QUADRA = {
   ILE: 'alpha', SEI: 'alpha', ESE: 'alpha', LII: 'alpha',
@@ -135,18 +136,15 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
 
   // ── Toast helpers ────────────────────────────────────────────────────────
-  // Timer refs so we can reset the dismiss timer when a toast is updated
   const toastTimers = useRef({})
   const pushToastRef = useRef(null)
   const profileIdRef = useRef(profile?.id)
 
   function pushToast(toast) {
-    // For message toasts: collapse same-sender (same matchId) into one with a count
     if (toast.kind === 'message') {
       setToasts(prev => {
         const existing = prev.find(t => t.kind === 'message' && t.matchId === toast.matchId)
         if (existing) {
-          // Reset timer for this toast
           clearTimeout(toastTimers.current[existing.id])
           toastTimers.current[existing.id] = setTimeout(
             () => setToasts(p => p.filter(t => t.id !== existing.id)), 8000
@@ -157,7 +155,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               : t
           )
         }
-        // New message toast
         toastTimers.current[toast.id] = setTimeout(
           () => setToasts(p => p.filter(t => t.id !== toast.id)), 8000
         )
@@ -165,17 +162,15 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       })
       return
     }
-    // All other toast kinds — simple push, 8s dismiss
     setToasts(prev => [...prev.slice(-2), toast])
     toastTimers.current[toast.id] = setTimeout(
       () => setToasts(prev => prev.filter(t => t.id !== toast.id)), 8000
     )
   }
-  // Always keep ref pointing to latest version so effects use current closure
   pushToastRef.current = pushToast
   profileIdRef.current = profile?.id
 
-  // Join toast — new profile completed
+  // Join toast
   useEffect(() => {
     if (!session) return
     const channel = supabase
@@ -197,7 +192,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     return () => { supabase.removeChannel(channel) }
   }, [session, profile?.id, profile?.type])
 
-  // Message toast — incoming message, suppressed if already on that thread
+  // Message toast
   useEffect(() => {
     if (!session || !profile?.id) return
     const channel = supabase
@@ -205,11 +200,9 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
         const msg = payload.new
         if (msg.sender_id === profileIdRef.current) return
-        // Suppress if viewing this exact thread
         const onMessages = window.location.pathname === '/messages'
         const activeMatch = new URLSearchParams(window.location.search).get('match')
         if (onMessages && activeMatch === msg.match_id) return
-        // Look up sender
         const { data: sender } = await supabase
           .from('users').select('type, profile_data').eq('id', msg.sender_id).maybeSingle()
         const isAnon = sender?.profile_data?.anonymous === true
@@ -224,7 +217,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     return () => { supabase.removeChannel(channel) }
   }, [session, profile?.id])
 
-  // Connection toast — new match created involving current user
+  // Connection toast
   useEffect(() => {
     if (!session || !profile?.id) return
     const channel = supabase
@@ -453,6 +446,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         )}
 
         <IOSInstallBanner />
+        <AnnouncementBanner />
 
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: noScroll ? 'auto' : undefined }}>
           {children}
@@ -552,7 +546,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   cursor: isClickable ? 'pointer' : 'default',
                 }}
               >
-                {/* Type badge */}
                 {toast.type && (
                   <span style={{
                     fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -565,7 +558,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     {toast.type}
                   </span>
                 )}
-                {/* Text */}
                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
                   <span style={{ fontSize: '0.65rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, color: toast.colour, lineHeight: 1 }}>
                     {heading}
