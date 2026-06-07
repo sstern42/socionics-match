@@ -27,6 +27,7 @@ export const TYPISTS = {
     outputTypes:     ['Written report'],
     reportLength:    '3,500–5,000 words',
     availability:    'active',
+    bookingReady:    true,
     currency:        'USD',
     contact:         'spencer@socion.app',
     paymentNote:     "Payment is taken by Stripe. Straight after, you'll be taken to the questionnaire to complete in your own time. The clock on your turnaround starts once you submit it — not at payment.",
@@ -88,6 +89,7 @@ export const TYPISTS = {
     outputTypes:     ['Voice session', 'Written report'],
     reportLength:    null,
     availability:    'active',
+    bookingReady:    false, // Stripe links pending — tiers shown but not yet bookable
     currency:        'USD',
     contact:         'uncle.sam@socion.app', // forwarding to: ustypologyservice@gmail.com
     paymentNote:     "Payment is taken by Stripe. After payment you'll be taken to a booking page to schedule your session with Uncle Sam.",
