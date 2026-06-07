@@ -61,6 +61,13 @@ export default function ProfileEdit() {
   const isVerified = !!profile?.verified_by
   const typeValid = TYPES.includes(type.toUpperCase())
 
+  // Derive which required fields are still missing so we can tell the user
+  const blockingReasons = []
+  if (!name) blockingReasons.push('display name')
+  if (!dob) blockingReasons.push('date of birth')
+  if (!isVerified && !typeValid) blockingReasons.push('a valid Socionics type')
+  const isSaveDisabled = saving || blockingReasons.length > 0
+
   async function handleSave() {
     if (!profile) return
     if (!dob) { setError('Date of birth is required.'); return }
@@ -355,9 +362,16 @@ export default function ProfileEdit() {
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
 
+          {/* Blocking reasons — shown only when something is preventing save */}
+          {!saving && blockingReasons.length > 0 && (
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center', lineHeight: 1.5 }}>
+              To save, please add: {blockingReasons.join(', ')}.
+            </p>
+          )}
+
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
             <button type="button" className="btn-ghost" onClick={() => navigate('/feed')}>Cancel</button>
-            <button type="button" className="btn-primary" onClick={handleSave} disabled={saving || !name || !dob || (!isVerified && !typeValid)} style={{ opacity: (saving || !name || !dob || (!isVerified && !typeValid)) ? 0.5 : 1 }}>
+            <button type="button" className="btn-primary" onClick={handleSave} disabled={isSaveDisabled} style={{ opacity: isSaveDisabled ? 0.5 : 1 }}>
               {saving ? 'Saving…' : 'Save details'}
             </button>
           </div>
