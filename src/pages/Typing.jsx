@@ -197,7 +197,11 @@ export default function Typing() {
                     {typist.tiers.map(tier => (
                       <span key={tier.key} style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>
                         <strong style={{ color: 'var(--text)', fontWeight: 500 }}>{tier.name}</strong>
-                        {' '}· {tier.price}
+                        {' '}
+                        {tier.wasPrice && (
+                          <span style={{ textDecoration: 'line-through', opacity: 0.45, marginRight: '0.25rem' }}>{tier.wasPrice}</span>
+                        )}
+                        {tier.price}
                       </span>
                     ))}
                   </div>
