@@ -31,7 +31,7 @@ export default function Support() {
             <em>Support on Ko-fi</em>
           </p>
           <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 420 }}>
-            Tips go directly toward server costs and keeping Socion free. Ko-fi's default is £3 — about a day of running costs. One-time or monthly, no account needed.
+            Tips go directly toward server costs and keeping Socion free. A £3 tip covers about a day of running costs. No account needed, takes 30 seconds.
           </p>
           <a
             href="https://ko-fi.com/socion"
@@ -41,9 +41,9 @@ export default function Support() {
             style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2.5rem', display: 'inline-block' }}
             onClick={() => window.umami?.track('support-kofi-clicked')}
           >
-            ☕ Tip on Ko-fi
+            ☕ Tip £3 on Ko-fi
           </a>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>One-time or monthly · cancel any time</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>one-time · no account needed · takes 30 seconds</p>
         </div>
 
         {/* Shop + typing — secondary, inline */}
