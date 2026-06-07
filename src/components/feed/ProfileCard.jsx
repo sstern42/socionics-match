@@ -43,8 +43,6 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const { profile_data, type, relation, displayRelation, purpose, last_active, verified_by, is_founding_member, plan_status } = profile
   const [webviewUrl, setWebviewUrl] = useState(null)
   const name = profile_data?.name ?? 'Unknown'
-  const dob = profile_data?.dob
-  const age = dob ? Math.floor((Date.now() - new Date(dob).getTime()) / (365.25*24*3600*1000)) : null
   const gender = profile_data?.gender
   const bio = profile_data?.bio
   const role = profile_data?.role
@@ -53,7 +51,6 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   const flag = countryFlag(profile_data?.country)
 
   const displayName = isAnonymous ? 'Anonymous' : name
-  const displayAge = isAnonymous ? null : age
   const displayGenderEmoji = isAnonymous ? null : genderEmoji
   const displayFlag = isAnonymous ? null : flag
   const displayAvatar = isAnonymous ? null : profile.avatar_url
@@ -120,10 +117,10 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           <div>
             {isLinkable ? (
               <Link to={`/profile/${profile.id}`} onClick={() => window.umami?.track('profile-card-name-clicked',{type})} style={{ textDecoration:'none',color:'inherit' }}>
-                <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayAge?`, ${displayAge}`:''}{displayGenderEmoji?` ${displayGenderEmoji}`:''}{memberBadge}</h3>
+                <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayGenderEmoji?` ${displayGenderEmoji}`:''}{memberBadge}</h3>
               </Link>
             ) : (
-              <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayAge?`, ${displayAge}`:''}{displayGenderEmoji?` ${displayGenderEmoji}`:''}{memberBadge}</h3>
+              <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0 }}>{displayName}{displayGenderEmoji?` ${displayGenderEmoji}`:''}{memberBadge}</h3>
             )}
             {role && <span style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.12em',textTransform:'uppercase',fontWeight:600,color:'#fff',background:role==='founder'?'#2c2a22':role==='typist'?'#185FA5':'var(--accent)',padding:'0.15rem 0.5rem',borderRadius:2 }}>{role}</span>}
             {isAnonymous && <span title="anonymous" style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--muted)',border:'1px solid var(--border)',padding:'0.15rem 0.5rem',borderRadius:2 }}>🕵️ Anonymous</span>}
