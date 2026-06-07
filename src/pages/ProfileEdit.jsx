@@ -252,7 +252,7 @@ export default function ProfileEdit() {
                 onChange={e => setDob(e.target.value)}
               />
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                Date of birth — only your age is shown on your card, never your DOB. Required for age verification.
+                Required for age verification (18+). Never shown on your profile.
               </p>
             </div>
             <select className="input-standalone" value={gender} onChange={e => setGender(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
