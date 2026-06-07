@@ -10,88 +10,101 @@ export default function Support() {
         </h1>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '1.25rem' }}>
-          Socion's core is free and always will be. No algorithm, no matches locked away, no paywall between you and the theory. Premium unlocks the full experience for those who want it, but the experiment runs regardless.
+          Socion is ad-free, algorithm-free, and built by one person without funding. The core is free and always will be.
         </p>
 
         <p style={{ fontSize: '1rem', color: 'var(--text)', lineHeight: 1.8, marginBottom: '2.5rem' }}>
-          If Socion's been useful to you, a one-time tip or a monthly tip helps cover it and keeps the project independent.
+          If it's been useful, a tip helps cover the running costs and keeps the project going. Even a one-time £3 makes a difference.
         </p>
 
+        {/* Ko-fi — primary */}
         <div style={{
-          border: '1px solid var(--border)', borderRadius: 8,
-          padding: '2rem', marginBottom: '3rem',
+          border: '1px solid var(--accent)',
+          borderRadius: 8,
+          padding: '2rem',
+          marginBottom: '1.5rem',
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
           textAlign: 'center',
+          background: 'rgba(154,111,56,0.06)',
         }}>
-          <p style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', color: 'var(--text)', lineHeight: 1.6 }}>
-            <em>No pressure at all — just leaving it here.</em>
+          <p style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', color: 'var(--text)', lineHeight: 1.6 }}>
+            <em>Support on Ko-fi</em>
+          </p>
+          <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 420 }}>
+            Tips go directly toward server costs and keeping Socion free. Ko-fi's default is £3 — about a day of running costs. One-time or monthly, no account needed.
           </p>
           <a
             href="https://ko-fi.com/socion"
             target="_blank"
             rel="noopener noreferrer"
             className="btn-primary"
-            style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2rem', display: 'inline-block' }}
+            style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2.5rem', display: 'inline-block' }}
             onClick={() => window.umami?.track('support-kofi-clicked')}
           >
-            ☕ Support on Ko-fi
+            ☕ Tip on Ko-fi
           </a>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>One-time tip or monthly. Cancel any time.</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>One-time or monthly · cancel any time</p>
         </div>
 
+        {/* Shop + typing — secondary, inline */}
         <div style={{
-          border: '1px solid var(--border)', borderRadius: 8,
-          padding: '2rem', marginBottom: '3rem',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
-          textAlign: 'center',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+          gap: '1rem',
+          marginBottom: '3rem',
         }}>
-          <p style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', color: 'var(--text)', lineHeight: 1.6 }}>
-            <em>Or grab a type mug.</em>
-          </p>
-          <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 420 }}>
-            Type mugs, prints, and stickers — one for every Socionics type. Dictionary-definition style, printed on demand.
-          </p>
-          <a
-            href="https://shop.socionicsinsight.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn-primary"
-            style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2rem', display: 'inline-block' }}
-            onClick={() => window.umami?.track('support-shop-clicked')}
-          >
-            🛒 Browse the shop
-          </a>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>Ships worldwide. Fulfilled by print-on-demand.</p>
-        </div>
+          <div style={{
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '1.5rem',
+            display: 'flex', flexDirection: 'column', gap: '0.75rem',
+          }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', color: 'var(--text)' }}>
+              <em>Grab a type mug</em>
+            </p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7, flex: 1 }}>
+              16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand. Ships worldwide.
+            </p>
+            <a
+              href="https://shop.socionicsinsight.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-ghost"
+              style={{ textDecoration: 'none', fontSize: '0.85rem', padding: '0.6rem 1.25rem', display: 'inline-block', textAlign: 'center' }}
+              onClick={() => window.umami?.track('support-shop-clicked')}
+            >
+              Browse the shop →
+            </a>
+          </div>
 
-        <div style={{
-          border: '1px solid var(--accent-lt)', borderRadius: 8,
-          padding: '2rem', marginBottom: '3rem',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem',
-          textAlign: 'center', background: 'rgba(154,111,56,0.04)',
-        }}>
-          <p style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', color: 'var(--text)', lineHeight: 1.6 }}>
-            <em>Want your type pinned down?</em>
-          </p>
-          <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, maxWidth: 440 }}>
-            Get a typing report from a Socion typist — a considered, reasoned read on your type, with your profile updated to match. Not a donation, a genuinely useful thing you can buy, and it happens to support the project too.
-          </p>
-          <a
-            href="/typing"
-            className="btn-primary"
-            style={{ textDecoration: 'none', fontSize: '0.95rem', padding: '0.75rem 2rem', display: 'inline-block' }}
-            onClick={() => window.umami?.track('support-get-typed-clicked')}
-          >
-            Browse typists
-          </a>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>From $29. Written report or voice session.</p>
+          <div style={{
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            padding: '1.5rem',
+            display: 'flex', flexDirection: 'column', gap: '0.75rem',
+          }}>
+            <p style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', color: 'var(--text)' }}>
+              <em>Get your type confirmed</em>
+            </p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7, flex: 1 }}>
+              A written typing report from a Socion typist — reasoned, considered, and your profile updated to match. From $29.
+            </p>
+            <a
+              href="/typing"
+              className="btn-ghost"
+              style={{ textDecoration: 'none', fontSize: '0.85rem', padding: '0.6rem 1.25rem', display: 'inline-block', textAlign: 'center' }}
+              onClick={() => window.umami?.track('support-get-typed-clicked')}
+            >
+              Browse typists →
+            </a>
+          </div>
         </div>
 
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
           <div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>Other ways to help</h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-              Not in a position to tip? That's completely fine. Sharing Socion with someone who'd be into it is genuinely more valuable at this stage — the network compounds with every new member.
+              Not in a position to tip? Sharing Socion with someone who'd be into it is genuinely more valuable at this stage — the network compounds with every new member.
             </p>
           </div>
 
