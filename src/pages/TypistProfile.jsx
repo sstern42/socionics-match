@@ -49,6 +49,7 @@ export default function TypistProfile() {
   const flag     = typist.flag ?? ''
   const yrs      = yearsExperience(typist.studyingSince)
   const age      = calcAge(typist.dob)
+  const bookingReady = typist.bookingReady !== false // default true if unset
 
   return (
     <Layout noScroll hideFooter>
@@ -213,39 +214,62 @@ export default function TypistProfile() {
           </p>
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
-          {typist.tiers.map(tier => (
-            <a
-              key={tier.key}
-              href={tier.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => window.umami?.track('typing-checkout-clicked', { tier: tier.key, typist: typist.slug })}
-              style={{
-                display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem',
-                border: `1px solid ${tier.highlight ? 'var(--accent)' : 'var(--border)'}`,
-                background: tier.highlight ? 'rgba(154,111,56,0.05)' : 'var(--card-bg)',
-                borderRadius: 8, padding: '1.25rem 1.5rem', textDecoration: 'none',
-                transition: 'border-color 0.15s',
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.2rem' }}>{tier.name}</p>
-                <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: tier.description ? '0.6rem' : 0 }}>
-                  {tier.turnaroundLabel || tier.turnaround}
-                </p>
-                {tier.description && (
-                  <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
-                    {tier.description}
+          {typist.tiers.map(tier => {
+            const TierWrapper = bookingReady ? 'a' : 'div'
+            const tierLinkProps = bookingReady
+              ? {
+                  href: tier.href,
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                  onClick: () => window.umami?.track('typing-checkout-clicked', { tier: tier.key, typist: typist.slug }),
+                }
+              : {}
+
+            return (
+              <TierWrapper
+                key={tier.key}
+                {...tierLinkProps}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem',
+                  border: `1px solid ${tier.highlight ? 'var(--accent)' : 'var(--border)'}`,
+                  background: tier.highlight ? 'rgba(154,111,56,0.05)' : 'var(--card-bg)',
+                  borderRadius: 8, padding: '1.25rem 1.5rem',
+                  textDecoration: 'none',
+                  opacity: bookingReady ? 1 : 0.72,
+                  cursor: bookingReady ? 'pointer' : 'default',
+                  transition: 'border-color 0.15s',
+                }}
+              >
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '1rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.2rem' }}>{tier.name}</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: tier.description ? '0.6rem' : 0 }}>
+                    {tier.turnaroundLabel || tier.turnaround}
                   </p>
-                )}
-              </div>
-              <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                <p style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{tier.price}</p>
-                <p style={{ fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--accent)', marginTop: '0.35rem' }}>Book →</p>
-              </div>
-            </a>
-          ))}
+                  {tier.description && (
+                    <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.65, margin: 0 }}>
+                      {tier.description}
+                    </p>
+                  )}
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{tier.price}</p>
+                  <p style={{ fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: bookingReady ? 'var(--accent)' : 'var(--muted)', marginTop: '0.35rem' }}>
+                    {bookingReady ? 'Book →' : 'Coming soon'}
+                  </p>
+                </div>
+              </TierWrapper>
+            )
+          })}
         </div>
+
+        {/* Coming soon note — shown only when booking not yet ready */}
+        {!bookingReady && (
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '1rem' }}>
+            Booking opens shortly. In the meantime, get in touch via{' '}
+            <a href={`mailto:${typist.contact}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{typist.contact}</a>
+            {' '}to register your interest.
+          </p>
+        )}
 
         {/* Referral note */}
         {typist.referralNote && (
@@ -263,8 +287,8 @@ export default function TypistProfile() {
           </div>
         )}
 
-        {/* Payment note */}
-        {typist.paymentNote && (
+        {/* Payment note — only shown when booking is ready */}
+        {bookingReady && typist.paymentNote && (
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
             {typist.paymentNote}
           </p>
