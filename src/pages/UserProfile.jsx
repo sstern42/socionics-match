@@ -143,7 +143,6 @@ export default function UserProfile() {
   const name       = isAnon ? 'Anonymous' : (other.profile_data?.name ?? other.type)
   const flag       = isAnon ? null : countryFlag(other.profile_data?.country)
   const dob        = other.profile_data?.dob
-  const age        = dob && !isAnon ? Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 3600 * 1000)) : null
   const gender     = isAnon ? null : other.profile_data?.gender
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[gender]
   const discordHandle = isAnon ? null : other.profile_data?.discord_handle
@@ -373,7 +372,7 @@ export default function UserProfile() {
               </div>
               <div>
                 <h1 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, lineHeight: 1.2 }}>
-                  {name}{age ? `, ${age}` : ''}{genderEmoji ? ` ${genderEmoji}` : ''}{memberBadge}
+                  {name}{genderEmoji ? ` ${genderEmoji}` : ''}{memberBadge}
                 </h1>
                 {(flag || countryName || city) && (
                   <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
