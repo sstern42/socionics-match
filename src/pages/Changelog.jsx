@@ -1,6 +1,14 @@
 import Layout from '../components/Layout'
 
 export const ENTRIES = [
+     {
+      date: '8 June 2026',
+      label: 'Update',
+      items: [
+        'Quadra rooms — send GIFs via the GIF button in the message bar. Search Giphy or browse trending, tap to send',
+        'Quadra rooms — all members can now browse other quadra rooms in read-only mode. Use the quadra pills in the room header to switch. Posting, reactions, and replies are only available in your own room',
+      ],
+    },
     {
       date: '6 June 2026',
       label: 'Update',
