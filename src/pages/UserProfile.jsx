@@ -302,7 +302,7 @@ export default function UserProfile() {
   })
 
   return (
-    <Layout>
+    <Layout hideFooter>
       <section style={{ maxWidth: 480, width: '100%', margin: '0 auto', padding: '3rem 1.5rem' }}>
         {!isSelf && (
           <button
