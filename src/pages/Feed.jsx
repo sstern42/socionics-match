@@ -722,8 +722,7 @@ export default function Feed() {
                   </span>
                 </div>
               </div>
-            
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+              
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                 {displayed.map((p, i) => (
                   <>
