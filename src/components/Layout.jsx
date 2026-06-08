@@ -184,38 +184,38 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
   function closeMenu() { setMenuOpen(false); setProfileOpen(false) }
 
-  // ── Toast helpers ─────────────────────────────────────────────────────────
-  const toastTimers = useRef({})
-  const pushToastRef = useRef(null)
-  const profileIdRef = useRef(profile?.id)
+  // ── Toast helpers — persistent, dismissed by user only ────────────────────
+  const pushToastRef  = useRef(null)
+  const profileIdRef  = useRef(profile?.id)
 
   function pushToast(toast) {
+    // Messages: deduplicate by matchId, increment count
     if (toast.kind === 'message') {
       setToasts(prev => {
         const existing = prev.find(t => t.kind === 'message' && t.matchId === toast.matchId)
         if (existing) {
-          clearTimeout(toastTimers.current[existing.id])
-          toastTimers.current[existing.id] = setTimeout(
-            () => setToasts(p => p.filter(t => t.id !== existing.id)), 8000
-          )
           return prev.map(t =>
             t.id === existing.id
               ? { ...t, preview: toast.preview, count: (t.count ?? 1) + 1 }
               : t
           )
         }
-        toastTimers.current[toast.id] = setTimeout(
-          () => setToasts(p => p.filter(t => t.id !== toast.id)), 8000
-        )
-        return [...prev.slice(-2), { ...toast, count: 1 }]
+        return [...prev.slice(-3), { ...toast, count: 1 }]
       })
       return
     }
-    setToasts(prev => [...prev.slice(-2), toast])
-    toastTimers.current[toast.id] = setTimeout(
-      () => setToasts(prev => prev.filter(t => t.id !== toast.id)), 8000
-    )
+    // Founder posts: deduplicate by id
+    if (toast.kind === 'founder_post') {
+      setToasts(prev => {
+        if (prev.some(t => t.id === toast.id)) return prev
+        return [...prev.slice(-3), toast]
+      })
+      return
+    }
+    // All other kinds
+    setToasts(prev => [...prev.slice(-3), toast])
   }
+
   pushToastRef.current = pushToast
   profileIdRef.current = profile?.id
 
@@ -603,9 +603,9 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         </footer>
       </div>
 
-      {/* Live toasts */}
+      {/* Live toasts — persistent until dismissed */}
       {toasts.length > 0 && (
-        <div style={{ position: 'fixed', bottom: '6rem', left: '1.25rem', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', bottom: '2rem', left: '1.25rem', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
           <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           {toasts.map(toast => {
             const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
