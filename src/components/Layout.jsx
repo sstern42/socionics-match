@@ -605,7 +605,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
       {/* Live toasts — persistent until dismissed */}
       {toasts.length > 0 && (
-        <div style={{ position: 'fixed', bottom: '2rem', left: '1.25rem', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', bottom: '5rem', left: '1.25rem', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
           <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           {toasts.map(toast => {
             const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
