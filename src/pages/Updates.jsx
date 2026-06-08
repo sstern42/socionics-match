@@ -49,8 +49,6 @@ const COMING_ITEMS = [
 
 export default function Updates() {
   const { profile } = useAuth()
-  const isFounder = profile?.is_founding_member === true
-  const isPremium = isFounder || profile?.plan_status === 'active' || profile?.plan_status === 'past_due'
 
   return (
     <Layout noScroll hideFooter>
@@ -98,17 +96,6 @@ export default function Updates() {
             </div>
           ))}
         </div>
-
-        {isFounder && (
-          <div style={{ marginTop: '2.5rem', background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent)', borderRadius: 8, padding: '1.25rem 1.5rem' }}>
-            <p style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--accent)', marginBottom: '0.35rem' }}>
-              Founding member ✦
-            </p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-              You'll have full access to this feed when it launches — as thanks for being here from the start.
-            </p>
-          </div>
-        )}
 
         <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <Link to="/feed" style={{ fontSize: '0.82rem', color: 'var(--muted)', textDecoration: 'none' }}>
