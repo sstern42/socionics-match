@@ -327,7 +327,6 @@ export default function Rooms() {
   const quadra       = viewingQuadra ?? (profile?.type ? getQuadra(profile.type) : null)
   const quadraColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
   const isAnonymous  = profile?.profile_data?.anonymous ?? false
-  const isFounder    = profile?.profile_data?.role === 'founder'
   const isReadOnly   = !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
 
   useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading])
