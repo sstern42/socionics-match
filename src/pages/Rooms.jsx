@@ -433,7 +433,7 @@ export default function Rooms() {
     try {
       await supabase
         .from('room_messages')
-        .insert({ room_id: roomId, sender_id: profile.id, content: '', image_url: gifUrl })
+        .insert({ room_id: roomId, sender_id: profile.id, content: '', image_url: gifUrl, reply_to_id: null })
       window.umami?.track('room-gif-sent')
     } catch (err) {
       console.error('Failed to send GIF:', err)
