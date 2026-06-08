@@ -541,20 +541,18 @@ export default function Rooms() {
                 <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>
                   {isReadOnly ? `Viewing as ${profile?.type} · read only` : `${profile?.type} — your quadra room`}
                 </p>
-                {/* PATCH: founder quadra switcher */}
-                {isFounder && (
-                  <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
-                    {['Alpha','Beta','Gamma','Delta'].map(q => {
-                      const ownQ  = profile?.type ? getQuadra(profile.type) : null
-                      const active = viewingQuadra ? viewingQuadra===q : ownQ===q
-                      return (
-                        <button key={q} type="button" onClick={() => handleQuadraSwitcher(q)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, padding:'0.15rem 0.5rem', borderRadius:2, border:`1px solid ${QUADRA_COLOURS[q]}55`, background:active?QUADRA_COLOURS[q]:'none', color:active?'#fff':QUADRA_COLOURS[q], cursor:'pointer', transition:'all 0.15s' }}>
-                          {q}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
+                {/* Quadra switcher */}
+                <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
+                  {['Alpha','Beta','Gamma','Delta'].map(q => {
+                    const ownQ  = profile?.type ? getQuadra(profile.type) : null
+                    const active = viewingQuadra ? viewingQuadra===q : ownQ===q
+                    return (
+                      <button key={q} type="button" onClick={() => handleQuadraSwitcher(q)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, padding:'0.15rem 0.5rem', borderRadius:2, border:`1px solid ${QUADRA_COLOURS[q]}55`, background:active?QUADRA_COLOURS[q]:'none', color:active?'#fff':QUADRA_COLOURS[q], cursor:'pointer', transition:'all 0.15s' }}>
+                        {q}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
               <button type="button" onClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }} style={{ fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer', flexShrink:0 }}>
                 {profile?.type} →
