@@ -279,7 +279,28 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : (
               <Link to="/auth" style={navStyle(false)}>Sign in</Link>
             )}
-            <Link to="/network" style={{ ...navStyle(isActive('/network')), fontSize: '0.72rem', letterSpacing: '0.06em' }}>Network</Link>
+            <Link
+              to="/network"
+              title="Network"
+              aria-label="Network"
+              style={{
+                ...navStyle(isActive('/network')),
+                display: 'inline-flex', alignItems: 'center',
+                color: isActive('/network') ? 'var(--accent)' : 'var(--muted)',
+              }}
+            >
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                <circle cx="10" cy="10" r="2.5"/>
+                <circle cx="3"  cy="4"  r="1.75"/>
+                <circle cx="17" cy="4"  r="1.75"/>
+                <circle cx="3"  cy="16" r="1.75"/>
+                <circle cx="17" cy="16" r="1.75"/>
+                <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
+                <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
+                <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
+                <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
+              </svg>
+            </Link>
             <ThemeToggle />
           </nav>
 
