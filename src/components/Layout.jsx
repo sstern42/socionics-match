@@ -57,6 +57,37 @@ function ThemeToggle() {
   )
 }
 
+// ── Shared nav icon SVGs ──────────────────────────────────────────────
+const IconUpdates = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <circle cx="10" cy="12" r="1.75" fill="currentColor" stroke="none"/>
+    <path d="M6.5 9.5a5 5 0 0 1 7 0"/>
+    <path d="M4 7a8 8 0 0 1 12 0"/>
+  </svg>
+)
+
+const IconNetwork = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <circle cx="10" cy="10" r="2.5"/>
+    <circle cx="3"  cy="4"  r="1.75"/>
+    <circle cx="17" cy="4"  r="1.75"/>
+    <circle cx="3"  cy="16" r="1.75"/>
+    <circle cx="17" cy="16" r="1.75"/>
+    <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
+    <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
+    <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
+    <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
+  </svg>
+)
+
+const IconHelp = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <circle cx="10" cy="10" r="8"/>
+    <path d="M7.5 7.5a2.5 2.5 0 0 1 5 0c0 1.5-2.5 2-2.5 3.5"/>
+    <circle cx="10" cy="15" r="0.75" fill="currentColor" stroke="none"/>
+  </svg>
+)
+
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile } = useAuth()
   const location = useLocation()
@@ -121,7 +152,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     return () => { document.title = 'Socion' }
   }, [unread])
 
-  // Close menu on route change
   useEffect(() => {
     setMenuOpen(false)
     setProfileOpen(false)
@@ -133,7 +163,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   }
 
   function closeMenu() { setMenuOpen(false); setProfileOpen(false) }
-
 
   // ── Toast helpers ────────────────────────────────────────────────────────
   const toastTimers = useRef({})
@@ -253,90 +282,66 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
           {/* Desktop nav */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
-              {session && profile ? (
-                <>
-                  <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
-                  <Link to="/messages" onClick={markMessagesRead} style={navStyle(isActive('/messages'))}>
-                    Messages{unread > 0 && (
-                      <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
-                        {unread > 99 ? '99+' : unread}
-                      </span>
-                    )}
-                  </Link>
-                  <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                    Rooms
-                    {roomUnread && !isActive('/rooms') && (
-                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
-                    )}
-                  </Link>
-                  <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
-                  <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
-                  {profile?.profile_data?.role === 'founder' && (
-                    <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
+            {session && profile ? (
+              <>
+                <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
+                <Link to="/messages" onClick={markMessagesRead} style={navStyle(isActive('/messages'))}>
+                  Messages{unread > 0 && (
+                    <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
+                      {unread > 99 ? '99+' : unread}
+                    </span>
                   )}
-                  <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
-            
-                  {/* Divider */}
-                  <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
-            
-                  {/* Icon buttons */}
-                  <Link
-                    to="/updates"
-                    title="Founder updates"
-                    aria-label="Founder updates"
-                    style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center' }}
-                  >
-                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                      <circle cx="10" cy="12" r="1.75" fill="currentColor" stroke="none"/>
-                      <path d="M6.5 9.5a5 5 0 0 1 7 0"/>
-                      <path d="M4 7a8 8 0 0 1 12 0"/>
-                    </svg>
-                  </Link>
-                  <Link
-                    to="/network"
-                    title="Network"
-                    aria-label="Network"
-                    style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}
-                  >
-                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                      <circle cx="10" cy="10" r="2.5"/>
-                      <circle cx="3"  cy="4"  r="1.75"/>
-                      <circle cx="17" cy="4"  r="1.75"/>
-                      <circle cx="3"  cy="16" r="1.75"/>
-                      <circle cx="17" cy="16" r="1.75"/>
-                      <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
-                      <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
-                      <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
-                      <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
-                    </svg>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link to="/auth" style={navStyle(false)}>Sign in</Link>
-                  <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
-                  <Link
-                    to="/network"
-                    title="Network"
-                    aria-label="Network"
-                    style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}
-                  >
-                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                      <circle cx="10" cy="10" r="2.5"/>
-                      <circle cx="3"  cy="4"  r="1.75"/>
-                      <circle cx="17" cy="4"  r="1.75"/>
-                      <circle cx="3"  cy="16" r="1.75"/>
-                      <circle cx="17" cy="16" r="1.75"/>
-                      <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
-                      <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
-                      <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
-                      <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
-                    </svg>
-                  </Link>
-                </>
-              )}
-              <ThemeToggle />
-            </nav>
+                </Link>
+                <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  Rooms
+                  {roomUnread && !isActive('/rooms') && (
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
+                  )}
+                </Link>
+                <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
+                <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
+                {profile?.profile_data?.role === 'founder' && (
+                  <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
+                )}
+                <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
+
+                {/* Divider */}
+                <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+
+                {/* Icon buttons — updates, network, help */}
+                <Link to="/updates" title="Founder updates" aria-label="Founder updates"
+                  style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconUpdates />
+                </Link>
+                <Link to="/network" title="Network" aria-label="Network"
+                  style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconNetwork />
+                </Link>
+                <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
+                  style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconHelp />
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link to="/auth" style={navStyle(false)}>Sign in</Link>
+
+                {/* Divider */}
+                <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+
+                {/* Icon buttons — network, help */}
+                <Link to="/network" title="Network" aria-label="Network"
+                  style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconNetwork />
+                </Link>
+                <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
+                  style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconHelp />
+                </Link>
+              </>
+            )}
+            <ThemeToggle />
+          </nav>
 
           {/* Mobile burger */}
           <button
@@ -430,7 +435,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
                 {/* ── Secondary nav ────────────────────────────────────── */}
                 <Link to="/typing" onClick={closeMenu} style={mobileNavStyle(isActive('/typing'))}>Get typed</Link>
-                <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" onClick={closeMenu} style={mobileNavStyle(isActive('/admin'))}>Admin</Link>
                 )}
@@ -454,6 +458,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                       {hasNewChangelog && (
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
                       )}
+                    </Link>
+                    <Link to="/updates" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                      Updates
+                    </Link>
+                    <Link to="/network" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                      Network
                     </Link>
                     <Link to="/support" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Support ☕
@@ -506,25 +516,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: noScroll ? 'auto' : undefined }}>
           {children}
         </main>
-
-        {/* Help button */}
-        <Link
-          to="/help"
-          onClick={() => window.umami?.track('help-button-clicked', { from: location.pathname })}
-          title="Help & FAQ"
-          style={{
-            position: 'fixed', bottom: '5rem', right: '1.25rem', zIndex: 200,
-            width: 36, height: 36, borderRadius: '50%',
-            background: 'var(--accent)', color: '#fff',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            textDecoration: 'none', fontSize: '1rem', fontWeight: 700,
-            boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-            lineHeight: 1,
-          }}
-          aria-label="Help & FAQ"
-        >
-          ?
-        </Link>
 
         <footer className={`site-footer${hideFooter ? ' footer-desktop-only' : ''}`}>
           <div>
