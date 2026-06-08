@@ -55,7 +55,7 @@ function RoomMessage({
   onReply, onEdit, onReport, onTypeClick, onReact, onImageClick, onScrollToMessage,
   editingId, editText, setEditText, onEditSave, onEditCancel,
   deleteConfirmId, setDeleteConfirmId, deleting, onDeleteConfirm,
-  isMobile,
+  isMobile, isReadOnly,
 }) {
   const [hovered, setHovered] = useState(false)
   const [showPicker, setShowPicker] = useState(false)
@@ -192,7 +192,7 @@ function RoomMessage({
         {!isDeleted && !isEditing && (
           <div style={{ display:'flex', alignItems:'center', gap:'0.25rem', flexDirection:isMine?'row-reverse':'row', opacity:showActions?1:(isMobile?0.25:0), transition:'opacity 0.15s', pointerEvents:showActions?'auto':(isMobile?'auto':'none'), position:'relative' }}>
             {/* Reaction picker */}
-            {showPicker && (
+            {!isReadOnly && showPicker && (
               <div onPointerDown={e=>e.stopPropagation()} style={{ position:'absolute', bottom:'130%', [isMine?'right':'left']:0, display:'flex', gap:'0.2rem', background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:20, padding:'0.3rem 0.5rem', boxShadow:'0 2px 12px rgba(0,0,0,0.12)', zIndex:20, whiteSpace:'nowrap' }}>
                 {REACTIONS.map(emoji => (
                   <button key={emoji} type="button" onPointerDown={e=>e.stopPropagation()} onClick={() => { onReact(msg.id,emoji); setShowPicker(false) }} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'1.05rem', padding:'0.1rem 0.15rem', borderRadius:'50%', lineHeight:1, transition:'transform 0.1s' }} onMouseEnter={e=>e.currentTarget.style.transform='scale(1.3)'} onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>
@@ -201,12 +201,12 @@ function RoomMessage({
                 ))}
               </div>
             )}
-            <button type="button" onClick={() => onReply({ id:msg.id, content:msg.content, image_url:msg.image_url, sender_id:msg.sender_id, senderName })} aria-label="Reply" style={iconBtnStyle}>
+            {!isReadOnly && <button type="button" onClick={() => onReply({ id:msg.id, content:msg.content, image_url:msg.image_url, sender_id:msg.sender_id, senderName })} aria-label="Reply" style={iconBtnStyle}>
               <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
-            </button>
-            <button type="button" onPointerDown={e=>e.stopPropagation()} onClick={() => setShowPicker(p=>!p)} aria-label="React" style={{ ...iconBtnStyle, fontSize:'0.85rem', lineHeight:1 }}>
+            </button>}
+            {!isReadOnly && <button type="button" onPointerDown={e=>e.stopPropagation()} onClick={() => setShowPicker(p=>!p)} aria-label="React" style={{ ...iconBtnStyle, fontSize:'0.85rem', lineHeight:1 }}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 9.5s.75 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/><circle cx="5.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/></svg>
-            </button>
+            </button>}
             {isMine && <button type="button" onClick={() => onEdit(msg.id, msg.content??'')} aria-label="Edit" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/></svg></button>}
             {isMine && (
               isDeleteConfirm ? (
@@ -231,7 +231,7 @@ function RoomMessage({
           groups[r.emoji].push(r.user_id)
         }
         const entries = Object.entries(groups)
-        if (!entries.length) return null
+        if (!entries.length || isReadOnly) return null
         return (
           <div style={{ display:'flex', gap:'0.25rem', flexWrap:'wrap', marginTop:'0.2rem', justifyContent:isMine?'flex-end':'flex-start' }}>
             {entries.map(([emoji, users]) => {
@@ -492,6 +492,7 @@ export default function Rooms() {
       items.push(
         <div key={msg.id} id={`room-msg-${msg.id}`} style={{ borderRadius:6, margin:'0 -0.4rem', padding:'0 0.4rem', transition:'background 0.25s', background:isHighlighted?'rgba(154,111,56,0.13)':'transparent' }}>
           <RoomMessage
+            isReadOnly={isReadOnly}
             msg={msg} isMine={msg.sender_id===profile?.id} currentUserId={profile?.id} isMobile={isMobile}
             onReply={setReplyTo} onEdit={handleStartEdit} onReport={id=>setReportTarget(id)} onReact={toggleReaction}
             onTypeClick={url=>{ window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
