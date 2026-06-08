@@ -253,56 +253,90 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
           {/* Desktop nav */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
-            {session && profile ? (
-              <>
-                <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
-                <Link to="/messages" onClick={markMessagesRead} style={navStyle(isActive('/messages'))}>
-                  Messages{unread > 0 && (
-                    <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
-                      {unread > 99 ? '99+' : unread}
-                    </span>
+              {session && profile ? (
+                <>
+                  <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
+                  <Link to="/messages" onClick={markMessagesRead} style={navStyle(isActive('/messages'))}>
+                    Messages{unread > 0 && (
+                      <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
+                        {unread > 99 ? '99+' : unread}
+                      </span>
+                    )}
+                  </Link>
+                  <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                    Rooms
+                    {roomUnread && !isActive('/rooms') && (
+                      <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
+                    )}
+                  </Link>
+                  <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
+                  <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
+                  {profile?.profile_data?.role === 'founder' && (
+                    <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
                   )}
-                </Link>
-                <Link to="/rooms" style={{ ...navStyle(isActive('/rooms')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
-                  Rooms
-                  {roomUnread && !isActive('/rooms') && (
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
-                  )}
-                </Link>
-                <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
-                <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
-                {profile?.profile_data?.role === 'founder' && (
-                  <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
-                )}
-                <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
-              </>
-            ) : (
-              <Link to="/auth" style={navStyle(false)}>Sign in</Link>
-            )}
-            <Link
-              to="/network"
-              title="Network"
-              aria-label="Network"
-              style={{
-                ...navStyle(isActive('/network')),
-                display: 'inline-flex', alignItems: 'center',
-                color: isActive('/network') ? 'var(--accent)' : 'var(--muted)',
-              }}
-            >
-              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-                <circle cx="10" cy="10" r="2.5"/>
-                <circle cx="3"  cy="4"  r="1.75"/>
-                <circle cx="17" cy="4"  r="1.75"/>
-                <circle cx="3"  cy="16" r="1.75"/>
-                <circle cx="17" cy="16" r="1.75"/>
-                <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
-                <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
-                <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
-                <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
-              </svg>
-            </Link>
-            <ThemeToggle />
-          </nav>
+                  <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
+            
+                  {/* Divider */}
+                  <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+            
+                  {/* Icon buttons */}
+                  <Link
+                    to="/updates"
+                    title="Founder updates"
+                    aria-label="Founder updates"
+                    style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                      <circle cx="10" cy="12" r="1.75" fill="currentColor" stroke="none"/>
+                      <path d="M6.5 9.5a5 5 0 0 1 7 0"/>
+                      <path d="M4 7a8 8 0 0 1 12 0"/>
+                    </svg>
+                  </Link>
+                  <Link
+                    to="/network"
+                    title="Network"
+                    aria-label="Network"
+                    style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                      <circle cx="10" cy="10" r="2.5"/>
+                      <circle cx="3"  cy="4"  r="1.75"/>
+                      <circle cx="17" cy="4"  r="1.75"/>
+                      <circle cx="3"  cy="16" r="1.75"/>
+                      <circle cx="17" cy="16" r="1.75"/>
+                      <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
+                      <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
+                      <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
+                      <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
+                    </svg>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth" style={navStyle(false)}>Sign in</Link>
+                  <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+                  <Link
+                    to="/network"
+                    title="Network"
+                    aria-label="Network"
+                    style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+                      <circle cx="10" cy="10" r="2.5"/>
+                      <circle cx="3"  cy="4"  r="1.75"/>
+                      <circle cx="17" cy="4"  r="1.75"/>
+                      <circle cx="3"  cy="16" r="1.75"/>
+                      <circle cx="17" cy="16" r="1.75"/>
+                      <line x1="5.25"  y1="5.25"  x2="7.75"  y2="7.75"/>
+                      <line x1="14.75" y1="5.25"  x2="12.25" y2="7.75"/>
+                      <line x1="5.25"  y1="14.75" x2="7.75"  y2="12.25"/>
+                      <line x1="14.75" y1="14.75" x2="12.25" y2="12.25"/>
+                    </svg>
+                  </Link>
+                </>
+              )}
+              <ThemeToggle />
+            </nav>
 
           {/* Mobile burger */}
           <button
