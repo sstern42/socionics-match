@@ -430,13 +430,13 @@ export default function Rooms() {
 
   async function handleGifSelect(gifUrl) {
     setShowGifPicker(false)
-    try {
-      await supabase
-        .from('room_messages')
-        .insert({ room_id: roomId, sender_id: profile.id, content: '', image_url: gifUrl, reply_to_id: null })
+    const { data, error } = await supabase
+      .from('room_messages')
+      .insert({ room_id: roomId, sender_id: profile.id, content: null, image_url: gifUrl, reply_to_id: null })
+    if (error) {
+      console.error('GIF error:', error.code, error.message, error.details, error.hint)
+    } else {
       window.umami?.track('room-gif-sent')
-    } catch (err) {
-      console.error('Failed to send GIF:', err)
     }
   }
 
