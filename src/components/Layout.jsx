@@ -133,7 +133,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             const colour = QUADRA_COLOURS[quadra] ?? '#9a6f38'
             const label = quadra.charAt(0).toUpperCase() + quadra.slice(1)
             pushToastRef.current({
-              id: payload.new.id ?? String(Date.now()),
+              id: nextToastId(),
               kind: 'room',
               colour,
               label,
@@ -187,6 +187,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   // ── Toast helpers — persistent, dismissed by user only ────────────────────
   const pushToastRef  = useRef(null)
   const profileIdRef  = useRef(profile?.id)
+  const toastIdRef    = useRef(0)
+  const nextToastId   = () => `t-${++toastIdRef.current}`
 
   function pushToast(toast) {
     // Messages: deduplicate by matchId, increment count
@@ -233,7 +235,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const quadra = TYPE_QUADRA[record.type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
         const isDual = profile?.type && DUAL_MAP[profile.type] === record.type
-        const toastId = record.id ?? String(Date.now())
+        const toastId = nextToastId()
         pushToastRef.current({ id: toastId, kind: isDual ? 'dual' : 'join', type: record.type, name, colour })
         window.dispatchEvent(new CustomEvent('socion-new-member'))
       })
@@ -260,7 +262,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const quadra = TYPE_QUADRA[type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
         const preview = msg.content?.length > 45 ? msg.content.slice(0, 45) + '…' : msg.content
-        pushToastRef.current({ id: msg.id ?? String(Date.now()), kind: 'message', name, type, colour, preview, matchId: msg.match_id })
+        pushToastRef.current({ id: nextToastId(), kind: 'message', name, type, colour, preview, matchId: msg.match_id })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -282,7 +284,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const type   = other?.type
         const quadra = TYPE_QUADRA[type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
-        pushToastRef.current({ id: match.id ?? String(Date.now()), kind: 'connection', name, type, colour, matchId: match.id })
+        pushToastRef.current({ id: nextToastId(), kind: 'connection', name, type, colour, matchId: match.id })
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -300,7 +302,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ? payload.new.content.slice(0, 60) + '…'
             : payload.new.content
           pushToastRef.current({
-            id: payload.new.id ?? String(Date.now()),
+            id: nextToastId(),
             kind: 'founder_post',
             preview,
             colour: '#9a6f38',
@@ -605,7 +607,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
       {/* Live toasts — persistent until dismissed */}
       {toasts.length > 0 && (
-        <div style={{ position: 'fixed', bottom: '10rem', left: '1.75rem', zIndex: 300, display: 'flex', flexDirection: 'column-reverse', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
+        <div style={{ position: 'fixed', bottom: '10rem', left: '2rem', zIndex: 300, display: 'flex', flexDirection: 'column-reverse', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
           <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           {toasts.map(toast => {
             const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
