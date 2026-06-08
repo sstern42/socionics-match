@@ -6,10 +6,10 @@ import { supabase } from '../lib/supabase'
 const REACTIONS = ['👍', '❤️', '👀', '🔥']
 
 const POST_TYPE_META = {
-  milestone: { label: 'Milestone', colour: '#2ecc71'       },
-  data:      { label: 'Data',      colour: '#185FA5'       },
-  feature:   { label: 'Feature',   colour: '#BA7517'       },
-  note:      { label: 'Note',      colour: 'var(--muted)'  },
+  milestone: { label: 'Milestone', colour: '#2ecc71'      },
+  data:      { label: 'Data',      colour: '#185FA5'      },
+  feature:   { label: 'Feature',   colour: '#BA7517'      },
+  note:      { label: 'Note',      colour: 'var(--muted)' },
 }
 
 function timeAgo(dateStr) {
@@ -28,9 +28,10 @@ export default function Updates() {
   const { profile } = useAuth()
   const isFounder = profile?.profile_data?.role === 'founder'
 
-  const [posts, setPosts]         = useState([])
-  const [loading, setLoading]     = useState(true)
-  const [error, setError]         = useState(null)
+  const [posts, setPosts]               = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState(null)
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null)
 
   // Compose state — founder only
   const [content, setContent]     = useState('')
@@ -47,16 +48,21 @@ export default function Updates() {
   useEffect(() => {
     loadPosts()
 
-    // Real-time: new / deleted posts
+    // Real-time: new posts — deduplicated against optimistic inserts
     const postsChannel = supabase
       .channel('founder-posts-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_posts' }, async (payload) => {
+        // Skip if already added optimistically
+        setPosts(prev => {
+          if (prev.some(p => p.id === payload.new.id)) return prev
+          return prev
+        })
         const { data } = await supabase
           .from('founder_posts')
           .select('*, reactions:founder_post_reactions(user_id, emoji)')
           .eq('id', payload.new.id)
           .single()
-        if (data) setPosts(prev => [data, ...prev])
+        if (data) setPosts(prev => prev.some(p => p.id === data.id) ? prev : [data, ...prev])
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'founder_posts' }, (payload) => {
         setPosts(prev => prev.filter(p => p.id !== payload.old.id))
@@ -110,10 +116,13 @@ export default function Updates() {
     setPosting(true)
     setPostError(null)
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('founder_posts')
         .insert({ content: content.trim(), post_type: postType })
+        .select('*, reactions:founder_post_reactions(user_id, emoji)')
+        .single()
       if (error) throw error
+      setPosts(prev => [data, ...prev])
       setContent('')
       setPostType('note')
       window.umami?.track('founder-post-created', { post_type: postType })
@@ -125,10 +134,13 @@ export default function Updates() {
   }
 
   async function handleDelete(postId) {
+    setPosts(prev => prev.filter(p => p.id !== postId))
+    setDeleteConfirmId(null)
     try {
       await supabase.from('founder_posts').delete().eq('id', postId)
     } catch (err) {
       console.error('Delete failed:', err)
+      loadPosts()
     }
   }
 
@@ -246,7 +258,6 @@ export default function Updates() {
             {posts.map((post, i) => {
               const meta = POST_TYPE_META[post.post_type] ?? POST_TYPE_META.note
 
-              // Group reactions by emoji
               const groups = {}
               for (const r of post.reactions ?? []) {
                 if (!groups[r.emoji]) groups[r.emoji] = []
@@ -261,7 +272,7 @@ export default function Updates() {
                     borderBottom: i < posts.length - 1 ? '1px solid var(--border)' : 'none',
                   }}
                 >
-                  {/* Header row — type label + timestamp + delete */}
+                  {/* Header row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
                     <span style={{
                       fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -274,23 +285,43 @@ export default function Updates() {
                     <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
                       {timeAgo(post.created_at)}
                     </span>
+
+                    {/* 2-click delete — founder only */}
                     {isFounder && (
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(post.id)}
-                        aria-label="Delete post"
-                        style={{
-                          marginLeft: 'auto', background: 'none', border: 'none',
-                          cursor: 'pointer', color: 'var(--muted)',
-                          fontSize: '1rem', padding: '0.1rem 0.35rem',
-                          lineHeight: 1, opacity: 0.4,
-                          transition: 'opacity 0.15s',
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                        onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}
-                      >
-                        ×
-                      </button>
+                      deleteConfirmId === post.id ? (
+                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(post.id)}
+                            style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.15rem 0.5rem', fontSize: '0.68rem', color: '#fff', cursor: 'pointer' }}
+                          >
+                            Delete
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDeleteConfirmId(null)}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem', padding: '0.15rem' }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setDeleteConfirmId(post.id)}
+                          aria-label="Delete post"
+                          style={{
+                            marginLeft: 'auto', background: 'none', border: 'none',
+                            cursor: 'pointer', color: 'var(--muted)',
+                            fontSize: '1rem', padding: '0.1rem 0.35rem',
+                            lineHeight: 1, opacity: 0.4, transition: 'opacity 0.15s',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                          onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}
+                        >
+                          ×
+                        </button>
+                      )
                     )}
                   </div>
 
