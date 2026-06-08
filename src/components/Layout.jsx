@@ -89,7 +89,7 @@ const IconHelp = () => (
 )
 
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
-  const { session, profile } = useAuth()
+  const { session, profile, isPremium } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -278,7 +278,16 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       </div>
       <div className="page" style={noScroll ? { height: '100dvh', overflow: 'clip', display: 'flex', flexDirection: 'column' } : undefined}>
         <header className="site-header" style={{ position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg)' }}>
-          <Link className="wordmark" to="/" onClick={closeMenu}>Socion™ <span style={{ fontSize: '0.55em', fontFamily: 'var(--sans)', fontWeight: 500, letterSpacing: '0.08em', color: 'var(--muted)', verticalAlign: 'middle', textTransform: 'uppercase' }}>Beta</span></Link>
+          <Link className="wordmark" to="/" onClick={closeMenu}>
+            Socion™{' '}
+            {isPremium ? (
+              <span style={{
+                fontSize: '0.5em', fontFamily: 'var(--serif)', fontWeight: 400,
+                fontStyle: 'italic', letterSpacing: '0.04em',
+                color: 'var(--accent)', verticalAlign: 'middle',
+              }}>Premium</span>
+            ) : null}
+          </Link>
 
           {/* Desktop nav */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
