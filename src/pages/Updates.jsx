@@ -1,115 +1,342 @@
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabase'
 
-const COMING_ITEMS = [
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-        <circle cx="10" cy="12" r="1.75" fill="currentColor" stroke="none"/>
-        <path d="M6.5 9.5a5 5 0 0 1 7 0"/>
-        <path d="M4 7a8 8 0 0 1 12 0"/>
-      </svg>
-    ),
-    label: 'Founder notes',
-    description: 'What\'s being built, what broke, and why certain decisions were made.',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="2,14 6,9 9,11 13,6 18,10"/>
-        <line x1="2" y1="17" x2="18" y2="17"/>
-      </svg>
-    ),
-    label: 'Member & connection milestones',
-    description: 'Live numbers as the network grows — members, connections, types represented.',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="6" height="6" rx="1"/>
-        <rect x="11" y="3" width="6" height="6" rx="1"/>
-        <rect x="3" y="11" width="6" height="6" rx="1"/>
-        <rect x="11" y="11" width="6" height="6" rx="1"/>
-      </svg>
-    ),
-    label: 'Relation type data',
-    description: 'Which dynamics are most connected, highest rated, most active. The theory tested in real time.',
-  },
-  {
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 2l2 6h6l-5 3.5 2 6L10 14l-5 3.5 2-6L2 8h6z"/>
-      </svg>
-    ),
-    label: 'Feature launches',
-    description: 'New things landing in the app, with context on what they are and why they exist.',
-  },
-]
+const REACTIONS = ['👍', '❤️', '👀', '🔥']
+
+const POST_TYPE_META = {
+  milestone: { label: 'Milestone', colour: '#2ecc71'       },
+  data:      { label: 'Data',      colour: '#185FA5'       },
+  feature:   { label: 'Feature',   colour: '#BA7517'       },
+  note:      { label: 'Note',      colour: 'var(--muted)'  },
+}
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+}
 
 export default function Updates() {
   const { profile } = useAuth()
+  const isFounder = profile?.profile_data?.role === 'founder'
+
+  const [posts, setPosts]         = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
+
+  // Compose state — founder only
+  const [content, setContent]     = useState('')
+  const [postType, setPostType]   = useState('note')
+  const [posting, setPosting]     = useState(false)
+  const [postError, setPostError] = useState(null)
+
+  // Mark as read on mount — clears the nav dot
+  useEffect(() => {
+    localStorage.setItem('socion_updates_last_visited', new Date().toISOString())
+    window.dispatchEvent(new Event('socion-updates-visited'))
+  }, [])
+
+  useEffect(() => {
+    loadPosts()
+
+    // Real-time: new / deleted posts
+    const postsChannel = supabase
+      .channel('founder-posts-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_posts' }, async (payload) => {
+        const { data } = await supabase
+          .from('founder_posts')
+          .select('*, reactions:founder_post_reactions(user_id, emoji)')
+          .eq('id', payload.new.id)
+          .single()
+        if (data) setPosts(prev => [data, ...prev])
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'founder_posts' }, (payload) => {
+        setPosts(prev => prev.filter(p => p.id !== payload.old.id))
+      })
+      .subscribe()
+
+    // Real-time: reactions
+    const reactionsChannel = supabase
+      .channel('founder-post-reactions-feed')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_post_reactions' }, ({ new: r }) => {
+        setPosts(prev => prev.map(p => {
+          if (p.id !== r.post_id) return p
+          const existing = p.reactions ?? []
+          if (existing.some(x => x.user_id === r.user_id && x.emoji === r.emoji)) return p
+          return { ...p, reactions: [...existing, { user_id: r.user_id, emoji: r.emoji }] }
+        }))
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'founder_post_reactions' }, ({ old: r }) => {
+        setPosts(prev => prev.map(p => {
+          if (p.id !== r.post_id) return p
+          return { ...p, reactions: (p.reactions ?? []).filter(x => !(x.user_id === r.user_id && x.emoji === r.emoji)) }
+        }))
+      })
+      .subscribe()
+
+    return () => {
+      postsChannel.unsubscribe()
+      reactionsChannel.unsubscribe()
+    }
+  }, [])
+
+  async function loadPosts() {
+    setLoading(true)
+    setError(null)
+    try {
+      const { data, error } = await supabase
+        .from('founder_posts')
+        .select('*, reactions:founder_post_reactions(user_id, emoji)')
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setPosts(data ?? [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handlePost() {
+    if (!content.trim() || posting) return
+    setPosting(true)
+    setPostError(null)
+    try {
+      const { error } = await supabase
+        .from('founder_posts')
+        .insert({ content: content.trim(), post_type: postType })
+      if (error) throw error
+      setContent('')
+      setPostType('note')
+      window.umami?.track('founder-post-created', { post_type: postType })
+    } catch (err) {
+      setPostError(err.message)
+    } finally {
+      setPosting(false)
+    }
+  }
+
+  async function handleDelete(postId) {
+    try {
+      await supabase.from('founder_posts').delete().eq('id', postId)
+    } catch (err) {
+      console.error('Delete failed:', err)
+    }
+  }
+
+  async function toggleReaction(postId, emoji) {
+    if (!profile?.id) return
+    const post = posts.find(p => p.id === postId)
+    if (!post) return
+    const reactions = post.reactions ?? []
+    const hasReacted = reactions.some(r => r.user_id === profile.id && r.emoji === emoji)
+    const snapshot = reactions
+
+    // Optimistic update
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p
+      const updated = hasReacted
+        ? (p.reactions ?? []).filter(r => !(r.user_id === profile.id && r.emoji === emoji))
+        : [...(p.reactions ?? []), { user_id: profile.id, emoji }]
+      return { ...p, reactions: updated }
+    }))
+
+    try {
+      if (hasReacted) {
+        await supabase.from('founder_post_reactions')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', profile.id)
+          .eq('emoji', emoji)
+      } else {
+        await supabase.from('founder_post_reactions')
+          .upsert(
+            { post_id: postId, user_id: profile.id, emoji },
+            { onConflict: 'post_id,user_id,emoji', ignoreDuplicates: true }
+          )
+      }
+      window.umami?.track('founder-post-reaction', { emoji, action: hasReacted ? 'remove' : 'add' })
+    } catch {
+      // Rollback on failure
+      setPosts(prev => prev.map(p => p.id === postId ? { ...p, reactions: snapshot } : p))
+    }
+  }
 
   return (
     <Layout noScroll hideFooter>
-      <section style={{ maxWidth: 560, margin: '0 auto', padding: '4rem 1.5rem 6rem' }}>
-
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent-lt)', borderRadius: 20, padding: '0.3rem 0.85rem' }}>
-          <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round">
-            <circle cx="10" cy="12" r="1.75" fill="var(--accent)" stroke="none"/>
-            <path d="M6.5 9.5a5 5 0 0 1 7 0"/>
-            <path d="M4 7a8 8 0 0 1 12 0"/>
-          </svg>
-          <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500 }}>Coming soon</span>
-        </div>
-
-        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginBottom: '0.75rem' }}>
+      <section style={{ maxWidth: 560, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
+        <p className="eyebrow">Socion</p>
+        <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
           Updates from <em>Spencer</em>
         </h1>
-
-        <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '3rem', maxWidth: 460 }}>
-          A direct feed from the founder — milestones, data, product decisions, and what's happening behind the scenes. No social media required.
+        <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '2.5rem' }}>
+          Milestones, data, feature launches, and what's happening behind the scenes.
         </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0', borderTop: '1px solid var(--border)' }}>
-          {COMING_ITEMS.map(({ icon, label, description }) => (
-            <div
-              key={label}
-              style={{
-                display: 'flex', alignItems: 'flex-start', gap: '1rem',
-                padding: '1.25rem 0',
-                borderBottom: '1px solid var(--border)',
-              }}
-            >
-              <div style={{
-                width: 36, height: 36, borderRadius: 6, flexShrink: 0,
-                background: 'rgba(154,111,56,0.07)', border: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--accent)',
-              }}>
-                {icon}
-              </div>
-              <div>
-                <p style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.25rem' }}>{label}</p>
-                <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>{description}</p>
-              </div>
+        {/* ── Founder compose box ──────────────────────────────────────── */}
+        {isFounder && (
+          <div style={{
+            border: '1px solid var(--accent-lt)', borderRadius: 8,
+            padding: '1.25rem', marginBottom: '2.5rem',
+            background: 'rgba(154,111,56,0.04)',
+          }}>
+            <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.75rem' }}>
+              New post
+            </p>
+            <textarea
+              className="input-standalone"
+              placeholder="What's happening with Socion..."
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && e.ctrlKey && handlePost()}
+              rows={3}
+              style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.75rem' }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <select
+                value={postType}
+                onChange={e => setPostType(e.target.value)}
+                style={{
+                  fontFamily: 'var(--sans)', fontSize: '0.82rem',
+                  padding: '0.4rem 0.75rem',
+                  border: '1px solid var(--border)', borderRadius: 3,
+                  background: 'var(--card-bg)', color: 'var(--text)', cursor: 'pointer',
+                }}
+              >
+                {Object.entries(POST_TYPE_META).map(([key, { label }]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handlePost}
+                disabled={posting || !content.trim()}
+                style={{ fontSize: '0.78rem', padding: '0.5rem 1.25rem', opacity: (posting || !content.trim()) ? 0.5 : 1 }}
+              >
+                {posting ? 'Posting…' : 'Post'}
+              </button>
+              {postError && <p style={{ fontSize: '0.78rem', color: '#c0392b', margin: 0 }}>{postError}</p>}
             </div>
-          ))}
-        </div>
+            <p style={{ fontSize: '0.68rem', color: 'var(--muted)', marginTop: '0.5rem' }}>Ctrl + Enter to post</p>
+          </div>
+        )}
 
-        <div style={{ marginTop: '2.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <Link to="/feed" style={{ fontSize: '0.82rem', color: 'var(--muted)', textDecoration: 'none' }}>
-            ← Back to matches
-          </Link>
-          <Link
-            to="/changelog"
-            onClick={() => localStorage.setItem('socion_changelog_seen', '')}
-            style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none' }}
-          >
-            What's new so far →
-          </Link>
-        </div>
+        {/* ── Feed ─────────────────────────────────────────────────────── */}
+        {loading ? (
+          <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', padding: '3rem 0' }}>Loading…</p>
+        ) : error ? (
+          <p style={{ color: '#c0392b', fontSize: '0.85rem' }}>{error}</p>
+        ) : posts.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 0' }}>
+            <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.1rem', color: 'var(--muted)' }}>
+              First update coming soon.
+            </p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {posts.map((post, i) => {
+              const meta = POST_TYPE_META[post.post_type] ?? POST_TYPE_META.note
 
+              // Group reactions by emoji
+              const groups = {}
+              for (const r of post.reactions ?? []) {
+                if (!groups[r.emoji]) groups[r.emoji] = []
+                groups[r.emoji].push(r.user_id)
+              }
+
+              return (
+                <div
+                  key={post.id}
+                  style={{
+                    padding: '1.5rem 0',
+                    borderBottom: i < posts.length - 1 ? '1px solid var(--border)' : 'none',
+                  }}
+                >
+                  {/* Header row — type label + timestamp + delete */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
+                    <span style={{
+                      fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                      fontWeight: 600, color: meta.colour,
+                      border: `1px solid ${meta.colour}55`,
+                      padding: '0.12rem 0.5rem', borderRadius: 2, flexShrink: 0,
+                    }}>
+                      {meta.label}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+                      {timeAgo(post.created_at)}
+                    </span>
+                    {isFounder && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(post.id)}
+                        aria-label="Delete post"
+                        style={{
+                          marginLeft: 'auto', background: 'none', border: 'none',
+                          cursor: 'pointer', color: 'var(--muted)',
+                          fontSize: '1rem', padding: '0.1rem 0.35rem',
+                          lineHeight: 1, opacity: 0.4,
+                          transition: 'opacity 0.15s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+                        onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Content */}
+                  <p style={{
+                    fontSize: '0.95rem', color: 'var(--text)',
+                    lineHeight: 1.75, fontWeight: 300,
+                    whiteSpace: 'pre-wrap', marginBottom: '1rem',
+                  }}>
+                    {post.content}
+                  </p>
+
+                  {/* Reaction strip */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                    {REACTIONS.map(emoji => {
+                      const users = groups[emoji] ?? []
+                      const iReacted = users.includes(profile?.id)
+                      return (
+                        <button
+                          key={emoji}
+                          type="button"
+                          onClick={() => toggleReaction(post.id, emoji)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
+                            background: iReacted ? 'rgba(154,111,56,0.1)' : 'var(--surface)',
+                            border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'var(--border)'}`,
+                            borderRadius: 20, padding: '0.2rem 0.55rem',
+                            cursor: 'pointer', fontSize: '0.88rem', lineHeight: 1.5,
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          <span>{emoji}</span>
+                          {users.length > 0 && (
+                            <span style={{ fontSize: '0.7rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>
+                              {users.length}
+                            </span>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </section>
     </Layout>
   )

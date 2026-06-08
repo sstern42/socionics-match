@@ -31,6 +31,8 @@ const DUAL_MAP = {
   LSE: 'EII', EII: 'LSE', IEE: 'SLI', SLI: 'IEE',
 }
 
+const UPDATES_LAST_VISITED_KEY = 'socion_updates_last_visited'
+
 // ── Three-way theme toggle ────────────────────────────────────────────
 function ThemeToggle() {
   const { preference, setTheme } = useTheme()
@@ -96,8 +98,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const [profileOpen, setProfileOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
+  const [updatesUnread, setUpdatesUnread] = useState(false)
   const [toasts, setToasts] = useState([])
 
+  // ── Room unread ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (!profile?.room_id) return
     const lastVisited = getRoomLastVisited()
@@ -147,6 +151,22 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     return () => window.removeEventListener('socion-room-visited', handleRoomVisited)
   }, [])
 
+  // ── Updates unread ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!session) return
+    const lastVisited = localStorage.getItem(UPDATES_LAST_VISITED_KEY)
+    let query = supabase.from('founder_posts').select('id', { count: 'exact', head: true })
+    if (lastVisited) query = query.gt('created_at', lastVisited)
+    query.then(({ count }) => { if (count > 0) setUpdatesUnread(true) })
+  }, [session])
+
+  useEffect(() => {
+    function handleUpdatesVisited() { setUpdatesUnread(false) }
+    window.addEventListener('socion-updates-visited', handleUpdatesVisited)
+    return () => window.removeEventListener('socion-updates-visited', handleUpdatesVisited)
+  }, [])
+
+  // ── Misc ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     document.title = unread > 0 ? `(${unread}) Socion` : 'Socion'
     return () => { document.title = 'Socion' }
@@ -164,7 +184,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
   function closeMenu() { setMenuOpen(false); setProfileOpen(false) }
 
-  // ── Toast helpers ────────────────────────────────────────────────────────
+  // ── Toast helpers ─────────────────────────────────────────────────────────
   const toastTimers = useRef({})
   const pushToastRef = useRef(null)
   const profileIdRef = useRef(profile?.id)
@@ -268,6 +288,29 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
     return () => { supabase.removeChannel(channel) }
   }, [session, profile?.id])
 
+  // Founder post toast + updates unread
+  useEffect(() => {
+    if (!session || !profile?.id) return
+    const channel = supabase
+      .channel('founder-posts-toast')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_posts' }, (payload) => {
+        setUpdatesUnread(true)
+        if (window.location.pathname !== '/updates') {
+          const preview = payload.new.content?.length > 60
+            ? payload.new.content.slice(0, 60) + '…'
+            : payload.new.content
+          pushToastRef.current({
+            id: payload.new.id ?? String(Date.now()),
+            kind: 'founder_post',
+            preview,
+            colour: '#9a6f38',
+          })
+        }
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [session, profile?.id])
+
   const isActive = (to) => location.pathname === to
   const hasNewChangelog = localStorage.getItem('socion_changelog_seen') !== CHANGELOG_ENTRIES[0].date
 
@@ -319,8 +362,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
                 {/* Icon buttons — updates, network, help */}
                 <Link to="/updates" title="Founder updates" aria-label="Founder updates"
-                  style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center' }}>
+                  style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
                   <IconUpdates />
+                  {updatesUnread && !isActive('/updates') && (
+                    <span style={{ position: 'absolute', top: -2, right: -2, width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'block', flexShrink: 0 }} />
+                  )}
                 </Link>
                 <Link to="/network" title="Network" aria-label="Network"
                   style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
@@ -468,8 +514,15 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
                       )}
                     </Link>
-                    <Link to="/updates" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                    <Link
+                      to="/updates"
+                      onClick={closeMenu}
+                      style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                    >
                       Updates
+                      {updatesUnread && (
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
+                      )}
                     </Link>
                     <Link to="/network" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Network
@@ -555,19 +608,21 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         <div style={{ position: 'fixed', bottom: '6rem', left: '1.25rem', zIndex: 300, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
           <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
           {toasts.map(toast => {
-            const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room'
+            const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
             const onClick = isClickable ? () => {
               setToasts(prev => prev.filter(t => t.id !== toast.id))
-              if (toast.kind === 'room') navigate('/rooms')
+              if (toast.kind === 'founder_post') navigate('/updates')
+              else if (toast.kind === 'room') navigate('/rooms')
               else if (toast.matchId) navigate(`/messages?match=${toast.matchId}`)
             } : undefined
 
             const heading = (() => {
-              if (toast.kind === 'message')    return 'new dm received'
-              if (toast.kind === 'room')       return 'new room message'
-              if (toast.kind === 'connection') return 'new connection'
-              if (toast.kind === 'dual')       return 'your dual just joined ✦'
-              if (toast.kind === 'join')       return 'new member'
+              if (toast.kind === 'message')      return 'new dm received'
+              if (toast.kind === 'room')         return 'new room message'
+              if (toast.kind === 'connection')   return 'new connection'
+              if (toast.kind === 'dual')         return 'your dual just joined ✦'
+              if (toast.kind === 'join')         return 'new member'
+              if (toast.kind === 'founder_post') return 'new from spencer'
               return ''
             })()
 
@@ -576,10 +631,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 const countBadge = (toast.count ?? 1) > 1 ? ` +${(toast.count ?? 1) - 1}` : ''
                 return (toast.name ? `${toast.name}: ${toast.preview}` : toast.preview) + countBadge
               }
-              if (toast.kind === 'room')       return `${toast.label} quadra`
-              if (toast.kind === 'connection') return toast.name ?? 'someone'
-              if (toast.kind === 'dual')       return toast.name ?? null
-              if (toast.kind === 'join')       return toast.name ?? null
+              if (toast.kind === 'room')         return `${toast.label} quadra`
+              if (toast.kind === 'connection')   return toast.name ?? 'someone'
+              if (toast.kind === 'dual')         return toast.name ?? null
+              if (toast.kind === 'join')         return toast.name ?? null
+              if (toast.kind === 'founder_post') return toast.preview ?? null
               return null
             })()
 
