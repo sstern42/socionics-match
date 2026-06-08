@@ -13,6 +13,7 @@ import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import Admin from './pages/Admin'
 import Changelog from './pages/Changelog'
+import Updates from './pages/Updates'
 import Network from './pages/Network'
 import Feed from './pages/Feed'
 import Messages from './pages/Messages'
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/changelog" element={<Changelog />} />
+        <Route path="/updates" element={<Updates />} />
         <Route path="/support" element={<Support />} />
         <Route path="/help" element={<Help />} />
         <Route path="/network" element={<Network />} />
