@@ -695,6 +695,34 @@ export default function Feed() {
             </div>
           ) : (
             <>
+              {/* Badge key */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap',
+                padding: '0.65rem 0.9rem',
+                border: '1px solid var(--border)',
+                borderRadius: 4,
+                marginBottom: '1.25rem',
+                background: 'var(--card-bg)',
+              }}>
+                <span style={{ fontSize: '0.65rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, flexShrink: 0 }}>
+                  Profile badges
+                </span>
+                <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--muted)' }}>
+                    <span style={{ color: 'var(--accent)', fontSize: '0.85rem', lineHeight: 1 }}>✦</span>
+                    Founding member
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--muted)' }}>
+                    <span style={{ color: 'var(--accent)', fontSize: '0.85rem', lineHeight: 1 }}>★</span>
+                    Premium subscriber
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--muted)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 13, height: 13, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>✓</span>
+                    Verified type
+                  </span>
+                </div>
+              </div>
+              
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                 {displayed.map((p, i) => (
                   <>
