@@ -605,93 +605,95 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         </footer>
       </div>
 
-      {/* Live toasts — persistent until dismissed */}
-      {toasts.length > 0 && (
-        <div style={{ position: 'fixed', bottom: '10rem', left: '2rem', zIndex: 300, display: 'flex', flexDirection: 'column-reverse', gap: '0.5rem', alignItems: 'flex-start', pointerEvents: 'none' }}>
-          <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
-          {toasts.map(toast => {
-            const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
-            const onClick = isClickable ? () => {
-              setToasts(prev => prev.filter(t => t.id !== toast.id))
-              if (toast.kind === 'founder_post') navigate('/updates')
-              else if (toast.kind === 'room') navigate('/rooms')
-              else if (toast.matchId) navigate(`/messages?match=${toast.matchId}`)
-            } : undefined
+      {/* Live toasts — each individually positioned, stacks upward */}
+      <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
+      {toasts.map((toast, i) => {
+        const TOAST_H = 68
+        const bottomPx = 160 + i * TOAST_H
 
-            const heading = (() => {
-              if (toast.kind === 'message')      return 'new dm received'
-              if (toast.kind === 'room')         return 'new room message'
-              if (toast.kind === 'connection')   return 'new connection'
-              if (toast.kind === 'dual')         return 'your dual just joined ✦'
-              if (toast.kind === 'join')         return 'new member'
-              if (toast.kind === 'founder_post') return 'new from spencer'
-              return ''
-            })()
+        const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
+        const onClick = isClickable ? () => {
+          setToasts(prev => prev.filter(t => t.id !== toast.id))
+          if (toast.kind === 'founder_post') navigate('/updates')
+          else if (toast.kind === 'room') navigate('/rooms')
+          else if (toast.matchId) navigate(`/messages?match=${toast.matchId}`)
+        } : undefined
 
-            const body = (() => {
-              if (toast.kind === 'message') {
-                const countBadge = (toast.count ?? 1) > 1 ? ` +${(toast.count ?? 1) - 1}` : ''
-                return (toast.name ? `${toast.name}: ${toast.preview}` : toast.preview) + countBadge
-              }
-              if (toast.kind === 'room')         return `${toast.label} quadra`
-              if (toast.kind === 'connection')   return toast.name ?? 'someone'
-              if (toast.kind === 'dual')         return toast.name ?? null
-              if (toast.kind === 'join')         return toast.name ?? null
-              if (toast.kind === 'founder_post') return toast.preview ?? null
-              return null
-            })()
+        const heading = (() => {
+          if (toast.kind === 'message')      return 'new dm received'
+          if (toast.kind === 'room')         return 'new room message'
+          if (toast.kind === 'connection')   return 'new connection'
+          if (toast.kind === 'dual')         return 'your dual just joined ✦'
+          if (toast.kind === 'join')         return 'new member'
+          if (toast.kind === 'founder_post') return 'new from spencer'
+          return ''
+        })()
 
-            return (
-              <div
-                key={toast.id}
-                onClick={onClick}
-                style={{
-                  background: 'var(--bg)',
-                  border: '1px solid var(--border)',
-                  borderLeft: `3px solid ${toast.colour}`,
-                  borderRadius: 6,
-                  padding: '0.6rem 0.85rem 0.6rem 0.75rem',
-                  boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-                  display: 'flex', alignItems: 'flex-start', gap: '0.55rem',
-                  animation: 'toast-in 0.2s ease',
-                  maxWidth: 240,
-                  pointerEvents: 'auto',
-                  cursor: isClickable ? 'pointer' : 'default',
-                }}
-              >
-                {toast.type && (
-                  <span style={{
-                    fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
-                    fontWeight: 600, color: toast.colour,
-                    background: `${toast.colour}18`,
-                    border: `1px solid ${toast.colour}55`,
-                    padding: '0.12rem 0.38rem', borderRadius: 2, flexShrink: 0,
-                    marginTop: '0.1rem',
-                  }}>
-                    {toast.type}
-                  </span>
-                )}
-                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-                  <span style={{ fontSize: '0.65rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, color: toast.colour, lineHeight: 1 }}>
-                    {heading}
-                  </span>
-                  {body && (
-                    <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {body}
-                    </span>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={e => { e.stopPropagation(); setToasts(prev => prev.filter(t => t.id !== toast.id)) }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.85rem', padding: 0, flexShrink: 0, lineHeight: 1, opacity: 0.6, marginTop: '0.05rem' }}
-                  aria-label="Dismiss"
-                >×</button>
-              </div>
-            )
-          })}
-        </div>
-      )}
+        const body = (() => {
+          if (toast.kind === 'message') {
+            const countBadge = (toast.count ?? 1) > 1 ? ` +${(toast.count ?? 1) - 1}` : ''
+            return (toast.name ? `${toast.name}: ${toast.preview}` : toast.preview) + countBadge
+          }
+          if (toast.kind === 'room')         return `${toast.label} quadra`
+          if (toast.kind === 'connection')   return toast.name ?? 'someone'
+          if (toast.kind === 'dual')         return toast.name ?? null
+          if (toast.kind === 'join')         return toast.name ?? null
+          if (toast.kind === 'founder_post') return toast.preview ?? null
+          return null
+        })()
+
+        return (
+          <div
+            key={toast.id}
+            onClick={onClick}
+            style={{
+              position: 'fixed',
+              bottom: bottomPx,
+              left: '2rem',
+              zIndex: 300,
+              background: 'var(--bg)',
+              border: '1px solid var(--border)',
+              borderLeft: `3px solid ${toast.colour}`,
+              borderRadius: 6,
+              padding: '0.6rem 0.85rem 0.6rem 0.75rem',
+              boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+              display: 'flex', alignItems: 'flex-start', gap: '0.55rem',
+              animation: 'toast-in 0.2s ease',
+              width: 240,
+              cursor: isClickable ? 'pointer' : 'default',
+            }}
+          >
+            {toast.type && (
+              <span style={{
+                fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
+                fontWeight: 600, color: toast.colour,
+                background: `${toast.colour}18`,
+                border: `1px solid ${toast.colour}55`,
+                padding: '0.12rem 0.38rem', borderRadius: 2, flexShrink: 0,
+                marginTop: '0.1rem',
+              }}>
+                {toast.type}
+              </span>
+            )}
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
+              <span style={{ fontSize: '0.65rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600, color: toast.colour, lineHeight: 1 }}>
+                {heading}
+              </span>
+              {body && (
+                <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {body}
+                </span>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={e => { e.stopPropagation(); setToasts(prev => prev.filter(t => t.id !== toast.id)) }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.85rem', padding: 0, flexShrink: 0, lineHeight: 1, opacity: 0.6, marginTop: '0.05rem' }}
+              aria-label="Dismiss"
+            >×</button>
+          </div>
+        )
+      })}
     </>
   )
 }
