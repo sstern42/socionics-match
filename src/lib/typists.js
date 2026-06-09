@@ -91,7 +91,7 @@ export const TYPISTS = {
     outputTypes:     ['Voice session', 'Written report'],
     reportLength:    null,
     availability:    'active',
-    bookingReady:    false, // Stripe links pending — tiers shown but not yet bookable
+    bookingReady:    true,
     currency:        'USD',
     contact:         'uncle.sam@socion.app', // forwarding to: ustypologyservice@gmail.com
     paymentNote:     "Payment is taken by Stripe. After payment you'll be taken to a booking page to schedule your session with Uncle Sam.",
@@ -106,7 +106,7 @@ export const TYPISTS = {
         turnaround:     '60 min',
         turnaroundLabel:'Session duration: 60 min',
         description:    'A focused Q&A session to determine which of the 16 personality types best fits you. Thorough, standardised typing process — ideal if you mainly want to know your type.',
-        href:           '#', // Stripe link TBC
+        href:           'https://buy.stripe.com/5kQeVf9T5bMvbI9dLc6AM01',
         highlight:      false,
       },
       {
@@ -116,7 +116,7 @@ export const TYPISTS = {
         turnaround:     '90 min',
         turnaroundLabel:'Session duration: 90 min',
         description:    'Includes a personalised written report covering why you were typed a certain way, helpful reference links, famous and historical examples, romance style and compatibility, strengths and weaknesses, and self-development and career suggestions.',
-        href:           '#', // Stripe link TBC
+        href:           'https://buy.stripe.com/14AfZj9T59En5jLfTk6AM02',
         highlight:      true,
       },
       {
@@ -126,7 +126,7 @@ export const TYPISTS = {
         turnaround:     '120 min',
         turnaroundLabel:'Session duration: 120 min',
         description:    'An in-depth session covering both your core type and subtype. Includes the written report, extra time for questions and clarification, and a deeper breakdown of your type and the theory.',
-        href:           '#', // Stripe link TBC
+        href:           'https://buy.stripe.com/bJefZje9lg2LeUl6iK6AM03',
         highlight:      false,
       },
     ],
