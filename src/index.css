@@ -251,6 +251,33 @@ select.input-standalone { background: var(--card-bg); }
   30% { opacity: 1; transform: translateY(-3px); }
 }
 
+/* Messages sidebar — slim, theme-aware scrollbar */
+.messages-sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.messages-sidebar::-webkit-scrollbar {
+  width: 3px;
+}
+.messages-sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.messages-sidebar::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
+}
+.messages-sidebar::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-lt);
+}
+
+/* Match list item dividers — fainter than default border */
+.match-list-item {
+  border-bottom: 1px solid rgba(60,50,30,0.07) !important;
+}
+html.dark .match-list-item {
+  border-bottom: 1px solid rgba(220,200,160,0.07) !important;
+}
+
 /* Founding-member live counter — soft pulsing presence dot */
 @keyframes foundingPulse {
   0%   { transform: scale(1);   opacity: 0.4; }
