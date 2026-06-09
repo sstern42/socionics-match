@@ -63,7 +63,7 @@ export default function GifPicker({ onSelect, onClose }) {
 
   function handleSelect(gif) {
     // Use downsized for a balance of quality and size
-    const url = gif.images?.downsized?.url ?? gif.images?.fixed_height?.url
+    const url = gif.images?.fixed_width?.url ?? gif.images?.downsized?.url
     if (url) onSelect(url)
   }
 
