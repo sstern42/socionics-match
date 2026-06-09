@@ -54,9 +54,8 @@ export function useNotifications(userId) {
         event:  'INSERT',
         schema: 'public',
         table:  'notifications',
-        // filter: `user_id=eq.${userId}`,
       }, (payload) => {
-        console.log('realtime fired:', payload)
+        if (payload.new.user_id !== userId) return  // client-side filter
         setNotifications(prev => [payload.new, ...prev])
         setUnreadCount(c => c + 1)
       })
