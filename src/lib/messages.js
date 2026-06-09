@@ -67,25 +67,13 @@ export async function sendMessage({ matchId, senderId, content, replyToId = null
   return data
 }
 
-export async function toggleReaction(messageId, userId, emoji, isRemoving) {
-  if (isRemoving) {
-    const { error } = await supabase
-      .from('message_reactions')
-      .delete()
-      .eq('message_id', messageId)
-      .eq('user_id', userId)
-      .eq('emoji', emoji)
-    if (error) throw error
-  } else {
-    // upsert so duplicate clicks never throw
-    const { error } = await supabase
-      .from('message_reactions')
-      .upsert(
-        { message_id: messageId, user_id: userId, emoji },
-        { onConflict: 'message_id,user_id,emoji', ignoreDuplicates: true }
-      )
-    if (error) throw error
-  }
+export async function toggleReaction(messageId, _userId, emoji, _isRemoving) {
+  // SECURITY DEFINER RPC — bypasses RLS, handles toggle atomically server-side
+  const { error } = await supabase.rpc('toggle_message_reaction', {
+    p_message_id: messageId,
+    p_emoji: emoji,
+  })
+  if (error) throw error
 }
 
 export async function uploadMessageImage(file, matchId) {
