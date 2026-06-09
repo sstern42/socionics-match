@@ -51,8 +51,9 @@ function renderContent(text) {
   )
 }
 
+// ─── RoomMessage ─────────────────────────────────────────────────────────────
 function RoomMessage({
-  msg, isMine, currentUserId,
+  msg, isMine, currentUserId, isFounder,
   onReply, onEdit, onReport, onTypeClick, onReact, onImageClick, onScrollToMessage,
   editingId, editText, setEditText, onEditSave, onEditCancel,
   deleteConfirmId, setDeleteConfirmId, deleting, onDeleteConfirm,
@@ -81,6 +82,9 @@ function RoomMessage({
 
   const hasImage = !!msg.image_url && !isDeleted
   const hasText  = !!msg.content  && !isDeleted
+
+  // Founder badge: only on the current user's own messages when they are founder/mod
+  const showFounderBadge = isFounder && msg.sender?.id === currentUserId
 
   function startLongPress() {
     longPressTimer.current = setTimeout(() => {
@@ -120,6 +124,17 @@ function RoomMessage({
 
         {msg.sender?.verified_by && (
           <span title={`Verified by ${msg.sender.verified_by}`} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:11, height:11, borderRadius:'50%', background:'var(--accent)', color:'#fff', fontSize:'0.4rem', fontWeight:700, lineHeight:1 }}>✓</span>
+        )}
+
+        {/* ── FOUNDER badge — own messages only ── */}
+        {showFounderBadge && (
+          <span title="Founder" style={{
+            fontSize:'0.55rem', letterSpacing:'0.08em', textTransform:'uppercase',
+            fontWeight:700, color:'var(--accent)', border:'1px solid var(--accent-lt)',
+            borderRadius:2, padding:'0.08rem 0.35rem', lineHeight:1.4,
+          }}>
+            Founder
+          </span>
         )}
 
         <span style={{ fontSize:'0.68rem', color:'var(--muted)', marginLeft:'auto', flexShrink:0 }}>
@@ -208,8 +223,12 @@ function RoomMessage({
             {!isReadOnly && <button type="button" onPointerDown={e=>e.stopPropagation()} onClick={() => setShowPicker(p=>!p)} aria-label="React" style={{ ...iconBtnStyle, fontSize:'0.85rem', lineHeight:1 }}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 9.5s.75 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/><circle cx="5.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/></svg>
             </button>}
+
+            {/* Edit — own messages only */}
             {isMine && <button type="button" onClick={() => onEdit(msg.id, msg.content??'')} aria-label="Edit" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/></svg></button>}
-            {isMine && (
+
+            {/* ── Delete — own messages OR founder/mod on any message ── */}
+            {(isMine || isFounder) && (
               isDeleteConfirm ? (
                 <div style={{ display:'flex', gap:'0.25rem', alignItems:'center' }}>
                   <button type="button" onClick={() => onDeleteConfirm(msg.id)} disabled={deleting} style={{ background:'#c0392b', color:'#fff', border:'none', borderRadius:4, padding:'0.2rem 0.5rem', fontSize:'0.68rem', cursor:'pointer', opacity:deleting?0.6:1 }}>{deleting?'…':'Delete'}</button>
@@ -219,6 +238,8 @@ function RoomMessage({
                 <button type="button" onClick={() => setDeleteConfirmId(msg.id)} aria-label="Delete" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/><line x1="6" y1="6" x2="6" y2="10"/><line x1="8" y1="6" x2="8" y2="10"/></svg></button>
               )
             )}
+
+            {/* Report — other people's messages only */}
             {!isMine && <button type="button" onClick={() => onReport(msg.id)} aria-label="Report" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2h10l-2 5 2 5H2V2z"/></svg></button>}
           </div>
         )}
@@ -251,6 +272,7 @@ function RoomMessage({
   )
 }
 
+// ─── ReportModal ──────────────────────────────────────────────────────────────
 function ReportModal({ onSubmit, onClose, submitting }) {
   const [reason, setReason] = useState('')
   return (
@@ -268,11 +290,11 @@ function ReportModal({ onSubmit, onClose, submitting }) {
   )
 }
 
+// ─── Rooms (main page) ────────────────────────────────────────────────────────
 export default function Rooms() {
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
-  // PATCH: viewingRoomId override for quadra switcher
   const [viewingRoomId, setViewingRoomId]     = useState(null)
   const [viewingQuadra, setViewingQuadra]     = useState(null)
 
@@ -327,7 +349,12 @@ export default function Rooms() {
   const quadra       = viewingQuadra ?? (profile?.type ? getQuadra(profile.type) : null)
   const quadraColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
   const isAnonymous  = profile?.profile_data?.anonymous ?? false
-  const isReadOnly   = !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
+
+  // ── Founder / moderator check ──────────────────────────────────────────────
+  const isFounder  = profile?.profile_data?.role === 'founder' || profile?.profile_data?.role === 'moderator'
+
+  // Founders can write to any quadra room; everyone else is read-only when viewing another quadra
+  const isReadOnly = !isFounder && !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
 
   useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading])
 
@@ -501,6 +528,7 @@ export default function Rooms() {
         <div key={msg.id} id={`room-msg-${msg.id}`} style={{ borderRadius:6, margin:'0 -0.4rem', padding:'0 0.4rem', transition:'background 0.25s', background:isHighlighted?'rgba(154,111,56,0.13)':'transparent' }}>
           <RoomMessage
             isReadOnly={isReadOnly}
+            isFounder={isFounder}
             msg={msg} isMine={msg.sender_id===profile?.id} currentUserId={profile?.id} isMobile={isMobile}
             onReply={setReplyTo} onEdit={handleStartEdit} onReport={id=>setReportTarget(id)} onReact={toggleReaction}
             onTypeClick={url=>{ window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
@@ -548,7 +576,7 @@ export default function Rooms() {
                   {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>· {memberCount} {memberCount===1?'member':'members'}</span>}
                 </div>
                 <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>
-                  {isReadOnly ? `Viewing as ${profile?.type} · read only` : `${profile?.type} — your quadra room`}
+                  {isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
                 </p>
                 {/* Quadra switcher */}
                 <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
@@ -710,7 +738,7 @@ export default function Rooms() {
                           </div>
                         )}
 
-                        {/* Text input row — wrapped for GIF picker positioning */}
+                        {/* Text input row */}
                         <div style={{ position:'relative' }}>
                           {showGifPicker && (
                             <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
