@@ -7,12 +7,37 @@ import { supabase } from './supabase'
  */
 export async function createNotification({ userId, type, title, body, actionUrl }) {
   if (!userId) return
+
+  if (type === 'new_message' && actionUrl) {
+    const { data: existing } = await supabase
+      .from('notifications')
+      .select('id, body')
+      .eq('user_id', userId)
+      .eq('type', type)
+      .eq('action_url', actionUrl)
+      .is('read_at', null)
+      .maybeSingle()
+
+    if (existing) {
+      const countMatch = existing.body?.match(/\(\+(\d+)\)$/)
+      const prev = countMatch ? parseInt(countMatch[1]) : 1
+      const newBody = body
+        ? `${body.replace(/\s*\(\+\d+\)$/, '')} (+${prev + 1})`
+        : `+${prev + 1} messages`
+      await supabase
+        .from('notifications')
+        .update({ title, body: newBody, read_at: null, created_at: new Date().toISOString() })
+        .eq('id', existing.id)
+      return
+    }
+  }
+
   const { error } = await supabase.from('notifications').insert({
     user_id:    userId,
     type,
     title,
-    body:       body       ?? null,
-    action_url: actionUrl  ?? null,
+    body:       body      ?? null,
+    action_url: actionUrl ?? null,
   })
   if (error) console.warn('createNotification:', error.message)
 }
