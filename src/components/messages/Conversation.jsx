@@ -111,20 +111,24 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   }
 
   async function handleToggleReaction(msgId, emoji) {
-    const snapshot = messages.find(m => m.id === msgId)?.reactions ?? []
-    // Optimistic update — this IS the final state; no reconciliation needed
+    const currentReactions = messages.find(m => m.id === msgId)?.reactions ?? []
+    const existing = currentReactions.find(r => r.user_id === currentUserId && r.emoji === emoji)
+    const isRemoving = !!existing
+    const snapshot = currentReactions
+
+    // Optimistic update
     setMessages(prev => prev.map(m => {
       if (m.id !== msgId) return m
       const reactions = m.reactions ?? []
-      const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === emoji)
-      if (existing) {
+      if (isRemoving) {
         return { ...m, reactions: reactions.filter(r => r !== existing) }
       } else {
         return { ...m, reactions: [...reactions, { id: `local-${Date.now()}`, user_id: currentUserId, emoji }] }
       }
     }))
+
     try {
-      await toggleReaction(msgId, currentUserId, emoji)
+      await toggleReaction(msgId, currentUserId, emoji, isRemoving)
       window.umami?.track('reaction-toggled', { emoji })
     } catch (err) {
       console.error('Reaction failed:', err)
@@ -277,7 +281,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     const wasInputFocused = document.activeElement === inputRef.current
     bottomRef.current?.scrollIntoView({ behavior: 'auto' })
     if (wasInputFocused) inputRef.current?.focus()
-  }, [messages])
+  }, [messages.length])
 
   useEffect(() => { if (!sending) inputRef.current?.focus() }, [sending])
 
