@@ -43,10 +43,11 @@ export default function MatchList({ matches, selectedId, onSelect, currentUserId
           <button
             key={match.id}
             onClick={() => onSelect(match)}
+            className="match-list-item"
             style={{
               display: 'flex', flexDirection: 'row', gap: '0.75rem', alignItems: 'flex-start',
               padding: '0.9rem 1.25rem',
-              borderBottom: '1px solid var(--border)',
+              // borderBottom line removed — handled by .match-list-item
               background: isSelected ? 'rgba(154,111,56,0.07)' : unread ? 'rgba(154,111,56,0.03)' : 'transparent',
               borderLeft: isSelected ? '2px solid var(--accent)' : unread ? '2px solid var(--accent-lt)' : '2px solid transparent',
               textAlign: 'left', cursor: 'pointer', transition: 'background 0.15s',
