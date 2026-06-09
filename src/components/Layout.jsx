@@ -359,6 +359,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : null}
           </Link>
 
+            {session && profile && (
+              <div className="nav-burger-bell">
+                <NotificationBell userId={profile.id} />
+              </div>
+            )}
+
           {/* Desktop nav */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
             {session && profile ? (
