@@ -67,27 +67,25 @@ export async function sendMessage({ matchId, senderId, content, replyToId = null
   return data
 }
 
-export async function toggleReaction(messageId, userId, emoji) {
-  // Try INSERT first — avoids SELECT (which can fail due to RLS)
-  const { error: insertError } = await supabase
-    .from('message_reactions')
-    .insert({ message_id: messageId, user_id: userId, emoji })
-
-  if (!insertError) return 'added'
-
-  // Unique constraint violation (23505) = reaction already exists, so delete it
-  if (insertError.code === '23505') {
-    const { error: deleteError } = await supabase
+export async function toggleReaction(messageId, userId, emoji, isRemoving) {
+  if (isRemoving) {
+    const { error } = await supabase
       .from('message_reactions')
       .delete()
       .eq('message_id', messageId)
       .eq('user_id', userId)
       .eq('emoji', emoji)
-    if (deleteError) throw deleteError
-    return 'removed'
+    if (error) throw error
+  } else {
+    // upsert so duplicate clicks never throw
+    const { error } = await supabase
+      .from('message_reactions')
+      .upsert(
+        { message_id: messageId, user_id: userId, emoji },
+        { onConflict: 'message_id,user_id,emoji', ignoreDuplicates: true }
+      )
+    if (error) throw error
   }
-
-  throw insertError
 }
 
 export async function uploadMessageImage(file, matchId) {
