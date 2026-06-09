@@ -836,28 +836,33 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
                   onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
                 >
-                  {/* Media buttons */}
+                  {/* Media buttons — image first, then GIF, matching Rooms order */}
                   <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
-                    <button
-                      type="button"
-                      onClick={() => setShowGifPicker(p => !p)}
-                      title="Send GIF"
-                      style={{ background:'none',border:`1px solid ${showGifPicker?'var(--accent)':'var(--border)'}`,borderRadius:3,cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.06em',padding:'0.25rem 0.35rem',lineHeight:1.3 }}
-                    >
-                      GIF
-                    </button>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage || sending}
                       title="Send image"
-                      style={{ background:'none',border:'none',cursor:'pointer',color: pendingImage ? 'var(--accent)' : 'var(--muted)',padding:'0.25rem 0.2rem',lineHeight:1,opacity:(uploadingImage||sending)?0.5:1,display:'flex',alignItems:'center',justifyContent:'center' }}
+                      style={{ background:'none',border:'none',cursor:'pointer',color:pendingImage?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:0,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',display:'flex',alignItems:'center',justifyContent:'center' }}
+                      onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
+                      onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}
                     >
                       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="1" y="3" width="13" height="10" rx="1.5"/>
                         <circle cx="5.5" cy="7" r="1.3"/>
                         <polyline points="1,12 5,8 7.5,10.5 10,8 14,12"/>
                       </svg>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowGifPicker(p => !p)}
+                      disabled={uploadingImage || sending}
+                      title="Send GIF"
+                      style={{ background:'none',border:'none',cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:1,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em' }}
+                      onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
+                      onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}
+                    >
+                      GIF
                     </button>
                     <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleImageSelect} />
                   </div>
