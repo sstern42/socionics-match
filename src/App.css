@@ -20,3 +20,8 @@
 .network-fullscreen-btn {
   display: flex;
 }
+
+.nav-burger-bell { display: none; }
+@media (max-width: 600px) {
+  .nav-burger-bell { display: flex; align-items: center; margin-left: auto; margin-right: 0.5rem; }
+}
