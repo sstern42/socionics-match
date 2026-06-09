@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -39,7 +40,7 @@ export default function Updates() {
   const [posting, setPosting]     = useState(false)
   const [postError, setPostError] = useState(null)
 
-  // Mark as read on mount — clears the nav dot
+  // Mark as read on mount
   useEffect(() => {
     localStorage.setItem('socion_updates_last_visited', new Date().toISOString())
     window.dispatchEvent(new Event('socion-updates-visited'))
@@ -48,11 +49,9 @@ export default function Updates() {
   useEffect(() => {
     loadPosts()
 
-    // Real-time: new posts — deduplicated against optimistic inserts
     const postsChannel = supabase
       .channel('founder-posts-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_posts' }, async (payload) => {
-        // Skip if already added optimistically
         setPosts(prev => {
           if (prev.some(p => p.id === payload.new.id)) return prev
           return prev
@@ -69,7 +68,6 @@ export default function Updates() {
       })
       .subscribe()
 
-    // Real-time: reactions
     const reactionsChannel = supabase
       .channel('founder-post-reactions-feed')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'founder_post_reactions' }, ({ new: r }) => {
@@ -152,7 +150,6 @@ export default function Updates() {
     const hasReacted = reactions.some(r => r.user_id === profile.id && r.emoji === emoji)
     const snapshot = reactions
 
-    // Optimistic update
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p
       const updated = hasReacted
@@ -177,7 +174,6 @@ export default function Updates() {
       }
       window.umami?.track('founder-post-reaction', { emoji, action: hasReacted ? 'remove' : 'add' })
     } catch {
-      // Rollback on failure
       setPosts(prev => prev.map(p => p.id === postId ? { ...p, reactions: snapshot } : p))
     }
   }
@@ -189,11 +185,14 @@ export default function Updates() {
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
           Updates from <em>Spencer</em>
         </h1>
-        <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '2.5rem' }}>
+        <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '0.75rem' }}>
           Milestones, data, feature launches, and what's happening behind the scenes.
         </p>
+        <p style={{ fontSize: '0.82rem', marginBottom: '2.5rem' }}>
+          <Link to="/changelog" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Full changelog →</Link>
+        </p>
 
-        {/* ── Founder compose box ──────────────────────────────────────── */}
+        {/* Founder compose box */}
         {isFounder && (
           <div style={{
             border: '1px solid var(--accent-lt)', borderRadius: 8,
@@ -242,7 +241,7 @@ export default function Updates() {
           </div>
         )}
 
-        {/* ── Feed ─────────────────────────────────────────────────────── */}
+        {/* Feed */}
         {loading ? (
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', padding: '3rem 0' }}>Loading…</p>
         ) : error ? (
@@ -272,7 +271,6 @@ export default function Updates() {
                     borderBottom: i < posts.length - 1 ? '1px solid var(--border)' : 'none',
                   }}
                 >
-                  {/* Header row */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.75rem' }}>
                     <span style={{
                       fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -286,79 +284,32 @@ export default function Updates() {
                       {timeAgo(post.created_at)}
                     </span>
 
-                    {/* 2-click delete — founder only */}
                     {isFounder && (
                       deleteConfirmId === post.id ? (
                         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(post.id)}
-                            style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.15rem 0.5rem', fontSize: '0.68rem', color: '#fff', cursor: 'pointer' }}
-                          >
-                            Delete
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setDeleteConfirmId(null)}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem', padding: '0.15rem' }}
-                          >
-                            Cancel
-                          </button>
+                          <button type="button" onClick={() => handleDelete(post.id)} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.15rem 0.5rem', fontSize: '0.68rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
+                          <button type="button" onClick={() => setDeleteConfirmId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem', padding: '0.15rem' }}>Cancel</button>
                         </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => setDeleteConfirmId(post.id)}
-                          aria-label="Delete post"
-                          style={{
-                            marginLeft: 'auto', background: 'none', border: 'none',
-                            cursor: 'pointer', color: 'var(--muted)',
-                            fontSize: '1rem', padding: '0.1rem 0.35rem',
-                            lineHeight: 1, opacity: 0.4, transition: 'opacity 0.15s',
-                          }}
-                          onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-                          onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}
-                        >
+                        <button type="button" onClick={() => setDeleteConfirmId(post.id)} aria-label="Delete post" style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', padding: '0.1rem 0.35rem', lineHeight: 1, opacity: 0.4, transition: 'opacity 0.15s' }} onMouseEnter={e => e.currentTarget.style.opacity = '1'} onMouseLeave={e => e.currentTarget.style.opacity = '0.4'}>
                           ×
                         </button>
                       )
                     )}
                   </div>
 
-                  {/* Content */}
-                  <p style={{
-                    fontSize: '0.95rem', color: 'var(--text)',
-                    lineHeight: 1.75, fontWeight: 300,
-                    whiteSpace: 'pre-wrap', marginBottom: '1rem',
-                  }}>
+                  <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.75, fontWeight: 300, whiteSpace: 'pre-wrap', marginBottom: '1rem' }}>
                     {post.content}
                   </p>
 
-                  {/* Reaction strip */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                     {REACTIONS.map(emoji => {
                       const users = groups[emoji] ?? []
                       const iReacted = users.includes(profile?.id)
                       return (
-                        <button
-                          key={emoji}
-                          type="button"
-                          onClick={() => toggleReaction(post.id, emoji)}
-                          style={{
-                            display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-                            background: iReacted ? 'rgba(154,111,56,0.1)' : 'var(--surface)',
-                            border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'var(--border)'}`,
-                            borderRadius: 20, padding: '0.2rem 0.55rem',
-                            cursor: 'pointer', fontSize: '0.88rem', lineHeight: 1.5,
-                            transition: 'all 0.15s',
-                          }}
-                        >
+                        <button key={emoji} type="button" onClick={() => toggleReaction(post.id, emoji)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', background: iReacted ? 'rgba(154,111,56,0.1)' : 'var(--surface)', border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'var(--border)'}`, borderRadius: 20, padding: '0.2rem 0.55rem', cursor: 'pointer', fontSize: '0.88rem', lineHeight: 1.5, transition: 'all 0.15s' }}>
                           <span>{emoji}</span>
-                          {users.length > 0 && (
-                            <span style={{ fontSize: '0.7rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>
-                              {users.length}
-                            </span>
-                          )}
+                          {users.length > 0 && <span style={{ fontSize: '0.7rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{users.length}</span>}
                         </button>
                       )
                     })}
