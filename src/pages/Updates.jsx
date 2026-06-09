@@ -3,7 +3,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 
-const REACTIONS = ['👍', '❤️', '👀', '🔥']
+const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
 const POST_TYPE_META = {
   milestone: { label: 'Milestone', colour: '#2ecc71'      },
