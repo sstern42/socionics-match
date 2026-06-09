@@ -13,7 +13,7 @@ import GifPicker from '../components/GifPicker'
 
 const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5' }
 const ROOM_LAST_VISITED_KEY = 'socion_room_last_visited'
-const REACTIONS = ['👍', '❤️', '😂', '🔥', '👀', '✓']
+const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
 export function markRoomVisited() { localStorage.setItem(ROOM_LAST_VISITED_KEY, new Date().toISOString()) }
 export function getRoomLastVisited() { return localStorage.getItem(ROOM_LAST_VISITED_KEY) }
