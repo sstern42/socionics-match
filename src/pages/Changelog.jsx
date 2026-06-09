@@ -2,6 +2,17 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
      {
+       date: '9 June 2026',
+       label: 'Update',
+       items: [
+         'Direct messages — react to any message with an emoji. Tap the smiley icon on hover or long-press on mobile to open the picker. Reactions display as pills below the bubble with a count',
+         'Direct messages — send GIFs via the GIF button in the message bar. Powered by Giphy',
+         'Direct messages — share images with an optional caption. Select a photo, type a caption if you want one, then hit Send',
+         'Direct messages — tap any image or GIF to view it full size',
+         'Direct messages — tap a reply quote inside a message to scroll back to the original',
+       ],
+     },
+     {
       date: '8 June 2026',
       label: 'Update',
       items: [
