@@ -48,20 +48,24 @@ export function useNotifications(userId) {
   // Realtime — picks up rows inserted by createNotification in Layout
   useEffect(() => {
     if (!userId) return
-    channelRef.current = supabase
+  
+    const channel = supabase
       .channel(`notifications:${userId}`)
       .on('postgres_changes', {
         event:  'INSERT',
         schema: 'public',
         table:  'notifications',
       }, (payload) => {
-        if (payload.new.user_id !== userId) return  // client-side filter
+        if (payload.new.user_id !== userId) return
         setNotifications(prev => [payload.new, ...prev])
         setUnreadCount(c => c + 1)
       })
       .subscribe()
+  
+    channelRef.current = channel
+  
     return () => {
-      channelRef.current?.unsubscribe()
+      channel.unsubscribe()
       channelRef.current = null
     }
   }, [userId])
