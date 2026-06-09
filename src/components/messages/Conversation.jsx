@@ -112,29 +112,22 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
   async function handleToggleReaction(msgId, emoji) {
     const snapshot = messages.find(m => m.id === msgId)?.reactions ?? []
-    // Optimistic update
+    // Optimistic update — this IS the final state; no reconciliation needed
     setMessages(prev => prev.map(m => {
       if (m.id !== msgId) return m
       const reactions = m.reactions ?? []
       const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === emoji)
       if (existing) {
-        return { ...m, reactions: reactions.filter(r => r.id !== existing.id) }
+        return { ...m, reactions: reactions.filter(r => r !== existing) }
       } else {
-        return { ...m, reactions: [...reactions, { id: `temp-${Date.now()}`, message_id: msgId, user_id: currentUserId, emoji }] }
+        return { ...m, reactions: [...reactions, { id: `local-${Date.now()}`, user_id: currentUserId, emoji }] }
       }
     }))
     try {
-      const result = await toggleReaction(msgId, currentUserId, emoji)
-      if (result.action === 'added') {
-        setMessages(prev => prev.map(m => {
-          if (m.id !== msgId) return m
-          return { ...m, reactions: (m.reactions ?? []).map(r => r.id?.startsWith?.('temp-') && r.emoji === emoji ? result.reaction : r) }
-        }))
-      }
+      await toggleReaction(msgId, currentUserId, emoji)
       window.umami?.track('reaction-toggled', { emoji })
     } catch (err) {
       console.error('Reaction failed:', err)
-      // Revert just this message — don't refetch everything
       setMessages(prev => prev.map(m => m.id !== msgId ? m : { ...m, reactions: snapshot }))
     }
   }
@@ -840,12 +833,12 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
                 >
                   {/* Media buttons */}
-                  <div style={{ display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'0.5rem 0.25rem 0.65rem 0.75rem',gap:'0.35rem',flexShrink:0 }}>
+                  <div style={{ display:'flex',flexDirection:'row',alignItems:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
                     <button
                       type="button"
                       onClick={() => setShowGifPicker(p => !p)}
                       title="Send GIF"
-                      style={{ background:'none',border:`1px solid ${showGifPicker?'var(--accent)':'var(--border)'}`,borderRadius:3,cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.06em',padding:'0.18rem 0.3rem',lineHeight:1.3 }}
+                      style={{ background:'none',border:`1px solid ${showGifPicker?'var(--accent)':'var(--border)'}`,borderRadius:3,cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.06em',padding:'0.25rem 0.35rem',lineHeight:1.3 }}
                     >
                       GIF
                     </button>
@@ -854,7 +847,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingImage || sending}
                       title="Send image"
-                      style={{ background:'none',border:'none',cursor:'pointer',color: pendingImage ? 'var(--accent)' : 'var(--muted)',padding:'0.15rem',lineHeight:1,opacity:(uploadingImage||sending)?0.5:1,display:'flex',alignItems:'center',justifyContent:'center' }}
+                      style={{ background:'none',border:'none',cursor:'pointer',color: pendingImage ? 'var(--accent)' : 'var(--muted)',padding:'0.25rem 0.2rem',lineHeight:1,opacity:(uploadingImage||sending)?0.5:1,display:'flex',alignItems:'center',justifyContent:'center' }}
                     >
                       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="1" y="3" width="13" height="10" rx="1.5"/>
