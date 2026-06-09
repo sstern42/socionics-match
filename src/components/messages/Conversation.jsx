@@ -591,7 +591,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     clearTimeout(typingTimer.current)
                     typingTimer.current = setTimeout(() => { presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:false } }) }, 2000)
                   }}
-                  onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend()} }}
+                  onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
                   style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 1.25rem',maxHeight:'8rem' }}
                 />
                 <button className="btn-primary" onClick={handleSend} disabled={!text.trim()||sending} style={{ borderRadius:0,alignSelf:'stretch',opacity:(!text.trim()||sending)?0.5:1 }}>Send</button>
