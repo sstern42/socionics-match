@@ -837,7 +837,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
                 >
                   {/* Media buttons */}
-                  <div style={{ display:'flex',flexDirection:'row',alignItems:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
+                  <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
                     <button
                       type="button"
                       onClick={() => setShowGifPicker(p => !p)}
