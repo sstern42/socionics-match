@@ -7,6 +7,8 @@ import { signOut } from '../lib/auth'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import IOSInstallBanner from './IOSInstallBanner'
 import AnnouncementBanner from './AnnouncementBanner'
+import NotificationBell from './NotificationBell'
+import { createNotification } from '../lib/notifications'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
 
@@ -263,6 +265,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
         const preview = msg.content?.length > 45 ? msg.content.slice(0, 45) + '…' : msg.content
         pushToastRef.current({ id: nextToastId(), kind: 'message', name, type, colour, preview, matchId: msg.match_id })
+        createNotification({
+          userId: profileIdRef.current,
+          type: 'new_message',
+          title: name ? `Message from ${name}` : 'New message',
+          body: preview,
+          actionUrl: `/messages?match=${msg.match_id}`,
+        })
+
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -285,6 +295,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const quadra = TYPE_QUADRA[type]
         const colour = quadra ? QUADRA_COLOURS[quadra] : '#9a6f38'
         pushToastRef.current({ id: nextToastId(), kind: 'connection', name, type, colour, matchId: match.id })
+        createNotification({
+          userId: profileIdRef.current,
+          type: 'new_connection',
+          title: name ? `${name} connected with you` : 'New connection',
+          body: type ?? null,
+          actionUrl: `/messages?match=${match.id}`,
+        })
+
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -306,6 +324,13 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             kind: 'founder_post',
             preview,
             colour: '#9a6f38',
+          })
+          createNotification({
+            userId: profileIdRef.current,
+            type: 'founder_post',
+            title: 'New update from Spencer',
+            body: preview,
+            actionUrl: '/updates',
           })
         }
       })
@@ -361,6 +386,9 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
                 {/* Divider */}
                 <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+
+                {/* Notification bell */}
+                <NotificationBell userId={profile.id} />
 
                 {/* Icon buttons — updates, network, help */}
                 <Link to="/updates" title="Founder updates" aria-label="Founder updates"
