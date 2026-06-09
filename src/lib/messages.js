@@ -1,6 +1,13 @@
 import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
 
+const MSG_SELECT = `
+  id, sender_id, content, created_at, edited, read_at, reply_to_id,
+  attachment_url, attachment_type,
+  reply_to:reply_to_id(id, content, sender_id, attachment_url, attachment_type),
+  reactions:message_reactions(id, emoji, user_id)
+`
+
 export async function getMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
@@ -35,22 +42,64 @@ export async function getMatches(userId) {
 export async function getMessages(matchId) {
   const { data, error } = await supabase
     .from('messages')
-    .select('id, sender_id, content, created_at, edited, read_at, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
+    .select(MSG_SELECT)
     .eq('match_id', matchId)
     .order('created_at', { ascending: true })
   if (error) throw error
   return data ?? []
 }
 
-export async function sendMessage({ matchId, senderId, content, replyToId = null }) {
+export async function sendMessage({ matchId, senderId, content, replyToId = null, attachmentUrl = null, attachmentType = null }) {
   const { data, error } = await supabase
     .from('messages')
-    .insert({ match_id: matchId, sender_id: senderId, content, reply_to_id: replyToId })
-    .select('id, sender_id, content, created_at, edited, read_at, reply_to_id, reply_to:reply_to_id(id, content, sender_id)')
+    .insert({
+      match_id: matchId,
+      sender_id: senderId,
+      content,
+      reply_to_id: replyToId,
+      attachment_url: attachmentUrl,
+      attachment_type: attachmentType,
+    })
+    .select(MSG_SELECT)
     .single()
   if (error) throw error
   window.umami?.track('message-sent')
   return data
+}
+
+export async function toggleReaction(messageId, userId, emoji) {
+  const { data: existing } = await supabase
+    .from('message_reactions')
+    .select('id')
+    .eq('message_id', messageId)
+    .eq('user_id', userId)
+    .eq('emoji', emoji)
+    .maybeSingle()
+
+  if (existing) {
+    const { error } = await supabase.from('message_reactions').delete().eq('id', existing.id)
+    if (error) throw error
+    return { action: 'removed', reactionId: existing.id }
+  } else {
+    const { data, error } = await supabase
+      .from('message_reactions')
+      .insert({ message_id: messageId, user_id: userId, emoji })
+      .select('id, emoji, user_id')
+      .single()
+    if (error) throw error
+    return { action: 'added', reaction: data }
+  }
+}
+
+export async function uploadMessageImage(file, matchId) {
+  const ext = file.name.split('.').pop().toLowerCase()
+  const path = `${matchId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+  const { error } = await supabase.storage
+    .from('message-attachments')
+    .upload(path, file, { contentType: file.type })
+  if (error) throw error
+  const { data } = supabase.storage.from('message-attachments').getPublicUrl(path)
+  return data.publicUrl
 }
 
 export async function markRead(matchId) {

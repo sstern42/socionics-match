@@ -2,14 +2,18 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { getCompatibilityBreakdown } from '../../data/compatibility'
-import { getMessages, sendMessage, subscribeToMessages, markRead } from '../../lib/messages'
+import { getMessages, sendMessage, subscribeToMessages, markRead, toggleReaction, uploadMessageImage } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
 import { unmatch } from '../../lib/unmatch'
 import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
 import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabase'
+import GifPicker from '../GifPicker'
+
+const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
 function renderContent(text) {
+  if (!text) return null
   const urlRegex = /(https?:\/\/[^\s]+)/g
   const parts = text.split(urlRegex)
   return parts.map((part, i) =>
@@ -66,7 +70,18 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [saving, setSaving] = useState(false)
   const [otherTyping, setOtherTyping] = useState(false)
   const [breakdownOpen, setBreakdownOpen] = useState(false)
+  const [showGifPicker, setShowGifPicker] = useState(false)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [reactionPickerMsgId, setReactionPickerMsgId] = useState(null)
+
   const longPressTimer = useRef(null)
+  const typingTimer = useRef(null)
+  const presenceChannel = useRef(null)
+  const tabId = useRef(Math.random().toString(36).slice(2))
+  const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+  const menuRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   async function editMessage(msgId) {
     if (!editText.trim()) return
@@ -93,12 +108,77 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     finally { setDeleting(false) }
   }
 
-  const typingTimer = useRef(null)
-  const presenceChannel = useRef(null)
-  const tabId = useRef(Math.random().toString(36).slice(2))
-  const bottomRef = useRef(null)
-  const inputRef = useRef(null)
-  const menuRef = useRef(null)
+  async function handleToggleReaction(msgId, emoji) {
+    // Optimistic update
+    setMessages(prev => prev.map(m => {
+      if (m.id !== msgId) return m
+      const reactions = m.reactions ?? []
+      const existing = reactions.find(r => r.user_id === currentUserId && r.emoji === emoji)
+      if (existing) {
+        return { ...m, reactions: reactions.filter(r => r.id !== existing.id) }
+      } else {
+        return { ...m, reactions: [...reactions, { id: `temp-${Date.now()}`, message_id: msgId, user_id: currentUserId, emoji }] }
+      }
+    }))
+    try {
+      const result = await toggleReaction(msgId, currentUserId, emoji)
+      if (result.action === 'added') {
+        setMessages(prev => prev.map(m => {
+          if (m.id !== msgId) return m
+          return { ...m, reactions: (m.reactions ?? []).map(r => r.id?.startsWith?.('temp-') && r.emoji === emoji ? result.reaction : r) }
+        }))
+      }
+      window.umami?.track('reaction-toggled', { emoji })
+    } catch (err) {
+      console.error('Reaction failed:', err)
+      getMessages(match.id).then(setMessages).catch(() => {})
+    }
+  }
+
+  async function handleGifSelect(gif) {
+    const url = gif.images?.downsized?.url ?? gif.images?.original?.url ?? gif.images?.fixed_width?.url
+    setShowGifPicker(false)
+    if (!url) return
+    setSending(true)
+    const replyToId = replyTo?.id ?? null
+    setReplyTo(null)
+    clearTimeout(typingTimer.current)
+    presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
+    try {
+      const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: '', replyToId, attachmentUrl: url, attachmentType: 'gif' })
+      setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
+      window.umami?.track('gif-sent')
+    } finally { setSending(false) }
+  }
+
+  async function handleImageUpload(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const savedReplyTo = replyTo
+    setUploadingImage(true)
+    setReplyTo(null)
+    try {
+      const url = await uploadMessageImage(file, match.id)
+      const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: '', replyToId: savedReplyTo?.id ?? null, attachmentUrl: url, attachmentType: 'image' })
+      setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
+      window.umami?.track('image-sent')
+    } catch (err) {
+      console.error('Image upload failed:', err)
+      setReplyTo(savedReplyTo)
+    } finally {
+      setUploadingImage(false)
+      if (e.target) e.target.value = ''
+    }
+  }
+
+  function scrollToMessage(msgId) {
+    const el = document.getElementById(`msg-${msgId}`)
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    el.style.transition = 'background 0.15s'
+    el.style.background = 'rgba(154,111,56,0.1)'
+    setTimeout(() => { el.style.background = '' }, 900)
+  }
 
   const relInfo = RELATIONS[match.displayRelationType ?? match.relation_type]
   const isOtherAnonymous = match.other.profile_data?.anonymous ?? false
@@ -147,11 +227,12 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         subtractUnread(unreadInChat)
       }
     })
-    const channel = subscribeToMessages(
+
+    const msgChannel = subscribeToMessages(
       matchId,
       newMsg => {
         if (!cancelled) {
-          setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+          setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, { ...newMsg, reactions: [] }])
           markMatchRead(matchId)
           if (newMsg.sender_id !== currentUserId) markRead(matchId)
         }
@@ -160,15 +241,41 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         if (!cancelled) setMessages(prev => prev.map(m => m.id === updatedMsg.id ? { ...m, read_at: updatedMsg.read_at } : m))
       }
     )
+
+    // Reactions real-time — receive other users' reactions
+    const reactionsChannel = supabase
+      .channel(`reactions:${matchId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
+        if (!cancelled && payload.new.user_id !== currentUserId) {
+          setMessages(prev => prev.map(m => {
+            if (m.id !== payload.new.message_id) return m
+            const reactions = m.reactions ?? []
+            if (reactions.find(r => r.id === payload.new.id)) return m
+            return { ...m, reactions: [...reactions, payload.new] }
+          }))
+        }
+      })
+      .subscribe()
+
     presenceChannel.current = supabase.channel(`typing:${matchId}`)
       .on('broadcast', { event: 'typing' }, ({ payload }) => {
         if (payload.tab_id !== tabId.current) setOtherTyping(payload.typing === true)
       })
       .subscribe()
-    return () => { cancelled = true; channel.unsubscribe(); presenceChannel.current?.unsubscribe() }
+
+    return () => {
+      cancelled = true
+      msgChannel.unsubscribe()
+      reactionsChannel.unsubscribe()
+      presenceChannel.current?.unsubscribe()
+    }
   }, [match.id])
 
-  useEffect(() => { setBreakdownOpen(false) }, [match.id])
+  useEffect(() => {
+    setBreakdownOpen(false)
+    setShowGifPicker(false)
+    setReactionPickerMsgId(null)
+  }, [match.id])
 
   useEffect(() => {
     const wasInputFocused = document.activeElement === inputRef.current
@@ -458,7 +565,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       )}
 
       {/* Messages list */}
-      <div style={{ flex:1,overflowY:'auto',padding:'1.25rem 1.5rem',display:'flex',flexDirection:'column',gap:'0.75rem',background:'var(--bg)' }}>
+      <div
+        style={{ flex:1,overflowY:'auto',padding:'1.25rem 1.5rem',display:'flex',flexDirection:'column',gap:'0.75rem',background:'var(--bg)' }}
+        onScroll={() => setReactionPickerMsgId(null)}
+      >
         {loading ? (
           <p style={{ color:'var(--muted)',fontSize:'0.85rem',textAlign:'center',marginTop:'2rem' }}>Loading…</p>
         ) : messages.length === 0 ? (
@@ -494,25 +604,61 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             const quotedMsg = msg.reply_to
             const showReplyBtn = hoveredMsgId === msg.id && !activeBlock
 
-            function startLongPress(msg) {
-              longPressTimer.current = setTimeout(() => { setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id }); setHoveredMsgId(null) }, 500)
+            // Reaction groups
+            const reactionGroups = {}
+            for (const r of (msg.reactions ?? [])) {
+              reactionGroups[r.emoji] = reactionGroups[r.emoji] || { count: 0, mine: false }
+              reactionGroups[r.emoji].count++
+              if (r.user_id === currentUserId) reactionGroups[r.emoji].mine = true
+            }
+            const reactionEntries = Object.entries(reactionGroups)
+
+            function startLongPress(m) {
+              longPressTimer.current = setTimeout(() => { setReplyTo({ id:m.id,content:m.content,sender_id:m.sender_id }); setHoveredMsgId(null) }, 500)
             }
             function cancelLongPress() { clearTimeout(longPressTimer.current) }
 
             items.push(
-              <div key={msg.id} style={{ alignSelf:isMine?'flex-end':'flex-start',maxWidth:'70%',width:'fit-content',display:'flex',flexDirection:'column',gap:'0.2rem' }} onMouseEnter={() => !activeBlock && setHoveredMsgId(msg.id)} onMouseLeave={() => setHoveredMsgId(null)}>
+              <div
+                key={msg.id}
+                id={`msg-${msg.id}`}
+                style={{ alignSelf:isMine?'flex-end':'flex-start',maxWidth:'70%',width:'fit-content',display:'flex',flexDirection:'column',gap:'0.2rem',borderRadius:6,transition:'background 0.4s' }}
+                onMouseEnter={() => !activeBlock && setHoveredMsgId(msg.id)}
+                onMouseLeave={() => { setHoveredMsgId(null) }}
+              >
                 <div style={{ display:'flex',alignItems:'center',gap:'0.4rem',flexDirection:isMine?'row-reverse':'row' }}>
+                  {/* Bubble */}
                   <div
-                    onClick={() => !activeBlock && setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })}
+                    onClick={() => !activeBlock && !editingId && setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })}
                     onTouchStart={() => startLongPress(msg)} onTouchEnd={cancelLongPress} onTouchMove={cancelLongPress}
-                    style={{ background: isMine ? 'var(--accent)' : 'var(--card-bg)', color: isMine ? '#fff' : 'var(--text)', border:`1px solid ${isMine?'var(--accent)':'var(--border)'}`, borderRadius:isMine?'12px 12px 2px 12px':'12px 12px 12px 2px', padding:'0.65rem 0.9rem', fontSize:'0.9rem', lineHeight:1.6, fontWeight:300, whiteSpace:'pre-wrap', width:'fit-content', cursor:activeBlock?'default':'pointer' }}
+                    style={{ background: isMine ? 'var(--accent)' : 'var(--card-bg)', color: isMine ? '#fff' : 'var(--text)', border:`1px solid ${isMine?'var(--accent)':'var(--border)'}`, borderRadius:isMine?'12px 12px 2px 12px':'12px 12px 12px 2px', padding: msg.attachment_url && !msg.content ? '0.35rem' : '0.65rem 0.9rem', fontSize:'0.9rem', lineHeight:1.6, fontWeight:300, whiteSpace:'pre-wrap', width:'fit-content', cursor:activeBlock?'default':'pointer', overflow:'hidden' }}
                   >
+                    {/* Quoted reply preview */}
                     {quotedMsg && (
-                      <div style={{ borderLeft:`2px solid ${isMine?'rgba(255,255,255,0.5)':'var(--accent-lt)'}`,paddingLeft:'0.5rem',marginBottom:'0.5rem',opacity:0.8 }}>
+                      <div
+                        onClick={e => { e.stopPropagation(); scrollToMessage(quotedMsg.id) }}
+                        style={{ borderLeft:`2px solid ${isMine?'rgba(255,255,255,0.5)':'var(--accent-lt)'}`,paddingLeft:'0.5rem',marginBottom:'0.5rem',opacity:0.8,cursor:'pointer' }}
+                      >
                         <p style={{ fontSize:'0.75rem',color:isMine?'rgba(255,255,255,0.7)':'var(--muted)',marginBottom:'0.1rem',fontWeight:500 }}>{quotedMsg.sender_id===currentUserId?'You':otherName}</p>
-                        <p style={{ fontSize:'0.78rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:200 }}>{quotedMsg.content}</p>
+                        <p style={{ fontSize:'0.78rem',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:200 }}>
+                          {quotedMsg.content || (quotedMsg.attachment_type === 'gif' ? '🎬 GIF' : quotedMsg.attachment_url ? '🖼️ Image' : '')}
+                        </p>
                       </div>
                     )}
+
+                    {/* Attachment (image or GIF) */}
+                    {msg.attachment_url && (
+                      <div style={{ marginBottom: msg.content ? '0.5rem' : 0 }}>
+                        <img
+                          src={msg.attachment_url}
+                          alt={msg.attachment_type === 'gif' ? 'GIF' : 'Image'}
+                          style={{ maxWidth:'100%',maxHeight:220,borderRadius: msg.content ? 6 : 4,display:'block',objectFit:'contain' }}
+                          loading="lazy"
+                        />
+                      </div>
+                    )}
+
+                    {/* Text content */}
                     {editingId === msg.id ? (
                       <div onClick={e=>e.stopPropagation()} style={{ display:'flex',flexDirection:'column',gap:'0.4rem',minWidth:180 }}>
                         <textarea value={editText} onChange={e=>setEditText(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();editMessage(msg.id)} if(e.key==='Escape'){setEditingId(null);setEditText('')} }} autoFocus style={{ background:'rgba(255,255,255,0.15)',border:'1px solid rgba(255,255,255,0.3)',borderRadius:6,padding:'0.4rem 0.6rem',fontSize:'0.9rem',color:'#fff',resize:'none',fontFamily:'var(--sans)',lineHeight:1.5,minHeight:60 }} />
@@ -521,8 +667,25 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                           <button type="button" onClick={() => { setEditingId(null);setEditText('') }} style={{ background:'none',border:'none',cursor:'pointer',color:'rgba(255,255,255,0.7)',fontSize:'0.7rem',padding:'0.2rem' }}>Cancel</button>
                         </div>
                       </div>
-                    ) : renderContent(msg.content)}
+                    ) : msg.content ? renderContent(msg.content) : null}
                   </div>
+
+                  {/* Action buttons */}
+                  {/* Emoji react */}
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); setReactionPickerMsgId(prev => prev === msg.id ? null : msg.id) }}
+                    aria-label="React"
+                    style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0 }}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="7" cy="7" r="6"/>
+                      <path d="M4.5 8.5c.6.9 1.6 1.2 2.5 1.2s1.9-.3 2.5-1.2"/>
+                      <circle cx="5" cy="5.5" r="0.6" fill="currentColor" stroke="none"/>
+                      <circle cx="9" cy="5.5" r="0.6" fill="currentColor" stroke="none"/>
+                    </svg>
+                  </button>
+                  {/* Reply */}
                   <button type="button" onClick={() => setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })} aria-label="Reply" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0,pointerEvents:'auto' }}>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
                   </button>
@@ -544,6 +707,42 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     )
                   )}
                 </div>
+
+                {/* Reaction picker popover */}
+                {reactionPickerMsgId === msg.id && (
+                  <div style={{ alignSelf:isMine?'flex-end':'flex-start',background:'var(--card-bg)',border:'1px solid var(--border)',borderRadius:20,padding:'0.3rem 0.4rem',display:'flex',gap:'0.1rem',boxShadow:'0 2px 8px rgba(0,0,0,0.1)',zIndex:10 }}>
+                    {REACTION_EMOJIS.map(e => (
+                      <button
+                        key={e}
+                        type="button"
+                        onClick={() => { handleToggleReaction(msg.id, e); setReactionPickerMsgId(null) }}
+                        style={{ background: reactionGroups[e]?.mine ? 'rgba(154,111,56,0.1)' : 'none',border:'none',cursor:'pointer',fontSize:'1.05rem',padding:'0.25rem 0.3rem',borderRadius:6,lineHeight:1,transition:'background 0.1s' }}
+                        onMouseEnter={ev => { if (!reactionGroups[e]?.mine) ev.currentTarget.style.background = 'var(--surface)' }}
+                        onMouseLeave={ev => { if (!reactionGroups[e]?.mine) ev.currentTarget.style.background = 'none' }}
+                      >
+                        {e}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Reaction pills */}
+                {reactionEntries.length > 0 && (
+                  <div style={{ display:'flex',gap:'0.3rem',flexWrap:'wrap',alignSelf:isMine?'flex-end':'flex-start',paddingInline:'0.2rem' }}>
+                    {reactionEntries.map(([emoji, { count, mine }]) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleToggleReaction(msg.id, emoji)}
+                        style={{ background:mine?'rgba(154,111,56,0.1)':'var(--surface)',border:`1px solid ${mine?'var(--accent-lt)':'var(--border)'}`,borderRadius:12,padding:'0.12rem 0.45rem',fontSize:'0.82rem',cursor:'pointer',display:'flex',alignItems:'center',gap:'0.25rem',lineHeight:1.4,color:'var(--text)' }}
+                      >
+                        {emoji}{count > 1 && <span style={{ fontSize:'0.68rem',color:'var(--muted)' }}>{count}</span>}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {/* Timestamp + status */}
                 <span style={{ fontSize:'0.62rem',color:'var(--muted)',alignSelf:isMine?'flex-end':'flex-start',paddingInline:'0.2rem' }}>
                   {timeStr}{msg.edited?' · edited':''}
                   {isMine && isPremium && msg.id === lastReadMineId && <span style={{ color:'var(--accent)' }}> · Read</span>}
@@ -566,23 +765,67 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             </span>
           </div>
         )}
+
+        {/* Reply preview strip */}
         {replyTo && (
           <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
             <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
               <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===currentUserId?'You':otherName}</p>
-              <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:300 }}>{replyTo.content}</p>
+              <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:300 }}>
+                {replyTo.content || (replyTo.attachment_type === 'gif' ? '🎬 GIF' : replyTo.attachment_url ? '🖼️ Image' : '')}
+              </p>
             </div>
             <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
             </button>
           </div>
         )}
+
+        {/* GIF picker */}
+        {showGifPicker && (
+          <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+        )}
+
         <div style={{ padding:'1rem 1.5rem' }}>
           {activeBlock ? (
             <p style={{ fontSize:'0.82rem',color:'var(--muted)',textAlign:'center',padding:'0.5rem 0' }}>Messaging is paused for this conversation.</p>
           ) : (
             <>
-              <div style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }} onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'} onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}>
+              <div
+                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }}
+                onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
+                onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
+              >
+                {/* Media buttons */}
+                <div style={{ display:'flex',flexDirection:'column',justifyContent:'flex-end',padding:'0.5rem 0.25rem 0.65rem 0.75rem',gap:'0.35rem',flexShrink:0 }}>
+                  <button
+                    type="button"
+                    onClick={() => setShowGifPicker(p => !p)}
+                    title="Send GIF"
+                    style={{ background:'none',border:`1px solid ${showGifPicker?'var(--accent)':'var(--border)'}`,borderRadius:3,cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',fontSize:'0.6rem',fontWeight:700,letterSpacing:'0.06em',padding:'0.18rem 0.3rem',lineHeight:1.3 }}
+                  >
+                    GIF
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage}
+                    title="Send image"
+                    style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.15rem',lineHeight:1,opacity:uploadingImage?0.5:1,display:'flex',alignItems:'center',justifyContent:'center' }}
+                  >
+                    {uploadingImage ? (
+                      <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',display:'inline-block' }} />
+                    ) : (
+                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="3" width="13" height="10" rx="1.5"/>
+                        <circle cx="5.5" cy="7" r="1.3"/>
+                        <polyline points="1,12 5,8 7.5,10.5 10,8 14,12"/>
+                      </svg>
+                    )}
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleImageUpload} />
+                </div>
+
                 <textarea ref={inputRef} placeholder={`Message ${otherName}…`} value={text} rows={1}
                   onChange={e => {
                     setText(e.target.value)
@@ -592,7 +835,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     typingTimer.current = setTimeout(() => { presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:false } }) }, 2000)
                   }}
                   onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
-                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 1.25rem',maxHeight:'8rem' }}
+                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 0.5rem 0.9rem 0.75rem',maxHeight:'8rem' }}
                 />
                 <button className="btn-primary" onClick={handleSend} disabled={!text.trim()||sending} style={{ borderRadius:0,alignSelf:'stretch',opacity:(!text.trim()||sending)?0.5:1 }}>Send</button>
               </div>
