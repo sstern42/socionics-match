@@ -122,14 +122,8 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             {role && <span style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.12em',textTransform:'uppercase',fontWeight:600,color:'#fff',background:role==='founder'?'#2c2a22':role==='typist'?'#185FA5':'var(--accent)',padding:'0.15rem 0.5rem',borderRadius:2 }}>{role}</span>}
             {isAnonymous && <span title="anonymous" style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--muted)',border:'1px solid var(--border)',padding:'0.15rem 0.5rem',borderRadius:2 }}>🕵️ Anonymous</span>}
             <p style={{ fontSize:'0.82rem',marginTop:'0.15rem',lineHeight:1.4,color:'var(--muted)' }}>
-            {displayFlag}{displayFlag && !isAnonymous && profile_data?.city ? ' ' : ''}{!isAnonymous && profile_data?.city ? profile_data.city : ''}
-            {activityLabel && (
-              <>
-                {(displayFlag || (!isAnonymous && profile_data?.city)) ? ' · ' : ''}
-                <span style={{ color: activityLabel.colour }}>{activityLabel.label.toLowerCase()}</span>
-              </>
-            )}
-          </p>}
+              {displayFlag}{displayFlag && !isAnonymous && profile_data?.city ? ' ' : ''}{!isAnonymous && profile_data?.city ? profile_data.city : ''}{activityLabel && <span>{(displayFlag || (!isAnonymous && profile_data?.city)) ? ' · ' : ''}<span style={{ color:activityLabel.colour }}>{activityLabel.label.toLowerCase()}</span></span>}
+            </p>
             {purpose?.length > 0 && <div style={{ display:'flex',gap:'0.3rem',flexWrap:'wrap',marginTop:'0.35rem' }}>{purpose.map(p=><span key={p} style={{ fontSize:'0.62rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--muted)',border:'1px solid var(--border)',borderRadius:2,padding:'0.1rem 0.4rem' }}>{{dating:'Dating',friendship:'Friendship',networking:'Networking',team:'Team building'}[p]??p}</span>)}</div>}
           </div>
         </div>
