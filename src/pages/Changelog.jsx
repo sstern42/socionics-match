@@ -2,6 +2,14 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
      {
+       date: '10 June 2026',
+       label: 'Update',
+       items: [
+         'Feedback button — a small tab on the right edge of every page lets you report a bug or share a thought without leaving the app',
+         'Notification bell — tap the bell in the header to see your recent alerts. Loads your 50 most recent notifications on open, with new ones appearing in real time',
+       ],
+     },
+     {
        date: '9 June 2026',
        label: 'Update',
        items: [
