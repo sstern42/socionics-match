@@ -50,6 +50,7 @@ export default function FeedbackButton() {
       }),
       }).catch(() => {})
     }
+  }
 
   return (
     <>
