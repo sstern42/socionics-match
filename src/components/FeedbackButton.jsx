@@ -1,11 +1,11 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
-import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 
 const MAX_CHARS = 1000
 
 export default function FeedbackButton() {
-  const { user, profile } = useAuth()
+  const { profile } = useAuth()
   const [open, setOpen] = useState(false)
   const [type, setType] = useState('feedback')
   const [message, setMessage] = useState('')
