@@ -8,6 +8,8 @@ const MSG_SELECT = `
   reactions:message_reactions(id, emoji, user_id)
 `
 
+const PAGE_SIZE = 50
+
 export async function getMatches(userId) {
   const { data, error } = await supabase
     .from('matches')
@@ -39,14 +41,26 @@ export async function getMatches(userId) {
   })
 }
 
-export async function getMessages(matchId) {
-  const { data, error } = await supabase
+// Returns { msgs, hasMore }
+// Fetches the most recent PAGE_SIZE messages, or PAGE_SIZE messages before `before` (ISO string cursor).
+export async function getMessages(matchId, { before = null } = {}) {
+  let query = supabase
     .from('messages')
     .select(MSG_SELECT)
     .eq('match_id', matchId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
+    .limit(PAGE_SIZE)
+
+  if (before) query = query.lt('created_at', before)
+
+  const { data, error } = await query
   if (error) throw error
-  return data ?? []
+
+  const rows = data ?? []
+  return {
+    msgs: [...rows].reverse(), // oldest → newest for display
+    hasMore: rows.length === PAGE_SIZE,
+  }
 }
 
 export async function sendMessage({ matchId, senderId, content, replyToId = null, attachmentUrl = null, attachmentType = null }) {
