@@ -44,7 +44,7 @@ function SIWebview({ url, onClose }) {
   )
 }
 
-// ─── MessageInput ────────────────────────────────────────────────────────────
+// ─── MessageInput ─────────────────────────────────────────────────────────────
 // Isolated so that typing only re-renders this component, not the message list.
 const MessageInput = React.memo(function MessageInput({
   onSend, sending, uploadingImage, pendingImage, replyTo, setReplyTo,
@@ -122,7 +122,6 @@ const MessageInput = React.memo(function MessageInput({
                 onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
                 onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
               >
-                {/* Media buttons */}
                 <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
                   <button
                     type="button"
@@ -194,6 +193,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const { isPremium, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
+  const [hasMore, setHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -220,14 +221,16 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [lightboxUrl, setLightboxUrl] = useState(null)
   const [pendingImage, setPendingImage] = useState(null)
 
-  const longPressTimer = useRef(null)
-  const typingTimer = useRef(null)
-  const presenceChannel = useRef(null)
-  const tabId = useRef(Math.random().toString(36).slice(2))
-  const bottomRef = useRef(null)
-  const inputRef = useRef(null)
-  const menuRef = useRef(null)
-  const fileInputRef = useRef(null)
+  const longPressTimer   = useRef(null)
+  const typingTimer      = useRef(null)
+  const presenceChannel  = useRef(null)
+  const tabId            = useRef(Math.random().toString(36).slice(2))
+  const bottomRef        = useRef(null)
+  const listRef          = useRef(null)
+  const prevScrollHeight = useRef(0)
+  const inputRef         = useRef(null)
+  const menuRef          = useRef(null)
+  const fileInputRef     = useRef(null)
 
   async function editMessage(msgId) {
     if (!editText.trim()) return
@@ -351,13 +354,14 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     getBlockBetween(currentUserId, otherUserId).then(setActiveBlock).catch(() => {})
   }, [match.id])
 
+  // Initial load
   useEffect(() => {
     const matchId = match.id
-    setMessages([]); setLoading(true)
+    setMessages([]); setHasMore(false); setLoading(true)
     let cancelled = false
-    getMessages(matchId).then(msgs => {
+    getMessages(matchId).then(({ msgs, hasMore: more }) => {
       if (!cancelled) {
-        setMessages(msgs); setLoading(false)
+        setMessages(msgs); setHasMore(more); setLoading(false)
         markMatchRead(matchId); markRead(matchId)
         const lastVisited = getLastVisited()
         const unreadInChat = msgs.filter(m => m.sender_id !== currentUserId && new Date(m.created_at) > new Date(lastVisited)).length
@@ -419,11 +423,31 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     return () => { if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl) }
   }, [pendingImage])
 
+  // Scroll to bottom on new messages — skip when prepending older messages
   useEffect(() => {
-    const wasInputFocused = document.activeElement === inputRef.current
-    bottomRef.current?.scrollIntoView({ behavior: 'auto' })
-    if (wasInputFocused) inputRef.current?.focus()
+    if (loading || loadingMore) return
+    const el = listRef.current
+    if (!el) return
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120
+    if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [messages.length])
+
+  // Scroll to bottom on initial load (once)
+  useEffect(() => {
+    if (!loading) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+  }, [loading])
+
+  // Preserve scroll position when prepending older messages
+  useEffect(() => {
+    if (!listRef.current || !loadingMore) return
+    prevScrollHeight.current = listRef.current.scrollHeight
+  }, [loadingMore])
+
+  useEffect(() => {
+    if (!listRef.current || loadingMore) return
+    const diff = listRef.current.scrollHeight - prevScrollHeight.current
+    if (diff > 0) listRef.current.scrollTop += diff
+  }, [messages, loadingMore])
 
   useEffect(() => {
     function handleClick(e) {
@@ -433,7 +457,18 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Accepts text + a clearText callback from MessageInput
+  async function loadMore() {
+    if (!hasMore || loadingMore || messages.length === 0) return
+    setLoadingMore(true)
+    try {
+      const oldest = messages[0].created_at
+      const { msgs: older, hasMore: moreAvailable } = await getMessages(match.id, { before: oldest })
+      setMessages(prev => [...older, ...prev])
+      setHasMore(moreAvailable)
+    } catch (err) { console.error('loadMore failed:', err) }
+    finally { setLoadingMore(false) }
+  }
+
   async function handleSend(text, clearText) {
     if ((!text.trim() && !pendingImage) || sending) return
     const matchId = match.id
@@ -723,9 +758,19 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       {/* Messages list */}
       <div
+        ref={listRef}
         style={{ flex:1,overflowY:'auto',padding:'1.25rem 1.5rem',display:'flex',flexDirection:'column',gap:'0.75rem',background:'var(--bg)' }}
         onScroll={() => setReactionPickerMsgId(null)}
       >
+        {/* Load earlier messages */}
+        {hasMore && (
+          <div style={{ textAlign:'center',paddingBottom:'0.25rem' }}>
+            <button type="button" onClick={loadMore} disabled={loadingMore} style={{ background:'none',border:'none',cursor:loadingMore?'default':'pointer',fontSize:'0.78rem',color:'var(--accent)',padding:'0.25rem',opacity:loadingMore?0.5:1 }}>
+              {loadingMore ? 'Loading…' : 'Load earlier messages'}
+            </button>
+          </div>
+        )}
+
         {loading ? (
           <p style={{ color:'var(--muted)',fontSize:'0.85rem',textAlign:'center',marginTop:'2rem' }}>Loading…</p>
         ) : messages.length === 0 ? (
@@ -789,7 +834,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                     onTouchStart={() => startLongPress(msg)} onTouchEnd={cancelLongPress} onTouchMove={cancelLongPress}
                     style={{ background: isMine ? 'var(--accent)' : 'var(--card-bg)', color: isMine ? '#fff' : 'var(--text)', border:`1px solid ${isMine?'var(--accent)':'var(--border)'}`, borderRadius:isMine?'12px 12px 2px 12px':'12px 12px 12px 2px', padding: msg.attachment_url && !msg.content ? '0.35rem' : '0.65rem 0.9rem', fontSize:'0.9rem', lineHeight:1.6, fontWeight:300, whiteSpace:'pre-wrap', width:'fit-content', cursor:activeBlock?'default':'pointer', overflow:'hidden' }}
                   >
-                    {/* Quoted reply preview */}
                     {quotedMsg && (
                       <div
                         onClick={e => { e.stopPropagation(); scrollToMessage(quotedMsg.id) }}
@@ -802,7 +846,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       </div>
                     )}
 
-                    {/* Attachment */}
                     {msg.attachment_url && (
                       <div style={{ marginBottom: msg.content ? '0.5rem' : 0 }} onClick={e => e.stopPropagation()}>
                         <img
@@ -815,7 +858,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       </div>
                     )}
 
-                    {/* Text content */}
                     {editingId === msg.id ? (
                       <div onClick={e=>e.stopPropagation()} style={{ display:'flex',flexDirection:'column',gap:'0.4rem',minWidth:180 }}>
                         <textarea value={editText} onChange={e=>setEditText(e.target.value)} onKeyDown={e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();editMessage(msg.id)} if(e.key==='Escape'){setEditingId(null);setEditText('')} }} autoFocus style={{ background:'rgba(255,255,255,0.15)',border:'1px solid rgba(255,255,255,0.3)',borderRadius:6,padding:'0.4rem 0.6rem',fontSize:'0.9rem',color:'#fff',resize:'none',fontFamily:'var(--sans)',lineHeight:1.5,minHeight:60 }} />
@@ -828,18 +870,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   </div>
 
                   {/* Action buttons */}
-                  <button
-                    type="button"
-                    onClick={e => { e.stopPropagation(); setReactionPickerMsgId(prev => prev === msg.id ? null : msg.id) }}
-                    aria-label="React"
-                    style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0 }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="7" cy="7" r="6"/>
-                      <path d="M4.5 8.5c.6.9 1.6 1.2 2.5 1.2s1.9-.3 2.5-1.2"/>
-                      <circle cx="5" cy="5.5" r="0.6" fill="currentColor" stroke="none"/>
-                      <circle cx="9" cy="5.5" r="0.6" fill="currentColor" stroke="none"/>
-                    </svg>
+                  <button type="button" onClick={e => { e.stopPropagation(); setReactionPickerMsgId(prev => prev === msg.id ? null : msg.id) }} aria-label="React" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0 }}>
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="7" cy="7" r="6"/><path d="M4.5 8.5c.6.9 1.6 1.2 2.5 1.2s1.9-.3 2.5-1.2"/><circle cx="5" cy="5.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="9" cy="5.5" r="0.6" fill="currentColor" stroke="none"/></svg>
                   </button>
                   <button type="button" onClick={() => setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })} aria-label="Reply" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0,pointerEvents:'auto' }}>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
@@ -863,18 +895,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   )}
                 </div>
 
-                {/* Reaction picker popover */}
+                {/* Reaction picker */}
                 {reactionPickerMsgId === msg.id && (
                   <div style={{ alignSelf:isMine?'flex-end':'flex-start',background:'var(--card-bg)',border:'1px solid var(--border)',borderRadius:20,padding:'0.3rem 0.4rem',display:'flex',gap:'0.1rem',boxShadow:'0 2px 8px rgba(0,0,0,0.1)',zIndex:10 }}>
                     {REACTION_EMOJIS.map(e => (
-                      <button
-                        key={e}
-                        type="button"
-                        onClick={() => { handleToggleReaction(msg.id, e); setReactionPickerMsgId(null) }}
-                        style={{ background: reactionGroups[e]?.mine ? 'rgba(154,111,56,0.1)' : 'none',border:'none',cursor:'pointer',fontSize:'1.05rem',padding:'0.25rem 0.3rem',borderRadius:6,lineHeight:1,transition:'background 0.1s' }}
-                        onMouseEnter={ev => { if (!reactionGroups[e]?.mine) ev.currentTarget.style.background = 'var(--surface)' }}
-                        onMouseLeave={ev => { if (!reactionGroups[e]?.mine) ev.currentTarget.style.background = 'none' }}
-                      >
+                      <button key={e} type="button" onClick={() => { handleToggleReaction(msg.id, e); setReactionPickerMsgId(null) }} style={{ background: reactionGroups[e]?.mine ? 'rgba(154,111,56,0.1)' : 'none',border:'none',cursor:'pointer',fontSize:'1.05rem',padding:'0.25rem 0.3rem',borderRadius:6,lineHeight:1,transition:'background 0.1s' }} onMouseEnter={ev => { if (!reactionGroups[e]?.mine) ev.currentTarget.style.background = 'var(--surface)' }} onMouseLeave={ev => { if (!reactionGroups[e]?.mine) ev.currentTarget.style.background = 'none' }}>
                         {e}
                       </button>
                     ))}
@@ -885,19 +910,13 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 {reactionEntries.length > 0 && (
                   <div style={{ display:'flex',gap:'0.3rem',flexWrap:'wrap',alignSelf:isMine?'flex-end':'flex-start',paddingInline:'0.2rem' }}>
                     {reactionEntries.map(([emoji, { count, mine }]) => (
-                      <button
-                        key={emoji}
-                        type="button"
-                        onClick={() => handleToggleReaction(msg.id, emoji)}
-                        style={{ background:mine?'rgba(154,111,56,0.1)':'var(--surface)',border:`1px solid ${mine?'var(--accent-lt)':'var(--border)'}`,borderRadius:12,padding:'0.12rem 0.45rem',fontSize:'0.82rem',cursor:'pointer',display:'flex',alignItems:'center',gap:'0.25rem',lineHeight:1.4,color:'var(--text)' }}
-                      >
+                      <button key={emoji} type="button" onClick={() => handleToggleReaction(msg.id, emoji)} style={{ background:mine?'rgba(154,111,56,0.1)':'var(--surface)',border:`1px solid ${mine?'var(--accent-lt)':'var(--border)'}`,borderRadius:12,padding:'0.12rem 0.45rem',fontSize:'0.82rem',cursor:'pointer',display:'flex',alignItems:'center',gap:'0.25rem',lineHeight:1.4,color:'var(--text)' }}>
                         {emoji}{count > 1 && <span style={{ fontSize:'0.68rem',color:'var(--muted)' }}>{count}</span>}
                       </button>
                     ))}
                   </div>
                 )}
 
-                {/* Timestamp + status */}
                 <span style={{ fontSize:'0.62rem',color:'var(--muted)',alignSelf:isMine?'flex-end':'flex-start',paddingInline:'0.2rem' }}>
                   {timeStr}{msg.edited?' · edited':''}
                   {isMine && isPremium && msg.id === lastReadMineId && <span style={{ color:'var(--accent)' }}> · Read</span>}
@@ -994,7 +1013,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     </div>
     <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
 
-    {/* Image lightbox */}
     {lightboxUrl && (
       <div onClick={() => setLightboxUrl(null)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.88)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
         <img src={lightboxUrl} alt="shared image" style={{ maxWidth:'92vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
