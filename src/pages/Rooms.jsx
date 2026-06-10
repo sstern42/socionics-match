@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
@@ -83,7 +83,6 @@ function RoomMessage({
   const hasImage = !!msg.image_url && !isDeleted
   const hasText  = !!msg.content  && !isDeleted
 
-  // Founder badge: only on the current user's own messages when they are founder/mod
   const showFounderBadge = isFounder && msg.sender?.id === currentUserId
 
   function startLongPress() {
@@ -126,7 +125,6 @@ function RoomMessage({
           <span title={`Verified by ${msg.sender.verified_by}`} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:11, height:11, borderRadius:'50%', background:'var(--accent)', color:'#fff', fontSize:'0.4rem', fontWeight:700, lineHeight:1 }}>✓</span>
         )}
 
-        {/* ── FOUNDER badge — own messages only ── */}
         {showFounderBadge && (
           <span title="Founder" style={{
             fontSize:'0.55rem', letterSpacing:'0.08em', textTransform:'uppercase',
@@ -207,7 +205,6 @@ function RoomMessage({
         {/* Action icons */}
         {!isDeleted && !isEditing && (
           <div style={{ display:'flex', alignItems:'center', gap:'0.25rem', flexDirection:isMine?'row-reverse':'row', opacity:showActions?1:(isMobile?0.25:0), transition:'opacity 0.15s', pointerEvents:showActions?'auto':(isMobile?'auto':'none'), position:'relative' }}>
-            {/* Reaction picker */}
             {!isReadOnly && showPicker && (
               <div onPointerDown={e=>e.stopPropagation()} style={{ position:'absolute', bottom:'130%', [isMine?'right':'left']:0, display:'flex', gap:'0.2rem', background:'var(--card-bg)', border:'1px solid var(--border)', borderRadius:20, padding:'0.3rem 0.5rem', boxShadow:'0 2px 12px rgba(0,0,0,0.12)', zIndex:20, whiteSpace:'nowrap' }}>
                 {REACTIONS.map(emoji => (
@@ -223,11 +220,7 @@ function RoomMessage({
             {!isReadOnly && <button type="button" onPointerDown={e=>e.stopPropagation()} onClick={() => setShowPicker(p=>!p)} aria-label="React" style={{ ...iconBtnStyle, fontSize:'0.85rem', lineHeight:1 }}>
               <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M5.5 9.5s.75 1.5 2.5 1.5 2.5-1.5 2.5-1.5"/><circle cx="5.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/><circle cx="10.5" cy="6.5" r="0.75" fill="currentColor" stroke="none"/></svg>
             </button>}
-
-            {/* Edit — own messages only */}
             {isMine && <button type="button" onClick={() => onEdit(msg.id, msg.content??'')} aria-label="Edit" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/></svg></button>}
-
-            {/* ── Delete — own messages OR founder/mod on any message ── */}
             {(isMine || isFounder) && (
               isDeleteConfirm ? (
                 <div style={{ display:'flex', gap:'0.25rem', alignItems:'center' }}>
@@ -238,8 +231,6 @@ function RoomMessage({
                 <button type="button" onClick={() => setDeleteConfirmId(msg.id)} aria-label="Delete" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/><line x1="6" y1="6" x2="6" y2="10"/><line x1="8" y1="6" x2="8" y2="10"/></svg></button>
               )
             )}
-
-            {/* Report — other people's messages only */}
             {!isMine && <button type="button" onClick={() => onReport(msg.id)} aria-label="Report" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2h10l-2 5 2 5H2V2z"/></svg></button>}
           </div>
         )}
@@ -290,6 +281,142 @@ function ReportModal({ onSubmit, onClose, submitting }) {
   )
 }
 
+// ─── RoomInput ────────────────────────────────────────────────────────────────
+// Isolated so that typing only re-renders this component, not the message list.
+const RoomInput = React.memo(function RoomInput({
+  onSend, sending, imageUploading,
+  pendingImage, onClearPendingImage,
+  replyTo, setReplyTo,
+  showGifPicker, setShowGifPicker, onGifSelect,
+  onImageFileChange, imageInputRef, inputRef,
+  typingChannel, typingTimer, tabId,
+  profile, quadra, isMobile, isAnonymous, isReadOnly, viewingQuadra,
+  typingUsers,
+}) {
+  const [text, setText] = useState('')
+
+  function handleSend() {
+    onSend(text, () => {
+      setText('')
+      if (inputRef.current) inputRef.current.style.height = 'auto'
+    })
+  }
+
+  if (isReadOnly) {
+    return (
+      <div style={{ borderTop:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0 }}>
+        <div style={{ padding:'0.75rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:'var(--muted)', flexShrink:0 }}><rect x="3" y="6" width="8" height="7" rx="1"/><path d="M5 6V4a2 2 0 0 1 4 0v2"/></svg>
+          <p style={{ fontSize:'0.82rem', color:'var(--muted)', fontStyle:'italic' }}>Viewing {viewingQuadra} room — read only</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ borderTop:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0 }}>
+      {/* Typing indicator */}
+      {Object.keys(typingUsers).length > 0 && (() => {
+        const entries=Object.values(typingUsers), names=entries.map(u=>u.name)
+        let label
+        if(names.length===1) label=`${names[0]} is typing…`
+        else if(names.length===2) label=`${names[0]} and ${names[1]} are typing…`
+        else label=`${names[0]}, ${names[1]} and ${names.length-2} other${names.length-2>1?'s':''} are typing…`
+        return (
+          <div style={{ padding:'0.3rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
+            <span style={{ fontSize:'0.72rem',color:'var(--muted)',fontStyle:'italic' }}>{label}</span>
+            <span style={{ display:'flex',gap:'3px',alignItems:'center' }}>
+              {[0,1,2].map(i=><span key={i} style={{ width:4,height:4,borderRadius:'50%',background:'var(--muted)',display:'inline-block',animation:`typingDot 1.2s ${i*0.2}s infinite ease-in-out` }} />)}
+            </span>
+          </div>
+        )
+      })()}
+
+      {/* Reply bar */}
+      {replyTo && (
+        <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
+          <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
+            <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===profile?.id?'You':replyTo.senderName}</p>
+            {replyTo.image_url && !replyTo.content && <p style={{ fontSize:'0.72rem',color:'var(--muted)' }}>🖼 Image</p>}
+            {replyTo.content && <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:320 }}>{replyTo.content}</p>}
+          </div>
+          <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+          </button>
+        </div>
+      )}
+
+      <div style={{ padding:isMobile?'0.6rem 0.75rem':'1rem 1.5rem' }}>
+        {isAnonymous ? (
+          <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.75rem 1rem',background:'var(--surface)',borderRadius:4,border:'1px solid var(--border)' }}>
+            <span style={{ fontSize:'0.85rem',color:'var(--muted)' }}>🕵️ Anonymous mode — switch to your profile to chat in the room.</span>
+            <Link to="/profile/edit" style={{ fontSize:'0.78rem',color:'var(--accent)',textDecoration:'none',flexShrink:0 }}>Edit profile →</Link>
+          </div>
+        ) : (
+          <>
+            {/* Pending image preview */}
+            {pendingImage && (
+              <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',marginBottom:'0.5rem',padding:'0.5rem 0.75rem',background:'rgba(154,111,56,0.05)',border:'1px solid var(--accent-lt)',borderRadius:4 }}>
+                <div style={{ flexShrink:0 }}>
+                  <img src={pendingImage.previewUrl} alt="pending" style={{ height:56,maxWidth:80,objectFit:'cover',borderRadius:4,border:'1px solid var(--border)',display:'block' }} />
+                </div>
+                <span style={{ fontSize:'0.78rem',color:'var(--muted)',flex:1 }}>Add a caption or hit Send</span>
+                <button type="button" onClick={onClearPendingImage} aria-label="Remove image" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }}>
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+                </button>
+              </div>
+            )}
+
+            {imageUploading && (
+              <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.5rem',padding:'0.4rem 0.75rem',background:'rgba(154,111,56,0.07)',borderRadius:4,border:'1px solid var(--accent-lt)' }}>
+                <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',flexShrink:0 }} />
+                <span style={{ fontSize:'0.78rem',color:'var(--accent)' }}>Uploading image…</span>
+              </div>
+            )}
+
+            {/* Text input row */}
+            <div style={{ position:'relative' }}>
+              {showGifPicker && (
+                <GifPicker onSelect={onGifSelect} onClose={() => setShowGifPicker(false)} />
+              )}
+              <div style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }} onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'} onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}>
+                <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading||sending} title="Share image" aria-label="Attach image" style={{ background:'none',border:'none',padding:isMobile?'0.7rem 0.4rem 0.7rem 0.75rem':'0.9rem 0.4rem 0.9rem 1rem',cursor:(imageUploading||sending)?'default':'pointer',color:pendingImage?'var(--accent)':'var(--muted)',flexShrink:0,alignSelf:'center',opacity:(imageUploading||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',lineHeight:0 }} onMouseEnter={e=>{if(!imageUploading&&!sending)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}>
+                  <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><polyline points="2,17 7,11 11,15 14,12 18,17"/></svg>
+                </button>
+                <button type="button" onClick={() => setShowGifPicker(p=>!p)} disabled={imageUploading||sending} title="Send a GIF" aria-label="GIF" style={{ background:'none',border:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.4rem',cursor:(imageUploading||sending)?'default':'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',flexShrink:0,alignSelf:'center',opacity:(imageUploading||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em',lineHeight:1 }} onMouseEnter={e=>{if(!imageUploading&&!sending)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}>
+                  GIF
+                </button>
+                <input ref={imageInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={onImageFileChange} style={{ display:'none' }} />
+                <textarea
+                  ref={inputRef}
+                  placeholder={pendingImage?'Add a caption (optional)…':`Message the ${quadra} quadra…`}
+                  value={text}
+                  rows={1}
+                  maxLength={2000}
+                  onChange={e => {
+                    setText(e.target.value)
+                    e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
+                    typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,name:profile.profile_data?.anonymous?'Anonymous':(profile.profile_data?.name??profile.type),user_type:profile.type,typing:true } })
+                    clearTimeout(typingTimer.current)
+                    typingTimer.current = setTimeout(() => {
+                      typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,typing:false } })
+                    }, 2000)
+                  }}
+                  onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend()} }}
+                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:isMobile?'0.85rem':'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.5rem',maxHeight:'8rem' }}
+                />
+                {text.length>1800 && <span style={{ fontSize:'0.68rem',color:'var(--muted)',padding:'0 0.5rem 0.75rem',alignSelf:'flex-end' }}>{2000-text.length}</span>}
+                <button className="btn-primary" onClick={handleSend} disabled={(!text.trim()&&!pendingImage)||sending||imageUploading} style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||imageUploading)?0.5:1 }}>Send</button>
+              </div>
+            </div>
+            {text && <p style={{ fontSize:'0.68rem',color:'var(--muted)',textAlign:'right',margin:'0.25rem 0.5rem 0' }}>Shift + Enter for new line</p>}
+          </>
+        )}
+      </div>
+    </div>
+  )
+})
+
 // ─── Rooms (main page) ────────────────────────────────────────────────────────
 export default function Rooms() {
   const { session, profile, loading, refreshProfile } = useAuth()
@@ -317,7 +444,6 @@ export default function Rooms() {
   }
 
   const [activeMembers, setActiveMembers]     = useState([])
-  const [text, setText]                       = useState('')
   const [pendingImage, setPendingImage]       = useState(null)
   const [showGifPicker, setShowGifPicker]     = useState(false)
   const [replyTo, setReplyTo]                 = useState(null)
@@ -334,6 +460,7 @@ export default function Rooms() {
   const [lightboxUrl, setLightboxUrl]         = useState(null)
   const [highlightedMsgId, setHighlightedMsgId] = useState(null)
   const [isMobile, setIsMobile]               = useState(() => window.innerWidth <= 700)
+  const [typingUsers, setTypingUsers]         = useState({})
 
   const imageInputRef    = useRef(null)
   const bottomRef        = useRef(null)
@@ -344,16 +471,12 @@ export default function Rooms() {
   const typingTimer      = useRef(null)
   const typingTimers     = useRef({})
   const tabId            = useRef(Math.random().toString(36).slice(2))
-  const [typingUsers, setTypingUsers] = useState({})
 
   const quadra       = viewingQuadra ?? (profile?.type ? getQuadra(profile.type) : null)
   const quadraColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
   const isAnonymous  = profile?.profile_data?.anonymous ?? false
 
-  // ── Founder / moderator check ──────────────────────────────────────────────
   const isFounder  = profile?.profile_data?.role === 'founder' || profile?.profile_data?.role === 'moderator'
-
-  // Founders can write to any quadra room; everyone else is read-only when viewing another quadra
   const isReadOnly = !isFounder && !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
 
   useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading])
@@ -444,10 +567,12 @@ export default function Rooms() {
     setTimeout(() => setHighlightedMsgId(null), 1400)
   }
 
-  async function handleSend() {
+  // Accepts text + clearText callback from RoomInput
+  async function handleSend(text, clearText) {
     if ((!text.trim()&&!pendingImage)||sending||imageUploading) return
     const caption=text.trim(), imageFile=pendingImage?.file??null, replyToId=replyTo?.id??null
-    setText(''); setPendingImage(null); setReplyTo(null); inputRef.current?.focus()
+    clearText?.()
+    setPendingImage(null); setReplyTo(null); inputRef.current?.focus()
     clearTimeout(typingTimer.current)
     typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,typing:false } })
     if (imageFile) { await uploadImage(imageFile,caption,replyToId) }
@@ -578,7 +703,6 @@ export default function Rooms() {
                 <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>
                   {isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
                 </p>
-                {/* Quadra switcher */}
                 <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
                   {['Alpha','Beta','Gamma','Delta'].map(q => {
                     const ownQ  = profile?.type ? getQuadra(profile.type) : null
@@ -638,7 +762,7 @@ export default function Rooms() {
               </div>
             )}
 
-            {/* Room notifications prompt — only show on own room */}
+            {/* Room notifications prompt */}
             {!isReadOnly && profile && pushSupported && pushPermission!=='denied' && !roomNotifsEnabled && (
               <button type="button" onClick={enableRoomNotifications} disabled={enablingRoomNotif} style={{ display:'flex',alignItems:'center',gap:'0.5rem',width:'100%',padding:'0.6rem 1.5rem',background:'none',border:'none',borderBottom:'1px solid var(--border)',cursor:enablingRoomNotif?'default':'pointer',fontSize:'0.75rem',color:'var(--muted)',textAlign:'left',transition:'color 0.2s',opacity:enablingRoomNotif?0.6:1,flexShrink:0 }} onMouseEnter={e=>{if(!enablingRoomNotif)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color='var(--muted)'}>
                 <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M7 1.5a4 4 0 0 1 4 4v2.5l1 1.5H2l1-1.5V5.5a4 4 0 0 1 4-4z"/><path d="M5.5 11a1.5 1.5 0 0 0 3 0"/></svg>
@@ -670,116 +794,39 @@ export default function Rooms() {
               </div>
             )}
 
-            {/* Input area */}
-            <div style={{ borderTop:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0 }}>
-              {isReadOnly ? (
-                <div style={{ padding:'0.75rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
-                  <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:'var(--muted)', flexShrink:0 }}><rect x="3" y="6" width="8" height="7" rx="1"/><path d="M5 6V4a2 2 0 0 1 4 0v2"/></svg>
-                  <p style={{ fontSize:'0.82rem', color:'var(--muted)', fontStyle:'italic' }}>Viewing {viewingQuadra} room — read only</p>
-                </div>
-              ) : (
-                <>
-                  {/* Typing indicator */}
-                  {Object.keys(typingUsers).length > 0 && (() => {
-                    const entries=Object.values(typingUsers), names=entries.map(u=>u.name)
-                    let label
-                    if(names.length===1) label=`${names[0]} is typing…`
-                    else if(names.length===2) label=`${names[0]} and ${names[1]} are typing…`
-                    else label=`${names[0]}, ${names[1]} and ${names.length-2} other${names.length-2>1?'s':''} are typing…`
-                    return (
-                      <div style={{ padding:'0.3rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
-                        <span style={{ fontSize:'0.72rem',color:'var(--muted)',fontStyle:'italic' }}>{label}</span>
-                        <span style={{ display:'flex',gap:'3px',alignItems:'center' }}>
-                          {[0,1,2].map(i=><span key={i} style={{ width:4,height:4,borderRadius:'50%',background:'var(--muted)',display:'inline-block',animation:`typingDot 1.2s ${i*0.2}s infinite ease-in-out` }} />)}
-                        </span>
-                      </div>
-                    )
-                  })()}
+            {/* Input area — isolated component so typing doesn't re-render the message list */}
+            <RoomInput
+              onSend={handleSend}
+              sending={sending}
+              imageUploading={imageUploading}
+              pendingImage={pendingImage}
+              onClearPendingImage={handleClearPendingImage}
+              replyTo={replyTo}
+              setReplyTo={setReplyTo}
+              showGifPicker={showGifPicker}
+              setShowGifPicker={setShowGifPicker}
+              onGifSelect={handleGifSelect}
+              onImageFileChange={handleImageFileChange}
+              imageInputRef={imageInputRef}
+              inputRef={inputRef}
+              typingChannel={typingChannel}
+              typingTimer={typingTimer}
+              tabId={tabId}
+              profile={profile}
+              quadra={quadra}
+              isMobile={isMobile}
+              isAnonymous={isAnonymous}
+              isReadOnly={isReadOnly}
+              viewingQuadra={viewingQuadra}
+              typingUsers={typingUsers}
+            />
 
-                  {/* Reply bar */}
-                  {replyTo && (
-                    <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
-                      <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
-                        <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===profile?.id?'You':replyTo.senderName}</p>
-                        {replyTo.image_url && !replyTo.content && <p style={{ fontSize:'0.72rem',color:'var(--muted)' }}>🖼 Image</p>}
-                        {replyTo.content && <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:320 }}>{replyTo.content}</p>}
-                      </div>
-                      <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
-                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-                      </button>
-                    </div>
-                  )}
-
-                  <div style={{ padding:isMobile?'0.6rem 0.75rem':'1rem 1.5rem' }}>
-                    {isAnonymous ? (
-                      <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.75rem 1rem',background:'var(--surface)',borderRadius:4,border:'1px solid var(--border)' }}>
-                        <span style={{ fontSize:'0.85rem',color:'var(--muted)' }}>🕵️ Anonymous mode — switch to your profile to chat in the room.</span>
-                        <Link to="/profile/edit" style={{ fontSize:'0.78rem',color:'var(--accent)',textDecoration:'none',flexShrink:0 }}>Edit profile →</Link>
-                      </div>
-                    ) : (
-                      <>
-                        {/* Pending image preview */}
-                        {pendingImage && (
-                          <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',marginBottom:'0.5rem',padding:'0.5rem 0.75rem',background:'rgba(154,111,56,0.05)',border:'1px solid var(--accent-lt)',borderRadius:4 }}>
-                            <div style={{ flexShrink:0 }}>
-                              <img src={pendingImage.previewUrl} alt="pending" style={{ height:56,maxWidth:80,objectFit:'cover',borderRadius:4,border:'1px solid var(--border)',display:'block' }} />
-                            </div>
-                            <span style={{ fontSize:'0.78rem',color:'var(--muted)',flex:1 }}>Add a caption or hit Send</span>
-                            <button type="button" onClick={handleClearPendingImage} aria-label="Remove image" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }}>
-                              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-                            </button>
-                          </div>
-                        )}
-
-                        {imageUploading && (
-                          <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',marginBottom:'0.5rem',padding:'0.4rem 0.75rem',background:'rgba(154,111,56,0.07)',borderRadius:4,border:'1px solid var(--accent-lt)' }}>
-                            <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',flexShrink:0 }} />
-                            <span style={{ fontSize:'0.78rem',color:'var(--accent)' }}>Uploading image…</span>
-                          </div>
-                        )}
-
-                        {/* Text input row */}
-                        <div style={{ position:'relative' }}>
-                          {showGifPicker && (
-                            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
-                          )}
-                          <div style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }} onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'} onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}>
-                            <button type="button" onClick={() => imageInputRef.current?.click()} disabled={imageUploading||sending} title="Share image" aria-label="Attach image" style={{ background:'none',border:'none',padding:isMobile?'0.7rem 0.4rem 0.7rem 0.75rem':'0.9rem 0.4rem 0.9rem 1rem',cursor:(imageUploading||sending)?'default':'pointer',color:pendingImage?'var(--accent)':'var(--muted)',flexShrink:0,alignSelf:'center',opacity:(imageUploading||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',lineHeight:0 }} onMouseEnter={e=>{if(!imageUploading&&!sending)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}>
-                              <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="16" height="13" rx="2"/><circle cx="7" cy="9" r="1.5"/><polyline points="2,17 7,11 11,15 14,12 18,17"/></svg>
-                            </button>
-                            <button type="button" onClick={() => setShowGifPicker(p=>!p)} disabled={imageUploading||sending} title="Send a GIF" aria-label="GIF" style={{ background:'none',border:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.4rem',cursor:(imageUploading||sending)?'default':'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',flexShrink:0,alignSelf:'center',opacity:(imageUploading||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em',lineHeight:1 }} onMouseEnter={e=>{if(!imageUploading&&!sending)e.currentTarget.style.color='var(--accent)'}} onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}>
-                              GIF
-                            </button>
-                            <input ref={imageInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={handleImageFileChange} style={{ display:'none' }} />
-                            <textarea ref={inputRef} placeholder={pendingImage?'Add a caption (optional)…':`Message the ${quadra} quadra…`} value={text} rows={1} maxLength={2000}
-                              onChange={e => {
-                                setText(e.target.value)
-                                e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
-                                typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,name:profile.profile_data?.anonymous?'Anonymous':(profile.profile_data?.name??profile.type),user_type:profile.type,typing:true } })
-                                clearTimeout(typingTimer.current)
-                                typingTimer.current = setTimeout(() => { typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,typing:false } }) }, 2000)
-                              }}
-                              onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend()} }}
-                              style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:isMobile?'0.85rem':'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.5rem',maxHeight:'8rem' }}
-                            />
-                            {text.length>1800 && <span style={{ fontSize:'0.68rem',color:'var(--muted)',padding:'0 0.5rem 0.75rem',alignSelf:'flex-end' }}>{2000-text.length}</span>}
-                            <button className="btn-primary" onClick={handleSend} disabled={(!text.trim()&&!pendingImage)||sending||imageUploading} style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||imageUploading)?0.5:1 }}>Send</button>
-                          </div>
-                        </div>
-                        {text && <p style={{ fontSize:'0.68rem',color:'var(--muted)',textAlign:'right',margin:'0.25rem 0.5rem 0' }}>Shift + Enter for new line</p>}
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
           </div>
         </div>
       </div>
 
       {reportTarget && <ReportModal onSubmit={handleReport} onClose={() => setReportTarget(null)} submitting={reporting} />}
 
-      {/* Image lightbox */}
       {lightboxUrl && (
         <div onClick={() => setLightboxUrl(null)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.88)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
           <img src={lightboxUrl} alt="shared image" crossOrigin="anonymous" style={{ maxWidth:'92vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
