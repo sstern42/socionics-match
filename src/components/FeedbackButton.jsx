@@ -42,8 +42,14 @@ export default function FeedbackButton() {
       setStatus('error')
     } else {
       setStatus('success')
+      fetch(import.meta.env.VITE_DISCORD_FEEDBACK_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `**new ${type}** from ${profile?.type ?? 'anon'} on \`${window.location.pathname}\`\n> ${message.trim()}`,
+        }),
+      }).catch(() => {})
     }
-  }
 
   return (
     <>
