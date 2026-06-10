@@ -728,7 +728,8 @@ export default function Admin() {
 
         <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} />
         <VerificationPanel users={users} onUpdate={loadData} />
-
+        <FeedbackPanel />
+        
       </section>
     </Layout>
   )
@@ -870,7 +871,124 @@ function VerificationPanel({ users, onUpdate }) {
     </div>
   )
 }
+const miniBtn = colour => ({
+  padding: '4px 10px',
+  borderRadius: '6px',
+  border: `1.5px solid ${colour}`,
+  background: 'transparent',
+  color: colour,
+  fontSize: '12px',
+  fontWeight: 600,
+  cursor: 'pointer',
+})
 
+function FeedbackPanel() {
+  const [items, setItems] = useState([])
+  const [filter, setFilter] = useState('open')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      setLoading(true)
+      let query = supabase
+        .from('feedback')
+        .select('*, users(username, type)')
+        .order('created_at', { ascending: false })
+      if (filter !== 'all') query = query.eq('status', filter)
+      const { data, error } = await query
+      if (!error) setItems(data ?? [])
+      setLoading(false)
+    }
+    load()
+  }, [filter])
+
+  async function setStatus(id, status) {
+    await supabase.from('feedback').update({ status }).eq('id', id)
+    setItems(prev => prev.map(i => i.id === id ? { ...i, status } : i))
+  }
+
+  const statusColour = { open: '#e09000', reviewed: '#2E8FBE', resolved: '#0F6E56' }
+
+  return (
+    <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
+      <p style={cardTitleStyle}>
+        User feedback
+        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {items.length} {filter === 'all' ? 'total' : filter}</span>
+      </p>
+      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '1rem' }}>
+        {['open', 'reviewed', 'resolved', 'all'].map(s => (
+          <button
+            key={s}
+            onClick={() => setFilter(s)}
+            style={{
+              padding: '4px 12px',
+              borderRadius: '20px',
+              border: `1.5px solid ${filter === s ? 'var(--accent)' : 'var(--border)'}`,
+              background: filter === s ? 'var(--accent)' : 'transparent',
+              color: filter === s ? '#fff' : 'var(--muted)',
+              fontSize: '0.72rem',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+
+      {loading && <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>Loading…</p>}
+      {!loading && items.length === 0 && (
+        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>Nothing here.</p>
+      )}
+
+      <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+        {items.map((item, i) => (
+          <div
+            key={item.id}
+            style={{
+              padding: '0.75rem 0',
+              borderBottom: i < items.length - 1 ? '1px solid var(--border)' : 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.35rem',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text)' }}>
+                  {item.type === 'bug' ? '🐛 bug' : '💬 feedback'}
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
+                  {item.users?.username ?? 'anon'} · {item.users?.type ?? '?'} · {item.page_url ?? ''}
+                </span>
+              </div>
+              <span style={{ fontSize: '0.65rem', color: statusColour[item.status] ?? 'var(--muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                {item.status}
+              </span>
+            </div>
+
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.5 }}>
+              {item.message}
+            </p>
+
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.15rem' }}>
+              <span style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>
+                {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                {item.status !== 'reviewed'  && <button onClick={() => setStatus(item.id, 'reviewed')}  style={miniBtn('#2E8FBE')}>mark reviewed</button>}
+                {item.status !== 'resolved'  && <button onClick={() => setStatus(item.id, 'resolved')}  style={miniBtn('#0F6E56')}>resolve</button>}
+                {item.status !== 'open'      && <button onClick={() => setStatus(item.id, 'open')}      style={miniBtn('var(--muted)')}>reopen</button>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
 const centreStyle    = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', padding: '2rem' }
 const cardStyle      = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem' }
 const founderCardStyle = { background: 'rgba(154,111,56,0.04)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '1.25rem' }

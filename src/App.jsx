@@ -25,6 +25,7 @@ import PremiumWelcome from './pages/PremiumWelcome'
 import Settings from './pages/Settings'
 import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
+import FeedbackButton from './components/FeedbackButton'
 import './App.css'
 
 export default function App() {
@@ -58,6 +59,7 @@ export default function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+      <FeedbackButton />
     </BrowserRouter>
   )
 }
