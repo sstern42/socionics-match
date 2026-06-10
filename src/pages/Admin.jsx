@@ -897,13 +897,14 @@ function FeedbackPanel() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      let query = supabase
+     let query = supabase
         .from('feedback')
-        .select('*, users(username, type)')
+        .select('*')
         .order('created_at', { ascending: false })
       if (filter !== 'all') query = query.eq('status', filter)
       const { data, error } = await query
-      if (!error) setItems(data ?? [])
+      if (error) { console.error('FeedbackPanel error:', error); setLoading(false); return }
+      setItems(data ?? [])
       setLoading(false)
     }
     load()
@@ -968,7 +969,7 @@ function FeedbackPanel() {
                   {item.type === 'bug' ? '🐛 bug' : '💬 feedback'}
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                  {item.users?.username ?? 'anon'} · {item.users?.type ?? '?'} · {item.page_url ?? ''}
+                  {item.user_type ?? '?'} · {item.page_url ?? ''}
                 </span>
               </div>
               <span style={{ fontSize: '0.65rem', color: statusColour[item.status] ?? 'var(--muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
