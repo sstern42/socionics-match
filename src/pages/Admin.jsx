@@ -798,10 +798,13 @@ function VerificationPanel({ users, onUpdate }) {
   const [error, setError]               = useState(null)
   const [typeOverrides, setTypeOverrides] = useState({})
 
-  const filtered = users.filter(u => {
-    const q = search.toLowerCase()
-    return !q || (u.profile_data?.name ?? '').toLowerCase().includes(q) || u.type.toLowerCase().includes(q)
-  })
+  const [showVerified, setShowVerified] = useState(false)
+  
+    const filtered = users.filter(u => {
+      if (!showVerified && u.verified_by) return false
+      const q = search.toLowerCase()
+      return !q || (u.profile_data?.name ?? '').toLowerCase().includes(q) || u.type.toLowerCase().includes(q)
+    })
 
   function selectedType(u) { return typeOverrides[u.id] ?? u.type }
 
@@ -833,6 +836,10 @@ function VerificationPanel({ users, onUpdate }) {
           <input value={verifierName} onChange={e => setVerifierName(e.target.value)} style={{ width: 100, padding: '0.4rem 0.6rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }} />
         </div>
       </div>
+      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', marginTop: '0.5rem' }}>
+        <input type="checkbox" checked={showVerified} onChange={e => setShowVerified(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 14, height: 14 }} />
+        Show verified ({users.filter(u => u.verified_by).length})
+      </label>
       {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
       <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
         {filtered.map((u, i) => {
