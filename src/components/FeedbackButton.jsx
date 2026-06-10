@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
-import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 
 const MAX_CHARS = 1000
 
