@@ -897,13 +897,14 @@ function FeedbackPanel() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      let query = supabase
+     let query = supabase
         .from('feedback')
-        .select('*, users(username, type)')
+        .select('*')
         .order('created_at', { ascending: false })
       if (filter !== 'all') query = query.eq('status', filter)
       const { data, error } = await query
-      if (!error) setItems(data ?? [])
+      if (error) { console.error('FeedbackPanel error:', error); setLoading(false); return }
+      setItems(data ?? [])
       setLoading(false)
     }
     load()
