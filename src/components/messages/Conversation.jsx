@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { getCompatibilityBreakdown } from '../../data/compatibility'
@@ -44,12 +44,156 @@ function SIWebview({ url, onClose }) {
   )
 }
 
+// ─── MessageInput ────────────────────────────────────────────────────────────
+// Isolated so that typing only re-renders this component, not the message list.
+const MessageInput = React.memo(function MessageInput({
+  onSend, sending, uploadingImage, pendingImage, replyTo, setReplyTo,
+  otherName, isMobile, activeBlock, otherTyping,
+  presenceChannel, tabId,
+  showGifPicker, setShowGifPicker, onGifSelect, onImageSelect,
+  fileInputRef, onClearPendingImage, inputRef, typingTimer, currentUserId,
+}) {
+  const [text, setText] = useState('')
+
+  function handleSend() {
+    onSend(text, () => {
+      setText('')
+      if (inputRef.current) inputRef.current.style.height = 'auto'
+    })
+  }
+
+  return (
+    <div style={{ borderTop:'1px solid var(--border)',background:'var(--card-bg)' }}>
+      {otherTyping && (
+        <div style={{ padding:'0.4rem 1.5rem',display:'flex',alignItems:'center',gap:'0.5rem' }}>
+          <span style={{ fontSize:'0.72rem',color:'var(--muted)',fontStyle:'italic' }}>{otherName} is typing</span>
+          <span style={{ display:'flex',gap:'3px',alignItems:'center' }}>
+            {[0,1,2].map(i => <span key={i} style={{ width:4,height:4,borderRadius:'50%',background:'var(--muted)',display:'inline-block',animation:`typingDot 1.2s ${i*0.2}s infinite ease-in-out` }} />)}
+          </span>
+        </div>
+      )}
+
+      {/* Pending image preview strip */}
+      {(pendingImage || uploadingImage) && (
+        <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--accent-lt)',background:'rgba(154,111,56,0.05)',flexShrink:0 }}>
+          {uploadingImage ? (
+            <>
+              <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',display:'inline-block',flexShrink:0 }} />
+              <span style={{ fontSize:'0.78rem',color:'var(--accent)' }}>Uploading image…</span>
+            </>
+          ) : pendingImage && (
+            <>
+              <img src={pendingImage.previewUrl} alt="pending" style={{ height:52,width:'auto',maxWidth:72,objectFit:'cover',borderRadius:4,border:'1px solid var(--border)',display:'block',flexShrink:0 }} />
+              <span style={{ fontSize:'0.78rem',color:'var(--muted)',flex:1 }}>Add a caption or hit Send</span>
+              <button type="button" onClick={onClearPendingImage} aria-label="Remove image" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+              </button>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Reply preview strip */}
+      {replyTo && (
+        <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
+          <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
+            <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===currentUserId?'You':otherName}</p>
+            <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:300 }}>
+              {replyTo.content || (replyTo.attachment_type === 'gif' ? '🎬 GIF' : replyTo.attachment_url ? '🖼️ Image' : '')}
+            </p>
+          </div>
+          <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+          </button>
+        </div>
+      )}
+
+      <div style={{ padding:'1rem 1.5rem' }}>
+        {activeBlock ? (
+          <p style={{ fontSize:'0.82rem',color:'var(--muted)',textAlign:'center',padding:'0.5rem 0' }}>Messaging is paused for this conversation.</p>
+        ) : (
+          <>
+            <div style={{ position:'relative' }}>
+              {showGifPicker && (
+                <GifPicker onSelect={onGifSelect} onClose={() => setShowGifPicker(false)} />
+              )}
+              <div
+                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }}
+                onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
+                onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
+              >
+                {/* Media buttons */}
+                <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingImage || sending}
+                    title="Send image"
+                    style={{ background:'none',border:'none',cursor:'pointer',color:pendingImage?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:0,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',display:'flex',alignItems:'center',justifyContent:'center' }}
+                    onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
+                    onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="1" y="3" width="13" height="10" rx="1.5"/>
+                      <circle cx="5.5" cy="7" r="1.3"/>
+                      <polyline points="1,12 5,8 7.5,10.5 10,8 14,12"/>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowGifPicker(p => !p)}
+                    disabled={uploadingImage || sending}
+                    title="Send GIF"
+                    style={{ background:'none',border:'none',cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:1,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em' }}
+                    onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
+                    onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}
+                  >
+                    GIF
+                  </button>
+                  <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={onImageSelect} />
+                </div>
+
+                <textarea
+                  ref={inputRef}
+                  placeholder={pendingImage ? 'Add a caption (optional)…' : `Message ${otherName}…`}
+                  value={text}
+                  rows={1}
+                  onChange={e => {
+                    setText(e.target.value)
+                    e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
+                    presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:true } })
+                    clearTimeout(typingTimer.current)
+                    typingTimer.current = setTimeout(() => {
+                      presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:false } })
+                    }, 2000)
+                  }}
+                  onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
+                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 0.5rem 0.9rem 0.75rem',maxHeight:'8rem' }}
+                />
+                <button
+                  className="btn-primary"
+                  onClick={handleSend}
+                  disabled={(!text.trim()&&!pendingImage)||sending||uploadingImage}
+                  style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||uploadingImage)?0.5:1 }}
+                >
+                  Send
+                </button>
+              </div>
+            </div>
+            {text && <p style={{ fontSize:'0.68rem',color:'var(--muted)',textAlign:'right',margin:'0.25rem 0.5rem 0',letterSpacing:'0.02em' }}>Shift + Enter for new line</p>}
+          </>
+        )}
+      </div>
+    </div>
+  )
+})
+
+// ─── Conversation ─────────────────────────────────────────────────────────────
 export default function Conversation({ match, currentUserId, hasFeedback, onBack, isArchived, onArchive, onUnarchive, onUnmatch }) {
   const navigate = useNavigate()
   const { isPremium, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
-  const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [loading, setLoading] = useState(true)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -74,7 +218,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [uploadingImage, setUploadingImage] = useState(false)
   const [reactionPickerMsgId, setReactionPickerMsgId] = useState(null)
   const [lightboxUrl, setLightboxUrl] = useState(null)
-  const [pendingImage, setPendingImage] = useState(null) // { file, previewUrl }
+  const [pendingImage, setPendingImage] = useState(null)
 
   const longPressTimer = useRef(null)
   const typingTimer = useRef(null)
@@ -116,7 +260,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     const isRemoving = !!existing
     const snapshot = currentReactions
 
-    // Optimistic update
     setMessages(prev => prev.map(m => {
       if (m.id !== msgId) return m
       const reactions = m.reactions ?? []
@@ -236,7 +379,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       }
     )
 
-    // Reactions real-time — receive other users' reactions
     const reactionsChannel = supabase
       .channel(`reactions:${matchId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, payload => {
@@ -283,8 +425,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     if (wasInputFocused) inputRef.current?.focus()
   }, [messages.length])
 
-  useEffect(() => { if (!sending) inputRef.current?.focus() }, [sending])
-
   useEffect(() => {
     function handleClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false)
@@ -293,7 +433,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  async function handleSend() {
+  // Accepts text + a clearText callback from MessageInput
+  async function handleSend(text, clearText) {
     if ((!text.trim() && !pendingImage) || sending) return
     const matchId = match.id
     setSending(true)
@@ -316,8 +457,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         msg = await sendMessage({ matchId, senderId: currentUserId, content: text.trim(), replyToId })
       }
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
-      setText('')
-      if (inputRef.current) { inputRef.current.style.height = 'auto'; inputRef.current.focus() }
+      clearText?.()
+      inputRef.current?.focus()
     } catch (err) {
       console.error('Send failed:', err)
       setUploadingImage(false)
@@ -620,7 +761,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             const quotedMsg = msg.reply_to
             const showReplyBtn = hoveredMsgId === msg.id && !activeBlock
 
-            // Reaction groups
             const reactionGroups = {}
             for (const r of (msg.reactions ?? [])) {
               reactionGroups[r.emoji] = reactionGroups[r.emoji] || { count: 0, mine: false }
@@ -662,12 +802,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       </div>
                     )}
 
-                    {/* Attachment (image or GIF) */}
+                    {/* Attachment */}
                     {msg.attachment_url && (
-                      <div
-                        style={{ marginBottom: msg.content ? '0.5rem' : 0 }}
-                        onClick={e => e.stopPropagation()}
-                      >
+                      <div style={{ marginBottom: msg.content ? '0.5rem' : 0 }} onClick={e => e.stopPropagation()}>
                         <img
                           src={msg.attachment_url}
                           alt={msg.attachment_type === 'gif' ? 'GIF' : 'Image'}
@@ -691,7 +828,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   </div>
 
                   {/* Action buttons */}
-                  {/* Emoji react */}
                   <button
                     type="button"
                     onClick={e => { e.stopPropagation(); setReactionPickerMsgId(prev => prev === msg.id ? null : msg.id) }}
@@ -705,7 +841,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                       <circle cx="9" cy="5.5" r="0.6" fill="currentColor" stroke="none"/>
                     </svg>
                   </button>
-                  {/* Reply */}
                   <button type="button" onClick={() => setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })} aria-label="Reply" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0,pointerEvents:'auto' }}>
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
                   </button>
@@ -775,117 +910,30 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         <div ref={bottomRef} />
       </div>
 
-      {/* Input area */}
-      <div style={{ borderTop:'1px solid var(--border)',background:'var(--card-bg)' }}>
-        {otherTyping && (
-          <div style={{ padding:'0.4rem 1.5rem',display:'flex',alignItems:'center',gap:'0.5rem' }}>
-            <span style={{ fontSize:'0.72rem',color:'var(--muted)',fontStyle:'italic' }}>{otherName} is typing</span>
-            <span style={{ display:'flex',gap:'3px',alignItems:'center' }}>
-              {[0,1,2].map(i => <span key={i} style={{ width:4,height:4,borderRadius:'50%',background:'var(--muted)',display:'inline-block',animation:`typingDot 1.2s ${i*0.2}s infinite ease-in-out` }} />)}
-            </span>
-          </div>
-        )}
-
-        {/* Pending image preview strip */}
-        {(pendingImage || uploadingImage) && (
-          <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--accent-lt)',background:'rgba(154,111,56,0.05)',flexShrink:0 }}>
-            {uploadingImage ? (
-              <>
-                <span style={{ width:14,height:14,borderRadius:'50%',border:'2px solid rgba(154,111,56,0.25)',borderTopColor:'var(--accent)',animation:'bootSpin 0.8s linear infinite',display:'inline-block',flexShrink:0 }} />
-                <span style={{ fontSize:'0.78rem',color:'var(--accent)' }}>Uploading image…</span>
-              </>
-            ) : pendingImage && (
-              <>
-                <img src={pendingImage.previewUrl} alt="pending" style={{ height:52,width:'auto',maxWidth:72,objectFit:'cover',borderRadius:4,border:'1px solid var(--border)',display:'block',flexShrink:0 }} />
-                <span style={{ fontSize:'0.78rem',color:'var(--muted)',flex:1 }}>Add a caption or hit Send</span>
-                <button type="button" onClick={handleClearPendingImage} aria-label="Remove image" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }}>
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Reply preview strip */}
-        {replyTo && (
-          <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',padding:'0.5rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--surface)' }}>
-            <div style={{ flex:1,borderLeft:'2px solid var(--accent)',paddingLeft:'0.5rem' }}>
-              <p style={{ fontSize:'0.7rem',color:'var(--accent)',fontWeight:500,marginBottom:'0.1rem' }}>{replyTo.sender_id===currentUserId?'You':otherName}</p>
-              <p style={{ fontSize:'0.75rem',color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:300 }}>
-                {replyTo.content || (replyTo.attachment_type === 'gif' ? '🎬 GIF' : replyTo.attachment_url ? '🖼️ Image' : '')}
-              </p>
-            </div>
-            <button type="button" onClick={() => setReplyTo(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0 }} aria-label="Cancel reply">
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-            </button>
-          </div>
-        )}
-
-        <div style={{ padding:'1rem 1.5rem' }}>
-          {activeBlock ? (
-            <p style={{ fontSize:'0.82rem',color:'var(--muted)',textAlign:'center',padding:'0.5rem 0' }}>Messaging is paused for this conversation.</p>
-          ) : (
-            <>
-              {/* position:relative wrapper so GifPicker anchors correctly */}
-              <div style={{ position:'relative' }}>
-                {showGifPicker && (
-                  <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
-                )}
-                <div
-                  style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }}
-                  onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
-                  onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
-                >
-                  {/* Media buttons — image first, then GIF, matching Rooms order */}
-                  <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadingImage || sending}
-                      title="Send image"
-                      style={{ background:'none',border:'none',cursor:'pointer',color:pendingImage?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:0,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s, opacity 0.15s',display:'flex',alignItems:'center',justifyContent:'center' }}
-                      onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
-                      onMouseLeave={e=>e.currentTarget.style.color=pendingImage?'var(--accent)':'var(--muted)'}
-                    >
-                      <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="1" y="3" width="13" height="10" rx="1.5"/>
-                        <circle cx="5.5" cy="7" r="1.3"/>
-                        <polyline points="1,12 5,8 7.5,10.5 10,8 14,12"/>
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setShowGifPicker(p => !p)}
-                      disabled={uploadingImage || sending}
-                      title="Send GIF"
-                      style={{ background:'none',border:'none',cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:1,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em' }}
-                      onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
-                      onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}
-                    >
-                      GIF
-                    </button>
-                    <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={handleImageSelect} />
-                  </div>
-
-                  <textarea ref={inputRef} placeholder={pendingImage ? 'Add a caption (optional)…' : `Message ${otherName}…`} value={text} rows={1}
-                    onChange={e => {
-                      setText(e.target.value)
-                      e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
-                      presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:true } })
-                      clearTimeout(typingTimer.current)
-                      typingTimer.current = setTimeout(() => { presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:false } }) }, 2000)
-                    }}
-                    onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
-                    style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 0.5rem 0.9rem 0.75rem',maxHeight:'8rem' }}
-                  />
-                  <button className="btn-primary" onClick={handleSend} disabled={(!text.trim()&&!pendingImage)||sending||uploadingImage} style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||uploadingImage)?0.5:1 }}>Send</button>
-                </div>
-              </div>
-              {text && <p style={{ fontSize:'0.68rem',color:'var(--muted)',textAlign:'right',margin:'0.25rem 0.5rem 0',letterSpacing:'0.02em' }}>Shift + Enter for new line</p>}
-            </>
-          )}
-        </div>
-      </div>
+      {/* Input area — isolated component so typing doesn't re-render the message list */}
+      <MessageInput
+        onSend={handleSend}
+        sending={sending}
+        uploadingImage={uploadingImage}
+        pendingImage={pendingImage}
+        replyTo={replyTo}
+        setReplyTo={setReplyTo}
+        otherName={otherName}
+        isMobile={isMobile}
+        activeBlock={activeBlock}
+        otherTyping={otherTyping}
+        presenceChannel={presenceChannel}
+        tabId={tabId}
+        showGifPicker={showGifPicker}
+        setShowGifPicker={setShowGifPicker}
+        onGifSelect={handleGifSelect}
+        onImageSelect={handleImageSelect}
+        fileInputRef={fileInputRef}
+        onClearPendingImage={handleClearPendingImage}
+        inputRef={inputRef}
+        typingTimer={typingTimer}
+        currentUserId={currentUserId}
+      />
 
       {/* Cool off modal */}
       {modal === 'cooloff' && (
