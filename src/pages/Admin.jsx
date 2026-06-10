@@ -969,7 +969,7 @@ function FeedbackPanel() {
                   {item.type === 'bug' ? '🐛 bug' : '💬 feedback'}
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                  {item.users?.username ?? 'anon'} · {item.users?.type ?? '?'} · {item.page_url ?? ''}
+                  {item.user_type ?? '?'} · {item.page_url ?? ''}
                 </span>
               </div>
               <span style={{ fontSize: '0.65rem', color: statusColour[item.status] ?? 'var(--muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
