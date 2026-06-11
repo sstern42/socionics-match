@@ -3,6 +3,13 @@ import Layout from '../components/Layout'
 
 export const ENTRIES = [
      {
+       date: '11 June 2026',
+       label: 'Update',
+       items: [
+         'Stats page — socion.app/stats shows satisfaction ratings by relation type, which relations members connect in most, type distribution across the community, and selected written feedback. Data is live and updates as more connections are rated',
+       ],
+     },
+     {
        date: '10 June 2026',
        label: 'Update',
        items: [
