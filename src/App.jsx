@@ -14,6 +14,7 @@ import Terms from './pages/Terms'
 import Admin from './pages/Admin'
 import Changelog from './pages/Changelog'
 import Updates from './pages/Updates'
+import Stats from './pages/Stats'
 import Network from './pages/Network'
 import Feed from './pages/Feed'
 import Messages from './pages/Messages'
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/premium" element={<Premium />} />
         <Route path="/premium/welcome" element={<PremiumWelcome />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/stats" element={<Stats />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <FeedbackButton />
