@@ -5,7 +5,7 @@ import { getCompatibilityBreakdown } from '../../data/compatibility'
 import { getMessages, sendMessage, subscribeToMessages, markRead, toggleReaction, uploadMessageImage } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
 import { unmatch } from '../../lib/unmatch'
-import { markMatchRead, subtractUnread, getLastVisited } from '../../lib/useUnreadCount'
+import { markMatchRead, subtractUnread, getMatchLastRead } from '../../lib/useUnreadCount'
 import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabase'
 import GifPicker from '../GifPicker'
@@ -354,7 +354,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     getBlockBetween(currentUserId, otherUserId).then(setActiveBlock).catch(() => {})
   }, [match.id])
 
-  // Initial load
+// Initial load
   useEffect(() => {
     const matchId = match.id
     setMessages([]); setHasMore(false); setLoading(true)
@@ -362,9 +362,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     getMessages(matchId).then(({ msgs, hasMore: more }) => {
       if (!cancelled) {
         setMessages(msgs); setHasMore(more); setLoading(false)
+        const lastRead = getMatchLastRead(matchId)
+        const unreadInChat = lastRead
+          ? msgs.filter(m => m.sender_id !== currentUserId && new Date(m.created_at) > new Date(lastRead)).length
+          : msgs.filter(m => m.sender_id !== currentUserId).length
         markMatchRead(matchId); markRead(matchId)
-        const lastVisited = getLastVisited()
-        const unreadInChat = msgs.filter(m => m.sender_id !== currentUserId && new Date(m.created_at) > new Date(lastVisited)).length
         subtractUnread(unreadInChat)
       }
     })
