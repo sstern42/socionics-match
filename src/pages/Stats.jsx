@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','IEE','SLI']
 
@@ -39,6 +40,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Stats() {
+  const { session } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -263,10 +265,12 @@ export default function Stats() {
           <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7 }}>
             Every connection and rating contributes to this dataset. The more members rate their connections, the clearer the picture becomes.
           </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link to="/auth" className="btn-primary" style={{ fontSize: '0.82rem', textDecoration: 'none', display: 'inline-block' }}>
-              Join Socion
-            </Link>
+         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {!session && (
+              <Link to="/auth" className="btn-primary" style={{ fontSize: '0.82rem', textDecoration: 'none', display: 'inline-block' }}>
+                Join Socion
+              </Link>
+            )}
             <Link to="/network" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
               View the connection network →
             </Link>
