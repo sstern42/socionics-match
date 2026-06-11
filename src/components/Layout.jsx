@@ -63,6 +63,16 @@ function ThemeToggle() {
 }
 
 // ── Shared nav icon SVGs ──────────────────────────────────────────────
+const IconBookmark = ({ filled }) => filled ? (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+    <path d="M4 2h8a1 1 0 0 1 1 1v11l-5-3-5 3V3a1 1 0 0 1 1-1z"/>
+  </svg>
+) : (
+  <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <path d="M4 2h8a1 1 0 0 1 1 1v11l-5-3-5 3V3a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+  </svg>
+)
+
 const IconUpdates = () => (
   <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
     <circle cx="10" cy="12" r="1.75" fill="currentColor" stroke="none"/>
@@ -110,6 +120,10 @@ const IconBot = () => (
     <path d="M10 7V4"/>
     <circle cx="10" cy="3" r="1"/>
   </svg>
+)
+
+const Divider = () => (
+  <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
 )
 
 const GPT_URL = 'https://chatgpt.com/g/g-Vy0WioxfC-socionics-world'
@@ -209,14 +223,13 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
   function closeMenu() { setMenuOpen(false); setProfileOpen(false) }
 
-  // ── Toast helpers — persistent, dismissed by user only ────────────────────
+  // ── Toast helpers ─────────────────────────────────────────────────────────
   const pushToastRef  = useRef(null)
   const profileIdRef  = useRef(profile?.id)
   const toastIdRef    = useRef(0)
   const nextToastId   = () => `t-${++toastIdRef.current}`
 
   function pushToast(toast) {
-    // Messages: deduplicate by matchId, increment count
     if (toast.kind === 'message') {
       setToasts(prev => {
         const existing = prev.find(t => t.kind === 'message' && t.matchId === toast.matchId)
@@ -231,7 +244,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       })
       return
     }
-    // Founder posts: deduplicate by id
     if (toast.kind === 'founder_post') {
       setToasts(prev => {
         if (prev.some(t => t.id === toast.id)) return prev
@@ -239,7 +251,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       })
       return
     }
-    // All other kinds
     setToasts(prev => [...prev.slice(-3), toast])
   }
 
@@ -386,11 +397,24 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             </div>
           )}
 
-          {/* Desktop nav */}
+          {/* ── Desktop nav ──────────────────────────────────────────────── */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
             {session && profile ? (
               <>
+                {/* Group 1: Discovery */}
                 <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
+                <Link
+                  to="/saved"
+                  title="Saved profiles"
+                  aria-label="Saved profiles"
+                  style={{ ...navStyle(isActive('/saved')), display: 'inline-flex', alignItems: 'center' }}
+                >
+                  <IconBookmark filled={isActive('/saved')} />
+                </Link>
+
+                <Divider />
+
+                {/* Group 2: Social */}
                 <Link to="/messages" onClick={markMessagesRead} style={navStyle(isActive('/messages'))}>
                   Messages{unread > 0 && (
                     <span style={{ marginLeft: '0.4rem', background: 'var(--accent)', color: '#fff', borderRadius: '999px', fontSize: '0.65rem', fontWeight: 600, padding: '0.1rem 0.45rem', verticalAlign: 'middle', lineHeight: 1.4 }}>
@@ -404,20 +428,26 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
                   )}
                 </Link>
+
+                <Divider />
+
+                {/* Group 3: Personal */}
                 <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
+
+                <Divider />
+
+                {/* Group 4: Services */}
                 <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
                 )}
                 <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
 
-                {/* Divider */}
-                <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+                <Divider />
 
-                {/* Notification bell */}
+                {/* Icon group: utility */}
                 <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
 
-                {/* Icon buttons — updates, network, stats, help, bot */}
                 <Link to="/updates" title="Founder updates" aria-label="Founder updates"
                   style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
                   <IconUpdates />
@@ -449,10 +479,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 <Link to="/auth" style={navStyle(false)}>Sign in</Link>
                 <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
 
-                {/* Divider */}
-                <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
+                <Divider />
 
-                {/* Icon buttons — network, stats, help, bot */}
                 <Link to="/network" title="Network" aria-label="Network"
                   style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconNetwork />
@@ -509,11 +537,16 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
             {session && profile ? (
               <>
-                {/* ── Primary nav ─────────────────────────────────────── */}
+                {/* ── Discovery ───────────────────────────────────────── */}
                 <Link to="/feed" onClick={closeMenu} style={mobileNavStyle(isActive('/feed'))}>
                   Matches
                 </Link>
+                <Link to="/saved" onClick={closeMenu} style={{ ...mobileNavStyle(isActive('/saved')), display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <IconBookmark filled={isActive('/saved')} />
+                  Saved
+                </Link>
 
+                {/* ── Social ──────────────────────────────────────────── */}
                 <Link to="/messages" onClick={() => { closeMenu(); markMessagesRead() }} style={mobileNavStyle(isActive('/messages'))}>
                   Messages
                   {unread > 0 && (
@@ -566,13 +599,13 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   </div>
                 )}
 
-                {/* ── Secondary nav ────────────────────────────────────── */}
+                {/* ── Services ─────────────────────────────────────────── */}
                 <Link to="/typing" onClick={closeMenu} style={mobileNavStyle(isActive('/typing'))}>Get typed</Link>
                 {profile?.profile_data?.role === 'founder' && (
                   <Link to="/admin" onClick={closeMenu} style={mobileNavStyle(isActive('/admin'))}>Admin</Link>
                 )}
 
-                {/* ── Footer links section ─────────────────────────────── */}
+                {/* ── Footer links ─────────────────────────────────────── */}
                 <div style={{ borderTop: '1px solid var(--border)', marginTop: '0.25rem' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', padding: '0.75rem 1.5rem', gap: '0 1.5rem' }}>
                     <Link
@@ -699,7 +732,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         </footer>
       </div>
 
-      {/* Live toasts — each individually positioned, stacks upward */}
+      {/* Live toasts */}
       <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {toasts.map((toast, i) => {
         const TOAST_H = 68
