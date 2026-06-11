@@ -102,6 +102,18 @@ const IconHelp = () => (
   </svg>
 )
 
+const IconBot = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="7" width="14" height="10" rx="2"/>
+    <path d="M7 11h.01M13 11h.01"/>
+    <path d="M8 14.5h4"/>
+    <path d="M10 7V4"/>
+    <circle cx="10" cy="3" r="1"/>
+  </svg>
+)
+
+const GPT_URL = 'https://chatgpt.com/g/g-Vy0WioxfC-socionics-world'
+
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile, isPremium } = useAuth()
   const location = useLocation()
@@ -405,7 +417,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {/* Notification bell */}
                 <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
 
-                {/* Icon buttons — updates, network, stats, help */}
+                {/* Icon buttons — updates, network, stats, help, bot */}
                 <Link to="/updates" title="Founder updates" aria-label="Founder updates"
                   style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
                   <IconUpdates />
@@ -425,6 +437,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
                 </Link>
+                <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
+                  title="Socionics World AI" aria-label="Socionics World AI"
+                  style={{ ...navStyle(false), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconBot />
+                </a>
               </>
             ) : (
               <>
@@ -434,7 +451,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {/* Divider */}
                 <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
 
-                {/* Icon buttons — network, stats, help */}
+                {/* Icon buttons — network, stats, help, bot */}
                 <Link to="/network" title="Network" aria-label="Network"
                   style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconNetwork />
@@ -447,6 +464,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
                 </Link>
+                <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
+                  title="Socionics World AI" aria-label="Socionics World AI"
+                  style={{ ...navStyle(false), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconBot />
+                </a>
               </>
             )}
             <ThemeToggle />
@@ -593,6 +615,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Discord
                     </a>
+                    <a href={GPT_URL} target="_blank" rel="noopener noreferrer" onClick={closeMenu}
+                      style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                      <IconBot /> AI
+                    </a>
                     <Link to="/privacy" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Privacy</Link>
                     <Link to="/terms" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Terms</Link>
                   </div>
@@ -646,6 +672,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
+            <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+              <IconBot /> AI ↗
+            </a>
             <Link to="/support" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Support Socion ☕</Link>
             <Link to="/premium" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Premium ✦</Link>
             <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
