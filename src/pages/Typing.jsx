@@ -37,10 +37,23 @@ export default function Typing() {
   usePageTitle('Get Typed')
 
   useEffect(() => {
-    const tag = document.querySelector('meta[name="description"]')
-    if (tag) tag.setAttribute('content', 'Get your Socionics type confirmed by a specialist. Written reports and voice sessions available — so every match you make rests on the right type.')
-    return () => { if (tag) tag.setAttribute('content', 'Socionics-based matching for dating, friendship, and networking. Choose your dynamic — Dual, Mirror, Activity and 13 more.') }
-  }, [])
+      const desc = 'Get your Socionics type confirmed by a specialist. Written reports and voice sessions available — so every match you make rests on the right type.'
+      const defaultDesc = 'Socionics-based matching for dating, friendship, and networking. Choose your dynamic — Dual, Mirror, Activity and 13 more.'
+      const metaDesc = document.querySelector('meta[name="description"]')
+      const ogTitle  = document.querySelector('meta[property="og:title"]')
+      const ogDesc   = document.querySelector('meta[property="og:description"]')
+      const ogUrl    = document.querySelector('meta[property="og:url"]')
+      if (metaDesc) metaDesc.setAttribute('content', desc)
+      if (ogTitle)  ogTitle.setAttribute('content',  'Socion — Get Typed')
+      if (ogDesc)   ogDesc.setAttribute('content',   desc)
+      if (ogUrl)    ogUrl.setAttribute('content',    'https://socion.app/typing')
+      return () => {
+        if (metaDesc) metaDesc.setAttribute('content', defaultDesc)
+        if (ogTitle)  ogTitle.setAttribute('content',  'Socion — Match by personality type, not algorithm')
+        if (ogDesc)   ogDesc.setAttribute('content',   defaultDesc)
+        if (ogUrl)    ogUrl.setAttribute('content',    'https://socion.app')
+      }
+    }, [])
 
   if (loading) return null
 
