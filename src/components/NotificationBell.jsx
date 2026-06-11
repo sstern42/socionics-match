@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useNotifications } from '../hooks/useNotifications'
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -118,14 +117,11 @@ function NotificationRow({ notif, onRowClick }) {
  * Place in Layout.jsx desktop nav alongside IconUpdates / IconNetwork / IconHelp.
  * Receives `userId` (profile.id — internal users.id, not auth.uid()).
  */
-export default function NotificationBell({ userId }) {
+export default function NotificationBell({ notifications, unreadCount, loading, markOneRead, markAllRead }) {
   const navigate   = useNavigate()
   const [open, setOpen] = useState(false)
   const panelRef   = useRef(null)
   const buttonRef  = useRef(null)
-
-  const { notifications, unreadCount, loading, markOneRead, markAllRead } =
-    useNotifications(userId)
 
   // Close on outside click
   useEffect(() => {
