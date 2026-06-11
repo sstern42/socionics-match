@@ -271,6 +271,10 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
 }
 
 export default function Home() {
+  useEffect(() => {
+    document.title = 'Socion — Socionics-based matching'
+    return () => { document.title = 'Socion' }
+  }, [])
   const { session, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [stats, setStats] = useState(null)
