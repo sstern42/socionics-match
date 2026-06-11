@@ -274,7 +274,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           body: preview,
           actionUrl: `/messages?match=${msg.match_id}`,
         })
-
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -304,7 +303,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           body: type ?? null,
           actionUrl: `/messages?match=${match.id}`,
         })
-
       })
       .subscribe()
     return () => { supabase.removeChannel(channel) }
@@ -361,11 +359,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : null}
           </Link>
 
-            {session && profile && (
-              <div className="nav-burger-bell">
-                <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
-              </div>
-            )}
+          {session && profile && (
+            <div className="nav-burger-bell">
+              <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
+            </div>
+          )}
 
           {/* Desktop nav */}
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
@@ -398,7 +396,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {/* Notification bell */}
                 <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
 
-                {/* Icon buttons — updates, network, help */}
+                {/* Icon buttons — updates, network, stats, help */}
                 <Link to="/updates" title="Founder updates" aria-label="Founder updates"
                   style={{ ...navStyle(isActive('/updates')), display: 'inline-flex', alignItems: 'center', position: 'relative' }}>
                   <IconUpdates />
@@ -409,6 +407,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 <Link to="/network" title="Network" aria-label="Network"
                   style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconNetwork />
+                </Link>
+                <Link to="/stats" title="Stats" aria-label="Stats"
+                  style={navStyle(isActive('/stats'))}>
+                  Stats
                 </Link>
                 <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
@@ -422,12 +424,15 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {/* Divider */}
                 <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
 
-                {/* Icon buttons — network, help */}
+                {/* Icon buttons — network, stats, help */}
                 <Link to="/network" title="Network" aria-label="Network"
                   style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconNetwork />
                 </Link>
-                <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
+                <Link to="/stats" title="Stats" aria-label="Stats"
+                  style={navStyle(isActive('/stats'))}>
+                  Stats
+                </Link>
                 <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
@@ -566,7 +571,9 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <Link to="/network" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Network
                     </Link>
-                    <Link to="/stats" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Stats</Link>
+                    <Link to="/stats" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                      Stats
+                    </Link>
                     <Link to="/support" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Support ☕
                     </Link>
@@ -603,6 +610,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               <>
                 <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
                 <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
+                <Link to="/stats" onClick={closeMenu} style={mobileNavStyle(isActive('/stats'))}>Stats</Link>
                 <div style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>Theme</span>
                   <ThemeToggle />
@@ -629,6 +637,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
             <Link to="/support" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Support Socion ☕</Link>
             <Link to="/premium" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Premium ✦</Link>
+            <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
             <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
