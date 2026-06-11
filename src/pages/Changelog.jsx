@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import Layout from '../components/Layout'
 
 export const ENTRIES = [
@@ -358,6 +359,10 @@ export const ENTRIES = [
 ]
 
 export default function Changelog() {
+  useEffect(() => {
+    localStorage.setItem('socion_changelog_seen', ENTRIES[0].date)
+  }, [])
+
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 680, margin: '0 auto', padding: '4rem 1.5rem' }}>
