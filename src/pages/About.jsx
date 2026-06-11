@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase'
 
 // ── Constants ─────────────────────────────────────────────────────────
 const AVATAR_URL =
-  'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/035de721-cfd9-4530-964b-842cef6fc66d'
+  'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/0adb0ebe-d883-4811-b94b-822fd16f6806/avatar.jpg'
 
 const QUADRA_COLOURS = {
   alpha: '#2E8FBE',
@@ -77,19 +77,14 @@ export default function About() {
   }, [])
 
   useEffect(() => {
-    async function fetchStats() {
-      const [
-        { count: members },
-        { count: connections },
-        { count: messages },
-      ] = await Promise.all([
-        supabase.from('users').select('*', { count: 'exact', head: true }),
-        supabase.from('matches').select('*', { count: 'exact', head: true }),
-        supabase.from('messages').select('*', { count: 'exact', head: true }),
-      ])
-      setStats({ members, connections, messages })
-    }
-    fetchStats()
+    supabase.rpc('get_public_stats').then(({ data }) => {
+      if (!data) return
+      setStats({
+        members:     data.total_members     ?? null,
+        connections: data.total_connections ?? null,
+        messages:    data.total_ratings     ?? null,
+      })
+    })
   }, [])
 
   return (
@@ -287,7 +282,7 @@ export default function About() {
           {[
             { value: stats.members,     label: 'Members' },
             { value: stats.connections, label: 'Connections' },
-            { value: stats.messages,    label: 'Messages sent' },
+            { value: stats.messages,    label: 'Ratings submitted' },
           ].map(s => (
             <div key={s.label} style={{
               background: 'var(--surface)', borderRadius: 8,
