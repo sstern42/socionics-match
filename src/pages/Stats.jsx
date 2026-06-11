@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','IEE','SLI']
 
@@ -40,6 +41,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Stats() {
+  usePageTitle('Stats')
   const { session } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
