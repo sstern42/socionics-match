@@ -8,7 +8,7 @@ import EmailCapture from '../components/EmailCapture'
 import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
 
-const FOUNDING_CUTOFF = new Date('2026-06-15T23:00:00Z')
+const FOUNDING_CUTOFF = new Date('2026-06-15T23:59:59Z')
 
 const RELATION_PILLS = [
   { label: 'Dual',           key: 'DUAL' },
