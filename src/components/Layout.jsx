@@ -429,6 +429,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : (
               <>
                 <Link to="/auth" style={navStyle(false)}>Sign in</Link>
+                <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
 
                 {/* Divider */}
                 <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
@@ -618,6 +619,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             ) : (
               <>
                 <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
+                <Link to="/typing" onClick={closeMenu} style={mobileNavStyle(isActive('/typing'))}>Get typed</Link>
                 <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
                 <Link to="/stats" onClick={closeMenu} style={mobileNavStyle(isActive('/stats'))}>Stats</Link>
                 <div style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
