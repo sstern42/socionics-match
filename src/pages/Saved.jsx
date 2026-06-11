@@ -48,7 +48,7 @@ export default function Saved() {
   }
 
   return (
-    <Layout>
+    <Layout hideFooter>
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
         <p className="eyebrow">Bookmarked</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)', marginTop: '0.4rem', marginBottom: '0.5rem' }}>
