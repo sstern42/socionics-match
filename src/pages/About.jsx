@@ -1,5 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
+import { supabase } from '../lib/supabase'
+
+// ── Constants ─────────────────────────────────────────────────────────
+const AVATAR_URL =
+  'https://hetjmvwhyibsxrkkgury.supabase.co/storage/v1/object/public/avatars/035de721-cfd9-4530-964b-842cef6fc66d'
 
 const QUADRA_COLOURS = {
   alpha: '#2E8FBE',
@@ -17,7 +22,7 @@ const QUADRAS = [
 
 const RELATION_GROUPS = [
   { label: 'Within-quadra', names: 'Identity · Duality · Activity · Mirror' },
-  { label: 'Cross-quadra',  names: 'Semi-duality · Kindred · Business · Look-alike · Quasi-identical' },
+  { label: 'Cross-quadra',  names: 'Semi-duality · Kindred · Business · Quasi-identical' },
   { label: 'Asymmetric',    names: 'Benefactor · Beneficiary · Supervisor · Supervisee' },
   { label: 'Challenging',   names: 'Contrary · Extinguishment · Conflict · Super-ego' },
 ]
@@ -37,11 +42,11 @@ const DIFFERENTIATORS = [
   },
 ]
 
-const STATS = [
-  { n: '105',   label: 'Members at launch' },
-  { n: '187',   label: 'Connections made' },
-  { n: '3,773', label: 'Messages sent' },
-]
+// ── Helpers ───────────────────────────────────────────────────────────
+function fmt(n) {
+  if (n === null || n === undefined) return '…'
+  return n.toLocaleString()
+}
 
 function Divider() {
   return <div style={{ height: '0.5px', background: 'var(--border)', margin: '1.75rem 0' }} />
@@ -61,10 +66,30 @@ const h2 = {
   color: 'var(--text)',
 }
 
+// ── Component ─────────────────────────────────────────────────────────
 export default function About() {
+  const [stats, setStats] = useState({ members: null, connections: null, messages: null })
+  const [avatarOk, setAvatarOk] = useState(true)
+
   useEffect(() => {
     document.title = 'About · Socion'
     return () => { document.title = 'Socion' }
+  }, [])
+
+  useEffect(() => {
+    async function fetchStats() {
+      const [
+        { count: members },
+        { count: connections },
+        { count: messages },
+      ] = await Promise.all([
+        supabase.from('users').select('*', { count: 'exact', head: true }),
+        supabase.from('matches').select('*', { count: 'exact', head: true }),
+        supabase.from('messages').select('*', { count: 'exact', head: true }),
+      ])
+      setStats({ members, connections, messages })
+    }
+    fetchStats()
   }, [])
 
   return (
@@ -82,34 +107,62 @@ export default function About() {
         {/* Hero */}
         <h1 style={{
           fontSize: 'clamp(1.3rem, 4vw, 1.55rem)', fontWeight: 500,
-          lineHeight: 1.35, margin: '0 0 1.25rem', color: 'var(--text)',
+          lineHeight: 1.35, margin: '0 0 1.5rem', color: 'var(--text)',
         }}>
           Built by someone who has been in the Socionics community for 22 years.
         </h1>
 
-        <p style={body}>
-          Socion was built by Spencer Stern — solo, from scratch, in early 2026. Spencer is the founder
-          of{' '}
-          <a
-            href="https://socionicsinsight.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-umami-event="si-click"
-            data-umami-event-source="about"
-            style={{ color: 'var(--text)', textUnderlineOffset: 3 }}
-          >
-            Socionics Insight
-          </a>
-          , the largest English-language Socionics reference, and has studied the theory since 2004.
-          His type is ILE-C, verified by Jack Aaron at the World Socionics Society.
-        </p>
+        {/* Founder intro with avatar */}
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start', marginBottom: '0' }}>
+          {avatarOk ? (
+            <img
+              src={AVATAR_URL}
+              alt="Spencer Stern"
+              onError={() => setAvatarOk(false)}
+              style={{
+                width: 60, height: 60, borderRadius: '50%',
+                objectFit: 'cover', flexShrink: 0,
+                border: '0.5px solid var(--border)',
+              }}
+            />
+          ) : (
+            <div style={{
+              width: 60, height: 60, borderRadius: '50%', flexShrink: 0,
+              background: 'var(--surface)', border: '0.5px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '0.9rem', fontWeight: 600, color: 'var(--muted)',
+              letterSpacing: '0.04em',
+            }}>
+              SS
+            </div>
+          )}
 
-        <p style={{ ...body, marginBottom: '2rem' }}>
-          Socion exists because the theory deserves an honest empirical test at scale — and because every
-          matching product on the market is a black box optimising for engagement rather than compatibility.
-          The matching logic here is the published intertype relations matrix. You can inspect it, challenge
-          it, and watch it play out.
-        </p>
+          <div style={{ flex: 1 }}>
+            <p style={body}>
+              Socion was built by Spencer Stern — solo, from scratch, in early 2026. Spencer is the
+              founder of{' '}
+              <a
+                href="https://socionicsinsight.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-umami-event="si-click"
+                data-umami-event-source="about"
+                style={{ color: 'var(--text)', textUnderlineOffset: 3 }}
+              >
+                Socionics Insight
+              </a>
+              , the largest English-language Socionics reference, and has studied the theory since 2004.
+              His type is ILE-C, verified by Jack Aaron at the World Socionics Society.
+            </p>
+
+            <p style={{ ...body, marginBottom: 0 }}>
+              Socion exists because the theory deserves an honest empirical test at scale — and because
+              every matching product on the market is a black box optimising for engagement rather than
+              compatibility. The matching logic here is the published intertype relations matrix. You can
+              inspect it, challenge it, and watch it play out.
+            </p>
+          </div>
+        </div>
 
         <Divider />
 
@@ -118,15 +171,15 @@ export default function About() {
 
         <p style={body}>
           Socionics is a personality framework developed in the 1970s by Lithuanian researcher Aushra
-          Augusta, built on Jungian foundations. It defines 16 personality types and — unlike MBTI or the
-          Big Five — maps the specific relationship dynamic between every possible pair. The unit of analysis
-          is the dyad, not the individual.
+          Augusta, built on Jungian foundations. It defines 16 personality types and — unlike MBTI or
+          the Big Five — maps the specific relationship dynamic between every possible pair. The unit of
+          analysis is the dyad, not the individual.
         </p>
 
         <p style={{ ...body, marginBottom: '1.25rem' }}>
           The 16 types are grouped into four quadras: clusters of types that share core values,
-          communication styles, and information metabolism. Within a quadra, types tend to understand each
-          other readily. Across quadras, the dynamics shift.
+          communication styles, and information metabolism. Within a quadra, types tend to understand
+          each other readily. Across quadras, the dynamics shift.
         </p>
 
         {/* Quadra map */}
@@ -135,10 +188,8 @@ export default function About() {
             const c = QUADRA_COLOURS[q.key]
             return (
               <div key={q.key} style={{
-                borderRadius: 10,
-                padding: '0.9rem 1.1rem',
-                border: `0.5px solid ${c}44`,
-                background: `${c}0f`,
+                borderRadius: 10, padding: '0.9rem 1.1rem',
+                border: `0.5px solid ${c}44`, background: `${c}0f`,
               }}>
                 <p style={{
                   fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.07em',
@@ -170,15 +221,15 @@ export default function About() {
 
         <p style={body}>
           Every pair of types produces one of 16 named relationship dynamics — not just compatible or
-          incompatible, but named, characterised, with predictable qualities. A Dual pairing creates natural
-          complementarity. A Mirror pairing stimulates but can sting. A Conflict pairing drains both sides
-          regardless of goodwill or effort.
+          incompatible, but named, characterised, with predictable qualities. A Dual pairing creates
+          natural complementarity. A Mirror pairing stimulates but can sting. A Conflict pairing drains
+          both sides regardless of goodwill or effort.
         </p>
 
         <p style={{ ...body, marginBottom: '1.25rem' }}>
-          These dynamics are not specific to romance. A Dual is a Dual whether you are dating, building a
-          company, or making a friend. Socion lets you filter by the specific dynamic you are looking for —
-          not just a demographic.
+          These dynamics are not specific to romance. A Dual is a Dual whether you are dating, building
+          a company, or making a friend. Socion lets you filter by the specific dynamic you are looking
+          for — not just a demographic.
         </p>
 
         {/* Relations grid */}
@@ -229,17 +280,26 @@ export default function About() {
 
         <Divider />
 
-        {/* Stats */}
-        <h2 style={h2}>The first 18 days</h2>
+        {/* Live stats */}
+        <h2 style={h2}>Socion today</h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, margin: '1.25rem 0 0.5rem' }}>
-          {STATS.map(s => (
+          {[
+            { value: stats.members,     label: 'Members' },
+            { value: stats.connections, label: 'Connections' },
+            { value: stats.messages,    label: 'Messages sent' },
+          ].map(s => (
             <div key={s.label} style={{
               background: 'var(--surface)', borderRadius: 8,
               padding: '1rem', textAlign: 'center',
             }}>
-              <p style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--text)', margin: 0, lineHeight: 1.1 }}>
-                {s.n}
+              <p style={{
+                fontSize: '1.4rem', fontWeight: 500,
+                color: 'var(--text)', margin: 0, lineHeight: 1.1,
+                opacity: s.value === null ? 0.3 : 1,
+                transition: 'opacity 0.3s',
+              }}>
+                {fmt(s.value)}
               </p>
               <p style={{ fontSize: '0.7rem', color: 'var(--muted)', margin: '5px 0 0' }}>
                 {s.label}
@@ -248,7 +308,7 @@ export default function About() {
           ))}
         </div>
         <p style={{ fontSize: '0.72rem', color: 'var(--muted)', margin: '0.5rem 0 0' }}>
-          All 16 personality types represented within the first week.
+          All 16 personality types represented.
         </p>
 
         <Divider />
