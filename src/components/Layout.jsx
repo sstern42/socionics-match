@@ -440,8 +440,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   <IconNetwork />
                 </Link>
                 <Link to="/stats" title="Stats" aria-label="Stats"
-                  style={navStyle(isActive('/stats'))}>
-                  Stats
+                  style={{ ...navStyle(isActive('/stats')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconStats />
                 </Link>
                 <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
