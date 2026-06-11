@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { supabase } from '../../lib/supabase'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
 
@@ -13,7 +14,6 @@ const RELATION_COLOURS = {
   QUASI_IDENTITY: NEUTRAL, ILLUSIONARY: NEUTRAL, CONTRARY: NEUTRAL,
   SUPERVISOR:     NEUTRAL, SUPERVISEE: NEUTRAL, SUPER_EGO: NEUTRAL, CONFLICT: NEUTRAL, IDENTITY: NEUTRAL,
 }
-const PURPOSE_LABELS = { dating: 'Dating', friendship: 'Friendship', networking: 'Networking', team: 'Team building' }
 
 function withUtm(url) {
   if (!url) return url
@@ -36,12 +36,29 @@ function SIWebview({ url, onClose }) {
   )
 }
 
-export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting }) {
+function BookmarkIcon({ filled }) {
+  return filled ? (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+      <path d="M4 2h8a1 1 0 0 1 1 1v11l-5-3-5 3V3a1 1 0 0 1 1-1z"/>
+    </svg>
+  ) : (
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M4 2h8a1 1 0 0 1 1 1v11l-5-3-5 3V3a1 1 0 0 1 1-1z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+    </svg>
+  )
+}
+
+export default function ProfileCard({ profile, onConnect, alreadyMatched, matchId, connecting, isSaved = false, onToggleSave }) {
   const navigate = useNavigate()
   const [bioExpanded, setBioExpanded] = useState(false)
   const [photoModal, setPhotoModal] = useState(false)
-  const { profile_data, type, relation, displayRelation, purpose, last_active, verified_by, is_founding_member, plan_status } = profile
   const [webviewUrl, setWebviewUrl] = useState(null)
+  const [savedState, setSavedState] = useState(isSaved)
+  const [savePending, setSavePending] = useState(false)
+
+  useEffect(() => { setSavedState(isSaved) }, [isSaved])
+
+  const { profile_data, type, relation, displayRelation, purpose, last_active, verified_by, is_founding_member, plan_status } = profile
   const name = profile_data?.name ?? 'Unknown'
   const gender = profile_data?.gender
   const bio = profile_data?.bio
@@ -73,16 +90,36 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
 
   const memberBadge = !isAnonymous && (
     is_founding_member
-      ? <span title="Founding member" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>✦</span>
+      ? <span title="Founding member" style={{ fontSize:'0.8rem',color:'var(--accent)',marginLeft:'0.3rem',verticalAlign:'middle',lineHeight:1 }}>✦</span>
       : (plan_status === 'active' || plan_status === 'past_due')
-        ? <span title="Premium subscriber" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>★</span>
+        ? <span title="Premium subscriber" style={{ fontSize:'0.8rem',color:'var(--accent)',marginLeft:'0.3rem',verticalAlign:'middle',lineHeight:1 }}>★</span>
         : null
   )
+
+  async function handleBookmark() {
+    if (!profile.id || isAnonymous || isPreviewCard || savePending) return
+    setSavePending(true)
+    const newState = !savedState
+    setSavedState(newState)
+    try {
+      const { data, error } = await supabase.rpc('toggle_save_profile', { p_saved_user_id: profile.id })
+      if (error) throw error
+      setSavedState(data)
+      onToggleSave?.(profile.id, data)
+      window.umami?.track('profile-bookmark-toggle', { type, saved: data })
+    } catch {
+      setSavedState(!newState)
+    } finally {
+      setSavePending(false)
+    }
+  }
 
   function handleAction() {
     if (alreadyMatched && matchId) { navigate(`/messages?match=${matchId}`) }
     else { onConnect(profile) }
   }
+
+  const showBookmark = isLinkable && !isPreviewCard
 
   return (
     <>
@@ -155,9 +192,34 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
 
       <div style={{ flex:1 }} />
 
-      <button type="button" className={alreadyMatched?'btn-ghost':'btn-primary'} onClick={handleAction} disabled={connecting} style={{ opacity:connecting?0.5:1,cursor:connecting?'default':'pointer',marginTop:'0.25rem' }}>
-        {connecting?'Connecting…':alreadyMatched?'Message →':'Connect'}
-      </button>
+      <div style={{ display:'flex',gap:'0.5rem',marginTop:'0.25rem' }}>
+        {showBookmark && (
+          <button
+            type="button"
+            onClick={handleBookmark}
+            disabled={savePending}
+            title={savedState ? 'Remove from saved' : 'Save profile'}
+            aria-label={savedState ? 'Remove from saved' : 'Save profile'}
+            style={{
+              background: 'none',
+              border: `1px solid ${savedState ? 'var(--accent)' : 'var(--border)'}`,
+              borderRadius: 3,
+              padding: '0 0.75rem',
+              cursor: savePending ? 'default' : 'pointer',
+              opacity: savePending ? 0.5 : 1,
+              color: savedState ? 'var(--accent)' : 'var(--muted)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
+              transition: 'color 0.15s, border-color 0.15s',
+            }}
+          >
+            <BookmarkIcon filled={savedState} />
+          </button>
+        )}
+        <button type="button" className={alreadyMatched?'btn-ghost':'btn-primary'} onClick={handleAction} disabled={connecting} style={{ opacity:connecting?0.5:1,cursor:connecting?'default':'pointer',flex:1 }}>
+          {connecting?'Connecting…':alreadyMatched?'Message →':'Connect'}
+        </button>
+      </div>
     </div>
     <SIWebview url={webviewUrl} onClose={()=>setWebviewUrl(null)} />
     </>

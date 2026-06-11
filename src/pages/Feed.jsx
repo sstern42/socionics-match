@@ -136,6 +136,7 @@ export default function Feed() {
   }
 
   const [profiles, setProfiles] = useState([])
+  const [savedIds, setSavedIds] = useState(new Set())
   const [matchedMap, setMatchedMap] = useState({})
   const [fetching, setFetching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -192,7 +193,6 @@ export default function Feed() {
     }
   }, [profile?.id, loading])
 
-  // Listen for new member joins dispatched by Layout's realtime subscription
   useEffect(() => {
     function handleNewMember() { setNewMembersAvailable(true) }
     window.addEventListener('socion-new-member', handleNewMember)
@@ -237,7 +237,7 @@ export default function Feed() {
     setFeedExhausted(false)
     offsetRef.current = 0
     try {
-      const [feedResult, existingMatches] = await Promise.all([
+      const [feedResult, existingMatches, savedResult] = await Promise.all([
         getFeedProfiles({
           userType: profile.type,
           relationPreferences: profile.relation_preferences ?? [],
@@ -248,6 +248,7 @@ export default function Feed() {
           offset: 0,
         }),
         getExistingMatches(profile.id),
+        supabase.rpc('get_saved_profile_ids'),
       ])
       setProfiles(feedResult.profiles)
       setHasMore(feedResult.hasMore)
@@ -258,6 +259,7 @@ export default function Feed() {
         map[otherId] = m.id
       }
       setMatchedMap(map)
+      setSavedIds(new Set((savedResult.data ?? []).map(r => r.saved_user_id)))
     } catch (err) {
       setError(err.message)
     } finally {
@@ -288,6 +290,14 @@ export default function Feed() {
     } finally {
       setLoadingMore(false)
     }
+  }
+
+  function handleToggleSave(userId, nowSaved) {
+    setSavedIds(prev => {
+      const next = new Set(prev)
+      nowSaved ? next.add(userId) : next.delete(userId)
+      return next
+    })
   }
 
   function handleConnect(targetProfile) {
@@ -580,7 +590,7 @@ export default function Feed() {
                       {RELATIONS[filterRelation]?.name}
                     </span>
                   )}
-                  <span style={{ color: 'var(--muted)', fontSize: '0.65rem' }}>{showRelations ? '\u25b2' : '\u25bc'}</span>
+                  <span style={{ color: 'var(--muted)', fontSize: '0.65rem' }}>{showRelations ? '▲' : '▼'}</span>
                 </button>
                 {filterRelation !== 'ALL' && (
                   <button type="button" onClick={() => setFilterRelation('ALL')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
@@ -615,8 +625,6 @@ export default function Feed() {
                     <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => { setFilterRelation('ALL'); setShowRelations(false) }}>All ({profiles.length})</button>
                     {feedDisplayRelations.map(rel => {
                       const relProfiles = profiles.filter(p => (p.displayRelation ?? p.relation) === rel)
-                      // Look up the single countertype for this relation from the MATRIX:
-                      // MATRIX[otherType][myType] === rel gives the correct countertype
                       const ALL_TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
                       const counterType = profile?.type
                         ? ALL_TYPES.find(t => MATRIX[t]?.[profile.type] === rel) ?? null
@@ -722,7 +730,7 @@ export default function Feed() {
                   </span>
                 </div>
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
                 {displayed.map((p, i) => (
                   <>
@@ -733,6 +741,8 @@ export default function Feed() {
                       alreadyMatched={p.id in matchedMap}
                       matchId={matchedMap[p.id] ?? null}
                       connecting={connectingId === p.id}
+                      isSaved={savedIds.has(p.id)}
+                      onToggleSave={handleToggleSave}
                     />
                     {i === 4 && !dismissedAds.share && (
                       <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`Socion works better with more types in the pool — ${memberCount ? memberCount + ' members so far,' : 'growing every day,'} but the rarer types are harder to find. If you know someone who's into personality theory, send them the link.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />

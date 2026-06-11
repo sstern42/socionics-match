@@ -23,6 +23,7 @@ import Typing from './pages/Typing'
 import TypistProfile from './pages/TypistProfile'
 import Premium from './pages/Premium'
 import PremiumWelcome from './pages/PremiumWelcome'
+import Saved from './pages/Saved'
 import Settings from './pages/Settings'
 import UserProfile from './pages/UserProfile'
 import NotFound from './pages/NotFound'
@@ -57,6 +58,7 @@ export default function App() {
         <Route path="/typing/:slug" element={<TypistProfile />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/premium/welcome" element={<PremiumWelcome />} />
+        <Route path="/saved" element={<Saved />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/stats" element={<Stats />} />
         <Route path="*" element={<NotFound />} />
