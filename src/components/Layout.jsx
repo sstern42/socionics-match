@@ -85,6 +85,15 @@ const IconNetwork = () => (
   </svg>
 )
 
+const IconStats = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="2" y1="18" x2="18" y2="18"/>
+    <rect x="3" y="11" width="3" height="7" rx="0.5"/>
+    <rect x="8.5" y="6" width="3" height="12" rx="0.5"/>
+    <rect x="14" y="2" width="3" height="16" rx="0.5"/>
+  </svg>
+)
+
 const IconHelp = () => (
   <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
     <circle cx="10" cy="10" r="8"/>
@@ -409,8 +418,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   <IconNetwork />
                 </Link>
                 <Link to="/stats" title="Stats" aria-label="Stats"
-                  style={navStyle(isActive('/stats'))}>
-                  Stats
+                  style={{ ...navStyle(isActive('/stats')), display: 'inline-flex', alignItems: 'center' }}>
+                  <IconStats />
                 </Link>
                 <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>

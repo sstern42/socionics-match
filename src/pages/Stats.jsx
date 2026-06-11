@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { useAuth } from '../lib/AuthContext'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','IEE','SLI']
 
@@ -39,6 +40,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Stats() {
+  const { session } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -96,7 +98,7 @@ export default function Stats() {
 
   return (
     <Layout hideFooter>
-      <section style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem' }}>
+      <section style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
 
         {/* Header */}
         <p className="eyebrow">Socion</p>
@@ -108,7 +110,7 @@ export default function Stats() {
         </p>
 
         {/* Headline numbers */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '3rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(120px, 100%), 1fr))', gap: '1rem', marginBottom: '3rem' }}>
           {[
             { value: total_members,     label: 'Members' },
             { value: total_connections, label: 'Connections' },
@@ -263,10 +265,12 @@ export default function Stats() {
           <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7 }}>
             Every connection and rating contributes to this dataset. The more members rate their connections, the clearer the picture becomes.
           </p>
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <Link to="/auth" className="btn-primary" style={{ fontSize: '0.82rem', textDecoration: 'none', display: 'inline-block' }}>
-              Join Socion
-            </Link>
+         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            {!session && (
+              <Link to="/auth" className="btn-primary" style={{ fontSize: '0.82rem', textDecoration: 'none', display: 'inline-block' }}>
+                Join Socion
+              </Link>
+            )}
             <Link to="/network" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
               View the connection network →
             </Link>
@@ -279,6 +283,6 @@ export default function Stats() {
 }
 
 const centreStyle    = { minHeight: 'calc(100vh - 72px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }
-const statCardStyle  = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem', textAlign: 'center' }
+const statCardStyle  = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem', textAlign: 'center', minWidth: 0 }
 const sectionHeadStyle = { fontFamily: 'var(--serif)', fontSize: '1.25rem', fontWeight: 500, color: 'var(--text)', marginBottom: '0.25rem' }
 const sectionSubStyle  = { fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }
