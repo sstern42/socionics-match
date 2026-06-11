@@ -1,71 +1,276 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Support from './pages/Support'
-import Help from './pages/Help'
-import Home from './pages/Home'
-import Onboarding from './pages/Onboarding'
-import Auth from './pages/Auth'
-import ProfileSetup from './pages/ProfileSetup'
-import ProfileEdit from './pages/ProfileEdit'
-import ProfileDynamics from './pages/ProfileDynamics'
-import ProfileNotifications from './pages/ProfileNotifications'
-import Feedback from './pages/Feedback'
-import Privacy from './pages/Privacy'
-import Terms from './pages/Terms'
-import Admin from './pages/Admin'
-import Changelog from './pages/Changelog'
-import Updates from './pages/Updates'
-import Stats from './pages/Stats'
-import Network from './pages/Network'
-import Feed from './pages/Feed'
-import Messages from './pages/Messages'
-import Rooms from './pages/Rooms'
-import Typing from './pages/Typing'
-import TypistProfile from './pages/TypistProfile'
-import Premium from './pages/Premium'
-import PremiumWelcome from './pages/PremiumWelcome'
-import Saved from './pages/Saved'
-import Settings from './pages/Settings'
-import UserProfile from './pages/UserProfile'
-import About from './pages/About'
-import NotFound from './pages/NotFound'
-import FeedbackButton from './components/FeedbackButton'
-import './App.css'
+import { useEffect } from 'react'
+import Layout from '../components/Layout'
 
-export default function App() {
+const QUADRA_COLOURS = {
+  alpha: '#2E8FBE',
+  beta:  '#BA7517',
+  gamma: '#0F6E56',
+  delta: '#185FA5',
+}
+
+const QUADRAS = [
+  { key: 'alpha', name: 'Alpha quadra', types: ['ILE', 'SEI', 'ESE', 'LII'] },
+  { key: 'beta',  name: 'Beta quadra',  types: ['SLE', 'IEI', 'EIE', 'LSI'] },
+  { key: 'gamma', name: 'Gamma quadra', types: ['SEE', 'ILI', 'LIE', 'ESI'] },
+  { key: 'delta', name: 'Delta quadra', types: ['IEE', 'SLI', 'LSE', 'EII'] },
+]
+
+const RELATION_GROUPS = [
+  { label: 'Within-quadra', names: 'Identity · Duality · Activity · Mirror' },
+  { label: 'Cross-quadra',  names: 'Semi-duality · Kindred · Business · Look-alike · Quasi-identical' },
+  { label: 'Asymmetric',    names: 'Benefactor · Beneficiary · Supervisor · Supervisee' },
+  { label: 'Challenging',   names: 'Contrary · Extinguishment · Conflict · Super-ego' },
+]
+
+const DIFFERENTIATORS = [
+  {
+    title: 'Transparent logic',
+    desc:  'The matching matrix is published and auditable. You can see exactly why you are being shown someone.',
+  },
+  {
+    title: 'User agency',
+    desc:  'Choose the specific dynamic you want — Dual, Mirror, Activity, any of the 16 — rather than delegating that choice to an algorithm.',
+  },
+  {
+    title: 'Falsifiable',
+    desc:  'The theory makes testable predictions. This app is built to validate or challenge them at scale.',
+  },
+]
+
+const STATS = [
+  { n: '105',   label: 'Members at launch' },
+  { n: '187',   label: 'Connections made' },
+  { n: '3,773', label: 'Messages sent' },
+]
+
+function Divider() {
+  return <div style={{ height: '0.5px', background: 'var(--border)', margin: '1.75rem 0' }} />
+}
+
+const body = {
+  fontSize: '0.92rem',
+  color: 'var(--text)',
+  lineHeight: 1.8,
+  margin: '0 0 1rem',
+}
+
+const h2 = {
+  fontSize: '1.05rem',
+  fontWeight: 500,
+  margin: '0 0 0.75rem',
+  color: 'var(--text)',
+}
+
+export default function About() {
+  useEffect(() => {
+    document.title = 'About · Socion'
+    return () => { document.title = 'Socion' }
+  }, [])
+
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/profile/setup" element={<ProfileSetup />} />
-        <Route path="/profile/edit" element={<ProfileEdit />} />
-        <Route path="/profile/dynamics" element={<ProfileDynamics />} />
-        <Route path="/profile/notifications" element={<ProfileNotifications />} />
-        <Route path="/profile/:userId" element={<UserProfile />} />
-        <Route path="/feedback/:matchId" element={<Feedback />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/admin" element={<Admin />} />
-        <Route path="/changelog" element={<Changelog />} />
-        <Route path="/updates" element={<Updates />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/network" element={<Network />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route path="/messages" element={<Messages />} />
-        <Route path="/rooms" element={<Rooms />} />
-        <Route path="/typing" element={<Typing />} />
-        <Route path="/typing/:slug" element={<TypistProfile />} />
-        <Route path="/premium" element={<Premium />} />
-        <Route path="/premium/welcome" element={<PremiumWelcome />} />
-        <Route path="/saved" element={<Saved />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/stats" element={<Stats />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <FeedbackButton />
-    </BrowserRouter>
+    <Layout>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: '2.5rem 1.25rem 3rem' }}>
+
+        {/* Eyebrow */}
+        <p style={{
+          fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.1em',
+          textTransform: 'uppercase', color: 'var(--muted)', margin: '0 0 0.75rem',
+        }}>
+          About Socion
+        </p>
+
+        {/* Hero */}
+        <h1 style={{
+          fontSize: 'clamp(1.3rem, 4vw, 1.55rem)', fontWeight: 500,
+          lineHeight: 1.35, margin: '0 0 1.25rem', color: 'var(--text)',
+        }}>
+          Built by someone who has been in the Socionics community for 22 years.
+        </h1>
+
+        <p style={body}>
+          Socion was built by Spencer Stern — solo, from scratch, in early 2026. Spencer is the founder
+          of{' '}
+          <a
+            href="https://socionicsinsight.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-umami-event="si-click"
+            data-umami-event-source="about"
+            style={{ color: 'var(--text)', textUnderlineOffset: 3 }}
+          >
+            Socionics Insight
+          </a>
+          , the largest English-language Socionics reference, and has studied the theory since 2004.
+          His type is ILE-C, verified by Jack Aaron at the World Socionics Society.
+        </p>
+
+        <p style={{ ...body, marginBottom: '2rem' }}>
+          Socion exists because the theory deserves an honest empirical test at scale — and because every
+          matching product on the market is a black box optimising for engagement rather than compatibility.
+          The matching logic here is the published intertype relations matrix. You can inspect it, challenge
+          it, and watch it play out.
+        </p>
+
+        <Divider />
+
+        {/* What is Socionics */}
+        <h2 style={h2}>What is Socionics?</h2>
+
+        <p style={body}>
+          Socionics is a personality framework developed in the 1970s by Lithuanian researcher Aushra
+          Augusta, built on Jungian foundations. It defines 16 personality types and — unlike MBTI or the
+          Big Five — maps the specific relationship dynamic between every possible pair. The unit of analysis
+          is the dyad, not the individual.
+        </p>
+
+        <p style={{ ...body, marginBottom: '1.25rem' }}>
+          The 16 types are grouped into four quadras: clusters of types that share core values,
+          communication styles, and information metabolism. Within a quadra, types tend to understand each
+          other readily. Across quadras, the dynamics shift.
+        </p>
+
+        {/* Quadra map */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: '0.5rem' }}>
+          {QUADRAS.map(q => {
+            const c = QUADRA_COLOURS[q.key]
+            return (
+              <div key={q.key} style={{
+                borderRadius: 10,
+                padding: '0.9rem 1.1rem',
+                border: `0.5px solid ${c}44`,
+                background: `${c}0f`,
+              }}>
+                <p style={{
+                  fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.07em',
+                  textTransform: 'uppercase', color: c, margin: '0 0 8px',
+                }}>
+                  {q.name}
+                </p>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
+                  {q.types.map(t => (
+                    <span key={t} style={{
+                      fontSize: '0.72rem', fontWeight: 600,
+                      padding: '2px 7px', borderRadius: 4,
+                      background: `${c}1c`, color: c,
+                      letterSpacing: '0.04em',
+                    }}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <Divider />
+
+        {/* The 16 intertype relations */}
+        <h2 style={h2}>The 16 intertype relations</h2>
+
+        <p style={body}>
+          Every pair of types produces one of 16 named relationship dynamics — not just compatible or
+          incompatible, but named, characterised, with predictable qualities. A Dual pairing creates natural
+          complementarity. A Mirror pairing stimulates but can sting. A Conflict pairing drains both sides
+          regardless of goodwill or effort.
+        </p>
+
+        <p style={{ ...body, marginBottom: '1.25rem' }}>
+          These dynamics are not specific to romance. A Dual is a Dual whether you are dating, building a
+          company, or making a friend. Socion lets you filter by the specific dynamic you are looking for —
+          not just a demographic.
+        </p>
+
+        {/* Relations grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: '0.5rem' }}>
+          {RELATION_GROUPS.map(g => (
+            <div key={g.label} style={{
+              borderRadius: 8, padding: '0.75rem 1rem',
+              background: 'var(--surface)', border: '0.5px solid var(--border)',
+            }}>
+              <p style={{
+                fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.09em',
+                textTransform: 'uppercase', color: 'var(--muted)', margin: '0 0 5px',
+              }}>
+                {g.label}
+              </p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--text)', lineHeight: 1.65, margin: 0 }}>
+                {g.names}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <Divider />
+
+        {/* Why Socion */}
+        <h2 style={h2}>Why Socion?</h2>
+
+        <p style={{ ...body, marginBottom: '1.25rem' }}>
+          Most matching products optimise for time on site. Socion is designed to test a theory. Three
+          things make it different.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: '0.5rem' }}>
+          {DIFFERENTIATORS.map(d => (
+            <div key={d.title} style={{
+              borderRadius: 10, padding: '1rem',
+              border: '0.5px solid var(--border)', background: 'var(--bg)',
+            }}>
+              <p style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', margin: '0 0 5px' }}>
+                {d.title}
+              </p>
+              <p style={{ fontSize: '0.75rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                {d.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <Divider />
+
+        {/* Stats */}
+        <h2 style={h2}>The first 18 days</h2>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, margin: '1.25rem 0 0.5rem' }}>
+          {STATS.map(s => (
+            <div key={s.label} style={{
+              background: 'var(--surface)', borderRadius: 8,
+              padding: '1rem', textAlign: 'center',
+            }}>
+              <p style={{ fontSize: '1.4rem', fontWeight: 500, color: 'var(--text)', margin: 0, lineHeight: 1.1 }}>
+                {s.n}
+              </p>
+              <p style={{ fontSize: '0.7rem', color: 'var(--muted)', margin: '5px 0 0' }}>
+                {s.label}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: '0.72rem', color: 'var(--muted)', margin: '0.5rem 0 0' }}>
+          All 16 personality types represented within the first week.
+        </p>
+
+        <Divider />
+
+        {/* Open source */}
+        <p style={{ ...body, marginBottom: '0.75rem' }}>
+          The codebase is open source — the matching logic is auditable by anyone. Community trust through
+          transparency, not a proprietary black box.
+        </p>
+
+        <a
+          href="https://github.com/sstern42/socionics-match"
+          target="_blank"
+          rel="noopener noreferrer"
+          data-umami-event="github-click"
+          data-umami-event-source="about"
+          style={{ fontSize: '0.82rem', color: 'var(--muted)', textDecoration: 'none' }}
+        >
+          github.com/sstern42/socionics-match ↗
+        </a>
+
+      </div>
+    </Layout>
   )
 }
