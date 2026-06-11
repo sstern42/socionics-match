@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { TYPISTS, calcAge, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 
@@ -23,33 +24,41 @@ function viewerRelation(typistBaseType, viewerType) {
   catch { return null }
 }
 
+// Per-typist meta descriptions
+const META_DESCRIPTIONS = {
+  spencer:     'Get your Socionics type confirmed by Spencer, founder of Socion and Socionics Insight. Async written report, 3,500–5,000 words, delivered within your chosen timeframe.',
+  'uncle-sam': 'Get your Socionics type confirmed by Uncle Sam. Voice session with personalised written report. 422+ clients typed. Choose from three session tiers.',
+}
+
 export default function TypistProfile() {
   const { slug }                      = useParams()
   const { session, profile, loading } = useAuth()
   const navigate                      = useNavigate()
   const typist = TYPISTS[slug]
 
-  useEffect(() => {
-    if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+  usePageTitle(typist ? `Get Typed — ${typist.displayName}` : 'Get Typed')
 
   useEffect(() => {
-    if (!loading && session && !profile) navigate('/auth')
-  }, [loading, session, profile])
+    if (!typist) return
+    const desc = META_DESCRIPTIONS[slug] ?? `Get your Socionics type confirmed by ${typist.displayName} on Socion.`
+    const tag = document.querySelector('meta[name="description"]')
+    if (tag) tag.setAttribute('content', desc)
+    return () => { if (tag) tag.setAttribute('content', 'Socionics-based matching for dating, friendship, and networking. Choose your dynamic — Dual, Mirror, Activity and 13 more.') }
+  }, [slug, typist])
 
   useEffect(() => {
     if (!loading && !typist) navigate('/typing', { replace: true })
   }, [loading, typist])
 
-  if (loading || !profile || !typist) return null
+  if (loading || !typist) return null
 
-  const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
-  const relation = viewerRelation(typist.type, profile.type)
+  const alreadyVerifiedByThis = !!profile?.verified_by && profile.verified_by === typist.verifiedBy
+  const relation = viewerRelation(typist.type, profile?.type)
   const relInfo  = relation ? RELATIONS[relation] : null
   const flag     = typist.flag ?? ''
   const yrs      = yearsExperience(typist.studyingSince)
   const age      = calcAge(typist.dob)
-  const bookingReady = typist.bookingReady !== false // default true if unset
+  const bookingReady = typist.bookingReady !== false
 
   return (
     <Layout noScroll hideFooter>
@@ -87,7 +96,7 @@ export default function TypistProfile() {
           <span style={{ fontSize: '0.68rem', letterSpacing: '0.08em', fontWeight: 500, color: 'var(--accent)', border: '1px solid var(--accent-lt)', padding: '0.15rem 0.5rem', borderRadius: 2 }}>
             {typist.typeLabel}
           </span>
-          {relInfo && profile.type !== typist.type && (
+          {profile && relInfo && profile.type !== typist.type && (
             <span style={{ fontSize: '0.68rem', color: 'var(--muted)', border: '1px solid var(--border)', padding: '0.15rem 0.5rem', borderRadius: 2 }}>
               Your {relInfo.name} relation
             </span>
@@ -135,7 +144,7 @@ export default function TypistProfile() {
         )}
 
         {/* Relation context line */}
-        {relInfo && profile.type !== typist.type && (
+        {profile && relInfo && profile.type !== typist.type && (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
             A {relInfo.name.toLowerCase()} relation's perspective on {profile.type} — {relInfo.description.toLowerCase()}
           </p>
@@ -215,13 +224,25 @@ export default function TypistProfile() {
         )}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
           {typist.tiers.map(tier => {
-            const TierWrapper = bookingReady ? 'a' : 'div'
-            const tierLinkProps = bookingReady
+            // Determine wrapper: signed-in + bookingReady → external Stripe link
+            //                    signed-out + bookingReady → sign-in prompt (Link)
+            //                    not bookingReady           → inert div
+            const isSignedIn = !!session
+            const canBook    = bookingReady && isSignedIn
+            const needsSignIn = bookingReady && !isSignedIn
+
+            const TierWrapper  = canBook ? 'a' : needsSignIn ? Link : 'div'
+            const tierLinkProps = canBook
               ? {
                   href: tier.href,
                   target: '_blank',
                   rel: 'noopener noreferrer',
                   onClick: () => window.umami?.track('typing-checkout-clicked', { tier: tier.key, typist: typist.slug }),
+                }
+              : needsSignIn
+              ? {
+                  to: `/auth?redirect=/typing/${typist.slug}`,
+                  onClick: () => window.umami?.track('typing-signin-prompted', { tier: tier.key, typist: typist.slug }),
                 }
               : {}
 
@@ -257,7 +278,7 @@ export default function TypistProfile() {
                   )}
                   <p style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{tier.price}</p>
                   <p style={{ fontSize: '0.72rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: bookingReady ? 'var(--accent)' : 'var(--muted)', marginTop: '0.35rem' }}>
-                    {bookingReady ? 'Book →' : 'Coming soon'}
+                    {canBook ? 'Book →' : needsSignIn ? 'Sign in to book →' : 'Coming soon'}
                   </p>
                 </div>
               </TierWrapper>
@@ -265,12 +286,22 @@ export default function TypistProfile() {
           })}
         </div>
 
-        {/* Coming soon note — shown only when booking not yet ready */}
+        {/* Coming soon note */}
         {!bookingReady && (
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '1rem' }}>
             Booking opens shortly. In the meantime, get in touch via{' '}
             <a href={`mailto:${typist.contact}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{typist.contact}</a>
             {' '}to register your interest.
+          </p>
+        )}
+
+        {/* Sign-in prompt for unauthenticated visitors */}
+        {!session && bookingReady && (
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '1rem' }}>
+            <Link to={`/auth?redirect=/typing/${typist.slug}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+              Create a free Socion account
+            </Link>
+            {' '}to book — takes under a minute.
           </p>
         )}
 
@@ -290,8 +321,8 @@ export default function TypistProfile() {
           </div>
         )}
 
-        {/* Payment note — only shown when booking is ready */}
-        {bookingReady && typist.paymentNote && (
+        {/* Payment note — only shown when signed in and booking is ready */}
+        {session && bookingReady && typist.paymentNote && (
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
             {typist.paymentNote}
           </p>

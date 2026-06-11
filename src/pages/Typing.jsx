@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { TYPIST_LIST, calcAge, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 
@@ -31,17 +32,17 @@ function viewerRelation(typistBaseType, viewerType) {
 
 export default function Typing() {
   const { session, profile, loading } = useAuth()
-  const navigate = useNavigate()
   const [lightbox, setLightbox] = useState(null)
-  useEffect(() => {
-    if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+
+  usePageTitle('Get Typed')
 
   useEffect(() => {
-    if (!loading && session && !profile) navigate('/auth')
-  }, [loading, session, profile])
+    const tag = document.querySelector('meta[name="description"]')
+    if (tag) tag.setAttribute('content', 'Get your Socionics type confirmed by a specialist. Written reports and voice sessions available — so every match you make rests on the right type.')
+    return () => { if (tag) tag.setAttribute('content', 'Socionics-based matching for dating, friendship, and networking. Choose your dynamic — Dual, Mirror, Activity and 13 more.') }
+  }, [])
 
-  if (loading || !profile) return null
+  if (loading) return null
 
   return (
     <Layout noScroll hideFooter>
@@ -58,9 +59,9 @@ export default function Typing() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           {TYPIST_LIST.map(typist => {
             const avail    = AVAILABILITY[typist.availability] ?? AVAILABILITY.active
-            const relation = viewerRelation(typist.type, profile.type)
+            const relation = viewerRelation(typist.type, profile?.type)
             const relInfo  = relation ? RELATIONS[relation] : null
-            const alreadyVerifiedByThis = !!profile.verified_by && profile.verified_by === typist.verifiedBy
+            const alreadyVerifiedByThis = !!profile?.verified_by && profile.verified_by === typist.verifiedBy
             const flag     = typist.flag ?? ''
             const yrs      = yearsExperience(typist.studyingSince)
             const age      = calcAge(typist.dob)
@@ -102,7 +103,7 @@ export default function Typing() {
                       }}>
                         {typist.typeLabel}
                       </span>
-                      {relInfo && profile.type !== typist.type && (
+                      {profile && relInfo && profile.type !== typist.type && (
                         <span style={{
                           fontSize: '0.68rem', color: 'var(--muted)',
                           border: '1px solid var(--border)',
@@ -127,7 +128,7 @@ export default function Typing() {
                   </div>
 
                   {/* Relation context line */}
-                  {relInfo && profile.type !== typist.type && (
+                  {profile && relInfo && profile.type !== typist.type && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.55, margin: 0 }}>
                       A {relInfo.name.toLowerCase()} relation's perspective on {profile.type} — {relInfo.description.toLowerCase()}
                     </p>
