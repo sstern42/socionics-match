@@ -4,7 +4,6 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 import { RELATIONS, TYPES, getRelation } from '../data/relations'
-import EmailCapture from '../components/EmailCapture'
 import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
 
@@ -484,8 +483,6 @@ export default function Home() {
           </p>
         </div>
       </section>
-
-      {!session && <EmailCapture />}
 
       {/* THE FEED section — was background: 'var(--card-bg)', now 'var(--card-bg)' */}
       <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--card-bg)' }}>
