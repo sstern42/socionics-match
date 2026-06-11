@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import Layout from '../components/Layout'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export const ENTRIES = [
      {
@@ -366,6 +367,7 @@ export const ENTRIES = [
 ]
 
 export default function Changelog() {
+  usePageTitle("What's New")
   useEffect(() => {
     localStorage.setItem('socion_changelog_seen', ENTRIES[0].date)
   }, [])

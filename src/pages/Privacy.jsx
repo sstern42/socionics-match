@@ -1,6 +1,8 @@
 import Layout from '../components/Layout'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function Privacy() {
+  usePageTitle('Privacy')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 680, margin: '0 auto', padding: '4rem 1.5rem' }}>

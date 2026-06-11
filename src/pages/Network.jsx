@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const TYPES = [
   'ILE', 'SEI', 'ESE', 'LII',
@@ -151,6 +152,7 @@ function useForceSimulation(nodes, edges, width, height) {
 }
 
 export default function Network() {
+  usePageTitle('Network')
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [width, setWidth] = useState(0)

@@ -1,6 +1,8 @@
 import Layout from '../components/Layout'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function Support() {
+  usePageTitle('Support')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const FAQS = [
   {
@@ -242,6 +243,7 @@ function FAQItem({ q, a, isNotifications }) {
 }
 
 export default function Help() {
+  usePageTitle('Help')
   const { hash } = useLocation()
 
   useEffect(() => {
