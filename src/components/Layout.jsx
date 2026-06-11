@@ -427,6 +427,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/network')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconNetwork />
                 </Link>
+                <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
                 <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
@@ -565,6 +566,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <Link to="/network" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Network
                     </Link>
+                    <Link to="/stats" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Stats</Link>
                     <Link to="/support" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Support ☕
                     </Link>
