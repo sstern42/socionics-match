@@ -426,7 +426,7 @@ export default function Feed() {
           {!isPremium && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
               <strong style={{ color: connectionCount >= 3 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 3</strong> connections used.
-              {connectionCount >= 5 && (
+              {connectionCount >= 3 && (
                 <>
                   {' '}
                   <Link to="/premium" onClick={() => window.umami?.track('connection-counter-upgrade-clicked')} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
@@ -552,7 +552,7 @@ export default function Feed() {
               profiles={profiles}
               currentUserId={profile.id}
               userType={profile.type}
-              blockRightSwipe={!isPremium && connectionCount >= 5}
+              blockRightSwipe={!isPremium && connectionCount >= 3}
               onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
               onMatch={(data) => {
                 setMatchData(data)
@@ -849,7 +849,7 @@ export default function Feed() {
           >
             <div>
               <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Free tier limit</p>
-              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You've reached 5 connections</h2>
+              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You've reached your free tier limits</h2>
             </div>
             <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
               The free tier includes up to 3 active connections. Upgrade to Premium for unlimited connections, or end an existing connection to free up a slot.
