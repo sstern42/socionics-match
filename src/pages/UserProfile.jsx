@@ -10,6 +10,7 @@ import { sendMessage } from '../lib/messages'
 import { logProfileView, getProfileViews, getProfileViewCount } from '../lib/profileViews'
 import DynamicsTab from '../components/profile/DynamicsTab'
 import SIWebview from '../components/SIWebview'
+import { SMS_BOOKS } from '../data/books'
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -34,13 +35,11 @@ export default function UserProfile() {
   const [lightbox, setLightbox]     = useState(null)
   const [webviewUrl, setWebviewUrl] = useState(null)
 
-  // Own-profile tab state
-  const [activeTab, setActiveTab]   = useState('profile') // 'profile' | 'views'
+  const [activeTab, setActiveTab]   = useState('profile')
   const [views, setViews]           = useState([])
   const [viewCount, setViewCount]   = useState(null)
   const [viewsLoading, setViewsLoading] = useState(false)
 
-  // Connection state
   const [existingMatchId, setExistingMatchId] = useState(null)
   const [checkingMatch, setCheckingMatch]     = useState(false)
   const [connectPrompt, setConnectPrompt]     = useState(false)
@@ -59,7 +58,6 @@ export default function UserProfile() {
       .then(({ data }) => { setOther(data); setFetching(false) })
   }, [userId])
 
-  // Log view — fires once per mount for non-self profiles
   useEffect(() => {
     if (!profile?.id || !userId || profile.id === userId) return
     logProfileView(profile.id, userId)
@@ -81,7 +79,6 @@ export default function UserProfile() {
       .catch(() => setCheckingMatch(false))
   }, [profile?.id, userId])
 
-  // Fetch view data when own-profile Views tab is opened
   useEffect(() => {
     if (!other || !profile?.id || other.id !== profile.id || activeTab !== 'views') return
     setViewsLoading(true)
@@ -138,25 +135,24 @@ export default function UserProfile() {
     )
   }
 
-  const isSelf     = profile?.id === other.id
-  const isAnon     = !isSelf && (other.profile_data?.anonymous ?? false)
-  const name       = isAnon ? 'Anonymous' : (other.profile_data?.name ?? other.type)
-  const flag       = isAnon ? null : countryFlag(other.profile_data?.country)
-  const dob        = other.profile_data?.dob
-  const gender     = isAnon ? null : other.profile_data?.gender
+  const isSelf      = profile?.id === other.id
+  const isAnon      = !isSelf && (other.profile_data?.anonymous ?? false)
+  const name        = isAnon ? 'Anonymous' : (other.profile_data?.name ?? other.type)
+  const flag        = isAnon ? null : countryFlag(other.profile_data?.country)
+  const dob         = other.profile_data?.dob
+  const gender      = isAnon ? null : other.profile_data?.gender
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[gender]
   const discordHandle = isAnon ? null : other.profile_data?.discord_handle
-  const bio        = other.profile_data?.bio
-  const city       = isAnon ? null : other.profile_data?.city
+  const bio         = other.profile_data?.bio
+  const city        = isAnon ? null : other.profile_data?.city
   const countryCode = isAnon ? null : other.profile_data?.country
   const countryName = countryCode ? (COUNTRIES.find(c => c.code === countryCode)?.name ?? null) : null
 
   const galleryPhotos = isAnon ? [] : [other.avatar_url, ...(other.photos ?? [])].filter(Boolean)
 
-  const myType    = profile?.type
-  const relation  = !isSelf && myType ? MATRIX[other.type]?.[myType] : null
-  const relInfo   = relation ? RELATIONS[relation] : null
-
+  const myType   = profile?.type
+  const relation = !isSelf && myType ? MATRIX[other.type]?.[myType] : null
+  const relInfo  = relation ? RELATIONS[relation] : null
 
   const isMemberFounder = !isAnon && other.is_founding_member === true
   const isMemberPremium = !isAnon && !isMemberFounder && (other.plan_status === 'active' || other.plan_status === 'past_due')
@@ -178,14 +174,13 @@ export default function UserProfile() {
     })
   }
 
-  // ── Views tab content ────────────────────────────────────────────────────
+  // ── Views tab ────────────────────────────────────────────────────────────
 
   function ViewsTab() {
     if (viewsLoading) {
       return <p style={{ color: 'var(--muted)', fontSize: '0.88rem', textAlign: 'center', padding: '2rem 0' }}>Loading…</p>
     }
 
-    // Premium: full viewer list
     if (isPremium) {
       if (views.length === 0) {
         return (
@@ -198,12 +193,10 @@ export default function UserProfile() {
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
           {views.map((row, i) => {
-            const viewer    = row.viewer
+            const viewer       = row.viewer
             const isViewerAnon = viewer?.profile_data?.anonymous ?? false
-            const viewerName  = isViewerAnon ? 'Anonymous' : (viewer?.profile_data?.name ?? viewer?.type ?? '?')
-            const viewerType  = viewer?.type ?? '?'
-            // Relation: what relation does the profile owner have with this viewer
-            // MATRIX[viewer.type][myType] = relation from myType's (profile owner's) perspective
+            const viewerName   = isViewerAnon ? 'Anonymous' : (viewer?.profile_data?.name ?? viewer?.type ?? '?')
+            const viewerType   = viewer?.type ?? '?'
             const viewerRelKey = myType && viewer?.type ? MATRIX[viewer.type]?.[myType] : null
             const viewerRelInfo = viewerRelKey ? RELATIONS[viewerRelKey] : null
 
@@ -222,15 +215,12 @@ export default function UserProfile() {
                   width: '100%',
                 }}
               >
-                {/* Avatar */}
                 <div style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, background: 'var(--surface)', border: '1px solid var(--border)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   {viewer?.avatar_url && !isViewerAnon
                     ? <img src={viewer.avatar_url} alt={viewerName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : <span style={{ fontFamily: 'var(--serif)', fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1 }}>{isViewerAnon ? '🕵️' : (viewerName[0]?.toUpperCase() ?? '?')}</span>
                   }
                 </div>
-
-                {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.92rem', fontWeight: 500, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{viewerName}</span>
@@ -245,8 +235,6 @@ export default function UserProfile() {
                     <span style={{ fontSize: '0.72rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>{viewerRelInfo.name}</span>
                   )}
                 </div>
-
-                {/* Time */}
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>{timeAgo(row.viewed_at)}</span>
               </div>
             )
@@ -255,7 +243,6 @@ export default function UserProfile() {
       )
     }
 
-    // Free: count tease
     return (
       <div style={{ textAlign: 'center', padding: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
         <div style={{ fontFamily: 'var(--serif)', fontSize: '3rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>
@@ -284,7 +271,7 @@ export default function UserProfile() {
     )
   }
 
-  // ── Tab bar (own profile only) ──────────────────────────────────────────
+  // ── Tab bar ──────────────────────────────────────────────────────────────
 
   const tabStyle = (active) => ({
     padding: '0.65rem 1.25rem',
@@ -329,7 +316,6 @@ export default function UserProfile() {
           </div>
         )}
 
-        {/* Tab bar — own profile only */}
         {isSelf && (
           <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1.5rem' }}>
             <button style={tabStyle(activeTab === 'profile')} onClick={() => setActiveTab('profile')}>Profile</button>
@@ -350,15 +336,12 @@ export default function UserProfile() {
           </div>
         )}
 
-        {/* Views tab */}
         {isSelf && activeTab === 'views' && <ViewsTab />}
 
-        {/* Dynamics tab */}
         {isSelf && activeTab === 'dynamics' && (
           <DynamicsTab userId={profile?.id} myType={profile?.type} isPremium={isPremium} />
         )}
 
-        {/* Profile tab (always shown for non-self; shown when tab = 'profile' for self) */}
         {(!isSelf || activeTab === 'profile') && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
@@ -382,7 +365,7 @@ export default function UserProfile() {
               </div>
             </div>
 
-            {/* Type badge — opens SI webview */}
+            {/* Type badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -463,6 +446,35 @@ export default function UserProfile() {
               </div>
             )}
 
+            {/* Book CTA — non-self, non-anon profiles only */}
+            {!isSelf && !isAnon && SMS_BOOKS[other.type] && (
+              <div style={{ border: '1px solid var(--border)', borderRadius: 4, padding: '0.85rem 1rem' }}>
+                <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.65rem' }}>Socionics Made Simple</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ width: 32, height: 46, background: '#185FA5', borderRadius: 2, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: '6px', fontWeight: 500, color: '#B5D4F4', textAlign: 'center', lineHeight: 1.4, padding: '0 3px' }}>SMS</span>
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text)', margin: '0 0 0.3rem' }}>
+                      The {other.type} — {SMS_BOOKS[other.type].nickname}
+                    </p>
+                    <a
+                      href={SMS_BOOKS[other.type].url}
+                      target="_blank"
+                      rel="noopener sponsored"
+                      onClick={() => window.umami?.track('profile-book-link-clicked', { type: other.type })}
+                      style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none' }}
+                    >
+                      Read on Amazon →
+                    </a>
+                    <p style={{ fontSize: '0.62rem', color: 'var(--muted)', marginTop: '0.3rem', lineHeight: 1.4 }}>
+                      Affiliate link — we earn a small commission at no extra cost to you.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {!discordHandle && !isSelf && (
               <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
                 This member hasn't added a Discord handle yet. You can ask them to add one in your conversation — they'll find it under Profile → Details.
@@ -508,9 +520,7 @@ export default function UserProfile() {
         </div>
       )}
 
-      {/* SI Webview */}
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
-
     </Layout>
   )
 }
