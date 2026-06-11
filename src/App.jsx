@@ -26,6 +26,7 @@ import PremiumWelcome from './pages/PremiumWelcome'
 import Saved from './pages/Saved'
 import Settings from './pages/Settings'
 import UserProfile from './pages/UserProfile'
+import About from './pages/About'
 import NotFound from './pages/NotFound'
 import FeedbackButton from './components/FeedbackButton'
 import './App.css'
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/feedback/:matchId" element={<Feedback />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/about" element={<About />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/changelog" element={<Changelog />} />
         <Route path="/updates" element={<Updates />} />
