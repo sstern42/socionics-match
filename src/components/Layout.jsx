@@ -439,6 +439,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 </Link>
                 <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
                   title="Socionics World AI" aria-label="Socionics World AI"
+                  data-umami-event="gpt-click" data-umami-event-source="nav-desktop"
                   style={{ ...navStyle(false), display: 'inline-flex', alignItems: 'center' }}>
                   <IconBot />
                 </a>
@@ -466,6 +467,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 </Link>
                 <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
                   title="Socionics World AI" aria-label="Socionics World AI"
+                  data-umami-event="gpt-click" data-umami-event-source="nav-desktop"
                   style={{ ...navStyle(false), display: 'inline-flex', alignItems: 'center' }}>
                   <IconBot />
                 </a>
@@ -612,10 +614,13 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <Link to="/help" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Help
                     </Link>
-                    <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
+                    <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" onClick={closeMenu}
+                      data-umami-event="discord-click" data-umami-event-source="nav-mobile"
+                      style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Discord
                     </a>
                     <a href={GPT_URL} target="_blank" rel="noopener noreferrer" onClick={closeMenu}
+                      data-umami-event="gpt-click" data-umami-event-source="nav-mobile"
                       style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                       <IconBot /> AI
                     </a>
@@ -666,13 +671,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <footer className={`site-footer${hideFooter ? ' footer-desktop-only' : ''}`}>
           <div>
-            <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern ↗</a></p>
+            <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" data-umami-event="spencerstern-click" data-umami-event-source="footer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern ↗</a></p>
           </div>
           <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
-            <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
-            <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
+            <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" data-umami-event="si-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
+            <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" data-umami-event="github-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
+            <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" data-umami-event="discord-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
             <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
+              data-umami-event="gpt-click" data-umami-event-source="footer"
               style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
               <IconBot /> AI ↗
             </a>
