@@ -478,6 +478,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               <>
                 <Link to="/auth" style={navStyle(false)}>Sign in</Link>
                 <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
+                <Link to="/about" style={navStyle(isActive('/about'))}>About</Link>
 
                 <Divider />
 
@@ -657,6 +658,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                       style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                       <IconBot /> AI
                     </a>
+                    <Link to="/about" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>About</Link>
                     <Link to="/privacy" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Privacy</Link>
                     <Link to="/terms" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Terms</Link>
                   </div>
@@ -684,6 +686,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               <>
                 <Link to="/auth" onClick={closeMenu} style={mobileNavStyle(false)}>Sign in</Link>
                 <Link to="/typing" onClick={closeMenu} style={mobileNavStyle(isActive('/typing'))}>Get typed</Link>
+                <Link to="/about" onClick={closeMenu} style={mobileNavStyle(isActive('/about'))}>About</Link>
                 <Link to="/network" onClick={closeMenu} style={mobileNavStyle(isActive('/network'))}>Network</Link>
                 <Link to="/stats" onClick={closeMenu} style={mobileNavStyle(isActive('/stats'))}>Stats</Link>
                 <div style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -718,6 +721,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             <Link to="/support" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Support Socion ☕</Link>
             <Link to="/premium" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Premium ✦</Link>
             <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
+            <Link to="/about" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>About</Link>
             <Link to="/privacy" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Privacy</Link>
             <Link to="/terms" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Terms</Link>
             <Link to="/changelog" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', position: 'relative' }}
