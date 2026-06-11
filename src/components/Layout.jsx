@@ -103,7 +103,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
   const [updatesUnread, setUpdatesUnread] = useState(false)
   const [toasts, setToasts] = useState([])
-  const { notifications, unreadCount: notifUnreadCount, loading: notifLoading, markOneRead, markAllRead } = useNotifications(profile?.id))
+  const { notifications, unreadCount: notifUnreadCount, loading: notifLoading, markOneRead, markAllRead } = useNotifications(profile?.id)
 
   // ── Room unread ───────────────────────────────────────────────────────────
   useEffect(() => {
