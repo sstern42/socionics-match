@@ -38,10 +38,11 @@ export default function FeedbackButton() {
     })
 
    if (error) {
-      console.error('Feedback submission error:', error)
-      setStatus('error')
-    } else {
-      setStatus('success')
+        console.error('Feedback submission error:', error)
+        setStatus('error')
+      } else {
+        setStatus('success')
+      }
     }
 
   return (
