@@ -55,7 +55,7 @@ export function useNotifications(userId) {
     if (!userId) return
 
     const channel = supabase
-      .channel(`notifications:${userId}:${instanceId.current}`)
+      .channel(`notifications:${userId}`)
       .on('postgres_changes', {
         event:  'INSERT',
         schema: 'public',
