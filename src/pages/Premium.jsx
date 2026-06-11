@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 
 // Truthful at launch — only features that actually gate. Message history is
@@ -20,6 +21,7 @@ const FEATURES = [
 
 
 export default function Premium() {
+  usePageTitle('Premium')
   const { session, profile, isPremium, loading } = useAuth()
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
