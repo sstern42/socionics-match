@@ -26,8 +26,6 @@ export function useNotifications(userId) {
   const [unreadCount, setUnreadCount]     = useState(0)
   const [loading, setLoading]             = useState(false)
   const channelRef                        = useRef(null)
-  // Stable per-instance id so the two bell instances don't share a channel name
-  const instanceId                        = useRef(Math.random().toString(36).slice(2))
 
   const fetchAll = useCallback(async () => {
     if (!userId) return
@@ -57,7 +55,7 @@ export function useNotifications(userId) {
     if (!userId) return
 
     const channel = supabase
-      .channel(`notifications:${userId}:${instanceId.current}`)
+      .channel(`notifications:${userId}`)
       .on('postgres_changes', {
         event:  'INSERT',
         schema: 'public',
