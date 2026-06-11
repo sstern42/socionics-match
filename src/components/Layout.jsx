@@ -8,6 +8,7 @@ import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import IOSInstallBanner from './IOSInstallBanner'
 import AnnouncementBanner from './AnnouncementBanner'
 import NotificationBell from './NotificationBell'
+import { useNotifications } from '../hooks/useNotifications'
 import { createNotification } from '../lib/notifications'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
@@ -102,6 +103,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
   const [updatesUnread, setUpdatesUnread] = useState(false)
   const [toasts, setToasts] = useState([])
+  const { notifications, unreadCount: notifUnreadCount, loading: notifLoading, markOneRead, markAllRead } = useNotifications(profile?.id))
 
   // ── Room unread ───────────────────────────────────────────────────────────
   useEffect(() => {
@@ -361,7 +363,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
             {session && profile && (
               <div className="nav-burger-bell">
-                <NotificationBell userId={profile.id} />
+                <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
               </div>
             )}
 
@@ -394,7 +396,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
 
                 {/* Notification bell */}
-                <NotificationBell userId={profile.id} />
+                <NotificationBell notifications={notifications} unreadCount={notifUnreadCount} loading={notifLoading} markOneRead={markOneRead} markAllRead={markAllRead} />
 
                 {/* Icon buttons — updates, network, help */}
                 <Link to="/updates" title="Founder updates" aria-label="Founder updates"
