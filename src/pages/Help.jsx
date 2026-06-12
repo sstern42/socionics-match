@@ -72,7 +72,7 @@ const FAQS = [
       },
       {
         q: "Why can I see some types but not others in my feed?",
-        a: "The feed shows members whose type produces a relation you're open to, filtered by shared purpose and activity. If a type isn't appearing, either no members of that type are currently active, or your relation preferences are filtering them out. You can adjust your relation preferences in Profile → Details.",
+        a: "On the free tier, your feed shows members in the same quadra as your type. Premium unlocks all 16 relation type filters across the full feed. If a type still isn't appearing, either no active members of that type are currently on the platform, or your relation preferences are filtering them out. You can adjust your relation preferences in Profile → Details.",
       },
       {
         q: 'What happens when I connect with someone?',
@@ -97,7 +97,7 @@ const FAQS = [
       },
       {
         q: 'Can I filter by specific relation types?',
-        a: "Yes — go to Profile → Details and select the relation types you're open to. Your feed will update accordingly.",
+        a: "Yes — go to Profile → Details and select the relation types you're open to. Premium members can filter across all 16 relation types. Free members see same-quadra matches by default.",
       },
     ],
   },
@@ -136,16 +136,33 @@ const FAQS = [
     ],
   },
   {
-    section: 'The app',
+    section: 'Premium & pricing',
     items: [
       {
         q: 'Is Socion free?',
-        a: "The core experience is free. A premium tier is coming soon for those who want the full experience — unlimited connections, all relation type filters, and more. If you'd like to support the running costs in the meantime, there's a Ko-fi link in the app.",
+        a: "Socion has a free tier and a paid premium tier. The free tier gives you up to 3 connections and shows same-quadra matches. Premium is $14.99/year and unlocks unlimited connections, all 16 relation type filters, full Model A compatibility breakdowns for every connection, and sender-side read receipts.",
       },
       {
-        q: 'Why does it say Beta?',
-        a: "Socion is in early beta. The core experience works well but some features — particularly push notifications on iPhone — may be unreliable on certain devices. Things will improve as the platform grows. If you run into anything, the Discord is the best place to flag it.",
+        q: 'What is a founding member?',
+        a: "Members who joined Socion before 16 June 2026 are founding members. Founding members have permanent free premium access — all premium features, forever, at no cost. It's a thank-you for being early.",
       },
+      {
+        q: 'How do I upgrade to Premium?',
+        a: "Go to the Premium page from the footer or your profile. Payment is handled securely via Stripe. Once your payment is confirmed, premium features are available immediately.",
+      },
+      {
+        q: 'What happens if my premium subscription lapses?',
+        a: "Nothing is deleted and no existing connections are severed. Your message history is fully retained. Premium features simply gate new actions — you won't be able to add connections beyond 3 or filter outside your quadra until you re-subscribe.",
+      },
+      {
+        q: 'Can I cancel at any time?',
+        a: "Yes. You can cancel via the Stripe customer portal, linked from your settings. Your premium access runs to the end of the billing period you've already paid for.",
+      },
+    ],
+  },
+  {
+    section: 'The app',
+    items: [
       {
         q: 'Is my data private?',
         a: "Your profile is only visible to other signed-in Socion members. Your data is stored securely on Supabase servers in the EU. Socion does not sell or share your data with third parties.",
