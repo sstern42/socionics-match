@@ -126,8 +126,6 @@ const Divider = () => (
   <span style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} aria-hidden="true" />
 )
 
-const GPT_URL = 'https://chatgpt.com/g/g-Vy0WioxfC-socionics-world'
-
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
   const { session, profile, isPremium } = useAuth()
   const location = useLocation()
@@ -467,12 +465,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
                 </Link>
-                <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
-                  title="Socionics World AI" aria-label="Socionics World AI"
-                  data-umami-event="gpt-click" data-umami-event-source="nav-desktop"
-                  style={{ ...navStyle(false), display: 'inline-flex', alignItems: 'center' }}>
+                <Link to="/ask"
+                  title="Socionics AI" aria-label="Socionics AI"
+                  data-umami-event="ask-click" data-umami-event-source="nav-desktop"
+                  style={{ ...navStyle(isActive('/ask')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconBot />
-                </a>
+                </Link>
               </>
             ) : (
               <>
@@ -494,12 +492,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
                 </Link>
-                <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
-                  title="Socionics World AI" aria-label="Socionics World AI"
-                  data-umami-event="gpt-click" data-umami-event-source="nav-desktop"
-                  style={{ ...navStyle(false), display: 'inline-flex', alignItems: 'center' }}>
-                  <IconBot />
-                </a>
               </>
             )}
             <ThemeToggle />
@@ -653,11 +645,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                       style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>
                       Discord
                     </a>
-                    <a href={GPT_URL} target="_blank" rel="noopener noreferrer" onClick={closeMenu}
-                      data-umami-event="gpt-click" data-umami-event-source="nav-mobile"
+                    <Link to="/ask" onClick={closeMenu}
+                      data-umami-event="ask-click" data-umami-event-source="nav-mobile"
                       style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                      <IconBot /> AI
-                    </a>
+                      <IconBot /> Ask AI
+                    </Link>
                     <Link to="/about" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>About</Link>
                     <Link to="/privacy" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Privacy</Link>
                     <Link to="/terms" onClick={closeMenu} style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', padding: '0.4rem 0' }}>Terms</Link>
@@ -713,11 +705,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" data-umami-event="si-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" data-umami-event="github-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" data-umami-event="discord-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
-            <a href={GPT_URL} target="_blank" rel="noopener noreferrer"
-              data-umami-event="gpt-click" data-umami-event-source="footer"
+            <Link to="/ask"
+              data-umami-event="ask-click" data-umami-event-source="footer"
               style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-              <IconBot /> AI ↗
-            </a>
+              <IconBot /> Ask AI
+            </Link>
             <Link to="/support" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Support Socion ☕</Link>
             <Link to="/premium" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Premium ✦</Link>
             <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
