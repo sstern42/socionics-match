@@ -3,8 +3,8 @@ import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import SocionicsChat from '../components/SocionicsChat'
 
-const navigate = useNavigate()
 export default function AskPage() {
+  const navigate = useNavigate()
   const [userType, setUserType] = useState(null)
 
   useEffect(() => {
