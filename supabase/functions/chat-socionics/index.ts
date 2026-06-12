@@ -1,9 +1,3 @@
-import Anthropic from 'npm:@anthropic-ai/sdk'
-
-const anthropic = new Anthropic({
-  apiKey: Deno.env.get('ANTHROPIC_API_KEY') ?? '',
-})
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -126,35 +120,78 @@ Deno.serve(async (req) => {
 
   try {
     const { messages, userType } = await req.json()
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
 
-    const systemBlocks: Anthropic.Beta.PromptCaching.PromptCachingBetaTextBlockParam[] = [
+    const systemBlocks = [
       {
         type: 'text',
         text: SYSTEM_PROMPT,
         cache_control: { type: 'ephemeral' },
       },
       ...(userType
-        ? [{ type: 'text' as const, text: `The user's Socionics type is: ${userType}` }]
+        ? [{ type: 'text', text: `The user's Socionics type is: ${userType}` }]
         : []),
     ]
 
-    const stream = anthropic.beta.promptCaching.messages.stream({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1024,
-      system: systemBlocks,
-      messages,
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-beta': 'prompt-caching-2024-07-31',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        stream: true,
+        system: systemBlocks,
+        messages,
+      }),
     })
 
+    if (!res.ok) {
+      const err = await res.text()
+      console.error('Anthropic API error:', err)
+      return new Response(
+        JSON.stringify({ error: `API error ${res.status}` }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Parse SSE stream and forward only the text deltas as plain text
     const encoder = new TextEncoder()
     const readable = new ReadableStream({
       async start(controller) {
+        const reader = res.body!.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
         try {
-          for await (const event of stream) {
-            if (
-              event.type === 'content_block_delta' &&
-              event.delta.type === 'text_delta'
-            ) {
-              controller.enqueue(encoder.encode(event.delta.text))
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+
+            buffer += decoder.decode(value, { stream: true })
+            const lines = buffer.split('\n')
+            buffer = lines.pop() ?? ''
+
+            for (const line of lines) {
+              if (!line.startsWith('data: ')) continue
+              const data = line.slice(6).trim()
+              if (data === '[DONE]') continue
+              try {
+                const event = JSON.parse(data)
+                if (
+                  event.type === 'content_block_delta' &&
+                  event.delta?.type === 'text_delta' &&
+                  event.delta?.text
+                ) {
+                  controller.enqueue(encoder.encode(event.delta.text))
+                }
+              } catch {
+                // skip malformed lines
+              }
             }
           }
         } finally {
