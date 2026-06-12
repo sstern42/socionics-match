@@ -9,10 +9,11 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 // fully retained for everyone (lapsed principle: nothing is ever deleted), so
 // it is NOT a premium limitation and is not listed as one.
 const FEATURES = [
-  ['Connections', 'Unlimited active connections', '3 active'],
-  ['Relation filters', 'All 16 relation types in your feed', 'Same quadra only'],
-  ['Compatibility breakdown', 'Full Model A breakdown for every connection', '—'],
-  ['Read receipts', 'See when your messages are read', '—'],
+  ['Connections', 'No cap on active connections', '3 active'],
+  ['Relation filters', 'Filter your feed by any of the 16 relation types', 'Same quadra only'],
+  ['Compatibility breakdown', 'Full Model A breakdown — function interactions, strengths, friction points', '—'],
+  ['Read receipts', 'Know when your sent messages have been read', '—'],
+  ['AI assistant', 'Unlimited Socionics AI — ask anything about your type and relations', '10 messages / day'],
   ['Your strongest matches', 'See the relation types that fit you most naturally, and filter to them', '—'],
   ['Who viewed you', 'Full viewer list — name, type, relation, and when they visited', '7-day count only'],
   ['Dynamics', 'Per-relation ratings, message volumes, and site average comparison', '—'],
