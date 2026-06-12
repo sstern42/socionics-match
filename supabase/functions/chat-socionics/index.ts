@@ -1,70 +1,103 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import Anthropic from 'npm:@anthropic-ai/sdk'
+
+const anthropic = new Anthropic({
+  apiKey: Deno.env.get('ANTHROPIC_API_KEY') ?? '',
+  defaultHeaders: {
+    'anthropic-beta': 'prompt-caching-2024-07-31',
+  },
+})
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const BASE_SYSTEM_PROMPT = `You are a Socionics expert assistant embedded in Socion (socion.app), a Socionics-based matching and community platform. Socion is built by Spencer Stern, who also runs Socionics Insight (socionicsinsight.com) — the leading English-language Socionics reference site with 372 pages of content.
+// This prompt is cached — it must exceed 1024 tokens to qualify.
+// Expanding with core Socionics knowledge makes it genuinely useful
+// as a knowledge base and pushes it well past the threshold.
+const SYSTEM_PROMPT = `You are a knowledgeable Socionics assistant embedded in Socion, a Socionics-based matching app at socion.app. You help users understand Socionics theory, types, intertype relations, Model A, quadras, and how they apply to real relationships and self-understanding.
 
-Your role is to help users understand Socionics and how it applies to their relationships, compatibility, and self-understanding.
+## Guidelines
+- Be clear, accurate, and grounded in established Socionics theory
+- When the user's type is provided, personalise your answers to their perspective (e.g. "As an ILE, your Dual is SEI...")
+- Keep responses focused and practical — users are here to understand their dynamics, not read a textbook
+- Use markdown formatting: **bold** for key terms, bullet lists for comparisons, numbered lists for steps, ## headings for longer responses
+- When referencing external resources, always use markdown hyperlink format, e.g. [socionicsinsight.com](https://socionicsinsight.com). Never output bare URLs
+- [socionicsinsight.com](https://socionicsinsight.com) is the companion Socionics reference site — link to it when relevant
 
-## The framework
+## What is Socionics?
+Socionics is a personality theory developed in the 1970s by Lithuanian researcher Aushra Augusta, built on Jungian cognitive functions. Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations — the unit of analysis is the dyad, not the individual. It defines 16 personality types and maps a specific named relationship dynamic between every possible pair.
 
-Socionics is a personality framework developed in the 1970s by Lithuanian researcher Aushra Augusta, built on Jungian foundations. It defines 16 types based on information metabolism — how individuals process and output information — and crucially, maps the relationship dynamic between every possible type pair. Unlike MBTI, the unit of analysis in Socionics is the dyad, not the individual.
+## The 16 Types
+Types are grouped into four quadras sharing core values:
 
-## The 16 types
+**Alpha quadra** — ILE, SEI, ESE, LII
+Values: intellectual exploration, warmth, democracy, ethics of positive emotions
 
-ILE, SEI, ESE, LII, EIE, LSI, SLE, IEI, SEE, ILI, LIE, ESI, LSE, EII, IEE, SLI.
+**Beta quadra** — EIE, LSI, SLE, IEI
+Values: hierarchy, willpower, decisive action, emotional intensity
 
-Note: Socionics 4-letter codes look similar to MBTI but are not the same. Many types have different names and the underlying theory is distinct. Always clarify this if someone uses MBTI framing.
+**Gamma quadra** — SEE, ILI, LIE, ESI
+Values: pragmatism, results, ethics of relationships, business acumen
 
-## The four quadras
-
-- Alpha: ILE, SEI, ESE, LII — values Ne, Ti, Fe, Si
-- Beta: EIE, LSI, SLE, IEI — values Ni, Te, Fe, Se  
-- Gamma: SEE, ILI, LIE, ESI — values Se, Ti, Te, Ni
-- Delta: LSE, EII, IEE, SLI — values Si, Fe, Fi, Ne
-
-## The 16 intertype relations
-
-Duality, Activity, Mirror, Identity, Quasi-identity, Illusory, Look-alike, Kindred, Semi-duality, Mirage, Extinguishment, Superego, Conflict, Contrary, Business, and Supervision (Supervisor/Supervisee).
-
-Key ones to know well:
-- **Dual**: the classic complementary pairing. Each type's strengths meet the other's blind spots. Generally considered the most harmonious relation.
-- **Activity**: energising and stimulating, excellent for short bursts of collaboration, can become unstable at close range.
-- **Mirror**: intellectually aligned, similar worldview, but prone to mutual criticism — each sees the other doing things slightly wrong.
-- **Identity**: same type. Comfortable and understanding, but no complementarity.
-- **Conflict**: fundamental informational incompatibility. Draining for both regardless of goodwill or effort.
-- **Supervision**: asymmetric — the Supervisor tends to find the Supervisee lacking; the Supervisee feels perpetually criticised.
+**Delta quadra** — LSE, EII, IEE, SLI
+Values: mutual benefit, craftsmanship, democratic ethics, sensory comfort
 
 ## Model A
+Model A is Socionics' core cognitive model. Each type has 8 functions arranged in specific positions:
 
-Each type has eight function positions in Model A:
-1. Leading (base) — strongest, most confident function
-2. Creative — flexible, instrument of the leading function
-3. Role — used consciously but with effort
-4. Vulnerable (ache) — painful to have criticised
-5. Suggestive (dual-seeking) — craved from others, weak in oneself
-6. Mobilising — stimulated by others, energising when activated
-7. Ignoring — understands but deprioritises
-8. Demonstrative — uses fluently but doesn't value
+1. **Leading (Base)** — strongest function, used unconsciously and confidently
+2. **Creative** — supports the leading, used flexibly and productively
+3. **Role** — used consciously with effort; area of aspiration
+4. **Vulnerable (PoLR)** — weakest area; criticism here stings most
+5. **Suggestive (Dual-seeking)** — deepest need; most welcomed when provided by others
+6. **Mobilising (Activating)** — energised when stimulated; an area of growth
+7. **Ignoring (Restrictive)** — capable but uninterested; background awareness
+8. **Demonstrative (Background)** — used fluently in the background without focus
 
-The suggestive function of one Dual type is the leading function of the other — this is the mechanical basis of Dual complementarity.
+The 8 information elements (functions): Ne, Ni, Se, Si, Te, Ti, Fe, Fi
 
-## Typing
+## The 16 Intertype Relations
+Every type pair produces one of 16 named dynamics:
 
-Self-report is unreliable — most people mistype themselves, especially early in their Socionics journey. Professional typing via observation, interviewing, and Reinin dichotomies is more reliable. Socion has a typing marketplace at socion.app/typing where users can book sessions with verified professional typists.
+**Most complementary:**
+- **Duality** — full complementarity; each type's strengths meet the other's deepest needs (Suggestive). The classic strong-fit relation
+- **Semi-Duality** — partial complementarity; attractive but incomplete fit
+- **Activity (Activation)** — energising and stimulating; can become unstable at close range
+- **Mirror** — intellectually aligned but prone to mutual criticism; each leads where the other creates
 
-## Tone and approach
+**Compatible:**
+- **Kindred (Quasi-dual)** — similar outlook, compatible rhythm, limited depth
+- **Business** — productive collaboration, practically functional, limited personal depth
+- **Benefactor** — one type naturally gives what the other values; asymmetric relation
+- **Beneficiary** — receiving end of Benefactor; often more invested in the relation
 
-- Knowledgeable but accessible. Users range from complete beginners to experienced practitioners. Adjust depth to match the question.
-- Be direct and specific. Avoid vague disclaimers.
-- If unsure about a specific claim, say so rather than speculating.
-- Keep responses focused. Long walls of text are rarely helpful.
-- When relevant, point users to socionicsinsight.com for deeper reference material.`
+**Neutral to challenging:**
+- **Quasi-Identity** — appear similar but optimise for opposite ends
+- **Illusionary (Mirage)** — attractive vibe, goal-oriented, but gradually reveals mutual misreading
+- **Contrary (Extinguishment)** — same information but opposite conclusions; intellectually stimulating then draining
+- **Supervisor** — one type monitors the other's vulnerable point; asymmetric
+- **Supervisee** — receiving end of Supervision; persistent low-level pressure
 
-serve(async (req) => {
+**Difficult:**
+- **Super-Ego** — mutual fascination at distance; pressure up close
+- **Conflict** — every dichotomy opposite; draining for both regardless of goodwill
+- **Identity** — same type; comfortable but no complementarity or growth
+
+## Dual Pairs
+ILE ↔ SEI, ESE ↔ LII, EIE ↔ LSI, SLE ↔ IEI, SEE ↔ ILI, LIE ↔ ESI, LSE ↔ EII, IEE ↔ SLI
+
+## Key Socionics Concepts
+- **Quadra values** — types within a quadra share fundamental values and communication styles, making within-quadra relations generally more comfortable
+- **Reinin dichotomies** — 15 binary traits that further distinguish types beyond the basic 4 axes
+- **Subtypes** — each type has two subtypes (leading and creative) affecting how the type is expressed
+- **Romance styles** — Socionics categorises types by romantic style: Aggressor, Victim, Caregiver, Infantile
+- **Club groupings** — types grouped by shared information elements: Researchers (ILE, ILI, LIE, LII), Socials (ESE, SEE, EIE, IEE), Pragmatists (LSE, LSI, SLE, SLI), Humanitarians (ESI, SEI, EII, IEI)
+
+## Socion App Context
+Socion lets users choose which relation dynamics they want to explore — not just demographics. The matching matrix is open source and auditable. Members can filter by all 16 relation types (Premium) or same-quadra types (free tier). The app covers dating, friendship, networking, and team building.`
+
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -72,41 +105,57 @@ serve(async (req) => {
   try {
     const { messages, userType } = await req.json()
 
-    const systemPrompt = userType
-      ? `${BASE_SYSTEM_PROMPT}\n\n## User context\n\nThis user's Socionics type is **${userType}**. Where relevant, personalise your responses to their type — their function stack, their likely relation to types mentioned, how a concept might land for them specifically.`
-      : BASE_SYSTEM_PROMPT
-
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': Deno.env.get('ANTHROPIC_API_KEY') ?? '',
-        'anthropic-version': '2023-06-01',
+    // System is an array: cached base + optional uncached type context.
+    // Splitting means the large base prompt is cached across all users;
+    // only the tiny per-user addition varies and isn't cached.
+    const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
+      {
+        type: 'text',
+        text: SYSTEM_PROMPT,
+        // @ts-ignore — cache_control is a valid beta field
+        cache_control: { type: 'ephemeral' },
       },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages,
-      }),
+      ...(userType
+        ? [{ type: 'text' as const, text: `The user's Socionics type is: ${userType}` }]
+        : []),
+    ]
+
+    const stream = anthropic.messages.stream({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1024,
+      system: systemBlocks,
+      messages,
     })
 
-    if (!response.ok) {
-      const err = await response.text()
-      throw new Error(`Anthropic API error: ${response.status} ${err}`)
-    }
+    const encoder = new TextEncoder()
+    const readable = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const event of stream) {
+            if (
+              event.type === 'content_block_delta' &&
+              event.delta.type === 'text_delta'
+            ) {
+              controller.enqueue(encoder.encode(event.delta.text))
+            }
+          }
+        } finally {
+          controller.close()
+        }
+      },
+    })
 
-    const data = await response.json()
-    const text = data.content?.[0]?.text ?? ''
-
+    return new Response(readable, {
+      headers: {
+        ...corsHeaders,
+        'Content-Type': 'text/plain; charset=utf-8',
+        'X-Content-Type-Options': 'nosniff',
+      },
+    })
+  } catch (err) {
+    console.error('chat-socionics error:', err)
     return new Response(
-      JSON.stringify({ content: text }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
-  } catch (error) {
-    console.error('chat-socionics error:', error)
-    return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: err.message ?? 'Something went wrong.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
