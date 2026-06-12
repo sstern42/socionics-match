@@ -157,7 +157,7 @@ function MarkdownContent({ content }) {
       i < lines.length &&
       lines[i].trim() !== '' &&
       !/^(#{1,3}\s|[\-\*\+]\s|\d+\.\s|>\s|[-*_]{3,}$)/.test(lines[i]) &&
-      !isTableRow(lines[i])
+      !(isTableRow(lines[i]) && i + 1 < lines.length && isSeparatorRow(lines[i + 1]))
     ) {
       paraLines.push(lines[i])
       i++
