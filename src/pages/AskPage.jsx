@@ -1,44 +1,62 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import Layout from '../components/Layout'
 import SocionicsChat from '../components/SocionicsChat'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function AskPage() {
   const navigate = useNavigate()
   const [userType, setUserType] = useState(null)
 
+  usePageTitle('Ask AI')
+
   useEffect(() => {
     async function fetchType() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-
       const { data } = await supabase
         .from('users')
         .select('type')
         .eq('auth_id', user.id)
         .single()
-
       if (data?.type) setUserType(data.type)
     }
     fetchType()
   }, [])
 
   return (
-    <div
-      style={{
-        maxWidth: 680,
-        margin: '0 auto',
-        padding: '24px 16px',
-        height: 'calc(100vh - 80px)',
+    <Layout noScroll hideFooter>
+      <div style={{
+        flex: 1,
         display: 'flex',
         flexDirection: 'column',
-      }}
-    >
-      <button onClick={() => navigate(-1)} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--muted)', fontSize:'0.82rem', letterSpacing:'0.06em', textTransform:'uppercase', padding:0, display:'flex', alignItems:'center', gap:'0.4rem', marginBottom:'12px' }}>
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9,3 5,7 9,11"/></svg>
-        Back
-      </button>
-      <SocionicsChat userType={userType} />
-    </div>
+        maxWidth: 720,
+        width: '100%',
+        margin: '0 auto',
+        padding: '1.5rem 1.5rem',
+        minHeight: 0,
+        boxSizing: 'border-box',
+      }}>
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: 'var(--muted)', fontSize: '0.78rem', letterSpacing: '0.06em',
+            textTransform: 'uppercase', padding: 0,
+            display: 'inline-flex', alignItems: 'center', gap: '0.4rem',
+            marginBottom: '1rem', alignSelf: 'flex-start',
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9,3 5,7 9,11"/>
+          </svg>
+          Back
+        </button>
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <SocionicsChat userType={userType} />
+        </div>
+      </div>
+    </Layout>
   )
 }
