@@ -28,6 +28,13 @@ function renderInline(text) {
   return parts
 }
 
+function parseTableRow(line) {
+  return line.replace(/^\||\|$/g, '').split('|').map(cell => cell.trim())
+}
+
+function isTableRow(line) { return /^\|.+\|$/.test(line.trim()) }
+function isSeparatorRow(line) { return /^\|[\s\-:|]+\|$/.test(line.trim()) }
+
 function MarkdownContent({ content }) {
   const lines = content.split('\n')
   const elements = []
@@ -38,6 +45,7 @@ function MarkdownContent({ content }) {
 
     if (line.trim() === '') { i++; continue }
 
+    // Heading
     const headingMatch = line.match(/^(#{1,3})\s+(.+)/)
     if (headingMatch) {
       const level = headingMatch[1].length
@@ -50,11 +58,68 @@ function MarkdownContent({ content }) {
       i++; continue
     }
 
+    // Horizontal rule
     if (/^[-*_]{3,}$/.test(line.trim())) {
       elements.push(<hr key={key++} style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0.75rem 0' }} />)
       i++; continue
     }
 
+    // Table — collect header + separator + body rows
+    if (isTableRow(line) && i + 1 < lines.length && isSeparatorRow(lines[i + 1])) {
+      const headers = parseTableRow(line)
+      i += 2 // skip header + separator
+      const rows = []
+      while (i < lines.length && isTableRow(lines[i])) {
+        rows.push(parseTableRow(lines[i]))
+        i++
+      }
+      const cellStyle = {
+        padding: '0.45rem 0.75rem',
+        borderBottom: '1px solid var(--border)',
+        borderRight: '1px solid var(--border)',
+        fontSize: 13,
+        color: 'var(--text)',
+        lineHeight: 1.5,
+        textAlign: 'left',
+      }
+      const headCellStyle = {
+        ...cellStyle,
+        fontWeight: 600,
+        background: 'var(--surface)',
+        color: 'var(--muted)',
+        fontSize: 12,
+        letterSpacing: '0.04em',
+      }
+      elements.push(
+        <div key={key++} style={{ overflowX: 'auto', margin: '0.5rem 0 0.75rem', borderRadius: 6, border: '1px solid var(--border)', borderRight: 'none', borderBottom: 'none' }}>
+          <table style={{ borderCollapse: 'collapse', width: '100%', fontSize: 13 }}>
+            <thead>
+              <tr>
+                {headers.map((h, ci) => (
+                  <th key={ci} style={{ ...headCellStyle, borderLeft: ci === 0 ? 'none' : undefined }}>
+                    {renderInline(h)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ri) => (
+                <tr key={ri} style={{ background: ri % 2 === 1 ? 'rgba(154,111,56,0.03)' : 'transparent' }}>
+                  {row.map((cell, ci) => (
+                    <td key={ci} style={{ ...cellStyle, borderLeft: ci === 0 ? 'none' : undefined }}>
+                      {renderInline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )
+      continue
+    }
+
+    // Bullet list
     if (/^[\-\*\+]\s/.test(line)) {
       const items = []
       while (i < lines.length && /^[\-\*\+]\s/.test(lines[i])) {
@@ -65,6 +130,7 @@ function MarkdownContent({ content }) {
       continue
     }
 
+    // Numbered list
     if (/^\d+\.\s/.test(line)) {
       const items = []
       while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
@@ -75,6 +141,7 @@ function MarkdownContent({ content }) {
       continue
     }
 
+    // Blockquote
     if (/^>\s/.test(line)) {
       elements.push(
         <blockquote key={key++} style={{ borderLeft: '3px solid var(--accent-lt)', paddingLeft: '0.75rem', margin: '0.4rem 0', color: 'var(--muted)', fontStyle: 'italic' }}>
@@ -84,11 +151,13 @@ function MarkdownContent({ content }) {
       i++; continue
     }
 
+    // Paragraph
     const paraLines = []
     while (
       i < lines.length &&
       lines[i].trim() !== '' &&
-      !/^(#{1,3}\s|[\-\*\+]\s|\d+\.\s|>\s|[-*_]{3,}$)/.test(lines[i])
+      !/^(#{1,3}\s|[\-\*\+]\s|\d+\.\s|>\s|[-*_]{3,}$)/.test(lines[i]) &&
+      !isTableRow(lines[i])
     ) {
       paraLines.push(lines[i])
       i++
@@ -172,47 +241,34 @@ export default function SocionicsChat({ userType = null }) {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  useEffect(() => {
-    return () => abortRef.current?.abort()
-  }, [])
+  useEffect(() => { return () => abortRef.current?.abort() }, [])
 
   async function send(text) {
     const userMessage = text ?? input.trim()
     if (!userMessage || streaming) return
-
     setInput('')
     setError(null)
-
     const newMessages = [...messages, { role: 'user', content: userMessage }]
-    // Add user message + empty assistant placeholder
     setMessages([...newMessages, { role: 'assistant', content: '' }])
     setStreaming(true)
-
     abortRef.current = new AbortController()
-
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const headers = { 'Content-Type': 'application/json' }
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
-
       const res = await fetch(FUNCTION_URL, {
-        method: 'POST',
-        headers,
+        method: 'POST', headers,
         body: JSON.stringify({ messages: newMessages, userType }),
         signal: abortRef.current.signal,
       })
-
       if (!res.ok) throw new Error('Something went wrong. Please try again.')
-
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let accumulated = ''
-
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
         accumulated += decoder.decode(value, { stream: true })
-        // Update last message (the assistant placeholder) with accumulated text
         setMessages(prev => {
           const updated = [...prev]
           updated[updated.length - 1] = { role: 'assistant', content: accumulated }
@@ -223,7 +279,6 @@ export default function SocionicsChat({ userType = null }) {
     } catch (err) {
       if (err.name === 'AbortError') return
       setError(err.message)
-      // Remove the empty assistant placeholder on error
       setMessages(prev => prev.slice(0, -1))
     } finally {
       setStreaming(false)
@@ -287,15 +342,11 @@ export default function SocionicsChat({ userType = null }) {
         )}
 
         {messages.map((m, i) => (
-          <Message
-            key={i}
-            role={m.role}
-            content={m.content}
+          <Message key={i} role={m.role} content={m.content}
             streaming={streaming && i === messages.length - 1 && m.role === 'assistant'}
           />
         ))}
 
-        {/* Show typing indicator only before first chunk arrives */}
         {streaming && messages[messages.length - 1]?.content === '' && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 4px' }}>
@@ -305,7 +356,6 @@ export default function SocionicsChat({ userType = null }) {
         )}
 
         {error && <div style={{ textAlign: 'center', fontSize: 13, color: '#e87070', padding: '8px 0' }}>{error}</div>}
-
         <div ref={bottomRef} />
       </div>
 
@@ -333,20 +383,15 @@ export default function SocionicsChat({ userType = null }) {
           onBlur={e => e.target.style.borderColor = 'var(--border)'}
           onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px' }}
         />
-        <button
-          onClick={() => send()}
-          disabled={!input.trim() || streaming}
-          style={{
-            width: 38, height: 38, borderRadius: '50%',
-            background: input.trim() && !streaming ? 'var(--accent)' : 'var(--surface)',
-            border: '1px solid var(--border)',
-            color: input.trim() && !streaming ? '#fff' : 'var(--muted)',
-            cursor: input.trim() && !streaming ? 'pointer' : 'default',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 16, flexShrink: 0, transition: 'background 0.15s, color 0.15s',
-          }}
-          aria-label="Send"
-        >↑</button>
+        <button onClick={() => send()} disabled={!input.trim() || streaming} style={{
+          width: 38, height: 38, borderRadius: '50%',
+          background: input.trim() && !streaming ? 'var(--accent)' : 'var(--surface)',
+          border: '1px solid var(--border)',
+          color: input.trim() && !streaming ? '#fff' : 'var(--muted)',
+          cursor: input.trim() && !streaming ? 'pointer' : 'default',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 16, flexShrink: 0, transition: 'background 0.15s, color 0.15s',
+        }} aria-label="Send">↑</button>
       </div>
     </div>
   )
