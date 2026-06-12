@@ -28,6 +28,7 @@ import Settings from './pages/Settings'
 import UserProfile from './pages/UserProfile'
 import About from './pages/About'
 import NotFound from './pages/NotFound'
+import AskPage from './pages/AskPage'
 import FeedbackButton from './components/FeedbackButton'
 import './App.css'
 
@@ -52,6 +53,7 @@ export default function App() {
         <Route path="/updates" element={<Updates />} />
         <Route path="/support" element={<Support />} />
         <Route path="/help" element={<Help />} />
+        <Route path="/ask" element={<AskPage />} />
         <Route path="/network" element={<Network />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
