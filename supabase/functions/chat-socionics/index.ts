@@ -1,7 +1,11 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+const FREE_DAILY_LIMIT = 10
 
 const SYSTEM_PROMPT = `You are a knowledgeable Socionics assistant embedded in Socion, a Socionics-based matching app at socion.app. You help users understand Socionics theory, types, intertype relations, Model A, quadras, and how they apply to real relationships and self-understanding.
 
@@ -190,6 +194,76 @@ Deno.serve(async (req) => {
     const { messages, userType } = await req.json()
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
 
+    // ── Auth & rate limiting ──────────────────────────────────────────────────
+    const authHeader = req.headers.get('Authorization') ?? ''
+    const token = authHeader.replace('Bearer ', '')
+
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    )
+
+    // Resolve user from JWT
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser(token)
+    if (authError || !authUser) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorised.' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Fetch user row — need users.id for rate limit table, and premium status
+    const { data: userRow, error: userError } = await supabase
+      .from('users')
+      .select('id, is_founding_member, plan_status')
+      .eq('auth_id', authUser.id)
+      .single()
+
+    if (userError || !userRow) {
+      return new Response(
+        JSON.stringify({ error: 'User not found.' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const isPremium =
+      userRow.is_founding_member ||
+      userRow.plan_status === 'active' ||
+      userRow.plan_status === 'past_due'
+
+    // Check daily message cap for free users
+    if (!isPremium) {
+      const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+
+      const { data: countRow } = await supabase
+        .from('ai_message_counts')
+        .select('count')
+        .eq('user_id', userRow.id)
+        .eq('date', today)
+        .single()
+
+      const currentCount = countRow?.count ?? 0
+
+      if (currentCount >= FREE_DAILY_LIMIT) {
+        return new Response(
+          JSON.stringify({
+            error: `You've used your ${FREE_DAILY_LIMIT} free AI messages for today. Upgrade to Premium for unlimited access.`,
+            upgrade: true,
+          }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Increment count (upsert — creates row on first message of the day)
+      await supabase
+        .from('ai_message_counts')
+        .upsert(
+          { user_id: userRow.id, date: today, count: currentCount + 1 },
+          { onConflict: 'user_id,date' }
+        )
+    }
+    // ── End rate limiting ─────────────────────────────────────────────────────
+
     const systemBlocks = [
       {
         type: 'text',
@@ -221,8 +295,13 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       const err = await res.text()
       console.error('Anthropic API error:', err)
+      const userMessage =
+        res.status === 402 ? 'The AI is temporarily unavailable — please try again later.' :
+        res.status === 429 ? 'Too many requests — please wait a moment and try again.' :
+        res.status === 529 ? 'The AI is overloaded right now — please try again in a moment.' :
+        `Something went wrong (${res.status}) — please try again.`
       return new Response(
-        JSON.stringify({ error: `API error ${res.status}` }),
+        JSON.stringify({ error: userMessage }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
