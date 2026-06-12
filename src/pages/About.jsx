@@ -88,7 +88,7 @@ export default function About() {
   }, [])
 
   return (
-    <Layout>
+    <Layout hideFooter>
       <div style={{ maxWidth: 640, margin: '0 auto', padding: '2.5rem 1.25rem 3rem' }}>
 
         {/* Eyebrow */}
