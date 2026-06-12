@@ -2,9 +2,6 @@ import Anthropic from 'npm:@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({
   apiKey: Deno.env.get('ANTHROPIC_API_KEY') ?? '',
-  defaultHeaders: {
-    'anthropic-beta': 'prompt-caching-2024-07-31',
-  },
 })
 
 const corsHeaders = {
@@ -130,11 +127,10 @@ Deno.serve(async (req) => {
   try {
     const { messages, userType } = await req.json()
 
-    const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
+    const systemBlocks: Anthropic.Beta.PromptCaching.PromptCachingBetaTextBlockParam[] = [
       {
         type: 'text',
         text: SYSTEM_PROMPT,
-        // @ts-ignore — cache_control is a valid beta field
         cache_control: { type: 'ephemeral' },
       },
       ...(userType
@@ -142,7 +138,7 @@ Deno.serve(async (req) => {
         : []),
     ]
 
-    const stream = anthropic.messages.stream({
+    const stream = anthropic.beta.promptCaching.messages.stream({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: systemBlocks,
