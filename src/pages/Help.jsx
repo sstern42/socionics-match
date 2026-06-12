@@ -102,6 +102,27 @@ const FAQS = [
     ],
   },
   {
+    section: 'Socionics AI',
+    items: [
+      {
+        q: 'What is the Socionics AI assistant?',
+        a: "The AI assistant is a built-in Socionics tutor personalised to your type. Ask it anything — what your function stack means, how a specific relation dynamic plays out, what Model A says about your type, how your quadra shapes your values, or how to interpret a connection you've made. It lives at socion.app/ask and is available to all signed-in members.",
+      },
+      {
+        q: 'How many AI messages do I get?',
+        a: "Free members get 10 messages per day. Premium members get unlimited access. The limit resets daily — it's designed to be enough for a focused session without restriction for casual use.",
+      },
+      {
+        q: 'How accurate is the AI?',
+        a: "The AI uses authoritative source data — function stacks, intertype relations, type descriptions, and quadra values — drawn directly from socionicsinsight.com. It won't hallucinate basic Socionics facts. For nuanced or contested areas of theory (subtypes, schools of thought, edge cases), treat its answers as a well-informed starting point and verify with the reference site if it matters.",
+      },
+      {
+        q: 'What can I ask the AI?',
+        a: "Anything Socionics-related: your type's strengths and weak points, what a specific relation type feels like in practice, how Model A works, which quadra values resonate with yours, how to read a connection's dynamic, the difference between Socionics and MBTI, and more. It's personalised to your type, so answers are framed from your perspective where relevant.",
+      },
+    ],
+  },
+  {
     section: 'Account & profile',
     items: [
       {
@@ -140,7 +161,7 @@ const FAQS = [
     items: [
       {
         q: 'Is Socion free?',
-        a: "Socion has a free tier and a paid premium tier. The free tier gives you up to 3 connections and shows same-quadra matches. Premium is $14.99/year and unlocks unlimited connections, all 16 relation type filters, full Model A compatibility breakdowns for every connection, and sender-side read receipts.",
+        a: "Socion has a free tier and a paid premium tier. The free tier gives you up to 3 connections, same-quadra matches, and 10 AI messages per day. Premium is $14.99/year and unlocks unlimited connections, all 16 relation type filters, full Model A compatibility breakdowns, sender-side read receipts, unlimited AI assistant access, your strongest matches, who viewed you, and relation dynamics data.",
       },
       {
         q: 'What is a founding member?',
@@ -152,7 +173,7 @@ const FAQS = [
       },
       {
         q: 'What happens if my premium subscription lapses?',
-        a: "Nothing is deleted and no existing connections are severed. Your message history is fully retained. Premium features simply gate new actions — you won't be able to add connections beyond 3 or filter outside your quadra until you re-subscribe.",
+        a: "Nothing is deleted and no existing connections are severed. Your message history is fully retained. Premium features simply gate new actions — you won't be able to add connections beyond 3, filter outside your quadra, or use the AI beyond 10 messages per day until you re-subscribe.",
       },
       {
         q: 'Can I cancel at any time?',
