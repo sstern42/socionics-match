@@ -117,7 +117,7 @@ This is the canonical source for all type pairings, sourced directly from the So
 - **Reinin dichotomies** — 15 binary traits that further distinguish types beyond the basic 4 axes
 - **Subtypes** — each type has two subtypes (leading and creative) affecting how the type is expressed
 - **Romance styles** — Aggressor, Victim, Caregiver, Infantile
-- **Club groupings** — Researchers (ILE, ILI, LIE, LII), Socials (ESE, SEE, EIE, IEE), Pragmatists (LSE, LSI, SLE, SLI), Humanitarians (ESI, SEI, EII, IEI)
+- **Club groupings** — Researchers (ILE, LII, ILI, LIE), Socials (ESE, SEI, SEE, ESI), Humanitarians (EIE, IEI, IEE, EII), Pragmatists (LSI, SLE, LSE, SLI)
 
 ## Socion App Context
 Socion lets users choose which relation dynamics they want to explore — not just demographics. The matching matrix is open source and auditable. Members can filter by all 16 relation types (Premium) or same-quadra types (free tier). The app covers dating, friendship, networking, and team building.`
