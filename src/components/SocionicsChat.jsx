@@ -11,6 +11,117 @@ const SUGGESTED_QUESTIONS = [
   'Which relation types work best for romantic relationships?',
 ]
 
+// ── Inline markdown renderer ──────────────────────────────────────────────────
+// Handles: **bold**, *italic*, `code`, links, line breaks within a text run.
+function renderInline(text) {
+  const parts = []
+  // Combined regex for **bold**, *italic*, `code`, [text](url)
+  const re = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|\[([^\]]+)\]\((https?:\/\/[^\)]+)\))/g
+  let last = 0, match, key = 0
+  while ((match = re.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    if (match[2])      parts.push(<strong key={key++}>{match[2]}</strong>)
+    else if (match[3]) parts.push(<em key={key++}>{match[3]}</em>)
+    else if (match[4]) parts.push(<code key={key++} style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:3, padding:'0.1em 0.35em', fontSize:'0.88em', fontFamily:'monospace' }}>{match[4]}</code>)
+    else if (match[5]) parts.push(<a key={key++} href={match[6]} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent)', textDecoration:'underline' }}>{match[5]}</a>)
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
+
+function MarkdownContent({ content }) {
+  const lines = content.split('\n')
+  const elements = []
+  let i = 0, key = 0
+
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // Blank line
+    if (line.trim() === '') { i++; continue }
+
+    // Heading
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)/)
+    if (headingMatch) {
+      const level = headingMatch[1].length
+      const sizes = { 1: '1.1rem', 2: '1rem', 3: '0.95rem' }
+      elements.push(
+        <p key={key++} style={{ fontSize: sizes[level], fontWeight: 600, color: 'var(--text)', margin: '0.75rem 0 0.35rem', lineHeight: 1.4 }}>
+          {renderInline(headingMatch[2])}
+        </p>
+      )
+      i++; continue
+    }
+
+    // Horizontal rule
+    if (/^[-*_]{3,}$/.test(line.trim())) {
+      elements.push(<hr key={key++} style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '0.75rem 0' }} />)
+      i++; continue
+    }
+
+    // Bullet list — collect consecutive items
+    if (/^[\-\*\+]\s/.test(line)) {
+      const items = []
+      while (i < lines.length && /^[\-\*\+]\s/.test(lines[i])) {
+        items.push(<li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{renderInline(lines[i].replace(/^[\-\*\+]\s/, ''))}</li>)
+        i++
+      }
+      elements.push(<ul key={key++} style={{ margin: '0.35rem 0 0.5rem', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column' }}>{items}</ul>)
+      continue
+    }
+
+    // Numbered list — collect consecutive items
+    if (/^\d+\.\s/.test(line)) {
+      const items = []
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        items.push(<li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{renderInline(lines[i].replace(/^\d+\.\s/, ''))}</li>)
+        i++
+      }
+      elements.push(<ol key={key++} style={{ margin: '0.35rem 0 0.5rem', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column' }}>{items}</ol>)
+      continue
+    }
+
+    // Blockquote
+    if (/^>\s/.test(line)) {
+      elements.push(
+        <blockquote key={key++} style={{ borderLeft: '3px solid var(--accent-lt)', paddingLeft: '0.75rem', margin: '0.4rem 0', color: 'var(--muted)', fontStyle: 'italic' }}>
+          {renderInline(line.replace(/^>\s/, ''))}
+        </blockquote>
+      )
+      i++; continue
+    }
+
+    // Regular paragraph — collect consecutive non-special lines
+    const paraLines = []
+    while (
+      i < lines.length &&
+      lines[i].trim() !== '' &&
+      !/^(#{1,3}\s|[\-\*\+]\s|\d+\.\s|>\s|[-*_]{3,}$)/.test(lines[i])
+    ) {
+      paraLines.push(lines[i])
+      i++
+    }
+    if (paraLines.length) {
+      elements.push(
+        <p key={key++} style={{ margin: '0 0 0.5rem', lineHeight: 1.65 }}>
+          {paraLines.map((l, idx) => (
+            <span key={idx}>{renderInline(l)}{idx < paraLines.length - 1 && <br />}</span>
+          ))}
+        </p>
+      )
+    }
+  }
+
+  return (
+    <div style={{ fontSize: 14, color: 'var(--text)' }}>
+      {elements}
+    </div>
+  )
+}
+
+// ── Chat components ───────────────────────────────────────────────────────────
+
 function TypingIndicator() {
   return (
     <div style={{ display: 'flex', gap: 5, alignItems: 'center', padding: '10px 14px' }}>
@@ -42,7 +153,7 @@ function Message({ role, content }) {
       marginBottom: 12,
     }}>
       <div style={{
-        maxWidth: '78%',
+        maxWidth: isUser ? '78%' : '88%',
         padding: '10px 14px',
         border: isUser ? 'none' : '1px solid var(--border)',
         borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
@@ -50,14 +161,17 @@ function Message({ role, content }) {
         color: isUser ? '#fff' : 'var(--text)',
         fontSize: 14,
         lineHeight: 1.6,
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-word',
       }}>
-        {content}
+        {isUser
+          ? <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{content}</span>
+          : <MarkdownContent content={content} />
+        }
       </div>
     </div>
   )
 }
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function SocionicsChat({ userType = null }) {
   const [messages, setMessages] = useState([])
@@ -184,8 +298,7 @@ export default function SocionicsChat({ userType = null }) {
         {loading && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
             <div style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border)',
+              background: 'var(--surface)', border: '1px solid var(--border)',
               borderRadius: '18px 18px 18px 4px',
             }}>
               <TypingIndicator />
