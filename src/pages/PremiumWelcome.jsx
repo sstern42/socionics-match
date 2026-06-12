@@ -50,12 +50,16 @@ export default function PremiumWelcome() {
           <>
             <p className="eyebrow">Welcome to Premium ✦</p>
             <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)' }}>You're <em>all set</em></h1>
-            <div style={{ maxWidth: 420, textAlign: 'left', background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.25rem 1.5rem' }}>
+            <div style={{ maxWidth: 440, width: '100%', textAlign: 'left', background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.25rem 1.5rem' }}>
               <p style={{ fontSize: '0.82rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.75rem' }}>Now unlocked</p>
               <ul style={{ margin: 0, paddingLeft: '1.1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Unlimited connections</li>
+                <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Unlimited connections — no cap</li>
                 <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>All 16 relation types in your feed</li>
+                <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Full Model A compatibility breakdown</li>
                 <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Read receipts on messages you send</li>
+                <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Unlimited Socionics AI assistant</li>
+                <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Your strongest matches and who viewed you</li>
+                <li style={{ fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.6 }}>Relation dynamics — ratings and message volumes</li>
               </ul>
             </div>
             <Link to="/feed" className="btn-primary" style={{ textDecoration: 'none' }}>Continue to Socion →</Link>
