@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../lib/AuthContext'
 import Layout from '../components/Layout'
 import SocionicsChat from '../components/SocionicsChat'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function AskPage() {
   const navigate = useNavigate()
+  const { session, loading } = useAuth()
+
+  useEffect(() => {
+    if (!loading && !session) navigate('/auth', { replace: true })
+  }, [session, loading])
   const [userType, setUserType] = useState(null)
 
   usePageTitle('Ask AI')
@@ -25,6 +31,8 @@ export default function AskPage() {
     fetchType()
   }, [])
 
+  if (loading || !session) return null
+  
   return (
     <Layout noScroll hideFooter>
       <div style={{
