@@ -5,11 +5,13 @@ import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
 import { MATRIX } from '../data/relations'
 import { supabase } from '../lib/supabase'
+import { getExistingMatches } from '../lib/feed'
 
 export default function Saved() {
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [profiles, setProfiles] = useState([])
+  const [matchedMap, setMatchedMap] = useState({})
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
 
@@ -22,12 +24,22 @@ export default function Saved() {
   }, [loading, session])
 
   async function load() {
+    if (!profile?.id) return
     setFetching(true)
     setError(null)
     try {
-      const { data, error } = await supabase.rpc('get_saved_profiles')
+      const [{ data, error }, existingMatches] = await Promise.all([
+        supabase.rpc('get_saved_profiles'),
+        getExistingMatches(profile.id),
+      ])
       if (error) throw error
       setProfiles(data ?? [])
+      const map = {}
+      for (const m of existingMatches) {
+        const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
+        map[otherId] = m.id
+      }
+      setMatchedMap(map)
     } catch (err) {
       setError('Could not load saved profiles.')
       console.error(err)
@@ -93,7 +105,8 @@ export default function Saved() {
                 isSaved={true}
                 onToggleSave={handleToggleSave}
                 onConnect={() => navigate('/feed')}
-                alreadyMatched={false}
+                alreadyMatched={p.id in matchedMap}
+                matchId={matchedMap[p.id] ?? null}
                 connecting={false}
               />
             ))}
