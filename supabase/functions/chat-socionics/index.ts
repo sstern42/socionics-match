@@ -189,6 +189,12 @@ Deno.serve(async (req) => {
                 ) {
                   controller.enqueue(encoder.encode(event.delta.text))
                 }
+                if (
+                  event.type === 'message_delta' &&
+                  event.delta?.stop_reason === 'max_tokens'
+                ) {
+                  controller.enqueue(encoder.encode('\n\n__MAX_TOKENS__'))
+                }
               } catch {
                 // skip malformed lines
               }
