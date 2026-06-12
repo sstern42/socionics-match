@@ -226,6 +226,45 @@ function Message({ role, content, streaming }) {
   )
 }
 
+// ── Upgrade prompt ────────────────────────────────────────────────────────────
+
+function UpgradePrompt() {
+  return (
+    <div style={{
+      margin: '8px 0',
+      padding: '14px 16px',
+      borderRadius: 12,
+      border: '1px solid var(--accent-lt)',
+      background: 'rgba(154,111,56,0.06)',
+      textAlign: 'center',
+    }}>
+      <div style={{ fontSize: 18, marginBottom: 6 }}>✦</div>
+      <p style={{ fontSize: 13, color: 'var(--text)', margin: '0 0 12px', lineHeight: 1.55 }}>
+        You've used your 10 free AI messages for today.<br />
+        Upgrade to Premium for unlimited access.
+      </p>
+      <a
+        href="/premium"
+        style={{
+          display: 'inline-block',
+          padding: '8px 20px',
+          borderRadius: 20,
+          background: 'var(--accent)',
+          color: '#fff',
+          fontSize: 13,
+          fontWeight: 600,
+          textDecoration: 'none',
+          transition: 'opacity 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+        onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+      >
+        Upgrade to Premium
+      </a>
+    </div>
+  )
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function SocionicsChat({ userType = null }) {
@@ -233,6 +272,7 @@ export default function SocionicsChat({ userType = null }) {
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [error, setError] = useState(null)
+  const [showUpgrade, setShowUpgrade] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const abortRef = useRef(null)
@@ -248,6 +288,7 @@ export default function SocionicsChat({ userType = null }) {
     if (!userMessage || streaming) return
     setInput('')
     setError(null)
+    setShowUpgrade(false)
     const newMessages = [...messages, { role: 'user', content: userMessage }]
     setMessages([...newMessages, { role: 'assistant', content: '' }])
     setStreaming(true)
@@ -261,7 +302,17 @@ export default function SocionicsChat({ userType = null }) {
         body: JSON.stringify({ messages: newMessages, userType }),
         signal: abortRef.current.signal,
       })
-      if (!res.ok) throw new Error('Something went wrong. Please try again.')
+      if (!res.ok) {
+        // Remove the optimistic assistant message
+        setMessages(prev => prev.slice(0, -1))
+        let errorMsg = 'Something went wrong. Please try again.'
+        try {
+          const data = await res.json()
+          errorMsg = data.error ?? errorMsg
+          if (data.upgrade) { setShowUpgrade(true); return }
+        } catch {}
+        throw new Error(errorMsg)
+      }
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let accumulated = ''
@@ -299,7 +350,10 @@ export default function SocionicsChat({ userType = null }) {
     } catch (err) {
       if (err.name === 'AbortError') return
       setError(err.message)
-      setMessages(prev => prev.slice(0, -1))
+      setMessages(prev => {
+        const last = prev[prev.length - 1]
+        return last?.role === 'assistant' && last?.content === '' ? prev.slice(0, -1) : prev
+      })
     } finally {
       setStreaming(false)
       inputRef.current?.focus()
@@ -375,7 +429,10 @@ export default function SocionicsChat({ userType = null }) {
           </div>
         )}
 
-        {error && <div style={{ textAlign: 'center', fontSize: 13, color: '#e87070', padding: '8px 0' }}>{error}</div>}
+        {showUpgrade && <UpgradePrompt />}
+        {error && !showUpgrade && (
+          <div style={{ textAlign: 'center', fontSize: 13, color: '#e87070', padding: '8px 0' }}>{error}</div>
+        )}
         <div ref={bottomRef} />
       </div>
 
