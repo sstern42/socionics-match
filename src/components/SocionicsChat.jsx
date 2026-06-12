@@ -389,6 +389,21 @@ export default function SocionicsChat({ userType = null }) {
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Socionics Assistant</div>
           {userType && <div style={{ fontSize: 12, color: 'var(--muted)' }}>Personalised for {userType}</div>}
         </div>
+        {messages.length > 0 && (
+          <button
+            onClick={() => { setMessages([]); setError(null); setShowUpgrade(false) }}
+            style={{
+              marginLeft: 'auto', background: 'none', border: 'none',
+              color: 'var(--muted)', fontSize: 12, cursor: 'pointer',
+              padding: '4px 8px', borderRadius: 6,
+              transition: 'color 0.15s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+          >
+            New chat
+          </button>
+        )}
       </div>
 
       {/* Messages */}
