@@ -453,10 +453,11 @@ export default function SocionicsChat({ userType = null }) {
 
       {/* Input */}
       <div style={{
-        padding: '12px 14px', borderTop: '1px solid var(--border)',
-        display: 'flex', gap: 8, alignItems: 'flex-end',
+        padding: '12px 14px 8px', borderTop: '1px solid var(--border)',
+        display: 'flex', flexDirection: 'column', gap: 8,
         background: 'var(--card-bg)', flexShrink: 0,
       }}>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
         <textarea
           ref={inputRef}
           value={input}
@@ -484,6 +485,11 @@ export default function SocionicsChat({ userType = null }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 16, flexShrink: 0, transition: 'background 0.15s, color 0.15s',
         }} aria-label="Send">↑</button>
+        </div>
+        <p style={{ fontSize: 11, color: 'var(--muted)', textAlign: 'center', opacity: 0.7, margin: 0, lineHeight: 1.5 }}>
+          AI can make mistakes. Verify anything important at{' '}
+          <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'underline' }}>socionicsinsight.com</a>.
+        </p>
       </div>
     </div>
   )
