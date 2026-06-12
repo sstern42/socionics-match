@@ -4,6 +4,15 @@ import { usePageTitle } from '../hooks/usePageTitle'
 
 export const ENTRIES = [
      {
+       date: '12 June 2026',
+       label: 'New',
+       items: [
+         'Socionics AI — ask anything about types, relations, Model A, and compatibility. Find it via the bot icon in the nav or footer, or go directly to socion.app/ask',
+         'Socionics AI — responses are personalised to your Socionics type',
+         'Socionics AI — available to signed-in members',
+       ],
+     },
+     {
        date: '11 June 2026',
        label: 'Update',
        items: [
