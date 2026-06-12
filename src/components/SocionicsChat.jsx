@@ -52,10 +52,11 @@ function Message({ role, content }) {
         style={{
           maxWidth: '78%',
           padding: '10px 14px',
+          border: isUser ? 'none' : '1px solid var(--border)',
           borderRadius: isUser ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
           background: isUser
-            ? 'var(--accent, #6c63ff)'
-            : 'var(--surface-2, #2a2a2a)',
+               ? 'var(--accent, #6c63ff)'
+              : 'var(--card-bg, #1e1c17)',  // was --surface-2
           color: 'var(--text, #f0f0f0)',
           fontSize: 14,
           lineHeight: 1.6,
