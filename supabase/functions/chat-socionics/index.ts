@@ -13,6 +13,7 @@ const SYSTEM_PROMPT = `You are a knowledgeable Socionics assistant embedded in S
 - When referencing external resources, always use markdown hyperlink format, e.g. [socionicsinsight.com](https://socionicsinsight.com). Never output bare URLs
 - [socionicsinsight.com](https://socionicsinsight.com) is the companion Socionics reference site — link to it when relevant
 - **Always look up the complete intertype relations matrix below before stating any relation between two types. Never guess or infer — the matrix is authoritative.**
+- Aim for concise, focused responses — 3-5 key points is usually better than exhaustive coverage
 
 ## What is Socionics?
 Socionics is a personality theory developed in the 1970s by Lithuanian researcher Aushra Augusta, built on Jungian cognitive functions. Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations — the unit of analysis is the dyad, not the individual. It defines 16 personality types and maps a specific named relationship dynamic between every possible pair.
@@ -143,7 +144,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1024,
+        max_tokens: 4096,
         stream: true,
         system: systemBlocks,
         messages,
@@ -188,6 +189,12 @@ Deno.serve(async (req) => {
                   event.delta?.text
                 ) {
                   controller.enqueue(encoder.encode(event.delta.text))
+                }
+                if (
+                  event.type === 'message_delta' &&
+                  event.delta?.stop_reason === 'max_tokens'
+                ) {
+                  controller.enqueue(encoder.encode('\n\n__MAX_TOKENS__'))
                 }
               } catch {
                 // skip malformed lines

@@ -269,12 +269,32 @@ export default function SocionicsChat({ userType = null }) {
         const { done, value } = await reader.read()
         if (done) break
         accumulated += decoder.decode(value, { stream: true })
+
+        // Check for max_tokens sentinel from edge function
+        if (accumulated.endsWith('__MAX_TOKENS__')) {
+          accumulated = accumulated.slice(0, -'__MAX_TOKENS__'.length).trimEnd()
+          setMessages(prev => {
+            const updated = [...prev]
+            updated[updated.length - 1] = { role: 'assistant', content: accumulated }
+            return updated
+          })
+          setError('Response was cut off — ask me to continue or try a more specific question.')
+          return
+        }
+
         setMessages(prev => {
           const updated = [...prev]
           updated[updated.length - 1] = { role: 'assistant', content: accumulated }
           return updated
         })
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }
+
+      // If we got nothing back at all, something went wrong silently
+      if (!accumulated.trim()) {
+        setMessages(prev => prev.slice(0, -1))
+        setError('No response received. Please try again.')
+        return
       }
     } catch (err) {
       if (err.name === 'AbortError') return
