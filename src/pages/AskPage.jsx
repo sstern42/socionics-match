@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { supabase } from '../lib/supabase'
 import SocionicsChat from '../components/SocionicsChat'
 
 export default function AskPage() {
