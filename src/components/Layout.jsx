@@ -705,11 +705,13 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" data-umami-event="si-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" data-umami-event="github-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" data-umami-event="discord-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
-            <Link to="/ask"
-              data-umami-event="ask-click" data-umami-event-source="footer"
-              style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-              <IconBot /> Ask AI
-            </Link>
+            {session && (
+              <Link to="/ask"
+                data-umami-event="ask-click" data-umami-event-source="footer"
+                style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                <IconBot /> Ask AI
+              </Link>
+            )}
             <Link to="/support" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Support Socion ☕</Link>
             <Link to="/premium" style={{ fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'none', border: '1px solid var(--accent)', borderRadius: 3, padding: '0.2rem 0.6rem' }}>Premium ✦</Link>
             <Link to="/stats" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Stats</Link>
