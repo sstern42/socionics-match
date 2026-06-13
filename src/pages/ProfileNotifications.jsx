@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { updateProfileData } from '../lib/profile'
 import { usePushNotifications } from '../lib/usePushNotifications'
 import ProfileNav from '../components/profile/ProfileNav'
 
 export default function ProfileNotifications() {
+  usePageTitle('Notifications')
   const { profile, refreshProfile, session, loading } = useAuth()
   const navigate = useNavigate()
 

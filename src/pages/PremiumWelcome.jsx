@@ -2,12 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 // Stripe redirects here after a successful checkout. The webhook
 // (checkout.session.completed) is what actually flips plan_status to 'active',
 // and it can land a beat after this page loads — so we refresh the profile a
 // few times rather than assuming Premium is live immediately.
 export default function PremiumWelcome() {
+  usePageTitle('Welcome to Premium')
   const { isPremium, refreshProfile } = useAuth()
   const [checking, setChecking] = useState(true)
   const attempts = useRef(0)

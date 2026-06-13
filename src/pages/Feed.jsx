@@ -8,6 +8,7 @@ import MatchModal from '../components/feed/MatchModal'
 import SeekingYou from '../components/feed/SeekingYou'
 import SIWebview from '../components/SIWebview'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
 import { RELATIONS, MATRIX } from '../data/relations'
@@ -65,6 +66,7 @@ function FeedLoader() {
 }
 
 export default function Feed() {
+  usePageTitle('Feed')
   const { session, profile, loading, refreshProfile, isPremium } = useAuth()
   const navigate = useNavigate()
 

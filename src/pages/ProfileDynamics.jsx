@@ -4,10 +4,12 @@ import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import PurposePicker from '../components/profile/PurposePicker'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { updateRelationPreferences, updatePurpose } from '../lib/profile'
 import ProfileNav from '../components/profile/ProfileNav'
 
 export default function ProfileDynamics() {
+  usePageTitle('My Dynamics')
   const { profile, refreshProfile, session, loading } = useAuth()
   const navigate = useNavigate()
 

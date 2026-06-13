@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { MATRIX } from '../data/relations'
 import { supabase } from '../lib/supabase'
 import { getExistingMatches } from '../lib/feed'
 
 export default function Saved() {
+  usePageTitle('Saved')
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [profiles, setProfiles] = useState([])

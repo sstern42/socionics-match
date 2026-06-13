@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
 import { RELATIONS, MATRIX } from '../data/relations'
 import { countryFlag, COUNTRIES } from '../data/countries'
@@ -25,6 +26,7 @@ function timeAgo(dateStr) {
 }
 
 export default function UserProfile() {
+  usePageTitle('Profile')
   const { userId } = useParams()
   const { profile, loading, isPremium } = useAuth()
   const navigate = useNavigate()
