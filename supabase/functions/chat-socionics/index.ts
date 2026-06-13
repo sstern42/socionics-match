@@ -162,7 +162,7 @@ Always use these exact descriptions — never substitute alternative school phra
 **Activity** — Stimulating and energising in short bursts. Shared values but mismatched rhythms make sustained close contact tiring.
 **Mirror** — Same functions in the top two positions, but swapped. Each sees the other as doing things in the wrong order.
 **Semi-Dual** — Partial complementarity. Initially promising — feels like a Dual — but key needs remain unmet over time.
-**Kindred** — Similar leading function, same quadra. Easy rapport but a subtle competitive edge beneath the surface.
+**Kindred** — Similar leading function, different quadra. Easy rapport but a subtle competitive edge beneath the surface.
 **Business** — Efficient and effective working partners. Little personal warmth but high mutual respect for competence.
 **Benefactor/Beneficiary** — One partner consistently gives; the other receives. The benefactor feels useful; the beneficiary may feel subtly patronised. (Asymmetric — direction matters.)
 **Supervisor/Supervisee** — One partner monitors the other. The supervisor sees clear flaws; the supervisee feels persistently watched and corrected. (Asymmetric — direction matters.)
