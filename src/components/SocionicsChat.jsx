@@ -285,16 +285,26 @@ export default function SocionicsChat({ userType = null, isPremium = false }) {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
       const today = new Date().toISOString().slice(0, 10)
-      const { data } = await supabase
-        .from('ai_message_counts')
-        .select('count')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .maybeSingle()
-      setMessageCount(data?.count ?? 0)
+      const storageKey = `msg_count_${user.id}_${today}`
+      const cached = parseInt(localStorage.getItem(storageKey) ?? '0', 10)
+      // For free users, prefer the server count (source of truth for enforcement)
+      if (!isPremium) {
+        const { data } = await supabase
+          .from('ai_message_counts')
+          .select('count')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .maybeSingle()
+        const serverCount = data?.count ?? 0
+        const count = Math.max(cached, serverCount)
+        localStorage.setItem(storageKey, String(count))
+        setMessageCount(count)
+      } else {
+        setMessageCount(cached)
+      }
     }
     fetchCount()
-  }, [])
+  }, [isPremium])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -322,7 +332,14 @@ export default function SocionicsChat({ userType = null, isPremium = false }) {
         signal: abortRef.current.signal,
       })
       if (res.ok) {
-        setMessageCount(prev => prev !== null ? prev + 1 : 1)
+        setMessageCount(prev => {
+          const next = (prev ?? 0) + 1
+          const today = new Date().toISOString().slice(0, 10)
+          supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) localStorage.setItem(`msg_count_${user.id}_${today}`, String(next))
+          })
+          return next
+        })
       }
       if (!res.ok) {
         // Remove the optimistic assistant message
