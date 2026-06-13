@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
 import { COUNTRIES } from '../data/countries'
 
@@ -37,6 +38,7 @@ function FounderFeedToggle() {
 }
 
 export default function Admin() {
+  usePageTitle('Admin')
   const { profile, loading } = useAuth()
   const navigate = useNavigate()
   const [data, setData] = useState(null)

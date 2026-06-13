@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import MatchList from '../components/messages/MatchList'
 import Conversation from '../components/messages/Conversation'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { getMatches } from '../lib/messages'
 import { supabase } from '../lib/supabase'
 import { markMessagesRead, markMatchRead } from '../lib/useUnreadCount'
@@ -12,6 +13,7 @@ import NotificationPrompt from '../components/messages/NotificationPrompt'
 import PushModal from '../components/messages/PushModal'
 
 export default function Messages() {
+  usePageTitle('Messages')
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { useQuadraRoom } from '../hooks/useQuadraRoom'
 import { supabase } from '../lib/supabase'
 import { getQuadra } from '../data/relations'
@@ -419,6 +420,7 @@ const RoomInput = React.memo(function RoomInput({
 
 // ─── Rooms (main page) ────────────────────────────────────────────────────────
 export default function Rooms() {
+  usePageTitle('Rooms')
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 

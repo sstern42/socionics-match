@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
 import { RELATIONS } from '../data/relations'
 
 export default function Feedback() {
+  usePageTitle('Feedback')
   const { matchId } = useParams()
   const { profile, session, loading } = useAuth()
   const navigate = useNavigate()

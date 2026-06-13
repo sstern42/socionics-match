@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 
 // Lightweight settings page. Exists primarily as the return target for the
@@ -9,6 +10,7 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 // a home for subscription management. Refreshes the profile on mount so a
 // just-returned-from-portal user sees their current plan.
 export default function Settings() {
+  usePageTitle('Settings')
   const { session, profile, isPremium, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)

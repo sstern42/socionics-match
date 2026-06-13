@@ -3,10 +3,12 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { createProfile, updateRelationPreferences, createTypeAssessment } from '../lib/profile'
 import { COUNTRIES } from '../data/countries'
 
 export default function ProfileSetup() {
+  usePageTitle('Profile Setup')
   const { session, profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
 

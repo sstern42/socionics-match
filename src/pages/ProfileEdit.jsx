@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { usePageTitle } from '../hooks/usePageTitle'
 import { updateProfileData, uploadAvatar, uploadPhoto, deletePhoto } from '../lib/profile'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { TYPES } from '../data/relations'
@@ -12,6 +13,7 @@ import ProfileNav from '../components/profile/ProfileNav'
 const MAX_EXTRA_PHOTOS = 5
 
 export default function ProfileEdit() {
+  usePageTitle('Edit Profile')
   const { profile, refreshProfile, session, loading } = useAuth()
   const navigate = useNavigate()
 
