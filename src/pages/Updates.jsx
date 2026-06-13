@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -26,8 +26,13 @@ function timeAgo(dateStr) {
 }
 
 export default function Updates() {
-  const { profile } = useAuth()
+  const { session, loading: authLoading, profile } = useAuth()
+  const navigate = useNavigate()
   const isFounder = profile?.profile_data?.role === 'founder'
+
+  useEffect(() => {
+    if (!authLoading && !session) navigate('/auth', { replace: true })
+  }, [session, authLoading])
 
   const [posts, setPosts]               = useState([])
   const [loading, setLoading]           = useState(true)
