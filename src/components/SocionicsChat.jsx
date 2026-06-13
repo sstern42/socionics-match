@@ -267,15 +267,34 @@ function UpgradePrompt() {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function SocionicsChat({ userType = null }) {
+const FREE_DAILY_LIMIT = 10
+
+export default function SocionicsChat({ userType = null, isPremium = false }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [error, setError] = useState(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
+  const [messageCount, setMessageCount] = useState(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const abortRef = useRef(null)
+
+  useEffect(() => {
+    async function fetchCount() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const today = new Date().toISOString().slice(0, 10)
+      const { data } = await supabase
+        .from('ai_message_counts')
+        .select('count')
+        .eq('user_id', user.id)
+        .eq('date', today)
+        .maybeSingle()
+      setMessageCount(data?.count ?? 0)
+    }
+    fetchCount()
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -302,6 +321,9 @@ export default function SocionicsChat({ userType = null }) {
         body: JSON.stringify({ messages: newMessages, userType }),
         signal: abortRef.current.signal,
       })
+      if (res.ok) {
+        setMessageCount(prev => prev !== null ? prev + 1 : 1)
+      }
       if (!res.ok) {
         // Remove the optimistic assistant message
         setMessages(prev => prev.slice(0, -1))
@@ -389,21 +411,30 @@ export default function SocionicsChat({ userType = null }) {
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>Socionics Assistant</div>
           {userType && <div style={{ fontSize: 12, color: 'var(--muted)' }}>Personalised for {userType}</div>}
         </div>
-        {messages.length > 0 && (
-          <button
-            onClick={() => { setMessages([]); setError(null); setShowUpgrade(false) }}
-            style={{
-              marginLeft: 'auto', background: 'none', border: 'none',
-              color: 'var(--muted)', fontSize: 12, cursor: 'pointer',
-              padding: '4px 8px', borderRadius: 6,
-              transition: 'color 0.15s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
-          >
-            New chat
-          </button>
-        )}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
+          {messageCount !== null && (
+            <span style={{ fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+              {isPremium
+                ? `${messageCount} today · unlimited`
+                : `${messageCount} / ${FREE_DAILY_LIMIT} today`}
+            </span>
+          )}
+          {messages.length > 0 && (
+            <button
+              onClick={() => { setMessages([]); setError(null); setShowUpgrade(false) }}
+              style={{
+                background: 'none', border: 'none',
+                color: 'var(--muted)', fontSize: 12, cursor: 'pointer',
+                padding: '4px 8px', borderRadius: 6,
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+            >
+              New chat
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Messages */}

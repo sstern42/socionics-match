@@ -8,7 +8,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function AskPage() {
   const navigate = useNavigate()
-  const { session, loading } = useAuth()
+  const { session, loading, isPremium } = useAuth()
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth', { replace: true })
@@ -62,7 +62,7 @@ export default function AskPage() {
           Back
         </button>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <SocionicsChat userType={userType} />
+          <SocionicsChat userType={userType} isPremium={isPremium} />
         </div>
       </div>
     </Layout>
