@@ -87,7 +87,7 @@ export default function DynamicsTab({ userId, myType, isPremium }) {
 
   const rows    = data?.rows    ?? []
   const globals = data?.globals ?? {}
-  const error   = queryError?.message ?? 'Could not load your dynamics.'
+  const error   = queryError ? (queryError.message ?? 'Could not load your dynamics.') : null
 
   // ── Free tier tease ──────────────────────────────────────────────────
   if (!isPremium) {
