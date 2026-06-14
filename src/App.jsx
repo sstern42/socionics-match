@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import FeedbackButton from './components/FeedbackButton'
 import './App.css'
 
@@ -34,11 +34,11 @@ const About = lazy(() => import('./pages/About'))
 const NotFound = lazy(() => import('./pages/NotFound'))
 const AskPage = lazy(() => import('./pages/AskPage'))
 
-export default function App() {
+function AppRoutes() {
+  const location = useLocation()
   return (
-    <BrowserRouter>
-      <Suspense>
-      <Routes>
+    <div key={location.key} className="page-transition-wrapper">
+      <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth" element={<Auth />} />
@@ -70,6 +70,15 @@ export default function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Suspense>
+        <AppRoutes />
       </Suspense>
       <FeedbackButton />
     </BrowserRouter>

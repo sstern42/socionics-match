@@ -52,6 +52,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
   return (
     <div
       onClick={onDismiss}
+      className="modal-backdrop-enter"
       style={{
         position: 'fixed', inset: 0, zIndex: 400,
         background: 'rgba(0,0,0,0.6)',
@@ -61,6 +62,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
     >
       <div
         onClick={e => e.stopPropagation()}
+        className="modal-dialog-enter"
         style={{
           background: 'var(--card-bg)', borderRadius: 12, padding: '2rem 1.75rem',
           width: '100%', maxWidth: 380,

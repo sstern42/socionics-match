@@ -358,6 +358,72 @@ html.dark input::placeholder { color: var(--muted); }
 /* BootSpin animation used by BootGate */
 @keyframes bootSpin { to { transform: rotate(360deg); } }
 
+/* ── Page transitions ─────────────────────────────────────────── */
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-transition-wrapper {
+  animation: pageEnter 0.2s ease-out both;
+}
+
+/* ── Modal / overlay transitions ──────────────────────────────── */
+@keyframes backdropEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-backdrop-enter {
+  animation: backdropEnter 0.18s ease-out both;
+}
+
+.modal-dialog-enter {
+  animation: modalEnter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Feed mode crossfade ──────────────────────────────────────── */
+@keyframes feedContentEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.feed-content-enter {
+  animation: feedContentEnter 0.18s ease-out both;
+}
+
+/* ── Button press feedback ────────────────────────────────────── */
+.btn-primary,
+.btn-ghost {
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.1s;
+}
+.btn-primary:active,
+.btn-ghost:active {
+  transform: scale(0.96);
+}
+
+/* ── Nav link active indicator ────────────────────────────────── */
+.site-header nav a {
+  position: relative;
+}
+.site-header nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 1px;
+  background: var(--accent);
+  transition: width 0.2s ease-out;
+}
+.site-header nav a:hover::after,
+.site-header nav a.active::after {
+  width: 100%;
+}
+
 /* ── Dark mode rel-pill contrast fix ──────────────────────────── */
 /* In dark mode the default muted colour is too dim — lift pills  */
 /* to var(--text) so they're readable against the dark surface.   */
