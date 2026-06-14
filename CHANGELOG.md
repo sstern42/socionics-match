@@ -35,6 +35,10 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ### Changed
 - **Brand name**: Added ™ to Socion across all page meta titles.
 - **Privacy Policy & Terms**: Updated to reflect the paid tier, written typing report, profile photos, and all features added since launch.
+- **SEO — meta descriptions**: All public-facing pages now have unique, optimised meta descriptions (under 155 chars) and keyword-rich page titles.
+- **SEO — OG/Twitter tags**: `og:title`, `og:description`, `og:url`, `twitter:title`, `twitter:description`, and `twitter:url` are now set per page for correct social share previews.
+- **Performance — bundle splitting**: Vendor JS split into separate chunks (React, Supabase, React Query, etc.) to fix large-bundle warnings and improve caching across deploys.
+- **Performance — lazy loading**: All page components are now lazy-loaded, reducing the initial JS bundle size.
 - **SEO**: Added `/about`, `/help`, `/typing`, and `/stats` to the sitemap; added missing private routes to `robots.txt`.
 
 ---
