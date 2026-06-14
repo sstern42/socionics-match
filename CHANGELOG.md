@@ -12,6 +12,9 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ### Fixed
 - **Online now count**: The current user is now subtracted from the "online now" count so members don't see themselves included.
+- **Feed caching**: Feed profiles, matches, and saved IDs are now cached for 5 minutes via React Query. Re-visiting the feed within that window fires zero Supabase queries and renders instantly. A live "updated X min ago" freshness indicator appears next to the activity stats; tap it to force a refresh.
+- **Messages caching**: The conversation list is served from a 60-second React Query cache on re-visit — instant render, no round-trip.
+- **Profile views caching**: Switching to the Views tab and back reuses the cached result for 5 minutes.
 - **Avatar caching**: Service worker intercepts Supabase storage image URLs and serves them cache-first. Cache busting is automatic via the `?t=<timestamp>` query param already embedded in avatar URLs, so stale images are never shown.
 
 ### Changed
