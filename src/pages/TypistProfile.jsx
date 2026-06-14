@@ -37,27 +37,10 @@ export default function TypistProfile() {
   const navigate                      = useNavigate()
   const typist = TYPISTS[slug]
 
-  usePageMeta(typist ? `Get Typed by ${typist.displayName} — Socionics Typing | Socion™` : 'Get Your Socionics Type Confirmed | Socion™')
-
-  useEffect(() => {
-      if (!typist) return
-      const desc = META_DESCRIPTIONS[slug] ?? `Get your Socionics type confirmed by ${typist.displayName} on Socion.`
-      const defaultDesc = 'Socionics-based matching for dating, friendship, and networking. Choose your dynamic — Dual, Mirror, Activity and 13 more.'
-      const metaDesc = document.querySelector('meta[name="description"]')
-      const ogTitle  = document.querySelector('meta[property="og:title"]')
-      const ogDesc   = document.querySelector('meta[property="og:description"]')
-      const ogUrl    = document.querySelector('meta[property="og:url"]')
-      if (metaDesc) metaDesc.setAttribute('content', desc)
-      if (ogTitle)  ogTitle.setAttribute('content',  `Typed by ${typist.displayName} — Socion`)
-      if (ogDesc)   ogDesc.setAttribute('content',   desc)
-      if (ogUrl)    ogUrl.setAttribute('content',    `https://socion.app/typing/${slug}`)
-      return () => {
-        if (metaDesc) metaDesc.setAttribute('content', defaultDesc)
-        if (ogTitle)  ogTitle.setAttribute('content',  'Socion — Match by personality type, not algorithm')
-        if (ogDesc)   ogDesc.setAttribute('content',   defaultDesc)
-        if (ogUrl)    ogUrl.setAttribute('content',    'https://socion.app')
-      }
-    }, [slug, typist])
+  usePageMeta(
+    typist ? `Get Typed by ${typist.displayName} — Socionics Typing | Socion™` : 'Get Your Socionics Type Confirmed | Socion™',
+    typist ? (META_DESCRIPTIONS[slug] ?? `Get your Socionics type confirmed by ${typist.displayName} on Socion.`) : undefined
+  )
 
   useEffect(() => {
     if (!loading && !typist) navigate('/typing', { replace: true })
