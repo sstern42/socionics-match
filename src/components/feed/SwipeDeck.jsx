@@ -13,13 +13,20 @@ const STACK = [
   { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
 ]
 
-export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe }) {
-  const [queue, setQueue]   = useState([...profiles])
-  const [swiped, setSwiped] = useState(new Set())
+export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe, initialSwiped, onSwipeComplete }) {
+  const [swiped, setSwiped] = useState(() => new Set(initialSwiped ?? []))
+  const [queue, setQueue]   = useState(() => {
+    const seen = new Set(initialSwiped ?? [])
+    return profiles.filter(p => !seen.has(p.id))
+  })
 
-  // Sync queue if parent refreshes profiles
+  // Sync queue if parent refreshes profiles (e.g. loadMore)
   useEffect(() => {
-    setQueue(profiles.filter(p => !swiped.has(p.id)))
+    setQueue(prev => {
+      const prevIds = new Set(prev.map(p => p.id))
+      const newProfiles = profiles.filter(p => !swiped.has(p.id) && !prevIds.has(p.id))
+      return [...prev.filter(p => profiles.some(fp => fp.id === p.id)), ...newProfiles]
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profiles])
 
@@ -34,6 +41,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
     // Remove from deck immediately for snappy UX
     setSwiped(prev => new Set([...prev, profile.id]))
     setQueue(prev => prev.filter(p => p.id !== profile.id))
+    onSwipeComplete?.(profile.id)
 
     // Record swipe in Supabase
     const { error } = await supabase.from('swipes').insert({
@@ -75,7 +83,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
         onMatch?.({ profile, relationType, matchId: matchRow?.id ?? null })
       }
     }
-  }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe])
+  }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe, onSwipeComplete])
 
   // Skip — move top profile to the back of the current queue, session-only, no DB write
   const handleSkip = useCallback((profile) => {
