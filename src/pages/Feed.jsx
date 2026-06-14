@@ -121,15 +121,14 @@ export default function Feed() {
   const [matchData, setMatchData] = useState(null)
   const [activityStats, setActivityStats] = useState(null)
 
-  // Full-screen swipe mode on mobile — add body class so footer hides and deck covers viewport
+  // Swipe mode — add body class so preamble hides and on mobile deck covers viewport
   useEffect(() => {
-    const isMobile = window.matchMedia('(max-width: 700px)').matches
-    if (swipeMode && isMobile) {
-      document.body.classList.add('swipe-mode-mobile')
+    if (swipeMode) {
+      document.body.classList.add('swipe-mode-active')
     } else {
-      document.body.classList.remove('swipe-mode-mobile')
+      document.body.classList.remove('swipe-mode-active')
     }
-    return () => document.body.classList.remove('swipe-mode-mobile')
+    return () => document.body.classList.remove('swipe-mode-active')
   }, [swipeMode])
 
   function toggleFeedMode() {
