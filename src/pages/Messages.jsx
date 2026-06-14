@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import MatchList from '../components/messages/MatchList'
 import Conversation from '../components/messages/Conversation'
@@ -18,12 +19,13 @@ export default function Messages() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  const [matches, setMatches] = useState([])
+  const [removedIds, setRemovedIds] = useState(new Set())
   const [archivedIds, setArchivedIds] = useState(new Set())
   const [selectedMatchId, setSelectedMatchId] = useState(null)
-  const [fetching, setFetching] = useState(true)
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const queryClient = useQueryClient()
+  const matchesQueryKey = ['matches', profile?.id]
 
   const selectedRef = useRef(null)
   useEffect(() => { selectedRef.current = selectedMatchId }, [selectedMatchId])
@@ -43,31 +45,40 @@ export default function Messages() {
     markMessagesRead()
   }, [])
 
-  useEffect(() => {
-    if (!profile) return
-    Promise.all([
+  const { data: matchesData, isFetching, dataUpdatedAt } = useQuery({
+    queryKey: matchesQueryKey,
+    queryFn: () => Promise.all([
       getMatches(profile.id),
       getArchivedMatchIds(profile.id),
-    ]).then(([data, archived]) => {
-      setMatches(data)
-      setArchivedIds(archived)
+    ]).then(([data, archived]) => ({ matches: data, archivedIds: archived })),
+    enabled: !!profile,
+    staleTime: 60_000,
+  })
 
-      const matchId = searchParams.get('match')
-      if (matchId) {
-        const m = data.find(m => m.id === matchId)
-        if (m) {
-          if (archived.has(m.id)) setShowArchived(true)
-          markMatchRead(m.id)
-          setSelectedMatchId(m.id)
-          setMobileShowConvo(true)
-        }
-      } else if (!selectedRef.current) {
-        const first = data.find(m => !archived.has(m.id))
-        if (first) { markMatchRead(first.id); setSelectedMatchId(first.id) }
+  const fetching = isFetching && dataUpdatedAt === 0
+
+  const matches = (matchesData?.matches ?? []).filter(m => !removedIds.has(m.id))
+
+  const initialSelectDone = useRef(false)
+  useEffect(() => {
+    if (!matchesData || initialSelectDone.current) return
+    initialSelectDone.current = true
+    const { matches: data, archivedIds: archived } = matchesData
+    setArchivedIds(archived)
+    const matchId = searchParams.get('match')
+    if (matchId) {
+      const m = data.find(m => m.id === matchId)
+      if (m) {
+        if (archived.has(m.id)) setShowArchived(true)
+        markMatchRead(m.id)
+        setSelectedMatchId(m.id)
+        setMobileShowConvo(true)
       }
-      setFetching(false)
-    })
-  }, [profile])
+    } else if (!selectedRef.current) {
+      const first = data.find(m => !archived.has(m.id))
+      if (first) { markMatchRead(first.id); setSelectedMatchId(first.id) }
+    }
+  }, [matchesData])
 
   useEffect(() => {
     if (!profile) return
@@ -126,7 +137,7 @@ export default function Messages() {
   function handleUnmatch(matchId) {
     const id = matchId ?? selectedMatchId
     if (!id) return
-    setMatches(prev => prev.filter(m => m.id !== id))
+    setRemovedIds(prev => new Set([...prev, id]))
     setArchivedIds(prev => { const s = new Set(prev); s.delete(id); return s })
     if (selectedMatchId === id) setSelectedMatchId(null)
     setMobileShowConvo(false)
