@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
+import FlagImage from '../FlagImage'
 
 function Avatar({ profile, size = 72 }) {
   const isAnon  = profile?.profile_data?.anonymous ?? false
@@ -82,7 +83,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
             You and <em>{name}</em>
           </h2>
           {flag && (
-            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{flag}</p>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '0.25rem' }}><FlagImage code={flag} /></p>
           )}
         </div>
 

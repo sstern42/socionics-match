@@ -7,6 +7,7 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { supabase } from '../lib/supabase'
 import { RELATIONS, MATRIX } from '../data/relations'
 import { countryFlag, COUNTRIES } from '../data/countries'
+import FlagImage from '../components/FlagImage'
 import { createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
 import { logProfileView, getProfileViews, getProfileViewCount } from '../lib/profileViews'
@@ -360,7 +361,7 @@ export default function UserProfile() {
                 </h1>
                 {(flag || countryName || city) && (
                   <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                    {flag ? `${flag} ` : ''}{[countryName, city].filter(Boolean).join(' · ')}
+                    {flag && <FlagImage code={flag} style={{ marginRight: [countryName, city].some(Boolean) ? '0.35rem' : 0 }} />}{[countryName, city].filter(Boolean).join(' · ')}
                   </p>
                 )}
               </div>

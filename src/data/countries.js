@@ -62,10 +62,8 @@ export const COUNTRIES = [
   { code: 'VN', name: 'Vietnam' },
 ]
 
-// Convert ISO country code to flag emoji
+// Returns the country code normalised for use with FlagImage (uppercase, 2-char ISO)
 export function countryFlag(code) {
-  if (!code || code.length !== 2) return ''
-  return [...code.toUpperCase()]
-    .map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65))
-    .join('')
+  if (!code || code.length !== 2) return null
+  return code.toUpperCase()
 }

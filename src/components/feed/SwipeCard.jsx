@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
+import FlagImage from '../FlagImage'
 
 const SWIPE_THRESHOLD = 100
 const ROTATION_FACTOR = 0.06
@@ -126,7 +127,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
               </h3>
               {(flag || (profile_data?.city && !isAnon)) && (
                 <p style={{ fontSize:'0.78rem',color:'var(--muted)',marginTop:'0.15rem' }}>
-                  {flag}{flag && profile_data?.city && !isAnon ? ' ' : ''}
+                  {flag && <FlagImage code={flag} style={{ marginRight: profile_data?.city && !isAnon ? '0.3rem' : 0 }} />}
                   {profile_data?.city && !isAnon ? profile_data.city : ''}
                 </p>
               )}
