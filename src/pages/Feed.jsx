@@ -344,6 +344,10 @@ export default function Feed() {
     setExtraProfiles([])
     offsetRef.current = PAGE_SIZE
     setFeedExhausted(false)
+    // Seed swipedIdsRef from DB history for cross-device sync (additive — keeps current session swipes)
+    if (feedData.allSwipedIds) {
+      feedData.allSwipedIds.forEach(id => swipedIdsRef.current.add(id))
+    }
   }, [feedData])
 
   function loadFeed() {

@@ -33,9 +33,10 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     countQuery = countQuery.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
   }
 
-  const [feedResult, blocks, swipedResult, countResult] = await Promise.all([
+  const [feedResult, blocks, swipedResult, allSwipedResult, countResult] = await Promise.all([
     query,
     getActiveBlocks(currentUserId),
+    supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId).eq('direction', 'left'),
     supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId),
     countQuery,
   ])
@@ -66,7 +67,8 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     )
 
   const total = countResult.count ?? null
-  return { profiles, hasMore: rawCount === limit, total }
+  const allSwipedIds = new Set((allSwipedResult.data ?? []).map(r => r.target_id))
+  return { profiles, hasMore: rawCount === limit, total, allSwipedIds }
 }
 
 export async function getExistingMatches(userId) {
