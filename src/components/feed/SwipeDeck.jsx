@@ -114,6 +114,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
       margin: '0 auto',
       height: 'min(calc(100vh - 200px), 620px)',
       paddingBottom: 40,
+      touchAction: 'none',
     }}>
       {[...visible].reverse().map((profile, reverseIdx) => {
         const idx        = visible.length - 1 - reverseIdx
