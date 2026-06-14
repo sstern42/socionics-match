@@ -30,14 +30,14 @@ html.dark {
   --text:      #ede9e0;
   --muted:     #8c8275;
   --card-bg:   #1e1c17;
-  --nav-link:  #b0a898;
+  --nav-link:  #cdc4b8;
   color-scheme: dark;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
+  background: radial-gradient(ellipse 70% 60% at 50% 20%, var(--bg) 40%, color-mix(in srgb, var(--bg) 80%, #000) 100%) var(--bg);
   color: var(--text);
   font-family: var(--sans);
   font-weight: 300;
@@ -69,12 +69,6 @@ body {
 @keyframes typePulse {
   0%, 100% { opacity: 0.7; transform: scale(1); }
   50%       { opacity: 1;   transform: scale(1.06); }
-}
-
-body::after {
-  content: ''; position: fixed; inset: 0;
-  background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 40%, var(--bg) 100%);
-  pointer-events: none; z-index: 1;
 }
 
 .page { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
