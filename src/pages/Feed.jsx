@@ -473,7 +473,7 @@ export default function Feed() {
         <div className="feed-mode-toggle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           {swipeMode && (
             <p style={{ fontSize: '0.75rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>
-              ← pass &nbsp;·&nbsp; like →
+              ← pass &nbsp;·&nbsp; like → &nbsp;·&nbsp; ↩ skip
             </p>
           )}
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden' }}>
