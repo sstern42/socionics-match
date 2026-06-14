@@ -12,7 +12,8 @@
 
 const SHELL_VERSION = 'socion-shell-v3'
 const ASSET_VERSION = 'socion-assets-v1'
-const ALL_CACHES    = [SHELL_VERSION, ASSET_VERSION]
+const IMAGE_VERSION = 'socion-images-v1'
+const ALL_CACHES    = [SHELL_VERSION, ASSET_VERSION, IMAGE_VERSION]
 
 // Pre-cached shell — minimal set that lets the app paint offline
 const SHELL_URLS = [
@@ -51,7 +52,32 @@ self.addEventListener('fetch', event => {
 
   const url = new URL(event.request.url)
 
-  // Only handle requests to our own origin — never intercept Supabase,
+  // ── Supabase storage images: cache-first ─────────────────────────────────
+  // Avatar and gallery photo URLs include a ?t=<upload-timestamp> query param
+  // that changes whenever the user uploads a new image, so cache-first is
+  // safe — a new upload automatically gets a new cache key.
+  if (
+    url.pathname.startsWith('/storage/v1/object/public/') &&
+    /\.(jpe?g|png|gif|webp|avif|svg)(\?|$)/i.test(url.pathname + url.search)
+  ) {
+    event.respondWith(
+      caches.open(IMAGE_VERSION).then(async cache => {
+        const cached = await cache.match(event.request)
+        if (cached) return cached
+
+        try {
+          const response = await fetch(event.request)
+          if (response.ok) cache.put(event.request, response.clone())
+          return response
+        } catch {
+          return new Response('', { status: 503 })
+        }
+      })
+    )
+    return
+  }
+
+  // Only handle requests to our own origin — never intercept Supabase APIs,
   // Google Fonts, or any other external service
   if (url.origin !== self.location.origin) return
 
