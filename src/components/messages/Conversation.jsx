@@ -725,7 +725,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 </div>
               </div>
             </div>
-            <div style={{ position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'0.5rem',padding:'1rem',background:'linear-gradient(to bottom, rgba(247,244,239,0.35), rgba(247,244,239,0.82))' }}>
+            <div style={{ position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'0.5rem',padding:'1.5rem 1rem 1rem',background:'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 35%, transparent), color-mix(in srgb, var(--bg) 85%, transparent))' }}>
               <span style={{ fontSize:'1.4rem',lineHeight:1 }}>🔒</span>
               <p style={{ fontFamily:'var(--serif)',fontSize:isMobile?'0.95rem':'1.05rem',fontWeight:500,color:'var(--text)',margin:0 }}>
                 See exactly how you and {otherName} fit
