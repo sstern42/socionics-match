@@ -219,7 +219,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
     <SIWebview url={webviewUrl} onClose={()=>setWebviewUrl(null)} />
     {photoModal && displayAvatar && (
       <div onClick={() => setPhotoModal(false)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
-        <img src={displayAvatar} alt={displayName} style={{ maxWidth:'90vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
+        <img src={displayAvatar} alt={displayName} style={{ width:'min(80vw,80vh,480px)',height:'min(80vw,80vh,480px)',objectFit:'cover',borderRadius:8 }} onClick={e=>e.stopPropagation()} />
         <button type="button" onClick={() => setPhotoModal(false)} style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
       </div>
     )}
