@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 
 export function usePageMeta(title, description) {
   useEffect(() => {
-    document.title = title ? `Socion™ — ${title}` : 'Socion™'
+    document.title = title ?? 'Socion™'
     return () => { document.title = 'Socion™' }
   }, [title])
 

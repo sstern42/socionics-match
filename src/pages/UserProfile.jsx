@@ -27,7 +27,7 @@ function timeAgo(dateStr) {
 }
 
 export default function UserProfile() {
-  usePageMeta('Profile')
+  usePageMeta('Profile | Socion™')
   const { userId } = useParams()
   const { profile, loading, isPremium } = useAuth()
   const navigate = useNavigate()

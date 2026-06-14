@@ -3,7 +3,7 @@ import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function NotFound() {
-  usePageMeta('Page not found', "This page doesn't exist. Head back to Socion to match by Socionics type.")
+  usePageMeta('Page Not Found | Socion™', "This page doesn't exist. Head back to Socion to match by Socionics type.")
   return (
     <Layout>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '1.5rem', textAlign: 'center', padding: '2rem' }}>

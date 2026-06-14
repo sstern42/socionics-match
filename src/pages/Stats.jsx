@@ -41,7 +41,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Stats() {
-  usePageMeta('Stats', 'Live compatibility data from Socion members — satisfaction ratings by relation type, most-connected dynamics, type distribution, and real feedback.')
+  usePageMeta('Socionics Compatibility Stats | Socion™', 'Live compatibility data from Socion members — satisfaction ratings by relation type, most-connected dynamics, type distribution, and real feedback.')
   const { session } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)

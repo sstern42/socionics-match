@@ -2,7 +2,7 @@ import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Privacy() {
-  usePageMeta('Privacy', 'Socion privacy policy — how your data is stored, what is shared with other members, your GDPR rights, and how to delete your account.')
+  usePageMeta('Privacy Policy | Socion™', 'Socion privacy policy — how your data is stored, what is shared with other members, your GDPR rights, and how to delete your account.')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 680, margin: '0 auto', padding: '4rem 1.5rem' }}>

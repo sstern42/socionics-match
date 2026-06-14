@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { TYPIST_LIST, calcAge, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 
@@ -34,7 +35,7 @@ export default function Typing() {
   const { session, profile, loading } = useAuth()
   const [lightbox, setLightbox] = useState(null)
 
-  usePageTitle('Get Typed')
+  usePageMeta('Get Your Socionics Type Confirmed | Socion™')
 
   useEffect(() => {
       const desc = 'Get your Socionics type confirmed by a specialist. Written reports and voice sessions available — so every match you make rests on the right type.'
