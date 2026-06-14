@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -69,21 +70,21 @@ const h2 = {
 
 // ── Component ─────────────────────────────────────────────────────────
 export default function About() {
-  const [stats, setStats] = useState({ members: null, connections: null, messages: null })
   const [avatarOk, setAvatarOk] = useState(true)
 
   usePageTitle('About')
 
-  useEffect(() => {
-    supabase.rpc('get_public_stats').then(({ data }) => {
-      if (!data) return
-      setStats({
-        members:     data.total_members     ?? null,
-        connections: data.total_connections ?? null,
-        messages:    data.total_ratings     ?? null,
-      })
-    })
-  }, [])
+  const { data: statsData } = useQuery({
+    queryKey: ['public-stats'],
+    queryFn: () => supabase.rpc('get_public_stats').then(({ data }) => data),
+    staleTime: 10 * 60_000,
+  })
+
+  const stats = {
+    members:     statsData?.total_members     ?? null,
+    connections: statsData?.total_connections ?? null,
+    messages:    statsData?.total_ratings     ?? null,
+  }
 
   return (
     <Layout hideFooter>
