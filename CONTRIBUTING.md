@@ -4,7 +4,7 @@ Socion is open source under the MIT licence. The matching logic — the intertyp
 
 ## Current state
 
-Socion launched on 25 March 2026. As of late March 2026 the app has 40+ members across 7+ countries with all 16 intertype relations represented in real connections. The core matching loop — onboarding, feed, connect, message, feedback — is live and working.
+Socion launched on 25 March 2026. The core matching loop — onboarding, feed, connect, message, feedback — is live. The app has grown to include premium subscriptions, quadra group chat rooms, a typing directory, saved profiles, platform statistics, and an AI Socionics Q&A feature.
 
 ## What this repo contains
 
@@ -13,9 +13,14 @@ The full frontend React app (`src/`) and the Supabase schema and SQL files (`sup
 - `src/data/relations.js` — the intertype relations matrix. Single source of truth for all matching logic.
 - `src/lib/feed.js` — feed filtering and match creation.
 - `src/lib/messages.js` — messaging and match retrieval.
-- `supabase/schema.sql` — database schema.
+- `src/lib/rooms.js` — quadra group chat logic.
+- `src/lib/premium.js` — premium subscription checks.
+- `src/lib/blocks.js` — cool-off and block/report logic.
+- `src/lib/archive.js` — archive and unmatch logic.
+- `supabase/schema.sql` — base database schema (run once).
 - `supabase/rls_reset.sql` — full Row Level Security policy set.
 - `supabase/get_admin_stats.sql` — SECURITY DEFINER function for site-wide admin analytics.
+- `supabase/migrations/` — incremental schema changes; apply in filename order when upgrading.
 
 ## How to contribute
 
