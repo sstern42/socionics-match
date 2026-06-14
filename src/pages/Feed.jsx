@@ -643,7 +643,7 @@ export default function Feed() {
 
         {/* SWIPE MODE */}
         {swipeMode ? (
-          fetching ? (
+          fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
           ) : error ? (
             <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
@@ -783,7 +783,7 @@ export default function Feed() {
             </div>
           )}
 
-          {fetching ? (
+          {fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
           ) : displayed.length === 0 && !error ? (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
