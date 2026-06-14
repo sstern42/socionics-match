@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase'
 import { RELATIONS } from '../data/relations'
 
 export default function Feedback() {
-  usePageTitle('Feedback')
+  usePageTitle('Rate this Connection')
   const { matchId } = useParams()
   const { profile, session, loading } = useAuth()
   const navigate = useNavigate()

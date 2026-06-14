@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { TYPISTS, calcAge, yearsExperience } from '../lib/typists'
 import { MATRIX, RELATIONS } from '../data/relations'
 
@@ -36,7 +37,7 @@ export default function TypistProfile() {
   const navigate                      = useNavigate()
   const typist = TYPISTS[slug]
 
-  usePageTitle(typist ? `Get Typed — ${typist.displayName}` : 'Get Typed')
+  usePageMeta(typist ? `Get Typed by ${typist.displayName} — Socionics Typing | Socion™` : 'Get Your Socionics Type Confirmed | Socion™')
 
   useEffect(() => {
       if (!typist) return

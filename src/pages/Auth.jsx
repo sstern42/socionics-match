@@ -3,12 +3,14 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 const IS_PROD = window.location.hostname === 'socion.app'
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const PENDING_EMAIL_KEY = 'socion_pending_email'
 
 export default function Auth() {
+  usePageMeta('Join Socion™ — Match by Socionics Type', 'Sign in or create a free Socion account. Match by Socionics personality type — choose your dynamic and connect with people who fit you by design.')
   const [email, setEmail] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)

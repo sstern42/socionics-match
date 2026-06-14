@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 // ── Constants ─────────────────────────────────────────────────────────
 const AVATAR_URL =
@@ -72,7 +72,7 @@ const h2 = {
 export default function About() {
   const [avatarOk, setAvatarOk] = useState(true)
 
-  usePageTitle('About')
+  usePageMeta('How Socionics Matching Works | Socion™', 'Socion matches you by Socionics type — 16 types, 16 named relation dynamics, a published matching matrix, and no black-box algorithm.')
 
   const { data: statsData } = useQuery({
     queryKey: ['public-stats'],

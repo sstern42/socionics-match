@@ -103,7 +103,7 @@ function FeedFreshness({ updatedAt, onRefresh, refreshing }) {
 }
 
 export default function Feed() {
-  usePageTitle('Feed')
+  usePageTitle('Browse Matches')
   const { session, profile, loading, refreshProfile, isPremium } = useAuth()
   const navigate = useNavigate()
 
