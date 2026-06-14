@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { RELATIONS } from '../../data/relations'
 import { getCompatibilityBreakdown } from '../../data/compatibility'
 import { getMessages, sendMessage, subscribeToMessages, markRead, toggleReaction, uploadMessageImage } from '../../lib/messages'
@@ -190,6 +191,7 @@ const MessageInput = React.memo(function MessageInput({
 // ─── Conversation ─────────────────────────────────────────────────────────────
 export default function Conversation({ match, currentUserId, hasFeedback, onBack, isArchived, onArchive, onUnarchive, onUnmatch }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { isPremium, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
@@ -525,6 +527,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setUnmatching(true); setBlockError(null)
     try {
       await unmatch(match.id)
+      queryClient.invalidateQueries({ queryKey: ['feed'] })
       if (onUnmatch) { await onUnmatch(match.id) }
       else { navigate('/messages', { replace: true }) }
     } catch (err) { setBlockError(err.message); setUnmatching(false) }
