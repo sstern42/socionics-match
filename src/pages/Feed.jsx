@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
@@ -62,6 +63,42 @@ function FeedLoader() {
         }} />
       </div>
     </div>
+  )
+}
+
+function FeedFreshness({ updatedAt, onRefresh, refreshing }) {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const elapsed = Date.now() - updatedAt
+  const mins = Math.floor(elapsed / 60_000)
+  const label = mins < 1 ? 'just now' : mins === 1 ? '1 min ago' : `${mins} min ago`
+
+  return (
+    <button
+      type="button"
+      onClick={onRefresh}
+      disabled={refreshing}
+      title="Refresh feed"
+      style={{
+        background: 'none', border: 'none', cursor: refreshing ? 'default' : 'pointer',
+        display: 'flex', alignItems: 'center', gap: '0.3rem',
+        fontSize: '0.78rem', color: 'var(--muted)', padding: 0,
+        opacity: refreshing ? 0.5 : 1, transition: 'opacity 0.15s',
+      }}
+    >
+      <span
+        style={{
+          display: 'inline-block',
+          animation: refreshing ? 'spin 0.8s linear infinite' : 'none',
+        }}
+      >↻</span>
+      {label}
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </button>
   )
 }
 
@@ -155,14 +192,12 @@ export default function Feed() {
     }
   }
 
-  const [profiles, setProfiles] = useState([])
+  const [extraProfiles, setExtraProfiles] = useState([])
   const [savedIds, setSavedIds] = useState(new Set())
   const [matchedMap, setMatchedMap] = useState({})
-  const [fetching, setFetching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
   const [feedExhausted, setFeedExhausted] = useState(false)
-  const [error, setError] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
@@ -185,6 +220,44 @@ export default function Feed() {
   const [newMembersAvailable, setNewMembersAvailable] = useState(false)
 
   const offsetRef = useRef(0)
+  const queryClient = useQueryClient()
+
+  const feedQueryKey = ['feed', profile?.id, JSON.stringify(profile?.relation_preferences), JSON.stringify(profile?.purpose), isPremium]
+
+  const { isFetching: fetching, error: feedError, dataUpdatedAt, refetch: refetchFeed } = useQuery({
+    queryKey: feedQueryKey,
+    queryFn: async () => {
+      offsetRef.current = 0
+      const [feedResult, existingMatches, savedResult] = await Promise.all([
+        getFeedProfiles({
+          userType: profile.type,
+          relationPreferences: profile.relation_preferences ?? [],
+          userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
+          currentUserId: profile.id,
+          isPremium,
+          limit: PAGE_SIZE,
+          offset: 0,
+        }),
+        getExistingMatches(profile.id),
+        supabase.rpc('get_saved_profile_ids'),
+      ])
+      const map = {}
+      for (const m of existingMatches) {
+        const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
+        map[otherId] = m.id
+      }
+      return {
+        profiles: feedResult.profiles,
+        hasMore: feedResult.hasMore,
+        matchedMap: map,
+        savedIds: new Set((savedResult.data ?? []).map(r => r.saved_user_id)),
+      }
+    },
+    enabled: !!profile && !loading,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const error = feedError?.message ?? null
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -204,14 +277,6 @@ export default function Feed() {
       navigate('/auth' + hash, { replace: true })
     }
   }, [])
-
-  const hasFetched = useRef(false)
-  useEffect(() => {
-    if (!loading && profile && !hasFetched.current) {
-      hasFetched.current = true
-      loadFeed()
-    }
-  }, [profile?.id, loading])
 
   useEffect(() => {
     function handleNewMember() { setNewMembersAvailable(true) }
@@ -250,41 +315,28 @@ export default function Feed() {
     return () => channel.unsubscribe()
   }, [profile?.id])
 
-  async function loadFeed() {
-    if (!profile) return
-    setFetching(true)
-    setError(null)
+  const { data: feedData } = useQuery({ queryKey: feedQueryKey, enabled: false })
+
+  // Derive profiles directly from cache so cache hits render without a flash
+  const profiles = [...(feedData?.profiles ?? []), ...extraProfiles]
+
+  // Sync secondary state from feedData (matchedMap, savedIds, hasMore)
+  const prevFeedData = useRef(null)
+  useEffect(() => {
+    if (!feedData || feedData === prevFeedData.current) return
+    prevFeedData.current = feedData
+    setHasMore(feedData.hasMore)
+    setMatchedMap(prev => ({ ...feedData.matchedMap, ...prev }))
+    setSavedIds(feedData.savedIds)
+    setExtraProfiles([])
+    offsetRef.current = PAGE_SIZE
     setFeedExhausted(false)
-    offsetRef.current = 0
-    try {
-      const [feedResult, existingMatches, savedResult] = await Promise.all([
-        getFeedProfiles({
-          userType: profile.type,
-          relationPreferences: profile.relation_preferences ?? [],
-          userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
-          currentUserId: profile.id,
-          isPremium,
-          limit: PAGE_SIZE,
-          offset: 0,
-        }),
-        getExistingMatches(profile.id),
-        supabase.rpc('get_saved_profile_ids'),
-      ])
-      setProfiles(feedResult.profiles)
-      setHasMore(feedResult.hasMore)
-      offsetRef.current = PAGE_SIZE
-      const map = {}
-      for (const m of existingMatches) {
-        const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
-        map[otherId] = m.id
-      }
-      setMatchedMap(map)
-      setSavedIds(new Set((savedResult.data ?? []).map(r => r.saved_user_id)))
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setFetching(false)
-    }
+  }, [feedData])
+
+  function loadFeed() {
+    setFeedExhausted(false)
+    setNewMembersAvailable(false)
+    queryClient.invalidateQueries({ queryKey: feedQueryKey })
   }
 
   async function loadMore() {
@@ -300,13 +352,13 @@ export default function Feed() {
         limit: PAGE_SIZE,
         offset: offsetRef.current,
       })
-      setProfiles(prev => [...prev, ...feedResult.profiles])
+      setExtraProfiles(prev => [...prev, ...feedResult.profiles])
       setHasMore(feedResult.hasMore)
       if (!feedResult.hasMore) setFeedExhausted(true)
       offsetRef.current += PAGE_SIZE
       window.umami?.track('feed-load-more', { offset: offsetRef.current })
     } catch (err) {
-      setError(err.message)
+      console.error('feed load-more failed', err)
     } finally {
       setLoadingMore(false)
     }
@@ -445,22 +497,28 @@ export default function Feed() {
               </button>
             </div>
           </div>
-          {activityStats && (activityStats.online > 0 || activityStats.today > 0) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-              {activityStats.online > 0 && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4caf50', display: 'inline-block', flexShrink: 0 }} />
-                  {activityStats.online} online now
-                </span>
-              )}
-              {activityStats.today > 0 && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#f5a623', display: 'inline-block', flexShrink: 0 }} />
-                  {activityStats.today} active today
-                </span>
-              )}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            {activityStats && activityStats.online > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4caf50', display: 'inline-block', flexShrink: 0 }} />
+                {activityStats.online} online now
+              </span>
+            )}
+            {activityStats && activityStats.today > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#f5a623', display: 'inline-block', flexShrink: 0 }} />
+                {activityStats.today} active today
+              </span>
+            )}
+            {dataUpdatedAt > 0 && !fetching && (
+              <>
+                {(activityStats?.online > 0 || activityStats?.today > 0) && (
+                  <span style={{ width: 1, height: 12, background: 'var(--border)', flexShrink: 0 }} />
+                )}
+                <FeedFreshness updatedAt={dataUpdatedAt} onRefresh={loadFeed} refreshing={fetching} />
+              </>
+            )}
+          </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
           </p>
@@ -585,7 +643,7 @@ export default function Feed() {
 
         {/* SWIPE MODE */}
         {swipeMode ? (
-          fetching ? (
+          fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
           ) : error ? (
             <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
@@ -725,7 +783,7 @@ export default function Feed() {
             </div>
           )}
 
-          {fetching ? (
+          {fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
           ) : displayed.length === 0 && !error ? (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
