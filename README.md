@@ -9,7 +9,7 @@ Socionics maps 16 named relationship dynamics between every pair of the 16 perso
 - **Activity** — energising and stimulating at a distance  
 - ...and 13 further named dynamics, each with a distinct character
 
-Not a black box. The matching logic is in [](src/data/relations.js) — open and auditable.
+Not a black box. The matching logic is in [src/data/relations.js](src/data/relations.js) — open and auditable.
 
 **[Try it at socion.app →](https://socion.app)**
 
@@ -51,41 +51,29 @@ npm run dev
 3. Run `supabase/rls_reset.sql` to configure Row Level Security policies
 4. Run `supabase/blocks.sql` to create the blocks table
 5. Run `supabase/stats.sql` to create the stats table and scheduled job
-6. Enable realtime on the `messages` table (handled by `rls_reset.sql`)
-7. Copy your project URL and anon key into `.env`
+6. Run `supabase/push_subscriptions.sql` to create the push notification subscriptions table
+7. Run `supabase/swipes_schema.sql` to create the swipes table
+8. Run `supabase/get_admin_stats.sql` to create the admin stats function
+9. Enable realtime on the `messages` table (handled by `rls_reset.sql`)
+10. Copy your project URL and anon key into `.env`
 
-### Required SQL functions
+### Migrations
 
-Run these in the Supabase SQL editor:
+Incremental schema changes live in `supabase/migrations/`. Run these in order after the base schema if setting up from scratch, or apply selectively when upgrading an existing project:
 
-```sql
--- Merge profile_data JSONB without overwriting manual fields (e.g. role)
-create or replace function merge_profile_data(
-  p_user_id uuid, p_data jsonb, p_type text, p_avatar_url text default null
-) returns void language plpgsql security definer as $$
-begin
-  update users set
-    profile_data = profile_data || p_data,
-    type = p_type,
-    avatar_url = coalesce(p_avatar_url, avatar_url)
-  where id = p_user_id;
-end; $$;
-
--- Admin stats — bypasses RLS for platform-wide counts
-create or replace function get_admin_stats() returns jsonb language plpgsql security definer as $$
-declare result jsonb;
-begin
-  select jsonb_build_object(
-    'connections', (select count(*) from matches),
-    'messages', (select count(*) from messages),
-    'assessments', (select count(*) from type_assessments),
-    'cooloffs', (select count(*) from blocks where type = 'cooloff'),
-    'reports', (select count(*) from blocks where type = 'block' and reason is not null),
-    'recent_blocks', (select jsonb_agg(b) from (select id, type, reason, created_at from blocks order by created_at desc limit 20) b)
-  ) into result;
-  return result;
-end; $$;
-```
+| File | Description |
+|---|---|
+| `20260527120000_add_premium_subscription_support.sql` | Premium subscription tables and flags |
+| `20260529_archive_settings.sql` | Archive/unmatch settings |
+| `20260602_quadra_rooms.sql` | Quadra group chat rooms |
+| `20260602_reactions.sql` | Message emoji reactions |
+| `20260602_room_messages_reply.sql` | Reply threading in rooms |
+| `20260602_room_push_debounce.sql` | Push notification debounce for rooms |
+| `add_room_message_image_url.sql` | Image attachments in room messages |
+| `add_room_message_reply_to.sql` | Reply-to field on room messages |
+| `20260606_users_realtime.sql` | Realtime presence on users table |
+| `20260606_profile_views.sql` | Profile view tracking |
+| `20260606_relation_stats.sql` | Per-relation connection statistics |
 
 ## Deploy
 
@@ -110,47 +98,97 @@ Set environment variables in the Netlify dashboard:
 ```
 src/
   components/
-    feed/         ProfileCard
-    messages/     Conversation, MatchList
-    onboarding/   EntryChoice, QuestionScreen, ResultScreen, TypeSelector
-    profile/      PurposePicker, RelationPicker
+    feed/
+      ProfileCard.jsx
+      SwipeCard.jsx, SwipeDeck.jsx  Swipe-to-connect UI
+      MatchModal.jsx                New match overlay
+      SeekingYou.jsx               Incoming interest indicator
+      FeedAd.jsx
+    messages/
+      Conversation.jsx, MatchList.jsx
+      PushModal.jsx, NotificationPrompt.jsx
+    onboarding/
+      EntryChoice.jsx, QuestionScreen.jsx, ResultScreen.jsx, TypeSelector.jsx
+    profile/
+      PurposePicker.jsx, RelationPicker.jsx, DynamicsTab.jsx, ProfileNav.jsx
+    AnnouncementBanner.jsx
+    FeedbackButton.jsx
+    GifPicker.jsx
+    IOSInstallBanner.jsx
     Layout.jsx
+    NotificationBell.jsx
+    SIWebview.jsx                   In-app socionicsinsight.com webview
+    SocionicsChat.jsx               AI Socionics chat widget
   data/
-    relations.js  Intertype relations matrix (16×16, fully validated)
-    questions.js  Type questionnaire
-    scoring.js    Type distribution computation
+    relations.js    Intertype relations matrix (16×16, fully validated)
+    questions.js    Type questionnaire
+    scoring.js      Type distribution computation
+    compatibility.js
+    books.js
     countries.js
+  hooks/
+    useNotifications.js
+    usePageTitle.js
+    useQuadraRoom.js
   lib/
     AuthContext.jsx
+    ThemeContext.jsx
     auth.js
-    blocks.js     Cool-off and block/report logic
+    archive.js       Archive/unmatch logic
+    blocks.js        Cool-off and block/report logic
     feed.js
     messages.js
+    notifications.js
+    premium.js
     profile.js
+    profileViews.js
+    rooms.js
     supabase.js
+    typists.js
+    unmatch.js
+    usePushNotifications.js
     useUnreadCount.js
   pages/
-    Admin.jsx     Founder-only dashboard (/admin)
-    Auth.jsx      Google One Tap + magic link
+    About.jsx
+    Admin.jsx            Founder-only dashboard (/admin)
+    AskPage.jsx          AI Socionics Q&A (premium)
+    Auth.jsx             Google One Tap + magic link
     Changelog.jsx
     Feed.jsx
     Feedback.jsx
+    Help.jsx
     Home.jsx
     Messages.jsx
+    Network.jsx          Type network visualisation
     NotFound.jsx
     Onboarding.jsx
+    Premium.jsx, PremiumWelcome.jsx
     Privacy.jsx
+    ProfileDynamics.jsx
     ProfileEdit.jsx
+    ProfileNotifications.jsx
     ProfileSetup.jsx
+    Rooms.jsx            Quadra group chat rooms
+    Saved.jsx            Saved / bookmarked profiles
+    Settings.jsx
+    Stats.jsx            Platform statistics
+    Support.jsx
     Terms.jsx
+    Typing.jsx, TypistProfile.jsx   Typing directory
+    Updates.jsx
+    UserProfile.jsx      Public profile view
 supabase/
-  schema.sql        Full data model — run once
-  rls_reset.sql     Row Level Security policies — run once (safe to re-run)
-  blocks.sql        Blocks table + RLS
-  stats.sql         Stats table + scheduled edge function
-  avatars.sql       Storage bucket policies
+  schema.sql              Full data model — run once
+  rls_reset.sql           Row Level Security policies — run once (safe to re-run)
+  blocks.sql              Blocks table + RLS
+  stats.sql               Stats table + scheduled edge function
+  push_subscriptions.sql  Push notification subscriptions
+  swipes_schema.sql       Swipes table
+  avatars.sql             Storage bucket policies
+  get_admin_stats.sql     Admin stats SECURITY DEFINER function
+  migrations/             Incremental schema changes (see Supabase setup above)
   functions/
-    compute-stats/  Edge function for platform statistics
+    compute-stats/        Edge function for platform statistics
 ```
 
 ## Routes
@@ -161,10 +199,27 @@ supabase/
 | `/onboarding` | Type questionnaire |
 | `/auth` | Sign in — Google One Tap + magic link |
 | `/profile/setup` | Profile creation (post-auth) |
-| `/profile/edit` | Edit profile, dynamics, and purpose |
+| `/profile/edit` | Edit profile and purpose |
+| `/profile/dynamics` | Edit intertype dynamics preferences |
+| `/profile/notifications` | Notification settings |
+| `/profile/:userId` | Public profile view |
 | `/feed` | Matching feed with relation filtering |
 | `/messages` | Messaging with realtime and deep-link support |
+| `/rooms` | Quadra group chat rooms |
 | `/feedback/:matchId` | Post-match relation rating |
+| `/network` | Type network visualisation |
+| `/typing` | Typing directory |
+| `/typing/:slug` | Individual typist profile |
+| `/saved` | Saved / bookmarked profiles |
+| `/premium` | Premium subscription |
+| `/premium/welcome` | Post-subscription welcome |
+| `/ask` | AI Socionics Q&A (premium) |
+| `/stats` | Platform statistics |
+| `/settings` | Account settings |
+| `/about` | About page |
+| `/help` | Help centre |
+| `/support` | Support contact |
+| `/updates` | Product updates |
 | `/admin` | Founder dashboard (role-gated) |
 | `/privacy` | Privacy policy |
 | `/terms` | Terms of service |
@@ -189,7 +244,7 @@ Two-tier system:
 - **Phase 3** ✅ Matching feed with relation filtering
 - **Phase 4** ✅ Messaging + realtime
 - **Phase 5** ✅ Launch — socion.app live, repo public
-- **Phase 5+** ✅ Google One Tap, OTP auth, block/report, admin dashboard, push notifications, reply threading, typing indicators, PWA manifest, Discord integration, account deletion
+- **Phase 5+** ✅ Google One Tap, OTP auth, block/report, admin dashboard, push notifications, reply threading, typing indicators, PWA manifest, Discord integration, account deletion, premium subscriptions, quadra group chat rooms, swipe-deck UI, emoji reactions, GIF picker, image attachments, typing directory, saved profiles, settings page, platform stats, network visualisation, AI Socionics Q&A, profile views, archive/unmatch, theme system, updates feed
 
 ## Related
 
