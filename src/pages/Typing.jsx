@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { TYPIST_LIST, calcAge, yearsExperience } from '../lib/typists'
+import FlagImage from '../components/FlagImage'
 import { MATRIX, RELATIONS } from '../data/relations'
 
 const DISCORD_ICON = (
@@ -91,7 +92,7 @@ export default function Typing() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', flex: 1 }}>
                       <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.3rem', fontWeight: 500, margin: 0 }}>
                         {typist.displayName}
-                        {flag && <span style={{ marginLeft: '0.4rem', fontSize: '1rem' }}>{flag}</span>}
+                        {flag && <FlagImage code={flag} style={{ marginLeft: '0.4rem' }} />}
                         {age  && <span style={{ fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 300, color: 'var(--muted)', marginLeft: '0.25rem' }}>{age}</span>}
                       </h2>
                       <span style={{

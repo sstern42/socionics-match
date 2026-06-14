@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { TYPISTS, calcAge, yearsExperience } from '../lib/typists'
+import FlagImage from '../components/FlagImage'
 import { MATRIX, RELATIONS } from '../data/relations'
 
 const DISCORD_ICON = (
@@ -116,7 +117,7 @@ export default function TypistProfile() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
             {(flag || age) && (
               <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                {flag}{age ? <>{flag ? ' ' : ''}{age}</> : null}
+                {flag && <FlagImage code={flag} style={{ marginRight: age ? '0.3rem' : 0 }} />}{age ?? null}
               </span>
             )}
             {yrs && (
