@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
@@ -37,10 +38,7 @@ export default function UserProfile() {
   const [lightbox, setLightbox]     = useState(null)
   const [webviewUrl, setWebviewUrl] = useState(null)
 
-  const [activeTab, setActiveTab]   = useState('profile')
-  const [views, setViews]           = useState([])
-  const [viewCount, setViewCount]   = useState(null)
-  const [viewsLoading, setViewsLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState('profile')
 
   const [existingMatchId, setExistingMatchId] = useState(null)
   const [checkingMatch, setCheckingMatch]     = useState(false)
@@ -81,19 +79,20 @@ export default function UserProfile() {
       .catch(() => setCheckingMatch(false))
   }, [profile?.id, userId])
 
-  useEffect(() => {
-    if (!other || !profile?.id || other.id !== profile.id || activeTab !== 'views') return
-    setViewsLoading(true)
-    if (isPremium) {
-      getProfileViews(profile.id)
-        .then(rows => { setViews(rows); setViewsLoading(false) })
-        .catch(() => setViewsLoading(false))
-    } else {
-      getProfileViewCount(profile.id)
-        .then(n => { setViewCount(n); setViewsLoading(false) })
-        .catch(() => setViewsLoading(false))
-    }
-  }, [activeTab, other?.id, profile?.id, isPremium])
+  const isOwnProfile = !!other && !!profile?.id && other.id === profile.id
+  const viewsEnabled = isOwnProfile && activeTab === 'views'
+
+  const { data: viewsData, isFetching: viewsLoading } = useQuery({
+    queryKey: ['profile-views', profile?.id, isPremium],
+    queryFn: () => isPremium
+      ? getProfileViews(profile.id).then(rows => ({ views: rows, count: null }))
+      : getProfileViewCount(profile.id).then(n => ({ views: [], count: n })),
+    enabled: viewsEnabled,
+    staleTime: 5 * 60_000,
+  })
+
+  const views     = viewsData?.views ?? []
+  const viewCount = viewsData?.count ?? null
 
   async function handleConnectSubmit() {
     if (!profile || !other || !connectMessage.trim()) return
