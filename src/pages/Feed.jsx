@@ -534,7 +534,7 @@ export default function Feed() {
           </p>
           {swipeMode && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              Profiles you swipe on won't appear in Browse either — swipes apply across both modes.
+              Swipe through profiles — if someone likes you back, you'll be notified. Browse mode visibility is unaffected.
             </p>
           )}
           {!isPremium && (
