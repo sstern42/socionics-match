@@ -192,7 +192,7 @@ export default function Feed() {
     }
   }
 
-  const [profiles, setProfiles] = useState([])
+  const [extraProfiles, setExtraProfiles] = useState([])
   const [savedIds, setSavedIds] = useState(new Set())
   const [matchedMap, setMatchedMap] = useState({})
   const [loadingMore, setLoadingMore] = useState(false)
@@ -317,12 +317,18 @@ export default function Feed() {
 
   const { data: feedData } = useQuery({ queryKey: feedQueryKey, enabled: false })
 
+  // Derive profiles directly from cache so cache hits render without a flash
+  const profiles = [...(feedData?.profiles ?? []), ...extraProfiles]
+
+  // Sync secondary state from feedData (matchedMap, savedIds, hasMore)
+  const prevFeedData = useRef(null)
   useEffect(() => {
-    if (!feedData) return
-    setProfiles(feedData.profiles)
+    if (!feedData || feedData === prevFeedData.current) return
+    prevFeedData.current = feedData
     setHasMore(feedData.hasMore)
     setMatchedMap(prev => ({ ...feedData.matchedMap, ...prev }))
     setSavedIds(feedData.savedIds)
+    setExtraProfiles([])
     offsetRef.current = PAGE_SIZE
     setFeedExhausted(false)
   }, [feedData])
@@ -346,13 +352,13 @@ export default function Feed() {
         limit: PAGE_SIZE,
         offset: offsetRef.current,
       })
-      setProfiles(prev => [...prev, ...feedResult.profiles])
+      setExtraProfiles(prev => [...prev, ...feedResult.profiles])
       setHasMore(feedResult.hasMore)
       if (!feedResult.hasMore) setFeedExhausted(true)
       offsetRef.current += PAGE_SIZE
       window.umami?.track('feed-load-more', { offset: offsetRef.current })
     } catch (err) {
-      setError(err.message)
+      console.error('feed load-more failed', err)
     } finally {
       setLoadingMore(false)
     }
