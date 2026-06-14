@@ -30,8 +30,6 @@ export default function Messages() {
   const selectedRef = useRef(null)
   useEffect(() => { selectedRef.current = selectedMatchId }, [selectedMatchId])
 
-  const selectedMatch = matches.find(m => m.id === selectedMatchId) ?? null
-
   useEffect(() => {
     if (!session && !loading) navigate('/auth')
   }, [session, loading])
@@ -58,6 +56,7 @@ export default function Messages() {
   const fetching = isFetching && dataUpdatedAt === 0
 
   const matches = (matchesData?.matches ?? []).filter(m => !removedIds.has(m.id))
+  const selectedMatch = matches.find(m => m.id === selectedMatchId) ?? null
 
   const initialSelectDone = useRef(false)
   useEffect(() => {
