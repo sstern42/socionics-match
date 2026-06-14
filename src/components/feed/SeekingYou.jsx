@@ -84,7 +84,7 @@ export default function SeekingYou({ userType, isPremium, onExploreRelation }) {
                   </div>
                 ))}
               </div>
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.5rem', padding: '1rem', background: 'linear-gradient(to bottom, rgba(247,244,239,0.4), rgba(247,244,239,0.85))' }}>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.5rem', padding: '1rem', background: 'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 40%, transparent), color-mix(in srgb, var(--bg) 90%, transparent))' }}>
                 <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontWeight: 500, color: 'var(--text)', margin: 0 }}>
                   See your strongest matches for <em>{userType}</em>
                 </p>
