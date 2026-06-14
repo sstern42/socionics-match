@@ -207,7 +207,7 @@ export default function Feed() {
   const [activeToday, setActiveToday] = useState(false)
   const [onlineNow, setOnlineNow] = useState(false)
   const [withPhotos, setWithPhotos] = useState(false)
-  const [excludeAnon, setExcludeAnon] = useState(false)
+  const [excludeAnon, setExcludeAnon] = useState(true)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [connectPrompt, setConnectPrompt] = useState(null)
@@ -685,7 +685,7 @@ export default function Feed() {
                   <button type="button" onClick={() => setFilterRelation('ALL')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                 )}
                 {(() => {
-                  const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
+                  const activeCount = [withPhotos, !excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
                   return (
                     <>
                       <span style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0, margin: '0 0.1rem' }} />
@@ -736,7 +736,7 @@ export default function Feed() {
                     <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
-                      <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Known users only</button>
+                      <button type="button" className={`rel-pill clickable${!excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{!excludeAnon ? '✓ ' : ''}Show anonymous</button>
                       <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
                     </div>
                   </div>
