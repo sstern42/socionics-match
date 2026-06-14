@@ -281,7 +281,7 @@ function FAQItem({ q, a, isNotifications }) {
 }
 
 export default function Help() {
-  usePageMeta('Help', 'Answers to common questions about Socion — typing, the Get Typed service, matching dynamics, Premium, and how to get the most out of the app.')
+  usePageMeta('Help', 'Answers to common questions about Socion — typing, the Get Typed service, matching dynamics, Premium, and how to get the most from the app.')
   const { hash } = useLocation()
 
   useEffect(() => {

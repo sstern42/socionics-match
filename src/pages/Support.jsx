@@ -2,7 +2,7 @@ import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Support() {
-  usePageMeta('Support', 'Socion is ad-free and built by one person. Tip on Ko-fi, browse the shop, or just keep using it for free — every bit of support helps keep it running.')
+  usePageMeta('Support', 'Socion is ad-free and built by one person. Tip on Ko-fi, browse the shop, or keep using it free — every bit of support helps.')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>

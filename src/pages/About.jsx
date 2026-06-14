@@ -72,7 +72,7 @@ const h2 = {
 export default function About() {
   const [avatarOk, setAvatarOk] = useState(true)
 
-  usePageMeta('About', 'Learn how Socion works — the Socionics theory behind the matching matrix, the 16 types, 16 named relation dynamics, and why transparent logic beats a black-box algorithm.')
+  usePageMeta('About', 'Socion matches you by Socionics type — 16 types, 16 named relation dynamics, a published matching matrix, and no black-box algorithm.')
 
   const { data: statsData } = useQuery({
     queryKey: ['public-stats'],

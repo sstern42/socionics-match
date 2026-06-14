@@ -153,7 +153,7 @@ function useForceSimulation(nodes, edges, width, height) {
 }
 
 export default function Network() {
-  usePageMeta('Network', 'Interactive map of all 16 Socionics relation dynamics — see average satisfaction ratings between every type pair, colour-coded by quadra, live from the Socion community.')
+  usePageMeta('Network', 'Interactive map of all 16 Socionics relation dynamics — live satisfaction ratings for every type pair, colour-coded by quadra.')
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [width, setWidth] = useState(0)

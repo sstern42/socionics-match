@@ -402,7 +402,7 @@ export const ENTRIES = [
 ]
 
 export default function Changelog() {
-  usePageMeta("What's New", "A running log of everything added, fixed, and improved on Socion — new features, relation dynamics updates, AI improvements, and more.")
+  usePageMeta("What's New", "A running log of everything added, fixed, and improved on Socion — new features, dynamics updates, AI improvements, and more.")
   useEffect(() => {
     localStorage.setItem('socion_changelog_seen', ENTRIES[0].date)
   }, [])
