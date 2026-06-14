@@ -12,7 +12,7 @@ export default function Privacy() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 30 March 2026</p>
+          <p style={metaStyle}>Last updated: 14 June 2026</p>
 
           <p>Socion is operated by Spencer Stern, London, UK. This policy explains what personal data we collect, how we use it, and your rights under UK GDPR.</p>
 
@@ -24,6 +24,8 @@ export default function Privacy() {
             <li><strong>Usage data</strong> — the connections you make, messages you send, and feedback ratings you submit</li>
             <li><strong>Push notification tokens</strong> — if you enable push notifications, your device's push subscription endpoint is stored to deliver notifications</li>
             <li><strong>Analytics data</strong> — page views and navigation patterns via Umami, which is cookieless and does not track individuals across sites</li>
+            <li><strong>Payment data</strong> — if you subscribe to Premium, your billing details (card number, billing address) are collected and stored by Stripe, our payment processor. We do not store your card details ourselves; we only receive a Stripe customer ID and subscription status.</li>
+            <li><strong>AI assistant messages</strong> — if you use the Socionics AI assistant, the messages you send and your Socionics type are transmitted to Anthropic to generate responses. These are not stored by Socion beyond your conversation session.</li>
           </ul>
 
           <h2>How we use it</h2>
@@ -39,7 +41,7 @@ export default function Privacy() {
 
           <h2>Who can see your data</h2>
           <p>Your profile (name, age, location, bio, type, photo, and connection question if set) is visible to other signed-in users of Socion. Your email address is never displayed to other users.</p>
-          <p>Messages are visible to both participants in a conversation. As the platform operator, Spencer Stern has administrative access to message content for moderation purposes.</p>
+          <p>Direct messages are visible to both participants in a conversation. Messages posted in group Rooms are visible to all members of that Room. As the platform operator, Spencer Stern has administrative access to message content for moderation purposes.</p>
 
           <h2>Third-party services</h2>
           <p>Socion uses the following third-party services, each of which has its own privacy policy:</p>
@@ -50,6 +52,8 @@ export default function Privacy() {
             <li><strong>Google</strong> — optional one-tap sign-in via Google Identity Services</li>
             <li><strong>MailerLite</strong> — member update emails (news.socion.app sending domain)</li>
             <li><strong>Umami</strong> — cookieless, privacy-first analytics</li>
+            <li><strong>Stripe</strong> — payment processing for Premium subscriptions</li>
+            <li><strong>Anthropic</strong> — AI responses for the Socionics AI assistant (messages you send are processed by Anthropic's API)</li>
           </ul>
 
           <h2>Data retention</h2>

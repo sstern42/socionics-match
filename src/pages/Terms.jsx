@@ -12,7 +12,7 @@ export default function Terms() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 30 March 2026</p>
+          <p style={metaStyle}>Last updated: 14 June 2026</p>
 
           <p>These terms govern your use of Socion, operated by Spencer Stern, London, UK. By creating an account you agree to these terms. If you do not agree, do not use the service.</p>
 
@@ -39,23 +39,35 @@ export default function Terms() {
           <p>You retain ownership of the content you post on Socion, including your profile information, bio, and messages. By posting content, you grant Socion a non-exclusive, royalty-free licence to display that content to other users as part of the service.</p>
           <p>You also agree that anonymised, aggregated data derived from your activity (such as feedback ratings on intertype relation matches) may be used for research purposes, as described in our <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.</p>
 
-          <h2>5. Blocking and reporting</h2>
+          <h2>5. Premium subscriptions and billing</h2>
+          <p>Socion offers an optional paid Premium tier. By subscribing you agree to the following:</p>
+          <ul>
+            <li><strong>Pricing</strong> — Premium is billed annually. The current price is displayed on the Premium page at the time of purchase and may change for future renewals. We will notify you of price changes before your renewal date.</li>
+            <li><strong>Billing</strong> — Payments are processed by Stripe. Your subscription renews automatically each year unless cancelled. You can manage or cancel your subscription at any time via Profile → Subscription.</li>
+            <li><strong>Refunds</strong> — We do not offer refunds for partial billing periods. If you cancel, your Premium access continues until the end of the current billing period.</li>
+            <li><strong>Founding Member status</strong> — Users who joined during the founding period receive Premium access free for life as a thank-you for early support. This status is non-transferable and tied to the original account.</li>
+          </ul>
+
+          <h2>6. AI assistant</h2>
+          <p>The Socionics AI assistant is powered by Anthropic's Claude API. Responses are generated automatically and may not always be accurate. The AI assistant is provided for educational and informational purposes only; it is not a substitute for professional advice. We are not responsible for any decisions made based on AI-generated content. By using the AI assistant, you agree that your messages and Socionics type may be transmitted to Anthropic for the purpose of generating responses, as described in our <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.</p>
+
+          <h2>7. Blocking and reporting</h2>
           <p>Socion provides tools to cool off from or block other users. Reports submitted through the block feature are reviewed by the operator at our discretion. We do not guarantee a specific response time or outcome for any report. Where a report indicates a serious violation of these terms, we reserve the right to suspend or remove the reported account.</p>
 
-          <h2>6. Account termination</h2>
+          <h2>8. Account termination</h2>
           <p>We reserve the right to suspend or terminate any account at any time, with or without notice, if we believe a user has violated these terms or is using the service in a manner that is harmful to other users or the platform. You may delete your account and all associated data at any time directly in the app via Profile → Details → Delete account. Deletion is permanent and immediate.</p>
 
-          <h2>7. Disclaimer and limitation of liability</h2>
-          <p>Socion is provided on an "as is" basis. We make no warranties about the availability, accuracy, or suitability of the service. We are not responsible for the conduct of users on or off the platform. To the fullest extent permitted by law, our liability to you for any claim arising from your use of Socion is limited to the amount you have paid us in the twelve months preceding the claim — which, since the service is currently free, is zero.</p>
+          <h2>9. Disclaimer and limitation of liability</h2>
+          <p>Socion is provided on an "as is" basis. We make no warranties about the availability, accuracy, or suitability of the service. We are not responsible for the conduct of users on or off the platform. To the fullest extent permitted by law, our liability to you for any claim arising from your use of Socion is limited to the amount you have paid us in the twelve months preceding the claim.</p>
           <p>Nothing in these terms limits our liability for death or personal injury caused by negligence, fraud, or any other liability that cannot be excluded under English law.</p>
 
-          <h2>8. Third-party services</h2>
-          <p>Socion uses Supabase for data storage and authentication, Resend for email delivery, and Umami for privacy-preserving analytics. Your use of these services is subject to their respective terms and policies.</p>
+          <h2>10. Third-party services</h2>
+          <p>Socion uses Supabase for data storage and authentication, Resend for email delivery, Umami for privacy-preserving analytics, Stripe for payment processing, and Anthropic for AI assistant responses. Your use of these services is subject to their respective terms and policies.</p>
 
-          <h2>9. Changes to these terms</h2>
+          <h2>11. Changes to these terms</h2>
           <p>We may update these terms from time to time. Continued use of Socion after changes are posted constitutes acceptance of the revised terms. The date at the top of this page reflects when these terms were last updated.</p>
 
-          <h2>10. Governing law</h2>
+          <h2>12. Governing law</h2>
           <p>These terms are governed by the laws of England and Wales. Any disputes arising under them shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
 
           <h2>Contact</h2>
