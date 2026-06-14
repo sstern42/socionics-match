@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 // ── Constants ─────────────────────────────────────────────────────────
 const AVATAR_URL =
@@ -71,10 +72,7 @@ export default function About() {
   const [stats, setStats] = useState({ members: null, connections: null, messages: null })
   const [avatarOk, setAvatarOk] = useState(true)
 
-  useEffect(() => {
-    document.title = 'About · Socion'
-    return () => { document.title = 'Socion' }
-  }, [])
+  usePageTitle('About')
 
   useEffect(() => {
     supabase.rpc('get_public_stats').then(({ data }) => {
