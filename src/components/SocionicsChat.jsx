@@ -9,6 +9,7 @@ const SUGGESTED_QUESTIONS = [
   'How is Socionics different from MBTI?',
   'What does Model A actually tell us?',
   'Which relation types work best for romantic relationships?',
+  'How do Reinin dichotomies go beyond the four basic Jungian dimensions?',
 ]
 
 // ── Inline markdown renderer ──────────────────────────────────────────────────
