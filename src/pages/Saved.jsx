@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase'
 import { getExistingMatches } from '../lib/feed'
 
 export default function Saved() {
-  usePageTitle('Saved')
+  usePageTitle('Saved Profiles')
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [removedIds, setRemovedIds] = useState(new Set())

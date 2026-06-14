@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 const PAGE_SIZE = 5
@@ -27,6 +28,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Updates() {
+  usePageTitle('Founder Updates')
   const { session, loading: authLoading, profile } = useAuth()
   const navigate = useNavigate()
   const isFounder = profile?.profile_data?.role === 'founder'
