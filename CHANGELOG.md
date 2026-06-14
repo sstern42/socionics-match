@@ -7,19 +7,34 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ## 14 June 2026
 
 ### Added
-- **Feed activity stats**: Live "online now" (green dot) and "active today" (orange dot) counts now appear beneath the Browse/Swipe toggle, fetched from the users table and hidden when both are zero.
-- **Reinin dichotomies in Socionics AI**: The chatbot now includes a full per-type Reinin dichotomy lookup in its system prompt, and surfaces a starter question about Reinin dichotomies to prompt discovery.
-
-### Fixed
-- **Online now count**: The current user is now subtracted from the "online now" count so members don't see themselves included.
-- **Feed caching**: Feed profiles, matches, and saved IDs are now cached for 5 minutes via React Query. Re-visiting the feed within that window fires zero Supabase queries and renders instantly. A live "updated X min ago" freshness indicator appears next to the activity stats; tap it to force a refresh.
+- **Feed activity stats**: Live "online now" (green dot) and "active today" (orange dot) counts now appear beneath the Browse/Swipe toggle, hidden when both are zero.
+- **Feed caching**: Feed profiles, matches, and saved IDs are cached for 5 minutes via React Query. Re-visiting the feed within that window fires zero Supabase queries and renders instantly. A live "updated X min ago" freshness indicator appears next to the activity stats; tap it to force a refresh.
+- **Feed — Load More count**: The Load More button now shows exactly how many profiles are in the next batch.
 - **Messages caching**: The conversation list is served from a 60-second React Query cache on re-visit — instant render, no round-trip.
 - **Profile views caching**: Switching to the Views tab and back reuses the cached result for 5 minutes.
-- **Avatar caching**: Service worker intercepts Supabase storage image URLs and serves them cache-first. Cache busting is automatic via the `?t=<timestamp>` query param already embedded in avatar URLs, so stale images are never shown.
+- **Saved caching**: Saved profiles and connection status cached for 3 minutes. Unsaving a profile removes the card immediately without waiting for a refetch.
+- **Network graph caching**: Graph data cached for 10 minutes — re-visiting renders the graph without a reload.
+- **Dynamics tab caching**: Relation stats cached per user for 10 minutes.
+- **About page caching**: Site-wide stats cached for 10 minutes.
+- **Updates pagination**: Updates page now loads the 5 most recent posts initially, with a Load more button to page through older ones.
+- **Disconnect confirmation**: After disconnecting from someone, a confirmation step appears with a "Return to feed" button.
+- **Premium upsell card**: A premium upsell card appears in the feed for free members.
+- **Socionics AI feed card**: An AI chat prompt card appears in the feed for all members.
+- **Reinin dichotomies in Socionics AI**: The chatbot now includes a full per-type Reinin dichotomy lookup and surfaces a starter question to prompt discovery.
+- **Avatar caching**: Service worker serves Supabase avatar images cache-first. Cache busting is automatic via the `?t=<timestamp>` param on avatar URLs.
+
+### Fixed
+- **Online now count**: The current user is now subtracted from the "online now" count.
+- **Free tier — connection cap**: Disconnecting from someone now correctly frees up a slot. Previously soft-deleted (unmatched) rows were still counted against the cap.
+- **Free tier — upgrade link**: "X of 3 connections · Unlock unlimited" is now always visible on the feed, not only when the cap is fully used.
+- **Feed cache after disconnect**: Feed cache is invalidated after an unmatch so the disconnected card and counter update immediately.
+- **Disconnect modal**: Fixed a timing bug where the post-disconnect modal never appeared because the panel collapsed before React rendered the success state.
+- **Dark mode — gated overlays**: Fixed hardcoded light gradients on the Strongest Matches teaser, Model A breakdown teaser, and Stats tab overlay so they render correctly in dark mode.
+- **Dynamics tab**: Fixed an error message that always displayed due to incorrect nullish coalescing.
 
 ### Changed
-- **Brand name**: Added ™ to Socion across all page meta titles (`index.html`, `Layout.jsx`, `usePageTitle.js`, `Home.jsx`).
-- **Privacy Policy & Terms**: Updated to reflect the paid tier, get-typed written report, profile photos, and all features added since the original launch docs were written.
+- **Brand name**: Added ™ to Socion across all page meta titles.
+- **Privacy Policy & Terms**: Updated to reflect the paid tier, written typing report, profile photos, and all features added since launch.
 - **SEO**: Added `/about`, `/help`, `/typing`, and `/stats` to the sitemap; added missing private routes to `robots.txt`.
 
 ---
