@@ -1,8 +1,8 @@
 import Layout from '../components/Layout'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Terms() {
-  usePageTitle('Terms')
+  usePageMeta('Terms', 'Terms of service for Socion — acceptable use, subscription billing, refund policy, and the rules that keep the community safe and honest.')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 680, margin: '0 auto', padding: '4rem 1.5rem' }}>

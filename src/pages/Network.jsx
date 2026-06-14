@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 const TYPES = [
   'ILE', 'SEI', 'ESE', 'LII',
@@ -153,7 +153,7 @@ function useForceSimulation(nodes, edges, width, height) {
 }
 
 export default function Network() {
-  usePageTitle('Network')
+  usePageMeta('Network', 'Interactive map of all 16 Socionics relation dynamics — see average satisfaction ratings between every type pair, colour-coded by quadra, live from the Socion community.')
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [width, setWidth] = useState(0)
