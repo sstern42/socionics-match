@@ -982,10 +982,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               <>
                 <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.3rem',marginBottom:'0.75rem' }}>Disconnected</h3>
                 <p style={{ fontSize:'0.88rem',color:'var(--muted)',lineHeight:1.7,marginBottom:'1.5rem' }}>
-                  You've disconnected from {otherName}. The slot is now free.
+                  You've disconnected from {otherName}. Your slot is free — head back to the feed to find someone new.
                 </p>
-                <div style={{ display:'flex',gap:'0.75rem',justifyContent:'flex-end' }}>
-                  <button type="button" className="btn-ghost" onClick={() => navigate('/messages', { replace: true })}>Back to messages</button>
+                <div style={{ display:'flex',justifyContent:'flex-end' }}>
                   <button type="button" className="btn-primary" onClick={() => { window.location.href = '/' }}>Return to feed</button>
                 </div>
               </>
