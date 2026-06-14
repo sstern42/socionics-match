@@ -529,7 +529,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     try {
       await unmatch(match.id)
       setUnmatched(true)
-      if (onUnmatch) { await onUnmatch(match.id) }
     } catch (err) { setBlockError(err.message); setUnmatching(false) }
   }
 
