@@ -469,7 +469,12 @@ export default function Feed() {
 
         {/* Header */}
         {/* Browse / Swipe toggle — always visible */}
-        <div className="feed-mode-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+        <div className="feed-mode-toggle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          {swipeMode && (
+            <p style={{ fontSize: '0.75rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>
+              ← pass &nbsp;·&nbsp; like →
+            </p>
+          )}
           <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden' }}>
             <button
               type="button"
