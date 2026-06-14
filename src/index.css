@@ -200,7 +200,9 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
     padding: 1rem 1rem 0;
   }
 
-  /* Let the SwipeDeck fill the container */
+  /* Let feed-content-enter and SwipeDeck fill the fixed container */
+  body.swipe-mode-active .feed-content-enter,
+  body.swipe-mode-active .swipe-deck-container,
   body.swipe-mode-active .swipe-deck-container > div {
     height: 100% !important;
     max-width: 100% !important;
