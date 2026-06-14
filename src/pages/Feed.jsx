@@ -121,15 +121,14 @@ export default function Feed() {
   const [matchData, setMatchData] = useState(null)
   const [activityStats, setActivityStats] = useState(null)
 
-  // Full-screen swipe mode on mobile — add body class so footer hides and deck covers viewport
+  // Swipe mode — add body class so preamble hides and on mobile deck covers viewport
   useEffect(() => {
-    const isMobile = window.matchMedia('(max-width: 700px)').matches
-    if (swipeMode && isMobile) {
-      document.body.classList.add('swipe-mode-mobile')
+    if (swipeMode) {
+      document.body.classList.add('swipe-mode-active')
     } else {
-      document.body.classList.remove('swipe-mode-mobile')
+      document.body.classList.remove('swipe-mode-active')
     }
-    return () => document.body.classList.remove('swipe-mode-mobile')
+    return () => document.body.classList.remove('swipe-mode-active')
   }, [swipeMode])
 
   function toggleFeedMode() {
@@ -469,43 +468,47 @@ export default function Feed() {
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
 
         {/* Header */}
+        {/* Browse / Swipe toggle — always visible */}
+        <div className="feed-mode-toggle" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.75rem' }}>
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+            <button
+              type="button"
+              onClick={() => { setSwipeMode(false); localStorage.setItem(FEED_MODE_KEY, 'browse') }}
+              style={{
+                padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
+                fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                background: !swipeMode ? 'var(--accent)' : 'transparent',
+                color:      !swipeMode ? '#fff' : 'var(--muted)',
+                transition: 'background 0.15s, color 0.15s',
+              }}
+            >
+              Browse
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSwipeMode(true); localStorage.setItem(FEED_MODE_KEY, 'swipe') }}
+              style={{
+                padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
+                fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                background: swipeMode ? 'var(--accent)' : 'transparent',
+                color:      swipeMode ? '#fff' : 'var(--muted)',
+                transition: 'background 0.15s, color 0.15s',
+                borderLeft: '1px solid var(--border)',
+              }}
+            >
+              Swipe
+            </button>
+          </div>
+        </div>
+
         <div className="feed-header" style={{ marginBottom: '2.5rem' }}>
           <p className="eyebrow">Your matches</p>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginTop: '0.4rem' }}>
+          <div style={{ marginTop: '0.4rem' }}>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
               {profile?.type} — <em>finding your dynamic</em>
             </h1>
-            <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', flexShrink: 0, marginTop: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={() => { setSwipeMode(false); localStorage.setItem(FEED_MODE_KEY, 'browse') }}
-                style={{
-                  padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
-                  fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  background: !swipeMode ? 'var(--accent)' : 'transparent',
-                  color:      !swipeMode ? '#fff' : 'var(--muted)',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                Browse
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSwipeMode(true); localStorage.setItem(FEED_MODE_KEY, 'swipe') }}
-                style={{
-                  padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
-                  fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  background: swipeMode ? 'var(--accent)' : 'transparent',
-                  color:      swipeMode ? '#fff' : 'var(--muted)',
-                  transition: 'background 0.15s, color 0.15s',
-                  borderLeft: '1px solid var(--border)',
-                }}
-              >
-                Swipe
-              </button>
-            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
             {activityStats && activityStats.online > 0 && (

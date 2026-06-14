@@ -174,16 +174,20 @@ select.input-standalone { background: var(--card-bg); }
   .step:last-child { border-bottom: none; }
 }
 
+/* ── Swipe mode — hide preamble on all screen sizes ──────────── */
+body.swipe-mode-active .feed-header,
+body.swipe-mode-active .feed-preamble { display: none !important; }
+
 /* ── Mobile swipe full-screen mode ───────────────────────────── */
 @media (max-width: 700px) {
   /* Hide footer and any floating widgets when swiping */
-  body.swipe-mode-mobile .site-footer,
-  body.swipe-mode-mobile [id^="kofi-widget-overlay"],
-  body.swipe-mode-mobile .floatingchat-container-wrap,
-  body.swipe-mode-mobile .floatingchat-container-wrap-mobi { display: none !important; }
+  body.swipe-mode-active .site-footer,
+  body.swipe-mode-active [id^="kofi-widget-overlay"],
+  body.swipe-mode-active .floatingchat-container-wrap,
+  body.swipe-mode-active .floatingchat-container-wrap-mobi { display: none !important; }
 
   /* Fixed full-screen deck below the header */
-  body.swipe-mode-mobile .swipe-deck-container {
+  body.swipe-mode-active .swipe-deck-container {
     position: fixed;
     top: 62px; /* below header */
     left: 0; right: 0; bottom: 0;
@@ -196,16 +200,14 @@ select.input-standalone { background: var(--card-bg); }
     padding: 1rem 1rem 0;
   }
 
-  /* Let the SwipeDeck fill the container */
-  body.swipe-mode-mobile .swipe-deck-container > div {
+  /* Let feed-content-enter and SwipeDeck fill the fixed container */
+  body.swipe-mode-active .feed-content-enter,
+  body.swipe-mode-active .swipe-deck-container,
+  body.swipe-mode-active .swipe-deck-container > div {
     height: 100% !important;
     max-width: 100% !important;
     padding-bottom: 0 !important;
   }
-
-  /* Hide everything above the deck in swipe mode */
-  body.swipe-mode-mobile .feed-header,
-  body.swipe-mode-mobile .feed-preamble { display: none !important; }
 }
 
 /* Mobile utility */
