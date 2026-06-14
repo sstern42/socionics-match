@@ -119,7 +119,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
           </div>
         )}
 
-        <div style={{ flex:1,padding:'1rem 1.1rem',display:'flex',flexDirection:'column',gap:'0.65rem',overflowY:'auto',minHeight:0 }}>
+        <div style={{ flex:1,padding:'1rem 1.1rem',display:'flex',flexDirection:'column',gap:'0.65rem',overflowY:'auto',minHeight:0,touchAction:'none' }}>
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'0.5rem' }}>
             <div style={{ minWidth:0 }}>
               <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0,lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
