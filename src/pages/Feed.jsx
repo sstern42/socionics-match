@@ -528,15 +528,11 @@ export default function Feed() {
           )}
           {!isPremium && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              <strong style={{ color: connectionCount >= 3 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 3</strong> connections used.
-              {connectionCount >= 3 && (
-                <>
-                  {' '}
-                  <Link to="/premium" onClick={() => window.umami?.track('connection-counter-upgrade-clicked')} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
-                    Upgrade for unlimited
-                  </Link>.
-                </>
-              )}
+              <strong style={{ color: connectionCount >= 3 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 3</strong> connections
+              {' · '}
+              <Link to="/premium" onClick={() => window.umami?.track('connection-counter-upgrade-clicked')} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+                Unlock unlimited
+              </Link>
             </p>
           )}
           <button
