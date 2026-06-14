@@ -875,7 +875,7 @@ export default function Feed() {
                     disabled={loadingMore}
                     style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
                   >
-                    {loadingMore ? 'Loading…' : 'Load more'}
+                    {loadingMore ? 'Loading…' : `Load more (+${PAGE_SIZE})`}
                   </button>
                 </div>
               )}
