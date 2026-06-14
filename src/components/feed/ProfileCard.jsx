@@ -220,7 +220,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
     {photoModal && displayAvatar && (
       <div onClick={() => setPhotoModal(false)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center' }}>
         <div onClick={e=>e.stopPropagation()} style={{ position:'relative',borderRadius:12,overflow:'hidden',boxShadow:'0 8px 32px rgba(0,0,0,0.5)' }}>
-          <img src={displayAvatar} alt={displayName} style={{ display:'block',width:'min(72vw,320px)',height:'min(72vw,320px)',objectFit:'cover' }} />
+          <img src={displayAvatar} alt={displayName} style={{ display:'block',width:'min(72vw,320px,80vh)',height:'min(72vw,320px,80vh)',objectFit:'cover' }} />
           <button type="button" onClick={() => setPhotoModal(false)} style={{ position:'absolute',top:'0.5rem',right:'0.5rem',background:'rgba(0,0,0,0.45)',border:'none',borderRadius:'50%',width:30,height:30,color:'#fff',fontSize:'1rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1 }}>×</button>
         </div>
       </div>
