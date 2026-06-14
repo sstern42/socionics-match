@@ -4,6 +4,18 @@ import { usePageTitle } from '../hooks/usePageTitle'
 
 export const ENTRIES = [
      {
+       date: '14 June 2026',
+       label: 'Update',
+       items: [
+         'Feed — online now and active today counts now appear as live stats beneath the Browse/Swipe toggle. Green dot for online now, orange dot for active today. Only shows when at least one count is non-zero',
+         'Feed — online now count no longer includes yourself',
+         'Socionics AI — Reinin dichotomies added to the knowledge base. The AI now knows each type\'s full dichotomy profile and can surface it in conversation',
+         'Socion™ — trademark symbol added to the brand name across page titles',
+         'Profile photos — avatars now load from cache on repeat visits instead of re-fetching from the CDN every time. New uploads still appear immediately',
+         'Privacy Policy and Terms updated to reflect the paid tier, written typing report, and all features added since launch',
+       ],
+     },
+     {
        date: '12 June 2026',
        label: 'New',
        items: [
