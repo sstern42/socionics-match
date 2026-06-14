@@ -230,6 +230,7 @@ export default function Feed() {
   const [newMembersAvailable, setNewMembersAvailable] = useState(false)
 
   const offsetRef = useRef(0)
+  const swipedIdsRef = useRef(new Set())
   const queryClient = useQueryClient()
 
   const feedQueryKey = ['feed', profile?.id, JSON.stringify(profile?.relation_preferences), JSON.stringify(profile?.purpose), isPremium]
@@ -679,6 +680,8 @@ export default function Feed() {
                 userType={profile.type}
                 blockRightSwipe={!isPremium && connectionCount >= 3}
                 onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
+                initialSwiped={swipedIdsRef.current}
+                onSwipeComplete={(id) => { swipedIdsRef.current.add(id) }}
                 onMatch={(data) => {
                   setMatchData(data)
                   setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
