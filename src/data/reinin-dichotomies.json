@@ -1,0 +1,352 @@
+{
+  "_meta": {
+    "title": "Socionics Reinin Dichotomies — Complete Reference",
+    "description": "All 15 Reinin dichotomies (4 Jungian base + 11 derived) for each of the 16 Socionics types. Source: socionicsinsight.com/articles/reinin-dichotomies/",
+    "version": "1.0",
+    "notes": {
+      "merry_serious": "Merry/Serious is NOT a Reinin dichotomy. It originates in Gulenko's temperament framework and should not be conflated with the Reinin system.",
+      "empirical_status": {
+        "well_established": ["static_dynamic", "process_result", "positivist_negativist", "democratic_aristocratic", "constructivist_emotivist", "judicious_decisive", "carefree_farsighted", "yielding_obstinate", "asking_declaring"],
+        "theoretically_thinner": ["tactical_strategic", "subjectivist_objectivist"]
+      }
+    }
+  },
+
+  "dichotomies": {
+    "extravert_introvert": {
+      "extravert": ["ILE", "ESE", "EIE", "SLE", "SEE", "LIE", "LSE", "IEE"],
+      "introvert": ["SEI", "LII", "LSI", "IEI", "ILI", "ESI", "EII", "SLI"]
+    },
+    "intuition_sensing": {
+      "intuition": ["ILE", "LII", "EIE", "IEI", "ILI", "LIE", "EII", "IEE"],
+      "sensing": ["SEI", "ESE", "LSI", "SLE", "ESI", "SEE", "LSE", "SLI"]
+    },
+    "logic_ethics": {
+      "logic": ["ILE", "LII", "LSI", "SLE", "ILI", "LIE", "LSE", "SLI"],
+      "ethics": ["SEI", "ESE", "EIE", "IEI", "ESI", "SEE", "EII", "IEE"]
+    },
+    "rational_irrational": {
+      "rational": ["ESE", "LII", "LSI", "EIE", "ESI", "LIE", "EII", "LSE"],
+      "irrational": ["ILE", "SEI", "SLE", "IEI", "ILI", "SEE", "SLI", "IEE"]
+    },
+    "static_dynamic": {
+      "static": ["ILE", "LII", "LSI", "SLE", "SEE", "ESI", "EII", "IEE"],
+      "dynamic": ["SEI", "ESE", "EIE", "IEI", "ILI", "LIE", "LSE", "SLI"]
+    },
+    "process_result": {
+      "process": ["ILE", "SEI", "EIE", "LSI", "SEE", "ILI", "LSE", "EII"],
+      "result": ["ESE", "LII", "SLE", "IEI", "LIE", "ESI", "SLI", "IEE"]
+    },
+    "positivist_negativist": {
+      "positivist": ["ILE", "ESE", "LSI", "IEI", "SEE", "LIE", "EII", "SLI"],
+      "negativist": ["SEI", "LII", "EIE", "SLE", "ILI", "ESI", "LSE", "IEE"]
+    },
+    "democratic_aristocratic": {
+      "democratic": ["ILE", "SEI", "ESE", "LII", "SEE", "ILI", "LIE", "ESI"],
+      "aristocratic": ["EIE", "LSI", "SLE", "IEI", "LSE", "EII", "SLI", "IEE"]
+    },
+    "constructivist_emotivist": {
+      "constructivist": ["ILE", "ESE", "EIE", "SLE", "ILI", "ESI", "EII", "SLI"],
+      "emotivist": ["SEI", "LII", "LSI", "IEI", "SEE", "LIE", "LSE", "IEE"]
+    },
+    "judicious_decisive": {
+      "judicious": ["ILE", "SEI", "ESE", "LII", "LSE", "EII", "SLI", "IEE"],
+      "decisive": ["EIE", "LSI", "SLE", "IEI", "SEE", "ILI", "LIE", "ESI"]
+    },
+    "carefree_farsighted": {
+      "carefree": ["ILE", "SEI", "EIE", "LSI", "LIE", "ESI", "SLI", "IEE"],
+      "farsighted": ["ESE", "LII", "SLE", "IEI", "SEE", "ILI", "LSE", "EII"]
+    },
+    "yielding_obstinate": {
+      "yielding": ["ILE", "SEI", "SLE", "IEI", "LIE", "ESI", "LSE", "EII"],
+      "obstinate": ["ESE", "LII", "EIE", "LSI", "SEE", "ILI", "SLI", "IEE"]
+    },
+    "tactical_strategic": {
+      "tactical": ["ILE", "ESE", "LSI", "IEI", "ILI", "ESI", "LSE", "IEE"],
+      "strategic": ["SEI", "LII", "EIE", "SLE", "SEE", "LIE", "EII", "SLI"]
+    },
+    "subjectivist_objectivist": {
+      "subjectivist": ["ILE", "SEI", "ESE", "LII", "EIE", "LSI", "SLE", "IEI"],
+      "objectivist": ["SEE", "ILI", "LIE", "ESI", "LSE", "EII", "SLI", "IEE"]
+    },
+    "asking_declaring": {
+      "asking": ["ILE", "LII", "EIE", "IEI", "SEE", "ESI", "LSE", "SLI"],
+      "declaring": ["SEI", "ESE", "LSI", "SLE", "ILI", "LIE", "EII", "IEE"]
+    }
+  },
+
+  "types": {
+    "ILE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "logic",
+      "rational_irrational": "irrational",
+      "static_dynamic": "static",
+      "process_result": "process",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "asking"
+    },
+    "SEI": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "ethics",
+      "rational_irrational": "irrational",
+      "static_dynamic": "dynamic",
+      "process_result": "process",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "declaring"
+    },
+    "ESE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "ethics",
+      "rational_irrational": "rational",
+      "static_dynamic": "dynamic",
+      "process_result": "result",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "declaring"
+    },
+    "LII": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "logic",
+      "rational_irrational": "rational",
+      "static_dynamic": "static",
+      "process_result": "result",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "asking"
+    },
+    "EIE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "ethics",
+      "rational_irrational": "rational",
+      "static_dynamic": "dynamic",
+      "process_result": "process",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "asking"
+    },
+    "LSI": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "logic",
+      "rational_irrational": "rational",
+      "static_dynamic": "static",
+      "process_result": "process",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "declaring"
+    },
+    "SLE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "logic",
+      "rational_irrational": "irrational",
+      "static_dynamic": "static",
+      "process_result": "result",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "declaring"
+    },
+    "IEI": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "ethics",
+      "rational_irrational": "irrational",
+      "static_dynamic": "dynamic",
+      "process_result": "result",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "subjectivist",
+      "asking_declaring": "asking"
+    },
+    "SEE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "ethics",
+      "rational_irrational": "irrational",
+      "static_dynamic": "static",
+      "process_result": "process",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "asking"
+    },
+    "ILI": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "logic",
+      "rational_irrational": "irrational",
+      "static_dynamic": "dynamic",
+      "process_result": "process",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "declaring"
+    },
+    "LIE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "logic",
+      "rational_irrational": "rational",
+      "static_dynamic": "dynamic",
+      "process_result": "result",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "declaring"
+    },
+    "ESI": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "ethics",
+      "rational_irrational": "rational",
+      "static_dynamic": "static",
+      "process_result": "result",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "democratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "decisive",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "asking"
+    },
+    "LSE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "logic",
+      "rational_irrational": "rational",
+      "static_dynamic": "dynamic",
+      "process_result": "process",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "asking"
+    },
+    "EII": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "ethics",
+      "rational_irrational": "rational",
+      "static_dynamic": "static",
+      "process_result": "process",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "farsighted",
+      "yielding_obstinate": "yielding",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "declaring"
+    },
+    "SLI": {
+      "extravert_introvert": "introvert",
+      "intuition_sensing": "sensing",
+      "logic_ethics": "logic",
+      "rational_irrational": "irrational",
+      "static_dynamic": "dynamic",
+      "process_result": "result",
+      "positivist_negativist": "positivist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "constructivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "strategic",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "asking"
+    },
+    "IEE": {
+      "extravert_introvert": "extravert",
+      "intuition_sensing": "intuition",
+      "logic_ethics": "ethics",
+      "rational_irrational": "irrational",
+      "static_dynamic": "static",
+      "process_result": "result",
+      "positivist_negativist": "negativist",
+      "democratic_aristocratic": "aristocratic",
+      "constructivist_emotivist": "emotivist",
+      "judicious_decisive": "judicious",
+      "carefree_farsighted": "carefree",
+      "yielding_obstinate": "obstinate",
+      "tactical_strategic": "tactical",
+      "subjectivist_objectivist": "objectivist",
+      "asking_declaring": "declaring"
+    }
+  }
+}
