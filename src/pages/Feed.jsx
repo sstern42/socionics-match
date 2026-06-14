@@ -469,7 +469,7 @@ export default function Feed() {
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '2.5rem' }}>
+        <div className="feed-header" style={{ marginBottom: '2.5rem' }}>
           <p className="eyebrow">Your matches</p>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginTop: '0.4rem' }}>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
@@ -534,7 +534,7 @@ export default function Feed() {
           </p>
           {swipeMode && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              Profiles you swipe on won't appear in Browse either — swipes apply across both modes.
+              Swipe through profiles — if someone likes you back, you'll be notified. Browse mode visibility is unaffected.
             </p>
           )}
           {!isPremium && (
@@ -573,6 +573,9 @@ export default function Feed() {
             </div>
           )}
         </div>
+
+        {/* Banners + SeekingYou — hidden in mobile swipe mode */}
+        <div className="feed-preamble">
 
         {/* Announcement banner */}
         {announcement && !bannerDismissed && (
@@ -646,6 +649,8 @@ export default function Feed() {
             setFilterRelation(rel)
           }}
         />
+
+        </div>{/* end feed-preamble */}
 
         {/* SWIPE / BROWSE MODE — keyed so content crossfades on toggle */}
         <div key={swipeMode ? 'swipe' : 'browse'} className="feed-content-enter">
