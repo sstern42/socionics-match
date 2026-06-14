@@ -636,7 +636,8 @@ export default function Feed() {
           }}
         />
 
-        {/* SWIPE MODE */}
+        {/* SWIPE / BROWSE MODE — keyed so content crossfades on toggle */}
+        <div key={swipeMode ? 'swipe' : 'browse'} className="feed-content-enter">
         {swipeMode ? (
           fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
@@ -880,6 +881,7 @@ export default function Feed() {
           )}
         </>
         )}
+        </div>{/* end feed-content-enter */}
       </section>
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
