@@ -213,7 +213,6 @@ export default function Feed() {
   const [connectPrompt, setConnectPrompt] = useState(null)
   const [connectMessage, setConnectMessage] = useState('')
   const [connectError, setConnectError] = useState(null)
-  const [justConnected, setJustConnected] = useState(null)
   const [capModal, setCapModal] = useState(false)
   const [showCard, setShowCard] = useState(false)
   const [retrying, setRetrying] = useState(false)
@@ -407,12 +406,9 @@ export default function Feed() {
         content: connectMessage.trim(),
       })
       setMatchedMap(prev => ({ ...prev, [targetProfile.id]: newMatch.id }))
-      const isAnon = targetProfile.profile_data?.anonymous ?? false
-      const displayName = isAnon ? 'Anonymous' : (targetProfile.profile_data?.name ?? targetProfile.type)
-      setJustConnected(displayName)
-      setTimeout(() => setJustConnected(null), 3000)
       setConnectPrompt(null)
       setConnectMessage('')
+      navigate('/messages')
     } catch (err) {
       setConnectError(err.message)
     } finally {
@@ -772,11 +768,7 @@ export default function Feed() {
             </div>
           )}
 
-          {justConnected && (
-            <div style={{ background: 'rgba(154,111,56,0.1)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--accent)' }}>
-              Connected with {justConnected}. Click Message → to start a conversation.
-            </div>
-          )}
+
 
           {error && (
             <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>

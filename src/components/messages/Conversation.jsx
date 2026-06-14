@@ -984,7 +984,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   You've disconnected from {otherName}. Your slot is free — head back to the feed to find someone new.
                 </p>
                 <div style={{ display:'flex',justifyContent:'flex-end' }}>
-                  <button type="button" className="btn-primary" onClick={() => { window.location.href = '/' }}>Return to feed</button>
+                  <button type="button" className="btn-primary" onClick={() => { window.location.href = '/feed' }}>Return to feed</button>
                 </div>
               </>
             ) : (
