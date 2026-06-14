@@ -702,7 +702,7 @@ export default function Feed() {
                         )}
                       </button>
                       {activeCount > 0 && (
-                        <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
+                        <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(true); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                       )}
                     </>
                   )
