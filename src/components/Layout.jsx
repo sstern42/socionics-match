@@ -205,8 +205,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
   // ── Misc ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    document.title = unread > 0 ? `(${unread}) Socion` : 'Socion'
-    return () => { document.title = 'Socion' }
+    document.title = unread > 0 ? `(${unread}) Socion™` : 'Socion™'
+    return () => { document.title = 'Socion™' }
   }, [unread])
 
   useEffect(() => {
