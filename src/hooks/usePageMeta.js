@@ -1,57 +1,53 @@
 import { useEffect } from 'react'
 
-function setMeta(selector, attr, value, prev) {
-  let tag = document.querySelector(selector)
-  const prevVal = tag?.getAttribute(attr) ?? null
-  if (!tag) {
-    const [attrName, attrVal] = selector.match(/\[([^=]+)="([^"]+)"\]/).slice(1)
-    tag = document.createElement('meta')
-    tag.setAttribute(attrName, attrVal)
-    document.head.appendChild(tag)
-  }
-  tag.setAttribute(attr, value)
-  return prevVal
+function getMeta(selector) {
+  return document.querySelector(selector)
+}
+
+function setMeta(selector, value) {
+  const tag = getMeta(selector)
+  if (tag) tag.setAttribute('content', value)
 }
 
 export function usePageMeta(title, description) {
   useEffect(() => {
-    const prev = document.title
+    const prevTitle  = document.title
+    const prevOgT    = getMeta('meta[property="og:title"]')?.getAttribute('content')
+    const prevTwT    = getMeta('meta[name="twitter:title"]')?.getAttribute('content')
     document.title = title ?? 'Socion™'
-    return () => { document.title = prev }
+    setMeta('meta[property="og:title"]',  title ?? 'Socion™')
+    setMeta('meta[name="twitter:title"]', title ?? 'Socion™')
+    return () => {
+      document.title = prevTitle
+      if (prevOgT !== undefined) setMeta('meta[property="og:title"]',  prevOgT)
+      if (prevTwT !== undefined) setMeta('meta[name="twitter:title"]', prevTwT)
+    }
   }, [title])
 
   useEffect(() => {
-    if (!description && !title) return
+    const prevOgUrl = getMeta('meta[property="og:url"]')?.getAttribute('content')
+    const prevTwUrl = getMeta('meta[name="twitter:url"]')?.getAttribute('content')
     const url = window.location.href
-
-    const prevs = {}
-    if (title) {
-      prevs.ogTitle    = setMeta('meta[property="og:title"]',       'content', title)
-      prevs.twTitle    = setMeta('meta[name="twitter:title"]',      'content', title)
-    }
-    if (description) {
-      prevs.desc       = setMeta('meta[name="description"]',        'content', description)
-      prevs.ogDesc     = setMeta('meta[property="og:description"]', 'content', description)
-      prevs.twDesc     = setMeta('meta[name="twitter:description"]','content', description)
-    }
-    prevs.ogUrl      = setMeta('meta[property="og:url"]',           'content', url)
-    prevs.twUrl      = setMeta('meta[name="twitter:url"]',          'content', url)
-
+    setMeta('meta[property="og:url"]',  url)
+    setMeta('meta[name="twitter:url"]', url)
     return () => {
-      const restore = (sel, attr, val) => {
-        if (val !== null) document.querySelector(sel)?.setAttribute(attr, val)
-      }
-      if (title) {
-        restore('meta[property="og:title"]',        'content', prevs.ogTitle)
-        restore('meta[name="twitter:title"]',       'content', prevs.twTitle)
-      }
-      if (description) {
-        restore('meta[name="description"]',         'content', prevs.desc)
-        restore('meta[property="og:description"]',  'content', prevs.ogDesc)
-        restore('meta[name="twitter:description"]', 'content', prevs.twDesc)
-      }
-      restore('meta[property="og:url"]',            'content', prevs.ogUrl)
-      restore('meta[name="twitter:url"]',           'content', prevs.twUrl)
+      if (prevOgUrl !== undefined) setMeta('meta[property="og:url"]',  prevOgUrl)
+      if (prevTwUrl !== undefined) setMeta('meta[name="twitter:url"]', prevTwUrl)
     }
-  }, [title, description])
+  }, [])
+
+  useEffect(() => {
+    if (!description) return
+    const prevDesc  = getMeta('meta[name="description"]')?.getAttribute('content')
+    const prevOgD   = getMeta('meta[property="og:description"]')?.getAttribute('content')
+    const prevTwD   = getMeta('meta[name="twitter:description"]')?.getAttribute('content')
+    setMeta('meta[name="description"]',         description)
+    setMeta('meta[property="og:description"]',  description)
+    setMeta('meta[name="twitter:description"]', description)
+    return () => {
+      if (prevDesc !== undefined) setMeta('meta[name="description"]',         prevDesc)
+      if (prevOgD  !== undefined) setMeta('meta[property="og:description"]',  prevOgD)
+      if (prevTwD  !== undefined) setMeta('meta[name="twitter:description"]', prevTwD)
+    }
+  }, [description])
 }
