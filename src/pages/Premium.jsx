@@ -22,7 +22,7 @@ const FEATURES = [
 
 
 export default function Premium() {
-  usePageMeta('Premium', 'Unlock unlimited connections, all 16 relation filters, read receipts, full viewer history, compatibility breakdowns, and unlimited Socionics AI — from £6/month.')
+  usePageMeta('Premium', 'Unlock unlimited connections, all 16 relation filters, read receipts, full viewer history, compatibility breakdowns, and unlimited Socionics AI — $14.99/year.')
   const { session, profile, isPremium, loading } = useAuth()
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
