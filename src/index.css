@@ -16,6 +16,7 @@
   --sans:      'DM Sans', system-ui, sans-serif;
   /* card-bg is used by CSS class rules that previously had hardcoded #fff */
   --card-bg:   #ffffff;
+  --nav-link:  #7a7268;
 }
 
 /* ── Dark mode tokens ───────────────────────────────────────────── */
@@ -29,6 +30,7 @@ html.dark {
   --text:      #ede9e0;
   --muted:     #8c8275;
   --card-bg:   #1e1c17;
+  --nav-link:  #b0a898;
   color-scheme: dark;
 }
 
@@ -88,7 +90,7 @@ body::after {
 .wordmark span { color: var(--accent); }
 .site-header nav a {
   font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--muted); text-decoration: none; transition: color 0.2s;
+  color: var(--nav-link); text-decoration: none; transition: color 0.2s;
 }
 .site-header nav a:hover { color: var(--accent); }
 

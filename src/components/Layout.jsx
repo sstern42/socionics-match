@@ -825,14 +825,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
 const navStyle = (active) => ({
   fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
-  color: active ? 'var(--accent)' : 'var(--muted)',
+  color: active ? 'var(--accent)' : 'var(--nav-link)',
   textDecoration: 'none', transition: 'color 0.2s',
 })
 
 const signOutStyle = {
   background: 'none', border: 'none', cursor: 'pointer',
   fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
-  color: 'var(--muted)', transition: 'color 0.2s',
+  color: 'var(--nav-link)', transition: 'color 0.2s',
 }
 
 const mobileNavStyle = (active) => ({

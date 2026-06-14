@@ -19,7 +19,7 @@ const BANNER_KEY = 'socion_announcement_dismissed_v'
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 const FEED_MODE_KEY = 'socion_feed_mode'
-const PAGE_SIZE = 50
+const PAGE_SIZE = 20
 
 const FEED_LOADER_STEPS = [
   'Reading your type preferences…',
