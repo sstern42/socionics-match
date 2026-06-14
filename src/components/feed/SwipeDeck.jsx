@@ -43,20 +43,20 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
     setQueue(prev => prev.filter(p => p.id !== profile.id))
     onSwipeComplete?.(profile.id)
 
-    // Record swipe in Supabase
-    const { error } = await supabase.from('swipes').insert({
-      swiper_id:     currentUserId,
-      target_id:     profile.id,
-      direction,
-      relation_type: relationType ?? null,
-    })
+    // Record swipe in Supabase — upsert so re-swipes (e.g. after page reload) don't fail
+    const { error } = await supabase.from('swipes').upsert(
+      { swiper_id: currentUserId, target_id: profile.id, direction, relation_type: relationType ?? null },
+      { onConflict: 'swiper_id,target_id' }
+    )
 
     if (error) {
-      console.error('Swipe insert failed:', error)
-      return
+      console.error('Swipe upsert failed:', error.code, error.message)
+      // Don't bail — still check for a match if this was a like,
+      // since the swipe row may already exist from a prior session.
+      if (direction !== 'right') return
+    } else {
+      window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
     }
-
-    window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
 
     if (direction === 'right') {
       // Use SECURITY DEFINER RPC to check reciprocal swipe — direct table query
