@@ -364,6 +364,12 @@ export default function Updates() {
             </button>
           </div>
         )}
+
+        {!hasMore && posts.length > PAGE_SIZE && !loading && (
+          <p style={{ textAlign: 'center', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '0.92rem', color: 'var(--muted)', marginTop: '2.5rem' }}>
+            That's the beginning of the feed.
+          </p>
+        )}
       </section>
     </Layout>
   )
