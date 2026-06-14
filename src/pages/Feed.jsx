@@ -688,6 +688,12 @@ export default function Feed() {
                   swipedIdsRef.current.add(id)
                   try { sessionStorage.setItem('socion_swiped_ids', JSON.stringify([...swipedIdsRef.current])) } catch {}
                 }}
+                onReset={() => {
+                  swipedIdsRef.current = new Set()
+                  try { sessionStorage.removeItem('socion_swiped_ids') } catch {}
+                  loadFeed()
+                  window.umami?.track('swipe-deck-reset')
+                }}
                 onMatch={(data) => {
                   setMatchData(data)
                   setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))

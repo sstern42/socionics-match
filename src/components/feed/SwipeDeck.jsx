@@ -13,7 +13,7 @@ const STACK = [
   { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
 ]
 
-export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe, initialSwiped, onSwipeComplete }) {
+export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe, initialSwiped, onSwipeComplete, onReset }) {
   const [swiped, setSwiped] = useState(() => new Set(initialSwiped ?? []))
   const [queue, setQueue]   = useState(() => {
     const seen = new Set(initialSwiped ?? [])
@@ -110,6 +110,16 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
         <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, maxWidth: 280 }}>
           New members join every day. Check back later or broaden your relation preferences.
         </p>
+        {onReset && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={onReset}
+            style={{ marginTop: '0.5rem', padding: '0.5rem 1.25rem', fontSize: '0.78rem' }}
+          >
+            ↺ Start over
+          </button>
+        )}
       </div>
     )
   }
