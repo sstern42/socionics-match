@@ -121,6 +121,17 @@ export default function Feed() {
   const [matchData, setMatchData] = useState(null)
   const [activityStats, setActivityStats] = useState(null)
 
+  // Full-screen swipe mode on mobile — add body class so footer hides and deck covers viewport
+  useEffect(() => {
+    const isMobile = window.matchMedia('(max-width: 700px)').matches
+    if (swipeMode && isMobile) {
+      document.body.classList.add('swipe-mode-mobile')
+    } else {
+      document.body.classList.remove('swipe-mode-mobile')
+    }
+    return () => document.body.classList.remove('swipe-mode-mobile')
+  }, [swipeMode])
+
   function toggleFeedMode() {
     const next = !swipeMode
     setSwipeMode(next)
@@ -648,18 +659,20 @@ export default function Feed() {
               <button type="button" className="btn-ghost" style={{ marginTop: '0.75rem', padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={loadFeed}>Try again</button>
             </div>
           ) : (
-            <SwipeDeck
-              profiles={profiles}
-              currentUserId={profile.id}
-              userType={profile.type}
-              blockRightSwipe={!isPremium && connectionCount >= 3}
-              onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
-              onMatch={(data) => {
-                setMatchData(data)
-                setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
-                window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
-              }}
-            />
+            <div className="swipe-deck-container">
+              <SwipeDeck
+                profiles={profiles}
+                currentUserId={profile.id}
+                userType={profile.type}
+                blockRightSwipe={!isPremium && connectionCount >= 3}
+                onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
+                onMatch={(data) => {
+                  setMatchData(data)
+                  setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
+                  window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
+                }}
+              />
+            </div>
           )
         ) : (
         /* BROWSE MODE */
