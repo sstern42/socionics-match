@@ -82,6 +82,7 @@ export default function Feed() {
 
   const [swipeMode, setSwipeMode] = useState(() => localStorage.getItem(FEED_MODE_KEY) === 'swipe')
   const [matchData, setMatchData] = useState(null)
+  const [activityStats, setActivityStats] = useState(null)
 
   function toggleFeedMode() {
     const next = !swipeMode
@@ -114,6 +115,23 @@ export default function Feed() {
         }
         if (data?.users) setMemberCount(data.users)
       })
+  }, [])
+
+  useEffect(() => {
+    const now = new Date()
+    const onlineThreshold = new Date(now - 15 * 60 * 1000).toISOString()
+    const todayThreshold = new Date(now - 24 * 60 * 60 * 1000).toISOString()
+    Promise.all([
+      supabase.from('users').select('id', { count: 'exact', head: true })
+        .gt('last_active', onlineThreshold)
+        .neq('profile_data->>hide_activity', 'true'),
+      supabase.from('users').select('id', { count: 'exact', head: true })
+        .gt('last_active', todayThreshold)
+        .lte('last_active', onlineThreshold)
+        .neq('profile_data->>hide_activity', 'true'),
+    ]).then(([online, today]) => {
+      setActivityStats({ online: online.count ?? 0, today: today.count ?? 0 })
+    })
   }, [])
 
   function dismissBanner() {
@@ -427,6 +445,22 @@ export default function Feed() {
               </button>
             </div>
           </div>
+          {activityStats && (activityStats.online > 0 || activityStats.today > 0) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+              {activityStats.online > 0 && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4caf50', display: 'inline-block', flexShrink: 0 }} />
+                  {activityStats.online} online now
+                </span>
+              )}
+              {activityStats.today > 0 && (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#f5a623', display: 'inline-block', flexShrink: 0 }} />
+                  {activityStats.today} active today
+                </span>
+              )}
+            </div>
+          )}
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
           </p>
