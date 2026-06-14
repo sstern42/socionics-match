@@ -198,6 +198,7 @@ export default function Feed() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
   const [feedExhausted, setFeedExhausted] = useState(false)
+  const [feedTotal, setFeedTotal] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
@@ -326,6 +327,7 @@ export default function Feed() {
     if (!feedData || feedData === prevFeedData.current) return
     prevFeedData.current = feedData
     setHasMore(feedData.hasMore)
+    setFeedTotal(feedData.total ?? null)
     setMatchedMap(prev => ({ ...feedData.matchedMap, ...prev }))
     setSavedIds(feedData.savedIds)
     setExtraProfiles([])
@@ -354,6 +356,7 @@ export default function Feed() {
       })
       setExtraProfiles(prev => [...prev, ...feedResult.profiles])
       setHasMore(feedResult.hasMore)
+      setFeedTotal(feedResult.total ?? null)
       if (!feedResult.hasMore) setFeedExhausted(true)
       offsetRef.current += PAGE_SIZE
       window.umami?.track('feed-load-more', { offset: offsetRef.current })
@@ -875,7 +878,7 @@ export default function Feed() {
                     disabled={loadingMore}
                     style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
                   >
-                    {loadingMore ? 'Loading…' : `Load more (+${PAGE_SIZE})`}
+                    {loadingMore ? 'Loading…' : `Load more (+${feedTotal !== null ? Math.min(PAGE_SIZE, feedTotal - offsetRef.current) : PAGE_SIZE})`}
                   </button>
                 </div>
               )}
