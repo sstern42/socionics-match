@@ -130,7 +130,7 @@ export default function Feed() {
         .lte('last_active', onlineThreshold)
         .neq('profile_data->>hide_activity', 'true'),
     ]).then(([online, today]) => {
-      setActivityStats({ online: online.count ?? 0, today: today.count ?? 0 })
+      setActivityStats({ online: Math.max(0, (online.count ?? 0) - 1), today: today.count ?? 0 })
     })
   }, [])
 
