@@ -230,10 +230,8 @@ export default function Feed() {
   const [newMembersAvailable, setNewMembersAvailable] = useState(false)
 
   const offsetRef = useRef(0)
-  // Persist swiped IDs for the browser session so deck doesn't reset on page reload
-  const swipedIdsRef = useRef(new Set((() => {
-    try { return JSON.parse(sessionStorage.getItem('socion_swiped_ids') || '[]') } catch { return [] }
-  })()))
+  // Tracks cards swiped this session so they don't reappear if profiles refresh mid-session
+  const swipedIdsRef = useRef(new Set())
   const queryClient = useQueryClient()
 
   const feedQueryKey = ['feed', profile?.id, JSON.stringify(profile?.relation_preferences), JSON.stringify(profile?.purpose), isPremium]
@@ -684,13 +682,9 @@ export default function Feed() {
                 blockRightSwipe={!isPremium && connectionCount >= 3}
                 onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
                 initialSwiped={swipedIdsRef.current}
-                onSwipeComplete={(id) => {
-                  swipedIdsRef.current.add(id)
-                  try { sessionStorage.setItem('socion_swiped_ids', JSON.stringify([...swipedIdsRef.current])) } catch {}
-                }}
+                onSwipeComplete={(id) => { swipedIdsRef.current.add(id) }}
                 onReset={() => {
                   swipedIdsRef.current = new Set()
-                  try { sessionStorage.removeItem('socion_swiped_ids') } catch {}
                   loadFeed()
                   window.umami?.track('swipe-deck-reset')
                 }}
