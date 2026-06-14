@@ -180,33 +180,61 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 
 /* ── Mobile swipe full-screen mode ───────────────────────────── */
 @media (max-width: 700px) {
-  /* Hide footer and any floating widgets when swiping */
+  /* Hide footer and floating widgets */
   body.swipe-mode-active .site-footer,
   body.swipe-mode-active [id^="kofi-widget-overlay"],
   body.swipe-mode-active .floatingchat-container-wrap,
   body.swipe-mode-active .floatingchat-container-wrap-mobi { display: none !important; }
 
-  /* Fixed full-screen deck below the header */
-  body.swipe-mode-active .swipe-deck-container {
-    position: fixed;
-    top: 62px; /* below header */
-    left: 0; right: 0; bottom: 0;
-    z-index: 50;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
+  /* Section becomes the fixed overlay — flex column so toggle + deck stack naturally */
+  body.swipe-mode-active section {
+    position: fixed !important;
+    top: 62px !important;
+    left: 0 !important; right: 0 !important; bottom: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
     overflow: hidden;
-    touch-action: none;
-    padding: 1rem 1rem 0;
+    background: var(--bg);
+    z-index: 50;
   }
 
-  /* Let feed-content-enter and SwipeDeck fill the fixed container */
-  body.swipe-mode-active .feed-content-enter,
-  body.swipe-mode-active .swipe-deck-container,
+  /* Toggle bar at top of overlay */
+  body.swipe-mode-active .feed-mode-toggle {
+    flex-shrink: 0 !important;
+    padding: 0.5rem 1rem !important;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0 !important;
+  }
+
+  /* feed-content-enter fills remaining space */
+  body.swipe-mode-active .feed-content-enter {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Deck container fills flex space */
+  body.swipe-mode-active .swipe-deck-container {
+    flex: 1 !important;
+    min-height: 0 !important;
+    padding: 0.75rem !important;
+    touch-action: none;
+    overflow: hidden;
+  }
+
+  /* SwipeDeck root div fills its container */
   body.swipe-mode-active .swipe-deck-container > div {
-    height: 100% !important;
+    position: relative !important;
+    width: 100% !important;
     max-width: 100% !important;
+    height: 100% !important;
     padding-bottom: 0 !important;
+    margin: 0 !important;
   }
 }
 
