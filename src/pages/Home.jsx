@@ -272,8 +272,8 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
 
 export default function Home() {
   useEffect(() => {
-    document.title = 'Socion — Match by Socionics type, not algorithm'
-    return () => { document.title = 'Socion' }
+    document.title = 'Socion™ — Match by Socionics type, not algorithm'
+    return () => { document.title = 'Socion™' }
   }, [])
   const { session, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
