@@ -113,7 +113,7 @@ export default function DynamicsTab({ userId, myType, isPremium }) {
             </div>
           ))}
         </div>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.6rem', padding: '1.5rem', background: 'linear-gradient(to bottom, rgba(247,244,239,0.35), rgba(247,244,239,0.88))' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.6rem', padding: '1.5rem', background: 'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 35%, transparent), color-mix(in srgb, var(--bg) 90%, transparent))' }}>
           <p style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 500, color: 'var(--text)', margin: 0 }}>
             See how each relation type performs for you
           </p>
