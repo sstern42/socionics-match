@@ -106,7 +106,7 @@ export default function Settings() {
           {!isPremium && (
             <>
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                You're on the free tier — 5 connections and same-quadra matches.
+                You're on the free tier — 3 connections and same-quadra matches.
               </p>
               <Link to="/premium" className="btn-primary" style={{ alignSelf: 'flex-start', textDecoration: 'none' }}>
                 Upgrade to Premium
