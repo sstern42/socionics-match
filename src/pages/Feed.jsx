@@ -510,7 +510,7 @@ export default function Feed() {
                 {activityStats.today} active today
               </span>
             )}
-            {dataUpdatedAt > 0 && !fetching && (
+            {dataUpdatedAt > 0 && (
               <>
                 {(activityStats?.online > 0 || activityStats?.today > 0) && (
                   <span style={{ width: 1, height: 12, background: 'var(--border)', flexShrink: 0 }} />
