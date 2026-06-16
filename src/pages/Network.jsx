@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 const TYPES = [
   'ILE', 'SEI', 'ESE', 'LII',
@@ -152,15 +153,11 @@ function useForceSimulation(nodes, edges, width, height) {
 }
 
 export default function Network() {
-  usePageTitle('Network')
+  usePageMeta('Socionics Relation Map | Socion™', 'Interactive map of all 16 Socionics relation dynamics — live satisfaction ratings for every type pair, colour-coded by quadra.')
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [width, setWidth] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [graphData, setGraphData] = useState(null)
   const [tooltip, setTooltip] = useState(null)
-  const [stats, setStats] = useState(null)
   const [dragging, setDragging] = useState(null)
   const [fullscreen, setFullscreen] = useState(false)
   const HEIGHT = fullscreen ? (window.innerHeight - 0) : 560
@@ -180,48 +177,46 @@ export default function Network() {
     return () => obs.disconnect()
   }, [])
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const { data, error: rpcErr } = await supabase.rpc('get_network_data')
-        if (rpcErr) throw rpcErr
-
-        const edges = (data ?? []).map(row => ({
-          source: row.type_a,
-          target: row.type_b,
-          relation: row.relation_type,
-          count: Number(row.connection_count),
-          messages: Number(row.message_count),
-          avgRating: row.avg_rating ? Number(row.avg_rating) : null,
-        }))
-
-        const nodeStats = {}
-        for (const type of TYPES) {
-          const te = edges.filter(e => e.source === type || e.target === type)
-          nodeStats[type] = {
-            connections: te.reduce((s, e) => s + e.count, 0),
-            messages: te.reduce((s, e) => s + e.messages, 0),
-          }
+  const { data: networkData, isFetching: networkFetching, error: networkError } = useQuery({
+    queryKey: ['network'],
+    queryFn: async () => {
+      const { data, error: rpcErr } = await supabase.rpc('get_network_data')
+      if (rpcErr) throw rpcErr
+      const edges = (data ?? []).map(row => ({
+        source: row.type_a,
+        target: row.type_b,
+        relation: row.relation_type,
+        count: Number(row.connection_count),
+        messages: Number(row.message_count),
+        avgRating: row.avg_rating ? Number(row.avg_rating) : null,
+      }))
+      const nodeStats = {}
+      for (const type of TYPES) {
+        const te = edges.filter(e => e.source === type || e.target === type)
+        nodeStats[type] = {
+          connections: te.reduce((s, e) => s + e.count, 0),
+          messages: te.reduce((s, e) => s + e.messages, 0),
         }
-
-        const maxConn = Math.max(...Object.values(nodeStats).map(n => n.connections), 1)
-        const maxCount = Math.max(...edges.map(e => e.count), 1)
-        const totalConnections = edges.reduce((s, e) => s + e.count, 0)
-
-        setGraphData({ edges, nodeStats, maxConn, maxCount })
-        setStats({
+      }
+      const maxConn = Math.max(...Object.values(nodeStats).map(n => n.connections), 1)
+      const maxCount = Math.max(...edges.map(e => e.count), 1)
+      const totalConnections = edges.reduce((s, e) => s + e.count, 0)
+      return {
+        graphData: { edges, nodeStats, maxConn, maxCount },
+        stats: {
           totalConnections,
           totalEdges: edges.length,
           typesActive: TYPES.filter(t => nodeStats[t].connections > 0).length,
-        })
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+        },
       }
-    }
-    fetchData()
-  }, [])
+    },
+    staleTime: 10 * 60_000,
+  })
+
+  const loading = networkFetching && !networkData
+  const error = networkError?.message ?? null
+  const graphData = networkData?.graphData ?? null
+  const stats = networkData?.stats ?? null
 
   const nodes = TYPES.map(id => ({ id }))
   const edges = graphData?.edges ?? []

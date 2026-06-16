@@ -13,6 +13,8 @@ export default function FeedbackButton() {
 
   const remaining = MAX_CHARS - message.length
 
+  if (!profile) return null
+
   function handleOpen() {
     setOpen(true)
     setStatus('idle')

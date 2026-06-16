@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 
 // Truthful at launch — only features that actually gate. Message history is
@@ -22,7 +22,7 @@ const FEATURES = [
 
 
 export default function Premium() {
-  usePageTitle('Premium')
+  usePageMeta('Socion™ Premium — Unlimited Matching, $14.99/yr', 'Unlimited connections, all 16 relation filters, read receipts, viewer history, compatibility breakdowns, and Socionics AI — $14.99/year.')
   const { session, profile, isPremium, loading } = useAuth()
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)

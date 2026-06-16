@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
@@ -18,7 +19,7 @@ const BANNER_KEY = 'socion_announcement_dismissed_v'
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 const FEED_MODE_KEY = 'socion_feed_mode'
-const PAGE_SIZE = 50
+const PAGE_SIZE = 20
 
 const FEED_LOADER_STEPS = [
   'Reading your type preferences…',
@@ -65,8 +66,44 @@ function FeedLoader() {
   )
 }
 
+function FeedFreshness({ updatedAt, onRefresh, refreshing }) {
+  const [, setTick] = useState(0)
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
+  const elapsed = Date.now() - updatedAt
+  const mins = Math.floor(elapsed / 60_000)
+  const label = mins < 1 ? 'just now' : mins === 1 ? '1 min ago' : `${mins} min ago`
+
+  return (
+    <button
+      type="button"
+      onClick={onRefresh}
+      disabled={refreshing}
+      title="Refresh feed"
+      style={{
+        background: 'none', border: 'none', cursor: refreshing ? 'default' : 'pointer',
+        display: 'flex', alignItems: 'center', gap: '0.3rem',
+        fontSize: '0.78rem', color: 'var(--muted)', padding: 0,
+        opacity: refreshing ? 0.5 : 1, transition: 'opacity 0.15s',
+      }}
+    >
+      <span
+        style={{
+          display: 'inline-block',
+          animation: refreshing ? 'spin 0.8s linear infinite' : 'none',
+        }}
+      >↻</span>
+      {label}
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </button>
+  )
+}
+
 export default function Feed() {
-  usePageTitle('Feed')
+  usePageTitle('Browse Matches')
   const { session, profile, loading, refreshProfile, isPremium } = useAuth()
   const navigate = useNavigate()
 
@@ -83,6 +120,16 @@ export default function Feed() {
   const [swipeMode, setSwipeMode] = useState(() => localStorage.getItem(FEED_MODE_KEY) === 'swipe')
   const [matchData, setMatchData] = useState(null)
   const [activityStats, setActivityStats] = useState(null)
+
+  // Swipe mode — add body class so preamble hides and on mobile deck covers viewport
+  useEffect(() => {
+    if (swipeMode) {
+      document.body.classList.add('swipe-mode-active')
+    } else {
+      document.body.classList.remove('swipe-mode-active')
+    }
+    return () => document.body.classList.remove('swipe-mode-active')
+  }, [swipeMode])
 
   function toggleFeedMode() {
     const next = !swipeMode
@@ -138,30 +185,13 @@ export default function Feed() {
     }
   }
 
-  const [profiles, setProfiles] = useState([])
-
-  useEffect(() => {
-    if (!profiles.length) { setActivityStats(null); return }
-    const now = Date.now()
-    const onlineMs = 15 * 60 * 1000
-    const todayMs = 24 * 60 * 60 * 1000
-    let online = 0, today = 0
-    for (const p of profiles) {
-      if (!p.last_active || p.profile_data?.hide_activity) continue
-      const diff = now - new Date(p.last_active).getTime()
-      if (diff < onlineMs) online++
-      else if (diff < todayMs) today++
-    }
-    setActivityStats({ online, today })
-  }, [profiles])
-
+  const [extraProfiles, setExtraProfiles] = useState([])
   const [savedIds, setSavedIds] = useState(new Set())
   const [matchedMap, setMatchedMap] = useState({})
-  const [fetching, setFetching] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(false)
   const [feedExhausted, setFeedExhausted] = useState(false)
-  const [error, setError] = useState(null)
+  const [feedTotal, setFeedTotal] = useState(null)
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
@@ -170,13 +200,12 @@ export default function Feed() {
   const [activeToday, setActiveToday] = useState(false)
   const [onlineNow, setOnlineNow] = useState(false)
   const [withPhotos, setWithPhotos] = useState(false)
-  const [excludeAnon, setExcludeAnon] = useState(false)
+  const [excludeAnon, setExcludeAnon] = useState(true)
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [connectingId, setConnectingId] = useState(null)
   const [connectPrompt, setConnectPrompt] = useState(null)
   const [connectMessage, setConnectMessage] = useState('')
   const [connectError, setConnectError] = useState(null)
-  const [justConnected, setJustConnected] = useState(null)
   const [capModal, setCapModal] = useState(false)
   const [showCard, setShowCard] = useState(false)
   const [retrying, setRetrying] = useState(false)
@@ -184,6 +213,46 @@ export default function Feed() {
   const [newMembersAvailable, setNewMembersAvailable] = useState(false)
 
   const offsetRef = useRef(0)
+  // Tracks cards swiped this session so they don't reappear if profiles refresh mid-session
+  const swipedIdsRef = useRef(new Set())
+  const queryClient = useQueryClient()
+
+  const feedQueryKey = ['feed', profile?.id, JSON.stringify(profile?.relation_preferences), JSON.stringify(profile?.purpose), isPremium]
+
+  const { isFetching: fetching, error: feedError, dataUpdatedAt, refetch: refetchFeed } = useQuery({
+    queryKey: feedQueryKey,
+    queryFn: async () => {
+      offsetRef.current = 0
+      const [feedResult, existingMatches, savedResult] = await Promise.all([
+        getFeedProfiles({
+          userType: profile.type,
+          relationPreferences: profile.relation_preferences ?? [],
+          userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
+          currentUserId: profile.id,
+          isPremium,
+          limit: PAGE_SIZE,
+          offset: 0,
+        }),
+        getExistingMatches(profile.id),
+        supabase.rpc('get_saved_profile_ids'),
+      ])
+      const map = {}
+      for (const m of existingMatches) {
+        const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
+        map[otherId] = m.id
+      }
+      return {
+        profiles: feedResult.profiles,
+        hasMore: feedResult.hasMore,
+        matchedMap: map,
+        savedIds: new Set((savedResult.data ?? []).map(r => r.saved_user_id)),
+      }
+    },
+    enabled: !!profile && !loading,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const error = feedError?.message ?? null
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -203,14 +272,6 @@ export default function Feed() {
       navigate('/auth' + hash, { replace: true })
     }
   }, [])
-
-  const hasFetched = useRef(false)
-  useEffect(() => {
-    if (!loading && profile && !hasFetched.current) {
-      hasFetched.current = true
-      loadFeed()
-    }
-  }, [profile?.id, loading])
 
   useEffect(() => {
     function handleNewMember() { setNewMembersAvailable(true) }
@@ -249,41 +310,33 @@ export default function Feed() {
     return () => channel.unsubscribe()
   }, [profile?.id])
 
-  async function loadFeed() {
-    if (!profile) return
-    setFetching(true)
-    setError(null)
+  const { data: feedData } = useQuery({ queryKey: feedQueryKey, enabled: false })
+
+  // Derive profiles directly from cache so cache hits render without a flash
+  const profiles = [...(feedData?.profiles ?? []), ...extraProfiles]
+
+  // Sync secondary state from feedData (matchedMap, savedIds, hasMore)
+  const prevFeedData = useRef(null)
+  useEffect(() => {
+    if (!feedData || feedData === prevFeedData.current) return
+    prevFeedData.current = feedData
+    setHasMore(feedData.hasMore)
+    setFeedTotal(feedData.total ?? null)
+    setMatchedMap(prev => ({ ...feedData.matchedMap, ...prev }))
+    setSavedIds(feedData.savedIds)
+    setExtraProfiles([])
+    offsetRef.current = PAGE_SIZE
     setFeedExhausted(false)
-    offsetRef.current = 0
-    try {
-      const [feedResult, existingMatches, savedResult] = await Promise.all([
-        getFeedProfiles({
-          userType: profile.type,
-          relationPreferences: profile.relation_preferences ?? [],
-          userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
-          currentUserId: profile.id,
-          isPremium,
-          limit: PAGE_SIZE,
-          offset: 0,
-        }),
-        getExistingMatches(profile.id),
-        supabase.rpc('get_saved_profile_ids'),
-      ])
-      setProfiles(feedResult.profiles)
-      setHasMore(feedResult.hasMore)
-      offsetRef.current = PAGE_SIZE
-      const map = {}
-      for (const m of existingMatches) {
-        const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
-        map[otherId] = m.id
-      }
-      setMatchedMap(map)
-      setSavedIds(new Set((savedResult.data ?? []).map(r => r.saved_user_id)))
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setFetching(false)
+    // Seed swipedIdsRef from DB history for cross-device sync (additive — keeps current session swipes)
+    if (feedData.allSwipedIds) {
+      feedData.allSwipedIds.forEach(id => swipedIdsRef.current.add(id))
     }
+  }, [feedData])
+
+  function loadFeed() {
+    setFeedExhausted(false)
+    setNewMembersAvailable(false)
+    queryClient.invalidateQueries({ queryKey: feedQueryKey })
   }
 
   async function loadMore() {
@@ -299,13 +352,14 @@ export default function Feed() {
         limit: PAGE_SIZE,
         offset: offsetRef.current,
       })
-      setProfiles(prev => [...prev, ...feedResult.profiles])
+      setExtraProfiles(prev => [...prev, ...feedResult.profiles])
       setHasMore(feedResult.hasMore)
+      setFeedTotal(feedResult.total ?? null)
       if (!feedResult.hasMore) setFeedExhausted(true)
       offsetRef.current += PAGE_SIZE
       window.umami?.track('feed-load-more', { offset: offsetRef.current })
     } catch (err) {
-      setError(err.message)
+      console.error('feed load-more failed', err)
     } finally {
       setLoadingMore(false)
     }
@@ -351,12 +405,9 @@ export default function Feed() {
         content: connectMessage.trim(),
       })
       setMatchedMap(prev => ({ ...prev, [targetProfile.id]: newMatch.id }))
-      const isAnon = targetProfile.profile_data?.anonymous ?? false
-      const displayName = isAnon ? 'Anonymous' : (targetProfile.profile_data?.name ?? targetProfile.type)
-      setJustConnected(displayName)
-      setTimeout(() => setJustConnected(null), 3000)
       setConnectPrompt(null)
       setConnectMessage('')
+      navigate('/messages')
     } catch (err) {
       setConnectError(err.message)
     } finally {
@@ -406,79 +457,90 @@ export default function Feed() {
       <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: '2.5rem' }}>
+        {/* Browse / Swipe toggle — always visible */}
+        <div className="feed-mode-toggle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+          {swipeMode && (
+            <p style={{ fontSize: '0.75rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>
+              ← pass &nbsp;·&nbsp; like → &nbsp;·&nbsp; ↩ skip
+            </p>
+          )}
+          <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden' }}>
+            <button
+              type="button"
+              onClick={() => { setSwipeMode(false); localStorage.setItem(FEED_MODE_KEY, 'browse') }}
+              style={{
+                padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
+                fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                background: !swipeMode ? 'var(--accent)' : 'transparent',
+                color:      !swipeMode ? '#fff' : 'var(--muted)',
+                transition: 'background 0.15s, color 0.15s',
+              }}
+            >
+              Browse
+            </button>
+            <button
+              type="button"
+              onClick={() => { setSwipeMode(true); localStorage.setItem(FEED_MODE_KEY, 'swipe') }}
+              style={{
+                padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
+                fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                background: swipeMode ? 'var(--accent)' : 'transparent',
+                color:      swipeMode ? '#fff' : 'var(--muted)',
+                transition: 'background 0.15s, color 0.15s',
+                borderLeft: '1px solid var(--border)',
+              }}
+            >
+              Swipe
+            </button>
+          </div>
+        </div>
+
+        <div className="feed-header" style={{ marginBottom: '2.5rem' }}>
           <p className="eyebrow">Your matches</p>
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem', marginTop: '0.4rem' }}>
+          <div style={{ marginTop: '0.4rem' }}>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
               {profile?.type} — <em>finding your dynamic</em>
             </h1>
-            <div style={{ display: 'flex', border: '1px solid var(--border)', borderRadius: 4, overflow: 'hidden', flexShrink: 0, marginTop: '0.5rem' }}>
-              <button
-                type="button"
-                onClick={() => { setSwipeMode(false); localStorage.setItem(FEED_MODE_KEY, 'browse') }}
-                style={{
-                  padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
-                  fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  background: !swipeMode ? 'var(--accent)' : 'transparent',
-                  color:      !swipeMode ? '#fff' : 'var(--muted)',
-                  transition: 'background 0.15s, color 0.15s',
-                }}
-              >
-                Browse
-              </button>
-              <button
-                type="button"
-                onClick={() => { setSwipeMode(true); localStorage.setItem(FEED_MODE_KEY, 'swipe') }}
-                style={{
-                  padding: '0.45rem 0.9rem', border: 'none', cursor: 'pointer',
-                  fontSize: '0.72rem', fontFamily: 'var(--sans)', fontWeight: 500,
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  background: swipeMode ? 'var(--accent)' : 'transparent',
-                  color:      swipeMode ? '#fff' : 'var(--muted)',
-                  transition: 'background 0.15s, color 0.15s',
-                  borderLeft: '1px solid var(--border)',
-                }}
-              >
-                Swipe
-              </button>
-            </div>
           </div>
-          {activityStats && (activityStats.online > 0 || activityStats.today > 0) && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-              {activityStats.online > 0 && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4caf50', display: 'inline-block', flexShrink: 0 }} />
-                  {activityStats.online} online now
-                </span>
-              )}
-              {activityStats.today > 0 && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#f5a623', display: 'inline-block', flexShrink: 0 }} />
-                  {activityStats.today} active today
-                </span>
-              )}
-            </div>
-          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+            {activityStats && activityStats.online > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4caf50', display: 'inline-block', flexShrink: 0 }} />
+                {activityStats.online} online now
+              </span>
+            )}
+            {activityStats && activityStats.today > 0 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.78rem', color: 'var(--muted)' }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#f5a623', display: 'inline-block', flexShrink: 0 }} />
+                {activityStats.today} active today
+              </span>
+            )}
+            {dataUpdatedAt > 0 && (
+              <>
+                {(activityStats?.online > 0 || activityStats?.today > 0) && (
+                  <span style={{ width: 1, height: 12, background: 'var(--border)', flexShrink: 0 }} />
+                )}
+                <FeedFreshness updatedAt={dataUpdatedAt} onRefresh={loadFeed} refreshing={fetching} />
+              </>
+            )}
+          </div>
           <p style={{ color: 'var(--muted)', fontSize: '0.88rem', marginTop: '0.5rem' }}>
             Showing profiles whose type produces your selected relation{profile?.relation_preferences?.length !== 1 ? 's' : ''} with <strong>{profile?.type}</strong>.
           </p>
           {swipeMode && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              Profiles you swipe on won't appear in Browse either — swipes apply across both modes.
+              Swipe through profiles — if someone likes you back, you'll be notified. Browse mode visibility is unaffected.
             </p>
           )}
           {!isPremium && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              <strong style={{ color: connectionCount >= 3 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 3</strong> connections used.
-              {connectionCount >= 3 && (
-                <>
-                  {' '}
-                  <Link to="/premium" onClick={() => window.umami?.track('connection-counter-upgrade-clicked')} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
-                    Upgrade for unlimited
-                  </Link>.
-                </>
-              )}
+              <strong style={{ color: connectionCount >= 3 ? 'var(--accent)' : 'var(--text)', fontWeight: 500 }}>{connectionCount} of 3</strong> connections
+              {' · '}
+              <Link to="/premium" onClick={() => window.umami?.track('connection-counter-upgrade-clicked')} style={{ color: 'var(--accent)', textDecoration: 'underline' }}>
+                Unlock unlimited
+              </Link>
             </p>
           )}
           <button
@@ -508,6 +570,9 @@ export default function Feed() {
             </div>
           )}
         </div>
+
+        {/* Banners + SeekingYou — hidden in mobile swipe mode */}
+        <div className="feed-preamble">
 
         {/* Announcement banner */}
         {announcement && !bannerDismissed && (
@@ -582,9 +647,12 @@ export default function Feed() {
           }}
         />
 
-        {/* SWIPE MODE */}
+        </div>{/* end feed-preamble */}
+
+        {/* SWIPE / BROWSE MODE — keyed so content crossfades on toggle */}
+        <div key={swipeMode ? 'swipe' : 'browse'} className="feed-content-enter">
         {swipeMode ? (
-          fetching ? (
+          fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
           ) : error ? (
             <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
@@ -593,18 +661,27 @@ export default function Feed() {
               <button type="button" className="btn-ghost" style={{ marginTop: '0.75rem', padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={loadFeed}>Try again</button>
             </div>
           ) : (
-            <SwipeDeck
-              profiles={profiles}
-              currentUserId={profile.id}
-              userType={profile.type}
-              blockRightSwipe={!isPremium && connectionCount >= 3}
-              onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
-              onMatch={(data) => {
-                setMatchData(data)
-                setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
-                window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
-              }}
-            />
+            <div className="swipe-deck-container">
+              <SwipeDeck
+                profiles={profiles}
+                currentUserId={profile.id}
+                userType={profile.type}
+                blockRightSwipe={!isPremium && connectionCount >= 3}
+                onBlockedRightSwipe={() => { window.umami?.track('connection-cap-hit', { mode: 'swipe' }); setCapModal(true) }}
+                initialSwiped={swipedIdsRef.current}
+                onSwipeComplete={(id) => { swipedIdsRef.current.add(id) }}
+                onReset={() => {
+                  swipedIdsRef.current = new Set()
+                  loadFeed()
+                  window.umami?.track('swipe-deck-reset')
+                }}
+                onMatch={(data) => {
+                  setMatchData(data)
+                  setMatchedMap(prev => (data.profile.id in prev) ? prev : ({ ...prev, [data.profile.id]: data.matchId }))
+                  window.umami?.track('swipe-match-modal-shown', { relationType: data.relationType })
+                }}
+              />
+            </div>
           )
         ) : (
         /* BROWSE MODE */
@@ -631,7 +708,7 @@ export default function Feed() {
                   <button type="button" onClick={() => setFilterRelation('ALL')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                 )}
                 {(() => {
-                  const activeCount = [withPhotos, excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
+                  const activeCount = [withPhotos, !excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
                   return (
                     <>
                       <span style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0, margin: '0 0.1rem' }} />
@@ -648,7 +725,7 @@ export default function Feed() {
                         )}
                       </button>
                       {activeCount > 0 && (
-                        <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(false); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
+                        <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(true); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                       )}
                     </>
                   )
@@ -682,7 +759,7 @@ export default function Feed() {
                     <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
-                      <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Known users only</button>
+                      <button type="button" className={`rel-pill clickable${!excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{!excludeAnon ? '✓ ' : ''}Show anonymous</button>
                       <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
                     </div>
                   </div>
@@ -710,11 +787,7 @@ export default function Feed() {
             </div>
           )}
 
-          {justConnected && (
-            <div style={{ background: 'rgba(154,111,56,0.1)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem', fontSize: '0.88rem', color: 'var(--accent)' }}>
-              Connected with {justConnected}. Click Message → to start a conversation.
-            </div>
-          )}
+
 
           {error && (
             <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem' }}>
@@ -724,7 +797,7 @@ export default function Feed() {
             </div>
           )}
 
-          {fetching ? (
+          {fetching || dataUpdatedAt === 0 ? (
             <FeedLoader />
           ) : displayed.length === 0 && !error ? (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
@@ -782,11 +855,17 @@ export default function Feed() {
                     {i === 4 && !dismissedAds.share && (
                       <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`Socion works better with more types in the pool — ${memberCount ? memberCount + ' members so far,' : 'growing every day,'} but the rarer types are harder to find. If you know someone who's into personality theory, send them the link.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
                     )}
+                    {i === 6 && !isPremium && !dismissedAds.premium && (
+                      <FeedAd id="premium" eyebrow="Socion Premium" headline="Unlock the full experience" body="Filter by any of the 16 relation types, see who viewed your profile, get full compatibility breakdowns, and unlimited AI. $14.99 / year — less than a coffee." ctaLabel="See Premium →" onClick={() => { window.umami?.track('feed-premium-clicked'); navigate('/premium') }} onDismiss={() => dismissAd('premium')} />
+                    )}
                     {i === 7 && !dismissedAds['get-typed'] && (
                       <FeedAd id="get-typed" eyebrow="Get typed" headline="Working hypothesis or final answer?" body="Most people spend years second-guessing their type. Socion's typing marketplace connects you with experienced typists who analyse your cognitive functions, rule out lookalikes, and deliver a written report you can build on. Your verified badge updates automatically." ctaLabel="Book a session →" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
                     )}
                     {i === 9 && !dismissedAds.discord && (
                       <FeedAd id="discord" eyebrow="Community" headline="The conversation goes deeper on Discord" body="The Socion Discord is where members go beyond profiles — discussing dynamics, debating typings, and asking the questions that don't fit in a bio. Active, free, and worth five seconds to join." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
+                    )}
+                    {i === 11 && !dismissedAds.ask && (
+                      <FeedAd id="ask" eyebrow="Socionics AI" headline="Ask anything about your type" body="Not sure how a relation actually plays out day-to-day? Curious what your leading function looks like under stress? The Socion AI knows the model inside-out — ask it anything." ctaLabel="Open AI chat →" onClick={() => { window.umami?.track('feed-ask-clicked'); navigate('/ask') }} onDismiss={() => dismissAd('ask')} />
                     )}
                     {i === 12 && !dismissedAds['si-type'] && profile?.type && (
                       <FeedAd id="si-type" eyebrow="Deep dive" headline={`The ${profile.type} — in full`} body={`Your type has a specific cognitive architecture: a leading function, a creative function, a blind spot, and a shadow. The full ${profile.type} profile on Socionics Insight covers all of it — including how others experience you and which dynamics tend to run best.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
@@ -816,7 +895,7 @@ export default function Feed() {
                     disabled={loadingMore}
                     style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
                   >
-                    {loadingMore ? 'Loading…' : 'Load more'}
+                    {loadingMore ? 'Loading…' : `Load more (+${feedTotal !== null ? Math.min(PAGE_SIZE, feedTotal - offsetRef.current) : PAGE_SIZE})`}
                   </button>
                 </div>
               )}
@@ -824,6 +903,7 @@ export default function Feed() {
           )}
         </>
         )}
+        </div>{/* end feed-content-enter */}
       </section>
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />

@@ -1,10 +1,13 @@
 import { StrictMode, Component } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
 import App from './App.jsx'
 import { AuthProvider } from './lib/AuthContext.jsx'
 import { ThemeProvider } from './lib/ThemeContext.jsx'
 import BootGate from './BootGate.jsx'
+
+const queryClient = new QueryClient()
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -60,13 +63,15 @@ class ErrorBoundary extends Component {
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <BootGate>
-            <App />
-          </BootGate>
-        </AuthProvider>
-      </ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <BootGate>
+              <App />
+            </BootGate>
+          </AuthProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
     </ErrorBoundary>
   </StrictMode>,
 )

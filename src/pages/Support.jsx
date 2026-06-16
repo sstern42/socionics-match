@@ -1,8 +1,8 @@
 import Layout from '../components/Layout'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Support() {
-  usePageTitle('Support')
+  usePageMeta('Support Socion™ — Ad-Free & Independent', 'Socion is ad-free and built by one person. Tip on Ko-fi, browse the shop, or keep using it free — every bit of support helps.')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>

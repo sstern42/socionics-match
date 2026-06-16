@@ -10,23 +10,35 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     compatibleTypes = compatibleTypes.filter(t => quadraTypes.has(t))
   }
 
+  const typeFilter = compatibleTypes.length > 0 ? compatibleTypes : ['__none__']
+
   let query = supabase
     .from('users')
     .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active, verified_by, is_founding_member, plan_status')
     .neq('id', currentUserId)
     .not('profile_data', 'is', null)
-    .in('type', compatibleTypes.length > 0 ? compatibleTypes : ['__none__'])
+    .in('type', typeFilter)
     .order('last_active', { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1)
 
+  let countQuery = supabase
+    .from('users')
+    .select('id', { count: 'exact', head: true })
+    .neq('id', currentUserId)
+    .not('profile_data', 'is', null)
+    .in('type', typeFilter)
+
   if (userPurpose.length > 0) {
     query = query.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
+    countQuery = countQuery.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
   }
 
-  const [feedResult, blocks, swipedResult] = await Promise.all([
+  const [feedResult, blocks, swipedResult, allSwipedResult, countResult] = await Promise.all([
     query,
     getActiveBlocks(currentUserId),
     supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId).eq('direction', 'left'),
+    supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId),
+    countQuery,
   ])
 
   if (feedResult.error) throw feedResult.error
@@ -54,7 +66,9 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
       profile.relation && relationPreferences.includes(profile.relation)
     )
 
-  return { profiles, hasMore: rawCount === limit }
+  const total = countResult.count ?? null
+  const allSwipedIds = new Set((allSwipedResult.data ?? []).map(r => r.target_id))
+  return { profiles, hasMore: rawCount === limit, total, allSwipedIds }
 }
 
 export async function getExistingMatches(userId) {

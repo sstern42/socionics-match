@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import { RELATIONS, MATRIX } from '../../data/relations'
 
@@ -57,48 +58,36 @@ function SummaryCard({ label, value, sub, colour }) {
 
 // userId = profile.id (internal users.id, not auth.users.id)
 export default function DynamicsTab({ userId, myType, isPremium }) {
-  const [rows, setRows]       = useState([])
-  const [globals, setGlobals] = useState({})
-  const [loading, setLoading] = useState(false)
-  const [error, setError]     = useState(null)
-
-  useEffect(() => {
-    if (!isPremium || !myType || !userId) return
-    setLoading(true)
-
-    ;(async () => {
-      try {
-        const [{ data: userRows, error: ue }, { data: globalRows, error: ge }] = await Promise.all([
-          supabase.rpc('get_user_relation_stats', { p_user_id: userId }),
-          supabase.rpc('get_global_relation_averages'),
-        ])
-
-        if (ue || ge) throw ue ?? ge
-
-        const globalMap = {}
-        for (const g of (globalRows ?? [])) {
-          globalMap[g.relation_type] = { avg: parseFloat(g.avg_rating), count: parseInt(g.rated_count) }
-        }
-        setGlobals(globalMap)
-
-        const processed = (userRows ?? []).map(r => ({
-          ...r,
-          display_relation: r.is_user_a
-            ? r.relation_type
-            : (MATRIX[r.other_type]?.[myType] ?? r.relation_type),
-          rating_given:    r.rating_given    != null ? parseFloat(r.rating_given)    : null,
-          rating_received: r.rating_received != null ? parseFloat(r.rating_received) : null,
-          message_count:   parseInt(r.message_count ?? 0),
-        }))
-
-        setRows(processed)
-      } catch (err) {
-        setError(err?.message ?? 'Could not load your dynamics.')
-      } finally {
-        setLoading(false)
+  const { data, isFetching: loading, error: queryError } = useQuery({
+    queryKey: ['dynamics', userId, isPremium],
+    queryFn: async () => {
+      const [{ data: userRows, error: ue }, { data: globalRows, error: ge }] = await Promise.all([
+        supabase.rpc('get_user_relation_stats', { p_user_id: userId }),
+        supabase.rpc('get_global_relation_averages'),
+      ])
+      if (ue || ge) throw ue ?? ge
+      const globals = {}
+      for (const g of (globalRows ?? [])) {
+        globals[g.relation_type] = { avg: parseFloat(g.avg_rating), count: parseInt(g.rated_count) }
       }
-    })()
-  }, [isPremium, myType, userId])
+      const rows = (userRows ?? []).map(r => ({
+        ...r,
+        display_relation: r.is_user_a
+          ? r.relation_type
+          : (MATRIX[r.other_type]?.[myType] ?? r.relation_type),
+        rating_given:    r.rating_given    != null ? parseFloat(r.rating_given)    : null,
+        rating_received: r.rating_received != null ? parseFloat(r.rating_received) : null,
+        message_count:   parseInt(r.message_count ?? 0),
+      }))
+      return { rows, globals }
+    },
+    enabled: !!isPremium && !!myType && !!userId,
+    staleTime: 10 * 60_000,
+  })
+
+  const rows    = data?.rows    ?? []
+  const globals = data?.globals ?? {}
+  const error   = queryError ? (queryError.message ?? 'Could not load your dynamics.') : null
 
   // ── Free tier tease ──────────────────────────────────────────────────
   if (!isPremium) {
@@ -124,7 +113,7 @@ export default function DynamicsTab({ userId, myType, isPremium }) {
             </div>
           ))}
         </div>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.6rem', padding: '1.5rem', background: 'linear-gradient(to bottom, rgba(247,244,239,0.35), rgba(247,244,239,0.88))' }}>
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', gap: '0.6rem', padding: '1.5rem', background: 'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 35%, transparent), color-mix(in srgb, var(--bg) 90%, transparent))' }}>
           <p style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', fontWeight: 500, color: 'var(--text)', margin: 0 }}>
             See how each relation type performs for you
           </p>

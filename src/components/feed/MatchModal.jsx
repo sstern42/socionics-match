@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
+import FlagImage from '../FlagImage'
 
 function Avatar({ profile, size = 72 }) {
   const isAnon  = profile?.profile_data?.anonymous ?? false
@@ -51,6 +52,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
   return (
     <div
       onClick={onDismiss}
+      className="modal-backdrop-enter"
       style={{
         position: 'fixed', inset: 0, zIndex: 400,
         background: 'rgba(0,0,0,0.6)',
@@ -60,6 +62,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
     >
       <div
         onClick={e => e.stopPropagation()}
+        className="modal-dialog-enter"
         style={{
           background: 'var(--card-bg)', borderRadius: 12, padding: '2rem 1.75rem',
           width: '100%', maxWidth: 380,
@@ -82,7 +85,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
             You and <em>{name}</em>
           </h2>
           {flag && (
-            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{flag}</p>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '0.25rem' }}><FlagImage code={flag} /></p>
           )}
         </div>
 

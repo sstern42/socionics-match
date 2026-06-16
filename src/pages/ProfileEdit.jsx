@@ -320,6 +320,9 @@ export default function ProfileEdit() {
               <div>
                 <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🕵️ Anonymous mode</p>
                 <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🕵️ badge shows on your card. You can turn this off at any time to reveal your details.</p>
+                {anonymous && (
+                  <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', lineHeight: 1.5, fontWeight: 500 }}>⚠️ Anonymous profiles are hidden by default in the feed. Most users never see them, which means significantly less engagement. Anonymous mode is fine for a quick look around, but it's not a viable long-term option if you want to make connections.</p>
+                )}
               </div>
             </label>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: hideActivity ? 'rgba(154,111,56,0.05)' : 'transparent' }}>

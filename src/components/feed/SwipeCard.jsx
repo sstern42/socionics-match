@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from 'react'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
+import FlagImage from '../FlagImage'
 
 const SWIPE_THRESHOLD = 100
 const ROTATION_FACTOR = 0.06
@@ -118,7 +119,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
           </div>
         )}
 
-        <div style={{ flex:1,padding:'1rem 1.1rem',display:'flex',flexDirection:'column',gap:'0.65rem',overflowY:'auto',minHeight:0 }}>
+        <div style={{ flex:1,padding:'1rem 1.1rem',display:'flex',flexDirection:'column',gap:'0.65rem',overflowY:'auto',minHeight:0,touchAction:'none' }}>
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:'0.5rem' }}>
             <div style={{ minWidth:0 }}>
               <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:500,margin:0,lineHeight:1.2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap' }}>
@@ -126,7 +127,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
               </h3>
               {(flag || (profile_data?.city && !isAnon)) && (
                 <p style={{ fontSize:'0.78rem',color:'var(--muted)',marginTop:'0.15rem' }}>
-                  {flag}{flag && profile_data?.city && !isAnon ? ' ' : ''}
+                  {flag && <FlagImage code={flag} style={{ marginRight: profile_data?.city && !isAnon ? '0.3rem' : 0 }} />}
                   {profile_data?.city && !isAnon ? profile_data.city : ''}
                 </p>
               )}

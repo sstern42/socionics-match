@@ -1,8 +1,34 @@
 import { useEffect } from 'react'
 import Layout from '../components/Layout'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
+     {
+       date: '14 June 2026',
+       label: 'Update',
+       items: [
+         'Feed — online now and active today counts now appear as live stats beneath the Browse/Swipe toggle. Green dot for online now, orange dot for active today. Only shows when at least one count is non-zero',
+         'Feed — online now count no longer includes yourself',
+         'Socionics AI — Reinin dichotomies added to the knowledge base. The AI now knows each type\'s full dichotomy profile and can surface it in conversation',
+         'Socion™ — trademark symbol added to the brand name across page titles',
+         'Profile photos — avatars now load from cache on repeat visits instead of re-fetching from the CDN every time. New uploads still appear immediately',
+         'Feed — profiles, matches, and saved IDs are now cached for 5 minutes with React Query. Re-visiting the feed within that window is instant with zero network requests. A live "updated X min ago" indicator appears next to the activity stats; tap it to force a refresh',
+         'Feed — the Load More button now shows how many profiles are in the next batch',
+         'Messages — conversation list now loads instantly on re-visit, served from a 60-second React Query cache',
+         'Profile views — switching to the Views tab and back reuses the cached result for 5 minutes instead of re-fetching',
+         'Saved — saved profiles and connection status now cached for 3 minutes; unsaving removes the card immediately without waiting for a refetch',
+         'Network graph — data cached for 10 minutes; re-visiting the graph reuses the result without a reload',
+         'Dynamics tab — relation stats cached per user for 10 minutes',
+         'About page — site-wide stats cached for 10 minutes',
+         'Updates — loads the 5 most recent posts initially, with a Load more button to page through older ones',
+         'Disconnect — after disconnecting from someone, a confirmation step now appears with a Return to feed button instead of collapsing immediately',
+         'Free tier — disconnecting from someone correctly frees up a connection slot again',
+         'Free tier — "X of 3 connections · Unlock unlimited" is now always visible on the feed, not only when the cap is reached',
+         'Premium — a premium upsell card appears in the feed for free members',
+         'Socionics AI — an AI chat prompt card now appears in the feed for all members',
+         'Privacy Policy and Terms updated to reflect the paid tier, written typing report, and all features added since launch',
+       ],
+     },
      {
        date: '12 June 2026',
        label: 'New',
@@ -376,7 +402,7 @@ export const ENTRIES = [
 ]
 
 export default function Changelog() {
-  usePageTitle("What's New")
+  usePageMeta("Latest Updates & New Features | Socion™", "A running log of everything added, fixed, and improved on Socion — new features, dynamics updates, AI improvements, and more.")
   useEffect(() => {
     localStorage.setItem('socion_changelog_seen', ENTRIES[0].date)
   }, [])

@@ -3,7 +3,9 @@ import { useNavigate, useParams, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 import { TYPISTS, calcAge, yearsExperience } from '../lib/typists'
+import FlagImage from '../components/FlagImage'
 import { MATRIX, RELATIONS } from '../data/relations'
 
 const DISCORD_ICON = (
@@ -36,27 +38,10 @@ export default function TypistProfile() {
   const navigate                      = useNavigate()
   const typist = TYPISTS[slug]
 
-  usePageTitle(typist ? `Get Typed — ${typist.displayName}` : 'Get Typed')
-
-  useEffect(() => {
-      if (!typist) return
-      const desc = META_DESCRIPTIONS[slug] ?? `Get your Socionics type confirmed by ${typist.displayName} on Socion.`
-      const defaultDesc = 'Socionics-based matching for dating, friendship, and networking. Choose your dynamic — Dual, Mirror, Activity and 13 more.'
-      const metaDesc = document.querySelector('meta[name="description"]')
-      const ogTitle  = document.querySelector('meta[property="og:title"]')
-      const ogDesc   = document.querySelector('meta[property="og:description"]')
-      const ogUrl    = document.querySelector('meta[property="og:url"]')
-      if (metaDesc) metaDesc.setAttribute('content', desc)
-      if (ogTitle)  ogTitle.setAttribute('content',  `Typed by ${typist.displayName} — Socion`)
-      if (ogDesc)   ogDesc.setAttribute('content',   desc)
-      if (ogUrl)    ogUrl.setAttribute('content',    `https://socion.app/typing/${slug}`)
-      return () => {
-        if (metaDesc) metaDesc.setAttribute('content', defaultDesc)
-        if (ogTitle)  ogTitle.setAttribute('content',  'Socion — Match by personality type, not algorithm')
-        if (ogDesc)   ogDesc.setAttribute('content',   defaultDesc)
-        if (ogUrl)    ogUrl.setAttribute('content',    'https://socion.app')
-      }
-    }, [slug, typist])
+  usePageMeta(
+    typist ? `Get Typed by ${typist.displayName} — Socionics Typing | Socion™` : 'Get Your Socionics Type Confirmed | Socion™',
+    typist ? (META_DESCRIPTIONS[slug] ?? `Get your Socionics type confirmed by ${typist.displayName} on Socion.`) : undefined
+  )
 
   useEffect(() => {
     if (!loading && !typist) navigate('/typing', { replace: true })
@@ -132,7 +117,7 @@ export default function TypistProfile() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
             {(flag || age) && (
               <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                {flag}{age ? <>{flag ? ' ' : ''}{age}</> : null}
+                {flag && <FlagImage code={flag} style={{ marginRight: age ? '0.3rem' : 0 }} />}{age ?? null}
               </span>
             )}
             {yrs && (
