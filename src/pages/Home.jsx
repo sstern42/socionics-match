@@ -7,7 +7,7 @@ import { RELATIONS, TYPES, getRelation } from '../data/relations'
 import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
 
-const FOUNDING_CUTOFF = new Date('2026-06-15T23:59:59Z')
+const FOUNDING_CUTOFF = new Date('2026-06-17T05:00:00Z')
 
 const RELATION_PILLS = [
   { label: 'Dual',           key: 'DUAL' },
