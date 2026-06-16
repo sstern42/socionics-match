@@ -80,6 +80,16 @@ begin
                            where feedback_a is not null or feedback_b is not null
                          ),
     'total_matches',     (select count(*) from matches),
+    'total_swipes',      (select count(*) from swipes),
+    'right_swipes',      (select count(*) from swipes where direction = 'right'),
+    'left_swipes',       (select count(*) from swipes where direction = 'left'),
+    'swipe_matches',     (select count(*) from matches
+                          where exists (
+                            select 1 from swipes
+                            where swipes.swiper_id = matches.user_a_id
+                              and swipes.target_id = matches.user_b_id
+                              and swipes.direction = 'right'
+                          )),
     'comments',          (
                            select coalesce(jsonb_agg(row order by submitted_at desc), '[]')
                            from (
