@@ -38,7 +38,6 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     .select('id, type')
     .neq('id', currentUserId)
     .not('profile_data', 'is', null)
-    .not('profile_data->>hidden', 'eq', 'true')
     .in('type', typeFilter)
 
   if (userPurpose.length > 0) {
