@@ -2,19 +2,17 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { RELATIONS } from '../../data/relations'
+import { RELATIONS, getQuadra } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
 import FlagImage from '../FlagImage'
 
-const NEUTRAL = { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
-const RELATION_COLOURS = {
-  DUAL:           { bg: 'rgba(154,111,56,0.10)', border: 'var(--accent)', text: 'var(--accent)' },
-  ACTIVITY:       { bg: 'rgba(154,111,56,0.07)', border: 'var(--accent-lt)', text: 'var(--accent)' },
-  MIRROR:         { bg: 'rgba(154,111,56,0.05)', border: 'var(--accent-lt)', text: 'var(--accent)' },
-  SEMI_DUAL:      { bg: 'rgba(154,111,56,0.05)', border: 'var(--accent-lt)', text: 'var(--accent)' },
-  KINDRED:        NEUTRAL, BUSINESS: NEUTRAL, BENEFACTOR: NEUTRAL, BENEFICIARY: NEUTRAL,
-  QUASI_IDENTITY: NEUTRAL, ILLUSIONARY: NEUTRAL, CONTRARY: NEUTRAL,
-  SUPERVISOR:     NEUTRAL, SUPERVISEE: NEUTRAL, SUPER_EGO: NEUTRAL, CONFLICT: NEUTRAL, IDENTITY: NEUTRAL,
+const QUADRA_COLOURS = { Alpha: '#BA7517', Beta: '#791F1F', Gamma: '#0F6E56', Delta: '#185FA5' }
+
+function quadraColours(type) {
+  const quadra = getQuadra(type)
+  const hex = quadra ? QUADRA_COLOURS[quadra] : null
+  if (!hex) return { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
+  return { bg: `${hex}12`, border: `${hex}88`, text: hex }
 }
 
 function withUtm(url) {
@@ -88,7 +86,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
   })()
 
   const relInfo = RELATIONS[displayRelation ?? relation]
-  const colours = RELATION_COLOURS[displayRelation ?? relation] ?? RELATION_COLOURS.IDENTITY
+  const colours = quadraColours(type)
 
   const memberBadge = !isAnonymous && (
     is_founding_member
