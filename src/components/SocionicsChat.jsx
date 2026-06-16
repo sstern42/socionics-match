@@ -304,6 +304,10 @@ export default function SocionicsChat({ userType = null, isPremium = false, init
       } else {
         setMessageCount(cached)
       }
+      if (initialQuestion && !initialFired.current) {
+        initialFired.current = true
+        send(initialQuestion)
+      }
     }
     fetchCount()
   }, [isPremium])
@@ -314,11 +318,6 @@ export default function SocionicsChat({ userType = null, isPremium = false, init
 
   useEffect(() => { return () => abortRef.current?.abort() }, [])
 
-  useEffect(() => {
-    if (!initialQuestion || initialFired.current || messageCount === null) return
-    initialFired.current = true
-    send(initialQuestion)
-  }, [initialQuestion, messageCount])
 
   async function send(text) {
     const userMessage = text ?? input.trim()
