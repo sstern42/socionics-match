@@ -191,6 +191,7 @@ export default function Feed() {
   const [hasMore, setHasMore] = useState(false)
   const [feedExhausted, setFeedExhausted] = useState(false)
   const [feedTotal, setFeedTotal] = useState(null)
+  const [relationCounts, setRelationCounts] = useState({})
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
@@ -324,6 +325,7 @@ export default function Feed() {
     setFeedTotal(feedData.total ?? null)
     setMatchedMap(prev => ({ ...feedData.matchedMap, ...prev }))
     setSavedIds(feedData.savedIds)
+    if (feedData.relationCounts) setRelationCounts(feedData.relationCounts)
     setExtraProfiles([])
     offsetRef.current = PAGE_SIZE
     setFeedExhausted(false)
@@ -434,7 +436,9 @@ export default function Feed() {
   const oneDayAgo  = new Date(Date.now() - 86400000)
   const fifteenMinsAgo = new Date(Date.now() - 15 * 60000)
   const connectionCount = Object.keys(matchedMap).length
-  const feedDisplayRelations = [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
+  const feedDisplayRelations = Object.keys(relationCounts).length > 0
+    ? Object.keys(relationCounts)
+    : [...new Set(profiles.map(p => p.displayRelation ?? p.relation).filter(Boolean))]
   const displayed = profiles
     .filter(p => onlineNow    ? (p.last_active && new Date(p.last_active) > fifteenMinsAgo && !p.profile_data?.hide_activity) : true)
     .filter(p => activeToday  ? (p.last_active && new Date(p.last_active) > oneDayAgo      && !p.profile_data?.hide_activity) : true)
@@ -746,16 +750,16 @@ export default function Feed() {
               {showRelations && (
                 <div style={{ border: '1px solid var(--border)', borderRadius: 6, padding: '0.65rem 0.85rem' }}>
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => { setFilterRelation('ALL'); setShowRelations(false) }}>All ({profiles.length})</button>
+                    <button type="button" className={`rel-pill clickable${filterRelation === 'ALL' ? ' active' : ''}`} onClick={() => { setFilterRelation('ALL'); setShowRelations(false) }}>All ({Object.values(relationCounts).reduce((a, b) => a + b, 0) || profiles.length})</button>
                     {feedDisplayRelations.map(rel => {
-                      const relProfiles = profiles.filter(p => (p.displayRelation ?? p.relation) === rel)
+                      const count = relationCounts[rel] ?? profiles.filter(p => (p.displayRelation ?? p.relation) === rel).length
                       const ALL_TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','SLI','IEE']
                       const counterType = profile?.type
                         ? ALL_TYPES.find(t => MATRIX[t]?.[profile.type] === rel) ?? null
                         : null
                       return (
                         <button type="button" key={rel} className={`rel-pill clickable${filterRelation === rel ? ' active' : ''}`} onClick={() => { setFilterRelation(rel); setShowRelations(false) }}>
-                          <span>{RELATIONS[rel]?.name} ({relProfiles.length})</span>
+                          <span>{RELATIONS[rel]?.name} ({count})</span>
                           {counterType && (
                             <span style={{ opacity: 0.6, fontSize: '0.62rem', marginLeft: '0.3rem' }}>· {counterType}</span>
                           )}
