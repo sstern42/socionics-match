@@ -912,7 +912,7 @@ export default function Feed() {
                     You've seen everyone — check back as the community grows.
                   </p>
                 </div>
-              ) : hasMore && (
+              ) : hasMore && (feedTotal === null || feedTotal - offsetRef.current > 0) && (
                 <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
