@@ -215,7 +215,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
         </button>
       </div>
     </div>
-    <SIWebview url={webviewUrl} onClose={()=>setWebviewUrl(null)} />
+    {webviewUrl && createPortal(<SIWebview url={webviewUrl} onClose={()=>setWebviewUrl(null)} />, document.body)}
     {photoModal && displayAvatar && createPortal(
       <div onClick={() => setPhotoModal(false)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
         <img src={displayAvatar} alt={displayName} style={{ maxWidth:'90vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
