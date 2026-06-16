@@ -4,9 +4,36 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 16 June 2026
+
+### Added
+- **Socion Premium launch**: Premium is now available at socion.app/premium. Includes unlimited connections, full "who viewed" list with name/type/relation/timestamp, connection stats breakdown by relation type, and full Model A compatibility breakdown for every conversation.
+- **Feed activity stats — filtered**: Online now and active today counts now reflect only the profiles currently visible to you (respecting your active filters), so the numbers match what you actually see on screen.
+
+### Fixed
+- **Feed activity stats**: Fixed a crash caused by the activity stats effect running before the profiles state was initialised.
+
+---
+
+## 15 June 2026
+
+### Fixed
+- **Free tier connection count**: Corrected a stale cap value in Settings that was showing 5 instead of the correct limit of 3.
+- **Feedback button**: No longer shown to logged-out users.
+- **Feed freshness indicator**: Now stays visible during a background refetch instead of disappearing while the request is in flight.
+
+---
+
 ## 14 June 2026
 
 ### Added
+- **Swipe mode — full-screen mobile**: Swipe mode on mobile now fills the full viewport below the header with working touch gestures. The footer and floating widgets hide to give cards maximum space.
+- **Swipe mode — cross-device sync**: Swipe history is now persisted to the database and synced across devices. Profiles already swiped on any device won't reappear in the deck.
+- **Swipe mode — Start over**: A "Start over" button appears when the deck is exhausted, resetting your swipe history.
+- **Feed — anonymous hidden by default**: Anonymous profiles are now excluded from the feed by default. A "Show anonymous" toggle in the filters lets you opt in.
+- **Feed — country flags on Windows**: Flag emojis don't render on Windows; replaced with flag images from flagcdn.com.
+- **Feed — more countries**: 22 additional countries added to the country selector, including Singapore, Philippines, Malaysia, UAE, South Africa, and others across South/Southeast Asia, the Middle East, and Africa.
+- **Feed — transitions**: Smooth fade/slide transitions on page changes, modal entrances, the Browse ↔ Swipe crossfade, and a scale press effect on buttons.
 - **Feed activity stats**: Live "online now" (green dot) and "active today" (orange dot) counts now appear beneath the Browse/Swipe toggle, hidden when both are zero.
 - **Feed caching**: Feed profiles, matches, and saved IDs are cached for 5 minutes via React Query. Re-visiting the feed within that window fires zero Supabase queries and renders instantly. A live "updated X min ago" freshness indicator appears next to the activity stats; tap it to force a refresh.
 - **Feed — Load More count**: The Load More button now shows exactly how many profiles are in the next batch.
