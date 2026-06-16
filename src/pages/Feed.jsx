@@ -165,21 +165,19 @@ export default function Feed() {
   }, [])
 
   useEffect(() => {
-    const now = new Date()
-    const onlineThreshold = new Date(now - 15 * 60 * 1000).toISOString()
-    const todayThreshold = new Date(now - 24 * 60 * 60 * 1000).toISOString()
-    Promise.all([
-      supabase.from('users').select('id', { count: 'exact', head: true })
-        .gt('last_active', onlineThreshold)
-        .neq('profile_data->>hide_activity', 'true'),
-      supabase.from('users').select('id', { count: 'exact', head: true })
-        .gt('last_active', todayThreshold)
-        .lte('last_active', onlineThreshold)
-        .neq('profile_data->>hide_activity', 'true'),
-    ]).then(([online, today]) => {
-      setActivityStats({ online: Math.max(0, (online.count ?? 0) - 1), today: today.count ?? 0 })
-    })
-  }, [])
+    if (!profiles.length) { setActivityStats(null); return }
+    const now = Date.now()
+    const onlineMs = 15 * 60 * 1000
+    const todayMs = 24 * 60 * 60 * 1000
+    let online = 0, today = 0
+    for (const p of profiles) {
+      if (!p.last_active || p.profile_data?.hide_activity) continue
+      const diff = now - new Date(p.last_active).getTime()
+      if (diff < onlineMs) online++
+      else if (diff < todayMs) today++
+    }
+    setActivityStats({ online, today })
+  }, [profiles])
 
   function dismissBanner() {
     if (!announcement) return
