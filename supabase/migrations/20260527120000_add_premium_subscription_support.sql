@@ -57,7 +57,7 @@ CREATE INDEX IF NOT EXISTS idx_users_stripe_customer ON users(stripe_customer_id
 -- ============================================================================
 -- SECTION 2: Founding member trigger
 -- ============================================================================
--- Cutoff: 15 June 2026 23:59:59 UTC
+-- Cutoff: 16 June 2026 midnight EST (2026-06-17 05:00:00 UTC)
 -- Anyone with users.created_at before this becomes a founding member
 -- (permanent free premium). Set once at INSERT; never recalculated.
 
@@ -68,7 +68,7 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  founding_cutoff CONSTANT TIMESTAMPTZ := '2026-06-15 23:59:59+00';
+  founding_cutoff CONSTANT TIMESTAMPTZ := '2026-06-17 05:00:00+00';
 BEGIN
   IF NEW.created_at < founding_cutoff THEN
     NEW.is_founding_member := TRUE;
@@ -95,7 +95,7 @@ CREATE TRIGGER users_set_founding_member
 
 UPDATE users
 SET is_founding_member = TRUE
-WHERE created_at < '2026-06-15 23:59:59+00'::timestamptz
+WHERE created_at < '2026-06-17 05:00:00+00'::timestamptz
   AND is_founding_member = FALSE;
 
 
