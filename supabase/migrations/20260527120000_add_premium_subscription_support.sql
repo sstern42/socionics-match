@@ -130,7 +130,7 @@ $$;
 -- ============================================================================
 -- Returns TRUE if the user can add another match.
 --   • Premium users: always TRUE (no cap)
---   • Free users: TRUE if their current match count < 5
+--   • Free users: TRUE if their current match count < 3
 --
 -- Uses your existing matches table. Every matches row represents an active
 -- connection (no status column needed). Counts rows where the user is in
@@ -150,7 +150,7 @@ AS $$
       SELECT count(*)
       FROM matches
       WHERE user_a_id = p_user_id OR user_b_id = p_user_id
-    ) < 5 THEN TRUE
+    ) < 3 THEN TRUE
     ELSE FALSE
   END;
 $$;
