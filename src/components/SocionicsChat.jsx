@@ -270,7 +270,7 @@ function UpgradePrompt() {
 
 const FREE_DAILY_LIMIT = 10
 
-export default function SocionicsChat({ userType = null, isPremium = false }) {
+export default function SocionicsChat({ userType = null, isPremium = false, initialQuestion = null }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
@@ -280,6 +280,7 @@ export default function SocionicsChat({ userType = null, isPremium = false }) {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const abortRef = useRef(null)
+  const initialFired = useRef(false)
 
   useEffect(() => {
     async function fetchCount() {
@@ -312,6 +313,12 @@ export default function SocionicsChat({ userType = null, isPremium = false }) {
   }, [messages])
 
   useEffect(() => { return () => abortRef.current?.abort() }, [])
+
+  useEffect(() => {
+    if (!initialQuestion || initialFired.current || messageCount === null) return
+    initialFired.current = true
+    send(initialQuestion)
+  }, [initialQuestion, messageCount])
 
   async function send(text) {
     const userMessage = text ?? input.trim()

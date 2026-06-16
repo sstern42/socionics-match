@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import Layout from '../components/Layout'
 import SocionicsChat from '../components/SocionicsChat'
@@ -8,6 +8,8 @@ import { usePageTitle } from '../hooks/usePageTitle'
 
 export default function AskPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const initialQuestion = searchParams.get('q') || null
   const { session, loading, isPremium } = useAuth()
 
   useEffect(() => {
@@ -62,7 +64,7 @@ export default function AskPage() {
           Back
         </button>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <SocionicsChat userType={userType} isPremium={isPremium} />
+          <SocionicsChat userType={userType} isPremium={isPremium} initialQuestion={initialQuestion} />
         </div>
       </div>
     </Layout>
