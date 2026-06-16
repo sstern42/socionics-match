@@ -12,7 +12,7 @@ import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
-import { RELATIONS, MATRIX } from '../data/relations'
+import { RELATIONS, MATRIX, QUADRAS, getQuadra } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
 const BANNER_KEY = 'socion_announcement_dismissed_v'
@@ -193,6 +193,7 @@ export default function Feed() {
   const [feedTotal, setFeedTotal] = useState(null)
   const [relationCounts, setRelationCounts] = useState({})
   const [filterRelation, setFilterRelation] = useState('ALL')
+  const [filterQuadra, setFilterQuadra] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const [filterPurpose, setFilterPurpose] = useState('ALL')
@@ -449,6 +450,7 @@ export default function Feed() {
     .filter(p => excludeAnon  ? !p.profile_data?.anonymous : true)
     .filter(p => verifiedOnly ? !!p.verified_by : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
+    .filter(p => filterQuadra === 'ALL' ? true : getQuadra(p.type) === filterQuadra)
     .filter(p => filterPurpose === 'ALL' ? true : (p.purpose ?? []).includes(filterPurpose))
     .filter(p => {
       if (filterLocation === 'anywhere') return true
@@ -744,6 +746,20 @@ export default function Feed() {
                       </button>
                       {activeCount > 0 && (
                         <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(true); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false); setFilterPurpose('ALL') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
+                      )}
+                      <span style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0, margin: '0 0.1rem' }} />
+                      {[['Alpha','#BA7517'],['Beta','#791F1F'],['Gamma','#0F6E56'],['Delta','#185FA5']].map(([q, hex]) => {
+                        const active = filterQuadra === q
+                        return (
+                          <button key={q} type="button" onClick={() => setFilterQuadra(active ? 'ALL' : q)}
+                            style={{ fontSize: '0.68rem', letterSpacing: '0.06em', display: 'flex', alignItems: 'center', gap: '0.3rem', padding: '0.2rem 0.5rem', borderRadius: 20, border: `1px solid ${active ? hex : hex+'55'}`, background: active ? `${hex}22` : 'none', color: active ? hex : 'var(--muted)', cursor: 'pointer', transition: 'all 0.15s', fontWeight: active ? 600 : 400 }}>
+                            <span style={{ width: 7, height: 7, borderRadius: '50%', background: hex, flexShrink: 0, opacity: active ? 1 : 0.5 }} />
+                            {q}
+                          </button>
+                        )
+                      })}
+                      {filterQuadra !== 'ALL' && (
+                        <button type="button" onClick={() => setFilterQuadra('ALL')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                       )}
                     </>
                   )
