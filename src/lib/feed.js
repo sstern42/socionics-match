@@ -33,12 +33,25 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     countQuery = countQuery.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
   }
 
-  const [feedResult, blocks, swipedResult, allSwipedResult, countResult] = await Promise.all([
+  let allTypesQuery = supabase
+    .from('users')
+    .select('id, type')
+    .neq('id', currentUserId)
+    .not('profile_data', 'is', null)
+    .not('profile_data->>hidden', 'eq', 'true')
+    .in('type', typeFilter)
+
+  if (userPurpose.length > 0) {
+    allTypesQuery = allTypesQuery.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
+  }
+
+  const [feedResult, blocks, swipedResult, allSwipedResult, countResult, allTypesResult] = await Promise.all([
     query,
     getActiveBlocks(currentUserId),
     supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId).eq('direction', 'left'),
     supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId),
     countQuery,
+    allTypesQuery,
   ])
 
   if (feedResult.error) throw feedResult.error
@@ -68,7 +81,15 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
 
   const total = countResult.count ?? null
   const allSwipedIds = new Set((allSwipedResult.data ?? []).map(r => r.target_id))
-  return { profiles, hasMore: rawCount === limit, total, allSwipedIds }
+
+  const relationCounts = {}
+  for (const p of (allTypesResult.data ?? [])) {
+    if (blockedIds.has(p.id) || allSwipedIds.has(p.id)) continue
+    const rel = getRelation(userType, p.type)
+    if (rel) relationCounts[rel] = (relationCounts[rel] || 0) + 1
+  }
+
+  return { profiles, hasMore: rawCount === limit, total, allSwipedIds, relationCounts }
 }
 
 export async function getExistingMatches(userId) {
