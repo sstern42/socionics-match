@@ -85,7 +85,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
   const relationCounts = {}
   for (const p of (allTypesResult.data ?? [])) {
     if (blockedIds.has(p.id) || allSwipedIds.has(p.id)) continue
-    const rel = getRelation(userType, p.type)
+    const rel = getRelation(p.type, userType)
     if (rel) relationCounts[rel] = (relationCounts[rel] || 0) + 1
   }
 
