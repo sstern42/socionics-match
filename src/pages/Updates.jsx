@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
+const PAGE_SIZE = 5
 
 const POST_TYPE_META = {
   milestone: { label: 'Milestone', colour: '#2ecc71'      },
@@ -26,6 +28,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Updates() {
+  usePageTitle('Founder Updates')
   const { session, loading: authLoading, profile } = useAuth()
   const navigate = useNavigate()
   const isFounder = profile?.profile_data?.role === 'founder'
@@ -36,6 +39,8 @@ export default function Updates() {
 
   const [posts, setPosts]               = useState([])
   const [loading, setLoading]           = useState(true)
+  const [loadingMore, setLoadingMore]   = useState(false)
+  const [hasMore, setHasMore]           = useState(false)
   const [error, setError]               = useState(null)
   const [deleteConfirmId, setDeleteConfirmId] = useState(null)
 
@@ -105,12 +110,35 @@ export default function Updates() {
         .from('founder_posts')
         .select('*, reactions:founder_post_reactions(user_id, emoji)')
         .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
       if (error) throw error
       setPosts(data ?? [])
+      setHasMore((data ?? []).length === PAGE_SIZE)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function loadMore() {
+    if (loadingMore || !hasMore || posts.length === 0) return
+    setLoadingMore(true)
+    try {
+      const cursor = posts[posts.length - 1].created_at
+      const { data, error } = await supabase
+        .from('founder_posts')
+        .select('*, reactions:founder_post_reactions(user_id, emoji)')
+        .order('created_at', { ascending: false })
+        .lt('created_at', cursor)
+        .limit(PAGE_SIZE)
+      if (error) throw error
+      setPosts(prev => [...prev, ...(data ?? [])])
+      setHasMore((data ?? []).length === PAGE_SIZE)
+    } catch (err) {
+      console.error('load more failed', err)
+    } finally {
+      setLoadingMore(false)
     }
   }
 
@@ -323,6 +351,26 @@ export default function Updates() {
               )
             })}
           </div>
+        )}
+
+        {hasMore && !loading && (
+          <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={loadMore}
+              disabled={loadingMore}
+              style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
+            >
+              {loadingMore ? 'Loading…' : 'Load more'}
+            </button>
+          </div>
+        )}
+
+        {!hasMore && posts.length > PAGE_SIZE && !loading && (
+          <p style={{ textAlign: 'center', fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '0.92rem', color: 'var(--muted)', marginTop: '2.5rem' }}>
+            That's the beginning of the feed.
+          </p>
         )}
       </section>
     </Layout>

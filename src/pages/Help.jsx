@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import Layout from '../components/Layout'
-import { usePageTitle } from '../hooks/usePageTitle'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 const FAQS = [
   {
@@ -281,7 +281,7 @@ function FAQItem({ q, a, isNotifications }) {
 }
 
 export default function Help() {
-  usePageTitle('Help')
+  usePageMeta('Socionics Matching Help & FAQ | Socion™', 'Answers to common questions about Socion — typing, the Get Typed service, matching dynamics, Premium, and how to get the most from the app.')
   const { hash } = useLocation()
 
   useEffect(() => {

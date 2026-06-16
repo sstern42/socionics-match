@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { RELATIONS } from '../../data/relations'
 import { getCompatibilityBreakdown } from '../../data/compatibility'
 import { getMessages, sendMessage, subscribeToMessages, markRead, toggleReaction, uploadMessageImage } from '../../lib/messages'
@@ -190,6 +191,7 @@ const MessageInput = React.memo(function MessageInput({
 // ─── Conversation ─────────────────────────────────────────────────────────────
 export default function Conversation({ match, currentUserId, hasFeedback, onBack, isArchived, onArchive, onUnarchive, onUnmatch }) {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { isPremium, profile } = useAuth()
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [messages, setMessages] = useState([])
@@ -204,6 +206,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [blockError, setBlockError] = useState(null)
   const [blocking, setBlocking] = useState(false)
   const [unmatching, setUnmatching] = useState(false)
+  const [unmatched, setUnmatched] = useState(false)
   const [activeBlock, setActiveBlock] = useState(null)
   const [replyTo, setReplyTo] = useState(null)
   const [hoveredMsgId, setHoveredMsgId] = useState(null)
@@ -525,8 +528,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setUnmatching(true); setBlockError(null)
     try {
       await unmatch(match.id)
-      if (onUnmatch) { await onUnmatch(match.id) }
-      else { navigate('/messages', { replace: true }) }
+      setUnmatched(true)
     } catch (err) { setBlockError(err.message); setUnmatching(false) }
   }
 
@@ -725,7 +727,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 </div>
               </div>
             </div>
-            <div style={{ position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'0.5rem',padding:'1rem',background:'linear-gradient(to bottom, rgba(247,244,239,0.35), rgba(247,244,239,0.82))' }}>
+            <div style={{ position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'0.5rem',padding:'1.5rem 1rem 1rem',background:'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 35%, transparent), color-mix(in srgb, var(--bg) 85%, transparent))' }}>
               <span style={{ fontSize:'1.4rem',lineHeight:1 }}>🔒</span>
               <p style={{ fontFamily:'var(--serif)',fontSize:isMobile?'0.95rem':'1.05rem',fontWeight:500,color:'var(--text)',margin:0 }}>
                 See exactly how you and {otherName} fit
@@ -973,17 +975,31 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       {/* Disconnect modal */}
       {modal === 'unmatch' && (
-        <div onClick={() => !unmatching && setModal(null)} style={overlayStyle}>
+        <div onClick={() => !unmatching && !unmatched && setModal(null)} style={overlayStyle}>
           <div onClick={e=>e.stopPropagation()} style={modalStyle}>
-            <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.3rem',marginBottom:'0.75rem' }}>Disconnect from {otherName}?</h3>
-            <p style={{ fontSize:'0.88rem',color:'var(--muted)',lineHeight:1.7,marginBottom:'1.5rem' }}>
-              This ends the connection for both of you and removes it from both your lists. It frees up a connection slot, and you'll see each other in the feed again. Your message history isn't deleted — but neither of you can send new messages unless you reconnect.
-            </p>
-            {blockError && <p style={{ fontSize:'0.82rem',color:'#c0392b',marginBottom:'0.75rem' }}>{blockError}</p>}
-            <div style={{ display:'flex',gap:'0.75rem',justifyContent:'flex-end' }}>
-              <button type="button" className="btn-ghost" onClick={() => setModal(null)} disabled={unmatching}>Cancel</button>
-              <button type="button" className="btn-primary" onClick={handleUnmatch} disabled={unmatching} style={{ opacity:unmatching?0.6:1 }}>{unmatching?'Disconnecting…':'Disconnect'}</button>
-            </div>
+            {unmatched ? (
+              <>
+                <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.3rem',marginBottom:'0.75rem' }}>Disconnected</h3>
+                <p style={{ fontSize:'0.88rem',color:'var(--muted)',lineHeight:1.7,marginBottom:'1.5rem' }}>
+                  You've disconnected from {otherName}. Your slot is free — head back to the feed to find someone new.
+                </p>
+                <div style={{ display:'flex',justifyContent:'flex-end' }}>
+                  <button type="button" className="btn-primary" onClick={() => { window.location.href = '/feed' }}>Return to feed</button>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.3rem',marginBottom:'0.75rem' }}>Disconnect from {otherName}?</h3>
+                <p style={{ fontSize:'0.88rem',color:'var(--muted)',lineHeight:1.7,marginBottom:'1.5rem' }}>
+                  This ends the connection for both of you and removes it from both your lists. It frees up a connection slot, and you'll see each other in the feed again. Your message history isn't deleted — but neither of you can send new messages unless you reconnect.
+                </p>
+                {blockError && <p style={{ fontSize:'0.82rem',color:'#c0392b',marginBottom:'0.75rem' }}>{blockError}</p>}
+                <div style={{ display:'flex',gap:'0.75rem',justifyContent:'flex-end' }}>
+                  <button type="button" className="btn-ghost" onClick={() => setModal(null)} disabled={unmatching}>Cancel</button>
+                  <button type="button" className="btn-primary" onClick={handleUnmatch} disabled={unmatching} style={{ opacity:unmatching?0.6:1 }}>{unmatching?'Disconnecting…':'Disconnect'}</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

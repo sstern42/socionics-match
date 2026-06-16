@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { RELATIONS } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
+import FlagImage from '../FlagImage'
 
 const NEUTRAL = { bg: 'rgba(100,100,100,0.05)', border: 'var(--border)', text: 'var(--muted)' }
 const RELATION_COLOURS = {
@@ -142,12 +144,6 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             </div>
           </div>
 
-          {photoModal && displayAvatar && (
-            <div onClick={() => setPhotoModal(false)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
-              <img src={displayAvatar} alt={displayName} style={{ maxWidth:'90vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
-              <button type="button" onClick={() => setPhotoModal(false)} style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
-            </div>
-          )}
           <div>
             {isLinkable ? (
               <Link to={`/profile/${profile.id}`} onClick={() => window.umami?.track('profile-card-name-clicked',{type})} style={{ textDecoration:'none',color:'inherit' }}>
@@ -159,7 +155,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
             {role && <span style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.12em',textTransform:'uppercase',fontWeight:600,color:'#fff',background:role==='founder'?'#2c2a22':role==='typist'?'#185FA5':'var(--accent)',padding:'0.15rem 0.5rem',borderRadius:2 }}>{role}</span>}
             {isAnonymous && <span title="anonymous" style={{ display:'inline-block',marginTop:'0.2rem',fontSize:'0.6rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--muted)',border:'1px solid var(--border)',padding:'0.15rem 0.5rem',borderRadius:2 }}>🕵️ Anonymous</span>}
             <p style={{ fontSize:'0.82rem',marginTop:'0.15rem',lineHeight:1.4,color:'var(--muted)' }}>
-              {displayFlag}{displayFlag && !isAnonymous && profile_data?.city ? ' ' : ''}{!isAnonymous && profile_data?.city ? profile_data.city : ''}{activityLabel && <span>{(displayFlag || (!isAnonymous && profile_data?.city)) ? ' · ' : ''}<span style={{ color:activityLabel.colour }}>{activityLabel.label.toLowerCase()}</span></span>}
+              {displayFlag && <FlagImage code={displayFlag} style={{ marginRight: (!isAnonymous && profile_data?.city) ? '0.3rem' : 0 }} />}{!isAnonymous && profile_data?.city ? profile_data.city : ''}{activityLabel && <span>{(displayFlag || (!isAnonymous && profile_data?.city)) ? ' · ' : ''}<span style={{ color:activityLabel.colour }}>{activityLabel.label.toLowerCase()}</span></span>}
             </p>
             {purpose?.length > 0 && <div style={{ display:'flex',gap:'0.3rem',flexWrap:'wrap',marginTop:'0.35rem' }}>{purpose.map(p=><span key={p} style={{ fontSize:'0.62rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--muted)',border:'1px solid var(--border)',borderRadius:2,padding:'0.1rem 0.4rem' }}>{{dating:'Dating',friendship:'Friendship',networking:'Networking',team:'Team building'}[p]??p}</span>)}</div>}
           </div>
@@ -222,6 +218,13 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       </div>
     </div>
     <SIWebview url={webviewUrl} onClose={()=>setWebviewUrl(null)} />
+    {photoModal && displayAvatar && createPortal(
+      <div onClick={() => setPhotoModal(false)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.85)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
+        <img src={displayAvatar} alt={displayName} style={{ maxWidth:'90vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
+        <button type="button" onClick={() => setPhotoModal(false)} style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+      </div>,
+      document.body
+    )}
     </>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import { useAuth } from '../lib/AuthContext'
@@ -9,49 +10,45 @@ import { supabase } from '../lib/supabase'
 import { getExistingMatches } from '../lib/feed'
 
 export default function Saved() {
-  usePageTitle('Saved')
+  usePageTitle('Saved Profiles')
   const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
-  const [profiles, setProfiles] = useState([])
+  const [removedIds, setRemovedIds] = useState(new Set())
   const [matchedMap, setMatchedMap] = useState({})
-  const [fetching, setFetching] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
 
-  useEffect(() => {
-    if (!loading && session) load()
-  }, [loading, session])
-
-  async function load() {
-    if (!profile?.id) return
-    setFetching(true)
-    setError(null)
-    try {
+  const { data: savedData, isFetching, dataUpdatedAt, error: queryError } = useQuery({
+    queryKey: ['saved', profile?.id],
+    queryFn: async () => {
       const [{ data, error }, existingMatches] = await Promise.all([
         supabase.rpc('get_saved_profiles'),
         getExistingMatches(profile.id),
       ])
       if (error) throw error
-      setProfiles(data ?? [])
       const map = {}
       for (const m of existingMatches) {
         const otherId = m.user_a_id === profile.id ? m.user_b_id : m.user_a_id
         map[otherId] = m.id
       }
-      setMatchedMap(map)
-    } catch (err) {
-      setError('Could not load saved profiles.')
-      console.error(err)
-    } finally {
-      setFetching(false)
-    }
-  }
+      return { profiles: data ?? [], matchedMap: map }
+    },
+    enabled: !!profile,
+    staleTime: 3 * 60_000,
+  })
+
+  const fetching = isFetching && dataUpdatedAt === 0
+  const error = queryError ? 'Could not load saved profiles.' : null
+  const profiles = (savedData?.profiles ?? []).filter(p => !removedIds.has(p.id))
+
+  useEffect(() => {
+    if (savedData?.matchedMap) setMatchedMap(savedData.matchedMap)
+  }, [savedData])
 
   const handleToggleSave = useCallback((savedUserId, nowSaved) => {
-    if (!nowSaved) setProfiles(prev => prev.filter(p => p.id !== savedUserId))
+    if (!nowSaved) setRemovedIds(prev => new Set([...prev, savedUserId]))
   }, [])
 
   function enrichedProfile(p) {

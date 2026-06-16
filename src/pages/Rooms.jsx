@@ -420,7 +420,7 @@ const RoomInput = React.memo(function RoomInput({
 
 // ─── Rooms (main page) ────────────────────────────────────────────────────────
 export default function Rooms() {
-  usePageTitle('Rooms')
+  usePageTitle('Quadra Rooms')
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
 

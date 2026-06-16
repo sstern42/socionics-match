@@ -16,6 +16,7 @@
   --sans:      'DM Sans', system-ui, sans-serif;
   /* card-bg is used by CSS class rules that previously had hardcoded #fff */
   --card-bg:   #ffffff;
+  --nav-link:  #7a7268;
 }
 
 /* ── Dark mode tokens ───────────────────────────────────────────── */
@@ -29,13 +30,14 @@ html.dark {
   --text:      #ede9e0;
   --muted:     #8c8275;
   --card-bg:   #1e1c17;
+  --nav-link:  #cdc4b8;
   color-scheme: dark;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
+  background: radial-gradient(ellipse 70% 60% at 50% 20%, var(--bg) 40%, color-mix(in srgb, var(--bg) 80%, #000) 100%) var(--bg);
   color: var(--text);
   font-family: var(--sans);
   font-weight: 300;
@@ -69,10 +71,8 @@ body {
   50%       { opacity: 1;   transform: scale(1.06); }
 }
 
-body::after {
-  content: ''; position: fixed; inset: 0;
-  background: radial-gradient(ellipse 70% 60% at 50% 50%, transparent 40%, var(--bg) 100%);
-  pointer-events: none; z-index: 1;
+@media (min-width: 701px) {
+  .type-grid span { animation: none; }
 }
 
 .page { position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; }
@@ -88,7 +88,7 @@ body::after {
 .wordmark span { color: var(--accent); }
 .site-header nav a {
   font-size: 0.82rem; letter-spacing: 0.06em; text-transform: uppercase;
-  color: var(--muted); text-decoration: none; transition: color 0.2s;
+  color: var(--nav-link); text-decoration: none; transition: color 0.2s;
 }
 .site-header nav a:hover { color: var(--accent); }
 
@@ -172,6 +172,70 @@ select.input-standalone { background: var(--card-bg); }
   .site-footer { flex-direction: column; align-items: flex-start; padding: 2rem 1.5rem; }
   .step { border-right: none; border-bottom: 1px solid var(--border); }
   .step:last-child { border-bottom: none; }
+}
+
+/* ── Swipe mode — hide preamble on all screen sizes ──────────── */
+body.swipe-mode-active .feed-header,
+body.swipe-mode-active .feed-preamble { display: none !important; }
+
+/* ── Mobile swipe full-screen mode ───────────────────────────── */
+@media (max-width: 700px) {
+  /* Hide footer and floating widgets */
+  body.swipe-mode-active .site-footer,
+  body.swipe-mode-active [id^="kofi-widget-overlay"],
+  body.swipe-mode-active .floatingchat-container-wrap,
+  body.swipe-mode-active .floatingchat-container-wrap-mobi { display: none !important; }
+
+  /* Section becomes the fixed overlay — flex column so toggle + deck stack naturally */
+  body.swipe-mode-active section {
+    position: fixed !important;
+    top: 62px !important;
+    left: 0 !important; right: 0 !important; bottom: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden;
+    background: var(--bg);
+    z-index: 50;
+  }
+
+  /* Toggle bar at top of overlay */
+  body.swipe-mode-active .feed-mode-toggle {
+    flex-shrink: 0 !important;
+    padding: 0.5rem 1rem !important;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0 !important;
+  }
+
+  /* feed-content-enter fills remaining space */
+  body.swipe-mode-active .feed-content-enter {
+    flex: 1 !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Deck container fills flex space */
+  body.swipe-mode-active .swipe-deck-container {
+    flex: 1 !important;
+    min-height: 0 !important;
+    padding: 0.75rem !important;
+    touch-action: none;
+    overflow: hidden;
+  }
+
+  /* SwipeDeck root div fills its container */
+  body.swipe-mode-active .swipe-deck-container > div {
+    position: relative !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    padding-bottom: 0 !important;
+    margin: 0 !important;
+  }
 }
 
 /* Mobile utility */
@@ -357,6 +421,72 @@ html.dark input::placeholder { color: var(--muted); }
 
 /* BootSpin animation used by BootGate */
 @keyframes bootSpin { to { transform: rotate(360deg); } }
+
+/* ── Page transitions ─────────────────────────────────────────── */
+@keyframes pageEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.page-transition-wrapper {
+  animation: pageEnter 0.2s ease-out both;
+}
+
+/* ── Modal / overlay transitions ──────────────────────────────── */
+@keyframes backdropEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes modalEnter {
+  from { opacity: 0; transform: scale(0.96) translateY(6px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-backdrop-enter {
+  animation: backdropEnter 0.18s ease-out both;
+}
+
+.modal-dialog-enter {
+  animation: modalEnter 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ── Feed mode crossfade ──────────────────────────────────────── */
+@keyframes feedContentEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.feed-content-enter {
+  animation: feedContentEnter 0.18s ease-out both;
+}
+
+/* ── Button press feedback ────────────────────────────────────── */
+.btn-primary,
+.btn-ghost {
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.1s;
+}
+.btn-primary:active,
+.btn-ghost:active {
+  transform: scale(0.96);
+}
+
+/* ── Nav link active indicator ────────────────────────────────── */
+.site-header nav a {
+  position: relative;
+}
+.site-header nav a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0;
+  width: 0; height: 1px;
+  background: var(--accent);
+  transition: width 0.2s ease-out;
+}
+.site-header nav a:hover::after,
+.site-header nav a.active::after {
+  width: 100%;
+}
 
 /* ── Dark mode rel-pill contrast fix ──────────────────────────── */
 /* In dark mode the default muted colour is too dim — lift pills  */

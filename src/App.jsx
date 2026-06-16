@@ -1,41 +1,44 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Support from './pages/Support'
-import Help from './pages/Help'
-import Home from './pages/Home'
-import Onboarding from './pages/Onboarding'
-import Auth from './pages/Auth'
-import ProfileSetup from './pages/ProfileSetup'
-import ProfileEdit from './pages/ProfileEdit'
-import ProfileDynamics from './pages/ProfileDynamics'
-import ProfileNotifications from './pages/ProfileNotifications'
-import Feedback from './pages/Feedback'
-import Privacy from './pages/Privacy'
-import Terms from './pages/Terms'
-import Admin from './pages/Admin'
-import Changelog from './pages/Changelog'
-import Updates from './pages/Updates'
-import Stats from './pages/Stats'
-import Network from './pages/Network'
-import Feed from './pages/Feed'
-import Messages from './pages/Messages'
-import Rooms from './pages/Rooms'
-import Typing from './pages/Typing'
-import TypistProfile from './pages/TypistProfile'
-import Premium from './pages/Premium'
-import PremiumWelcome from './pages/PremiumWelcome'
-import Saved from './pages/Saved'
-import Settings from './pages/Settings'
-import UserProfile from './pages/UserProfile'
-import About from './pages/About'
-import NotFound from './pages/NotFound'
-import AskPage from './pages/AskPage'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import FeedbackButton from './components/FeedbackButton'
 import './App.css'
 
-export default function App() {
+const Support = lazy(() => import('./pages/Support'))
+const Help = lazy(() => import('./pages/Help'))
+const Home = lazy(() => import('./pages/Home'))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
+const Auth = lazy(() => import('./pages/Auth'))
+const ProfileSetup = lazy(() => import('./pages/ProfileSetup'))
+const ProfileEdit = lazy(() => import('./pages/ProfileEdit'))
+const ProfileDynamics = lazy(() => import('./pages/ProfileDynamics'))
+const ProfileNotifications = lazy(() => import('./pages/ProfileNotifications'))
+const Feedback = lazy(() => import('./pages/Feedback'))
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
+const Admin = lazy(() => import('./pages/Admin'))
+const Changelog = lazy(() => import('./pages/Changelog'))
+const Updates = lazy(() => import('./pages/Updates'))
+const Stats = lazy(() => import('./pages/Stats'))
+const Network = lazy(() => import('./pages/Network'))
+const Feed = lazy(() => import('./pages/Feed'))
+const Messages = lazy(() => import('./pages/Messages'))
+const Rooms = lazy(() => import('./pages/Rooms'))
+const Typing = lazy(() => import('./pages/Typing'))
+const TypistProfile = lazy(() => import('./pages/TypistProfile'))
+const Premium = lazy(() => import('./pages/Premium'))
+const PremiumWelcome = lazy(() => import('./pages/PremiumWelcome'))
+const Saved = lazy(() => import('./pages/Saved'))
+const Settings = lazy(() => import('./pages/Settings'))
+const UserProfile = lazy(() => import('./pages/UserProfile'))
+const About = lazy(() => import('./pages/About'))
+const NotFound = lazy(() => import('./pages/NotFound'))
+const AskPage = lazy(() => import('./pages/AskPage'))
+
+function AppRoutes() {
+  const location = useLocation()
   return (
-    <BrowserRouter>
-      <Routes>
+    <div key={location.key} className="page-transition-wrapper">
+      <Routes location={location}>
         <Route path="/" element={<Home />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth" element={<Auth />} />
@@ -67,6 +70,16 @@ export default function App() {
         <Route path="/stats" element={<Stats />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Suspense>
+        <AppRoutes />
+      </Suspense>
       <FeedbackButton />
     </BrowserRouter>
   )

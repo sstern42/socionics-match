@@ -15,7 +15,7 @@ export default function AskPage() {
   }, [session, loading])
   const [userType, setUserType] = useState(null)
 
-  usePageTitle('Ask AI')
+  usePageTitle('Socionics AI')
 
   useEffect(() => {
     async function fetchType() {

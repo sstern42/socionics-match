@@ -13,13 +13,20 @@ const STACK = [
   { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
 ]
 
-export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe }) {
-  const [queue, setQueue]   = useState([...profiles])
-  const [swiped, setSwiped] = useState(new Set())
+export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, blockRightSwipe = false, onBlockedRightSwipe, initialSwiped, onSwipeComplete, onReset }) {
+  const [swiped, setSwiped] = useState(() => new Set(initialSwiped ?? []))
+  const [queue, setQueue]   = useState(() => {
+    const seen = new Set(initialSwiped ?? [])
+    return profiles.filter(p => !seen.has(p.id))
+  })
 
-  // Sync queue if parent refreshes profiles
+  // Sync queue if parent refreshes profiles (e.g. loadMore)
   useEffect(() => {
-    setQueue(profiles.filter(p => !swiped.has(p.id)))
+    setQueue(prev => {
+      const prevIds = new Set(prev.map(p => p.id))
+      const newProfiles = profiles.filter(p => !swiped.has(p.id) && !prevIds.has(p.id))
+      return [...prev.filter(p => profiles.some(fp => fp.id === p.id)), ...newProfiles]
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profiles])
 
@@ -34,21 +41,22 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
     // Remove from deck immediately for snappy UX
     setSwiped(prev => new Set([...prev, profile.id]))
     setQueue(prev => prev.filter(p => p.id !== profile.id))
+    onSwipeComplete?.(profile.id)
 
-    // Record swipe in Supabase
-    const { error } = await supabase.from('swipes').insert({
-      swiper_id:     currentUserId,
-      target_id:     profile.id,
-      direction,
-      relation_type: relationType ?? null,
-    })
+    // Record swipe in Supabase — upsert so re-swipes (e.g. after page reload) don't fail
+    const { error } = await supabase.from('swipes').upsert(
+      { swiper_id: currentUserId, target_id: profile.id, direction, relation_type: relationType ?? null },
+      { onConflict: 'swiper_id,target_id' }
+    )
 
     if (error) {
-      console.error('Swipe insert failed:', error)
-      return
+      console.error('Swipe upsert failed:', error.code, error.message)
+      // Don't bail — still check for a match if this was a like,
+      // since the swipe row may already exist from a prior session.
+      if (direction !== 'right') return
+    } else {
+      window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
     }
-
-    window.umami?.track('swipe', { direction, relationType: relationType ?? 'unknown' })
 
     if (direction === 'right') {
       // Use SECURITY DEFINER RPC to check reciprocal swipe — direct table query
@@ -75,7 +83,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
         onMatch?.({ profile, relationType, matchId: matchRow?.id ?? null })
       }
     }
-  }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe])
+  }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe, onSwipeComplete])
 
   // Skip — move top profile to the back of the current queue, session-only, no DB write
   const handleSkip = useCallback((profile) => {
@@ -102,6 +110,16 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
         <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, maxWidth: 280 }}>
           New members join every day. Check back later or broaden your relation preferences.
         </p>
+        {onReset && (
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={onReset}
+            style={{ marginTop: '0.5rem', padding: '0.5rem 1.25rem', fontSize: '0.78rem' }}
+          >
+            ↺ Start over
+          </button>
+        )}
       </div>
     )
   }
@@ -114,6 +132,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
       margin: '0 auto',
       height: 'min(calc(100vh - 200px), 620px)',
       paddingBottom: 40,
+      touchAction: 'none',
     }}>
       {[...visible].reverse().map((profile, reverseIdx) => {
         const idx        = visible.length - 1 - reverseIdx
