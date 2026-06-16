@@ -82,7 +82,6 @@ export default function Feed() {
 
   const [swipeMode, setSwipeMode] = useState(() => localStorage.getItem(FEED_MODE_KEY) === 'swipe')
   const [matchData, setMatchData] = useState(null)
-  const [activityStats, setActivityStats] = useState(null)
 
   function toggleFeedMode() {
     const next = !swipeMode
@@ -139,21 +138,6 @@ export default function Feed() {
   }
 
   const [profiles, setProfiles] = useState([])
-
-  useEffect(() => {
-    if (!profiles.length) { setActivityStats(null); return }
-    const now = Date.now()
-    const onlineMs = 15 * 60 * 1000
-    const todayMs = 24 * 60 * 60 * 1000
-    let online = 0, today = 0
-    for (const p of profiles) {
-      if (!p.last_active || p.profile_data?.hide_activity) continue
-      const diff = now - new Date(p.last_active).getTime()
-      if (diff < onlineMs) online++
-      else if (diff < todayMs) today++
-    }
-    setActivityStats({ online, today })
-  }, [profiles])
 
   const [savedIds, setSavedIds] = useState(new Set())
   const [matchedMap, setMatchedMap] = useState({})
@@ -400,6 +384,17 @@ export default function Feed() {
       if (filterLocation === 'same_city')    return myCity && p.profile_data?.city?.toLowerCase().trim() === myCity && p.profile_data?.country === myCountry
       return true
     })
+
+  const activityStats = (() => {
+    let online = 0, today = 0
+    for (const p of displayed) {
+      if (!p.last_active || p.profile_data?.hide_activity) continue
+      const diff = Date.now() - new Date(p.last_active).getTime()
+      if (diff < 15 * 60 * 1000) online++
+      else if (diff < 24 * 60 * 60 * 1000) today++
+    }
+    return { online, today }
+  })()
 
   return (
     <Layout noScroll hideFooter>
