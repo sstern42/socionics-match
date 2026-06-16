@@ -9,9 +9,12 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ### Added
 - **Socion Premium launch**: Premium is now available at socion.app/premium. Includes unlimited connections, full "who viewed" list with name/type/relation/timestamp, connection stats breakdown by relation type, and full Model A compatibility breakdown for every conversation.
 - **Feed activity stats — filtered**: Online now and active today counts now reflect only the profiles currently visible to you (respecting your active filters), so the numbers match what you actually see on screen.
+- **Feed — relation counts**: The counts shown on each relation filter pill now reflect the full number of available profiles of that type, not just the current page.
+- **Feed — Load all remaining**: A "Load all remaining (N)" button now appears alongside "Load more" so you can fetch all profiles at once.
 
 ### Fixed
 - **Feed activity stats**: Fixed a crash caused by the activity stats effect running before the profiles state was initialised.
+- **Feed — relation filter empty state**: Selecting a relation type whose profiles aren't in the current page now shows load buttons instead of a dead-end "no matches" message.
 
 ---
 
