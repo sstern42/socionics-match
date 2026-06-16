@@ -247,6 +247,7 @@ export default function Feed() {
         hasMore: feedResult.hasMore,
         matchedMap: map,
         savedIds: new Set((savedResult.data ?? []).map(r => r.saved_user_id)),
+        relationCounts: feedResult.relationCounts ?? {},
       }
     },
     enabled: !!profile && !loading,
