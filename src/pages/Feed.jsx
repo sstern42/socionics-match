@@ -827,13 +827,31 @@ export default function Feed() {
             <FeedLoader />
           ) : displayed.length === 0 && !error ? (
             <div style={{ textAlign: 'center', padding: '4rem 0' }}>
-              <p className="eyebrow" style={{ marginBottom: '1rem' }}>No matches yet</p>
-              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '2rem', marginBottom: '1rem' }}>The community is <em>growing</em></h2>
-              <p style={{ color: 'var(--muted)', maxWidth: 400, margin: '0 auto 0.75rem' }}>No profiles match your selected dynamics yet.</p>
-              <p style={{ color: 'var(--muted)', fontSize: '0.82rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
-                Selected relations: <strong>{profile?.relation_preferences?.join(', ') || 'none'}</strong>
-              </p>
-              <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
+              {filterRelation !== 'ALL' && hasMore ? (
+                <>
+                  <p style={{ color: 'var(--muted)', marginBottom: '1.5rem' }}>No {RELATIONS[filterRelation]?.name} profiles in the current page.</p>
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                    <button type="button" className="btn-ghost" onClick={() => loadMore()} disabled={loadingMore} style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem' }}>
+                      {loadingMore ? 'Loading…' : `Load more (+${feedTotal !== null ? Math.min(PAGE_SIZE, feedTotal - offsetRef.current) : PAGE_SIZE})`}
+                    </button>
+                    {feedTotal !== null && feedTotal - offsetRef.current > 0 && (
+                      <button type="button" className="btn-ghost" onClick={() => loadMore(feedTotal - offsetRef.current)} disabled={loadingMore} style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem' }}>
+                        {loadingMore ? 'Loading…' : `Load all remaining (${feedTotal - offsetRef.current})`}
+                      </button>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="eyebrow" style={{ marginBottom: '1rem' }}>No matches yet</p>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '2rem', marginBottom: '1rem' }}>The community is <em>growing</em></h2>
+                  <p style={{ color: 'var(--muted)', maxWidth: 400, margin: '0 auto 0.75rem' }}>No profiles match your selected dynamics yet.</p>
+                  <p style={{ color: 'var(--muted)', fontSize: '0.82rem', maxWidth: 400, margin: '0 auto 1.5rem' }}>
+                    Selected relations: <strong>{profile?.relation_preferences?.join(', ') || 'none'}</strong>
+                  </p>
+                  <button type="button" className="btn-ghost" onClick={() => navigate('/profile/edit')}>Update preferences</button>
+                </>
+              )}
             </div>
           ) : (
             <>
@@ -906,13 +924,13 @@ export default function Feed() {
                 ))}
               </div>
 
-              {feedExhausted ? (
+              {(feedExhausted || !hasMore || (feedTotal !== null && feedTotal - offsetRef.current <= 0)) ? (
                 <div style={{ textAlign: 'center', marginTop: '2.5rem', paddingBottom: '1rem' }}>
                   <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1rem', color: 'var(--muted)' }}>
                     You've seen everyone — check back as the community grows.
                   </p>
                 </div>
-              ) : hasMore && (feedTotal === null || feedTotal - offsetRef.current > 0) && (
+              ) : hasMore && (
                 <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
