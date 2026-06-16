@@ -165,10 +165,10 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
       </div>
 
       {relInfo && (
-        <div style={{ background:colours.bg,border:`1px solid ${colours.border}`,borderRadius:4,padding:'0.6rem 0.85rem' }}>
+        <div style={{ background:'rgba(100,100,100,0.05)',border:'1px solid var(--border)',borderRadius:4,padding:'0.6rem 0.85rem' }}>
           <div style={{ display:'flex',justifyContent:'space-between',alignItems:'baseline' }}>
-            <p style={{ fontSize:'0.72rem',letterSpacing:'0.12em',textTransform:'uppercase',color:colours.text,fontWeight:500 }}>{relInfo.name}</p>
-            {relInfo.siSlug && <button onClick={()=>{window.umami?.track('si-link-relation',{relation:relInfo.siSlug});setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`)}} style={{ fontSize:'0.68rem',color:colours.text,opacity:0.7,background:'none',border:'none',cursor:'pointer',whiteSpace:'nowrap',padding:0 }}>Learn more →</button>}
+            <p style={{ fontSize:'0.72rem',letterSpacing:'0.12em',textTransform:'uppercase',color:'var(--muted)',fontWeight:500 }}>{relInfo.name}</p>
+            {relInfo.siSlug && <button onClick={()=>{window.umami?.track('si-link-relation',{relation:relInfo.siSlug});setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`)}} style={{ fontSize:'0.68rem',color:'var(--muted)',opacity:0.7,background:'none',border:'none',cursor:'pointer',whiteSpace:'nowrap',padding:0 }}>Learn more →</button>}
           </div>
           <p style={{ fontSize:'0.78rem',color:'var(--muted)',marginTop:'0.2rem',lineHeight:1.5 }}>{relInfo.description}</p>
         </div>
