@@ -194,6 +194,7 @@ export default function Feed() {
   const [filterRelation, setFilterRelation] = useState('ALL')
   const [showRelations, setShowRelations] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const [filterPurpose, setFilterPurpose] = useState('ALL')
   const [filterLocation, setFilterLocation] = useState('anywhere')
   const [activeOnly, setActiveOnly] = useState(false)
   const [activeToday, setActiveToday] = useState(false)
@@ -442,6 +443,7 @@ export default function Feed() {
     .filter(p => excludeAnon  ? !p.profile_data?.anonymous : true)
     .filter(p => verifiedOnly ? !!p.verified_by : true)
     .filter(p => filterRelation === 'ALL' ? true : (p.displayRelation ?? p.relation) === filterRelation)
+    .filter(p => filterPurpose === 'ALL' ? true : (p.purpose ?? []).includes(filterPurpose))
     .filter(p => {
       if (filterLocation === 'anywhere') return true
       const myCountry = profile?.profile_data?.country
@@ -718,7 +720,7 @@ export default function Feed() {
                   <button type="button" onClick={() => setFilterRelation('ALL')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                 )}
                 {(() => {
-                  const activeCount = [withPhotos, !excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere'].filter(Boolean).length
+                  const activeCount = [withPhotos, !excludeAnon, activeOnly, activeToday, onlineNow, verifiedOnly, filterLocation !== 'anywhere', filterPurpose !== 'ALL'].filter(Boolean).length
                   return (
                     <>
                       <span style={{ width: 1, height: 14, background: 'var(--border)', flexShrink: 0, margin: '0 0.1rem' }} />
@@ -735,7 +737,7 @@ export default function Feed() {
                         )}
                       </button>
                       {activeCount > 0 && (
-                        <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(true); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
+                        <button type="button" onClick={() => { setWithPhotos(false); setExcludeAnon(true); setActiveOnly(false); setActiveToday(false); setOnlineNow(false); setFilterLocation('anywhere'); setVerifiedOnly(false); setFilterPurpose('ALL') }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.68rem', color: 'var(--muted)', padding: 0, textDecoration: 'underline' }}>Clear</button>
                       )}
                     </>
                   )
@@ -771,6 +773,14 @@ export default function Feed() {
                       <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
                       <button type="button" className={`rel-pill clickable${!excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{!excludeAnon ? '✓ ' : ''}Show anonymous</button>
                       <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
+                    </div>
+                  </div>
+                  <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
+                    <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Purpose</p>
+                    <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                      {[['ALL', 'Any'], ['dating', 'Dating'], ['friendship', 'Friendship'], ['networking', 'Networking'], ['team', 'Team building']].map(([val, label]) => (
+                        <button key={val} type="button" className={`rel-pill clickable${filterPurpose === val ? ' active' : ''}`} onClick={() => setFilterPurpose(val)} style={{ fontSize: '0.7rem' }}>{filterPurpose === val && val !== 'ALL' ? '✓ ' : ''}{label}</button>
+                      ))}
                     </div>
                   </div>
                   <div style={{ padding: '0.65rem 0.85rem', borderBottom: '1px solid var(--border)' }}>
