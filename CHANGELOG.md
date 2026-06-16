@@ -18,7 +18,6 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ## 15 June 2026
 
 ### Fixed
-- **Free tier connection count**: Corrected a stale cap value in Settings that was showing 5 instead of the correct limit of 3.
 - **Feedback button**: No longer shown to logged-out users.
 - **Feed freshness indicator**: Now stays visible during a background refetch instead of disappearing while the request is in flight.
 
