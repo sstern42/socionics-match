@@ -342,7 +342,7 @@ export default function Feed() {
     queryClient.invalidateQueries({ queryKey: feedQueryKey })
   }
 
-  async function loadMore() {
+  async function loadMore(limit = PAGE_SIZE) {
     if (!profile || loadingMore || !hasMore) return
     setLoadingMore(true)
     try {
@@ -352,15 +352,15 @@ export default function Feed() {
         userPurpose: localStorage.getItem(FOUNDER_FEED_KEY) === 'true' ? [] : (profile.purpose ?? []),
         currentUserId: profile.id,
         isPremium,
-        limit: PAGE_SIZE,
+        limit,
         offset: offsetRef.current,
       })
       setExtraProfiles(prev => [...prev, ...feedResult.profiles])
       setHasMore(feedResult.hasMore)
       setFeedTotal(feedResult.total ?? null)
       if (!feedResult.hasMore) setFeedExhausted(true)
-      offsetRef.current += PAGE_SIZE
-      window.umami?.track('feed-load-more', { offset: offsetRef.current })
+      offsetRef.current += limit
+      window.umami?.track('feed-load-more', { offset: offsetRef.current, limit })
     } catch (err) {
       console.error('feed load-more failed', err)
     } finally {
@@ -912,16 +912,27 @@ export default function Feed() {
                   </p>
                 </div>
               ) : hasMore && (
-                <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+                <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                   <button
                     type="button"
                     className="btn-ghost"
-                    onClick={loadMore}
+                    onClick={() => loadMore()}
                     disabled={loadingMore}
                     style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
                   >
                     {loadingMore ? 'Loading…' : `Load more (+${feedTotal !== null ? Math.min(PAGE_SIZE, feedTotal - offsetRef.current) : PAGE_SIZE})`}
                   </button>
+                  {feedTotal !== null && feedTotal - offsetRef.current > PAGE_SIZE && (
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => loadMore(feedTotal - offsetRef.current)}
+                      disabled={loadingMore}
+                      style={{ padding: '0.6rem 1.5rem', fontSize: '0.82rem', opacity: loadingMore ? 0.6 : 1 }}
+                    >
+                      {loadingMore ? 'Loading…' : `Load all remaining (${feedTotal - offsetRef.current})`}
+                    </button>
+                  )}
                 </div>
               )}
             </>
