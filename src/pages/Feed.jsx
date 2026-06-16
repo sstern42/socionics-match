@@ -245,6 +245,7 @@ export default function Feed() {
       return {
         profiles: feedResult.profiles,
         hasMore: feedResult.hasMore,
+        total: feedResult.total,
         matchedMap: map,
         savedIds: new Set((savedResult.data ?? []).map(r => r.saved_user_id)),
         relationCounts: feedResult.relationCounts ?? {},
@@ -922,7 +923,7 @@ export default function Feed() {
                   >
                     {loadingMore ? 'Loading…' : `Load more (+${feedTotal !== null ? Math.min(PAGE_SIZE, feedTotal - offsetRef.current) : PAGE_SIZE})`}
                   </button>
-                  {feedTotal !== null && feedTotal - offsetRef.current > PAGE_SIZE && (
+                  {feedTotal !== null && feedTotal - offsetRef.current > 0 && (
                     <button
                       type="button"
                       className="btn-ghost"
