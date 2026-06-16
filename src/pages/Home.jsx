@@ -289,7 +289,7 @@ export default function Home() {
   const msLeft    = Math.max(0, FOUNDING_CUTOFF.getTime() - now)
   const daysLeft  = Math.floor(msLeft / 86400000)
   const hoursLeft = Math.floor((msLeft % 86400000) / 3600000)
-  const foundingDay = new Date(FOUNDING_CUTOFF.getTime() - 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' })
+  const foundingDay = '16th June (EST)'
 
   const [liveFoundingCount, setLiveFoundingCount] = useState(null)
   const foundingCount = liveFoundingCount ?? stats?.users ?? null
