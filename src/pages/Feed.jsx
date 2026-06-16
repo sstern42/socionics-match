@@ -164,21 +164,6 @@ export default function Feed() {
       })
   }, [])
 
-  useEffect(() => {
-    if (!profiles.length) { setActivityStats(null); return }
-    const now = Date.now()
-    const onlineMs = 15 * 60 * 1000
-    const todayMs = 24 * 60 * 60 * 1000
-    let online = 0, today = 0
-    for (const p of profiles) {
-      if (!p.last_active || p.profile_data?.hide_activity) continue
-      const diff = now - new Date(p.last_active).getTime()
-      if (diff < onlineMs) online++
-      else if (diff < todayMs) today++
-    }
-    setActivityStats({ online, today })
-  }, [profiles])
-
   function dismissBanner() {
     if (!announcement) return
     localStorage.setItem(announcementKey(announcement), 'true')
