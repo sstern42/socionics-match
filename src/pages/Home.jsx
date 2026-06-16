@@ -407,6 +407,14 @@ export default function Home() {
             </Link>
           </p>
         )}
+        {session && (
+          <p className="fade-up-4" style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '-0.25rem' }}>
+            Not sure about your type?{' '}
+            <Link to="/ask" style={{ color: 'var(--accent)', textDecoration: 'none' }} onClick={() => window.umami?.track('home-ask-hero-link')}>
+              Ask the AI →
+            </Link>
+          </p>
+        )}
 
         <p className="fade-up-4" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '-0.5rem' }}>
           Free &nbsp;·&nbsp; No app store &nbsp;·&nbsp; Works on any device
@@ -536,7 +544,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURE CARDS — was background: 'var(--card-bg)', now 'var(--card-bg)' */}
+      {/* AI CHATBOT FEATURE */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--surface, #f7f4ef)' }}>
+        <div style={{ maxWidth: 860, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <p className="eyebrow">Socionics AI</p>
+            <h2 style={{ margin: 0 }}>Have a question?<br /><em>Just ask.</em></h2>
+            <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, margin: 0 }}>
+              Our AI assistant knows Socionics deeply — types, functions, intertype relations, and theory. Ask it anything, and it personalizes answers to your type.
+            </p>
+            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>Free for all members &mdash; 10 questions/day, unlimited with Premium.</p>
+            {session ? (
+              <Link to="/ask" className="btn-primary" style={{ textDecoration: 'none', alignSelf: 'flex-start', marginTop: '0.25rem' }} onClick={() => window.umami?.track('home-ask-section-cta')}>
+                Ask the AI →
+              </Link>
+            ) : (
+              <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none', alignSelf: 'flex-start', marginTop: '0.25rem' }} onClick={() => window.umami?.track('home-ask-section-signup')}>
+                {foundingActive ? 'Claim founding access →' : 'Sign up to try it →'}
+              </Link>
+            )}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.25rem' }}>Example questions</p>
+            {[
+              'What is my Dual relation and why does it work?',
+              'How is Socionics different from MBTI?',
+              'What should I know before dating a Dual?',
+              'Explain the Conflict relation to me.',
+            ].map(q => (
+              <div key={q} style={{ padding: '0.75rem 1rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+                <span>{q}</span>
+                {session && (
+                  <Link
+                    to={`/ask?q=${encodeURIComponent(q)}`}
+                    style={{ fontSize: '0.75rem', color: 'var(--accent)', textDecoration: 'none', flexShrink: 0, opacity: 0.8 }}
+                    onClick={() => window.umami?.track('home-ask-example-question', { q })}
+                  >Ask →</Link>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURE CARDS */}
       <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
         <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
         <h2 style={{ textAlign: 'center', marginBottom: '3.5rem' }}>Built differently<br />from the ground up</h2>
@@ -548,10 +599,16 @@ export default function Home() {
             { title: '📊 Real data', body: "Every connection and rating tests the theory at scale. You're part of the first large-scale empirical test of Socionics in the English-speaking world." },
             { title: '🕵️ Browse anonymously', body: "Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them." },
             { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
-          ].map(({ title, body }) => (
-            <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)' }}>
-              <h3 style={{ marginBottom: '0.75rem', fontSize: '1.1rem' }}>{title}</h3>
-              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300 }}>{body}</p>
+            { title: '🤖 Socionics AI', body: "Ask anything about types, relations, or your own dynamics. An AI assistant answers in seconds — and personalizes responses to your type.", link: '/ask' },
+          ].map(({ title, body, link }) => (
+            <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{title}</h3>
+              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300, margin: 0 }}>{body}</p>
+              {link && session && (
+                <Link to={link} style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', marginTop: 'auto' }} onClick={() => window.umami?.track('home-feature-card-ask')}>
+                  Try it →
+                </Link>
+              )}
             </div>
           ))}
         </div>
