@@ -8,6 +8,7 @@ export const ENTRIES = [
        label: 'New',
        items: [
          'Referrals — invite friends from Settings. Each friend who joins and finishes their profile earns you 30 days of Premium (up to 180 days total), and unlocks a 7-day Premium trial for them',
+         'Referrals — founding members and Premium subscribers don\'t need extra days, so referring as one effectively gifts your friend a free 7-day Premium trial — and still counts toward your tier badge',
          'Referrals — Connector, Networker, Catalyst, and Catalyst+ tier badges based on your qualifying referral count',
          'Referrals — Top Connectors leaderboard on Settings, showing the highest-referring members (anonymous-mode users are excluded)',
          'Referrals — referred friends see a "You were invited by [name]" banner during onboarding',
