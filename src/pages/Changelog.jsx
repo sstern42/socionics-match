@@ -8,7 +8,13 @@ export const ENTRIES = [
        label: 'New',
        items: [
          'Premium — Socion Premium is now available. Unlock unlimited connections, see who viewed your profile with full detail, access your connection stats breakdown, and get the full Model A compatibility breakdown for every conversation. socion.app/premium',
+         'Feed — quadra filter. Four colored pills (Alpha/Beta/Gamma/Delta) next to the Filters button let you narrow the feed to one quadra',
+         'Feed — profile card borders are now colored by quadra (Alpha gold, Beta red, Gamma teal, Delta blue), so you can spot it at a glance',
+         'Feed — purpose filter added to the Filters panel: Dating, Friendship, Networking, or Team building',
+         'Feed — "Load all remaining" button added alongside "Load more" so you can fetch every profile at once',
+         'Feed — relation filter pill counts now reflect every matching profile, not just what\'s loaded on the page',
          'Feed — activity stats (online now / active today) now reflect only the profiles currently visible to you, so the numbers are accurate to your filtered view',
+         'Homepage — Socionics AI now has its own section with example questions you can tap to start chatting instantly',
        ],
      },
      {

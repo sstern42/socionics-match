@@ -4,6 +4,13 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 17 June 2026
+
+### Fixed
+- **Quadra rooms — mobile Enter key**: Enter now inserts a newline instead of sending the message on mobile, matching the existing behaviour in Messages.
+
+---
+
 ## 16 June 2026
 
 ### Added
@@ -11,10 +18,18 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Feed activity stats — filtered**: Online now and active today counts now reflect only the profiles currently visible to you (respecting your active filters), so the numbers match what you actually see on screen.
 - **Feed — relation counts**: The counts shown on each relation filter pill now reflect the full number of available profiles of that type, not just the current page.
 - **Feed — Load all remaining**: A "Load all remaining (N)" button now appears alongside "Load more" so you can fetch all profiles at once.
+- **Feed — purpose filter**: New Purpose section in the Filters panel to narrow the feed to Dating, Friendship, Networking, or Team building.
+- **Feed — quadra filter**: Four colored pill buttons (Alpha/Beta/Gamma/Delta) next to the Filters button let you filter the feed to a single quadra.
+- **Feed — quadra card borders**: Profile card borders are now colored by the profile's quadra (Alpha gold, Beta red, Gamma teal, Delta blue) instead of your relation to them, so quadra is visible at a glance.
+- **Homepage — Socionics AI**: A dedicated AI section with example questions, plus an AI feature card and a "Not sure about your type? Ask the AI →" hero nudge for signed-in visitors. Tapping an example question on the homepage opens the chat with that question already asked.
 
 ### Fixed
 - **Feed activity stats**: Fixed a crash caused by the activity stats effect running before the profiles state was initialised.
 - **Feed — relation filter empty state**: Selecting a relation type whose profiles aren't in the current page now shows load buttons instead of a dead-end "no matches" message.
+- **Socionics Insight webview**: Fixed the in-app reference panel rendering inside the feed body instead of full screen, caused by a leftover CSS transform from the card entrance animation.
+
+### Changed
+- **Founding member deadline**: Extended to midnight EST on 16 June (2026-06-17T05:00:00Z), shown on the homepage as "16th June (EST)".
 
 ---
 
