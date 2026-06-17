@@ -262,8 +262,8 @@ Deno.serve(async (req) => {
       userRow.plan_status === 'active' ||
       userRow.plan_status === 'past_due'
 
-    // Check daily message cap for free users
-    if (!isPremium) {
+    // Track daily message count for all users (used for rate limiting + usage analytics)
+    {
       const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
 
       const { data: countRow } = await supabase
@@ -275,7 +275,7 @@ Deno.serve(async (req) => {
 
       const currentCount = countRow?.count ?? 0
 
-      if (currentCount >= FREE_DAILY_LIMIT) {
+      if (!isPremium && currentCount >= FREE_DAILY_LIMIT) {
         return new Response(
           JSON.stringify({
             error: `You've used your ${FREE_DAILY_LIMIT} free AI messages for today. Upgrade to Premium for unlimited access.`,
@@ -293,7 +293,7 @@ Deno.serve(async (req) => {
           { onConflict: 'user_id,date' }
         )
     }
-    // ── End rate limiting ─────────────────────────────────────────────────────
+    // ── End rate limiting / usage tracking ──────────────────────────────────
 
     const systemBlocks = [
       {
