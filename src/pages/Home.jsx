@@ -330,7 +330,7 @@ export default function Home() {
 
   return (
     <>
-    <Layout>
+    <Layout hideFooter>
       <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(3rem,8vw,6rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
 
         {foundingActive && !session ? (
