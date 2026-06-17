@@ -8,7 +8,8 @@ const TIER_LABELS = {
   catalyst_plus: 'Catalyst+',
 }
 
-const SHARE_TEXT = "I'm on Socion, a Socionics-based matching app — use my link and we both get a Premium trial:"
+const SHARE_TEXT_TRIAL = "I'm on Socion, a Socionics-based matching app — use my link and we both get a Premium trial:"
+const SHARE_TEXT_REFEREE_ONLY = "I'm on Socion, a Socionics-based matching app — use my link and you get a 7-day Premium trial:"
 
 export default function ReferralPanel({ profile, isPremium }) {
   const [tier, setTier] = useState(null)
@@ -25,6 +26,8 @@ export default function ReferralPanel({ profile, isPremium }) {
 
   const link = `https://socion.app/r/${profile.referral_code}`
   const count = profile.referral_count_qualified ?? 0
+  const isFoundingOrSubscriber = profile?.is_founding_member === true || profile?.plan_status === 'active' || profile?.plan_status === 'past_due'
+  const shareText = isFoundingOrSubscriber ? SHARE_TEXT_REFEREE_ONLY : SHARE_TEXT_TRIAL
 
   function handleCopy() {
     navigator.clipboard.writeText(link).then(() => {
@@ -35,7 +38,7 @@ export default function ReferralPanel({ profile, isPremium }) {
 
   function handleShare() {
     if (navigator.share) {
-      navigator.share({ text: SHARE_TEXT, url: link }).catch(() => {})
+      navigator.share({ text: shareText, url: link }).catch(() => {})
     } else {
       handleCopy()
     }
@@ -60,7 +63,7 @@ export default function ReferralPanel({ profile, isPremium }) {
       </div>
 
       <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-        {SHARE_TEXT}
+        {shareText}
       </p>
 
       <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
