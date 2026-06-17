@@ -403,7 +403,7 @@ const RoomInput = React.memo(function RoomInput({
                       typingChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,user_id:profile.id,typing:false } })
                     }, 2000)
                   }}
-                  onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();handleSend()} }}
+                  onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
                   style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:isMobile?'0.85rem':'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:isMobile?'0.7rem 0.4rem':'0.9rem 0.5rem',maxHeight:'8rem' }}
                 />
                 {text.length>1800 && <span style={{ fontSize:'0.68rem',color:'var(--muted)',padding:'0 0.5rem 0.75rem',alignSelf:'flex-end' }}>{2000-text.length}</span>}
