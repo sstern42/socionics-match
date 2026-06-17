@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
+import ReferralPanel from '../components/profile/ReferralPanel'
 
 // Lightweight settings page. Exists primarily as the return target for the
 // Stripe customer portal (create-portal-session return_url = /settings) and as
@@ -116,6 +117,8 @@ export default function Settings() {
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b' }}>{error}</p>}
         </div>
+
+        <ReferralPanel profile={profile} isPremium={isPremium} />
 
         <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2rem', lineHeight: 1.7 }}>
           Looking for profile and notification settings? They're under{' '}
