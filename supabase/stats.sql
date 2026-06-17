@@ -37,3 +37,19 @@ select cron.schedule(
     );
   $$
 );
+
+-- Schedule: post daily AI usage total to Discord at end of day (23:55 UTC)
+select cron.schedule(
+  'daily-ai-usage',
+  '55 23 * * *',
+  $$
+    select net.http_post(
+      url := current_setting('app.supabase_url') || '/functions/v1/daily-ai-usage',
+      headers := jsonb_build_object(
+        'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
+        'Content-Type', 'application/json'
+      ),
+      body := '{}'::jsonb
+    );
+  $$
+);
