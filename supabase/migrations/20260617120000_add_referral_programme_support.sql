@@ -184,8 +184,14 @@ BEGIN
         ) + INTERVAL '7 days'
     WHERE id = p_referee_id;
 
-  -- Referrer reward: only meaningful if referrer isn't already premium
-  SELECT is_premium(v_referral.referrer_id), referral_premium_days_granted
+  -- Referrer reward: only meaningful if referrer isn't already premium via a
+  -- real plan (founding member or paid subscription) — extra days would be
+  -- worthless to them. Deliberately NOT is_premium(), which also returns
+  -- true while a referral-earned window from a *previous* reward is still
+  -- active; using it here would wrongly skip granting further days to a
+  -- free-tier user who's mid-window but still under the 180-day cap.
+  SELECT (is_founding_member OR plan_status IN ('active', 'past_due')),
+         referral_premium_days_granted
     INTO v_referrer_premium, v_referrer_days_granted
     FROM users WHERE id = v_referral.referrer_id;
 
