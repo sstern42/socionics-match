@@ -4,6 +4,7 @@
 // is_premium() function from the premium migration:
 //
 //   SELECT is_founding_member OR plan_status IN ('active', 'past_due')
+//     OR (referral_premium_until IS NOT NULL AND referral_premium_until > NOW())
 //
 // IMPORTANT: this is for UX gating only. The real enforcement lives in the
 // database (RLS policies and can_add_connection / is_premium SECURITY DEFINER
@@ -17,4 +18,5 @@ export function computeIsPremium(profile) {
   return profile.is_founding_member === true
     || profile.plan_status === 'active'
     || profile.plan_status === 'past_due'
+    || (!!profile.referral_premium_until && new Date(profile.referral_premium_until) > new Date())
 }
