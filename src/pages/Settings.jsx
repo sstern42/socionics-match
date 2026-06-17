@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
+import ReferralPanel from '../components/profile/ReferralPanel'
 
 // Lightweight settings page. Exists primarily as the return target for the
 // Stripe customer portal (create-portal-session return_url = /settings) and as
@@ -27,6 +28,9 @@ export default function Settings() {
 
   const isFounding = profile?.is_founding_member === true
   const isSubscriber = !isFounding && (profile?.plan_status === 'active' || profile?.plan_status === 'past_due')
+  const referralTrialUntil = profile?.referral_premium_until ? new Date(profile.referral_premium_until) : null
+  const onReferralTrial = !isFounding && !isSubscriber && referralTrialUntil && referralTrialUntil > new Date()
+  const trialDaysLeft = onReferralTrial ? Math.max(1, Math.ceil((referralTrialUntil - new Date()) / 86400000)) : 0
 
   const planLabel = isFounding
     ? 'Founding member'
@@ -34,7 +38,9 @@ export default function Settings() {
       ? 'Premium'
       : profile?.plan_status === 'past_due'
         ? 'Premium (payment due)'
-        : 'Free'
+        : onReferralTrial
+          ? `Premium trial — ${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left`
+          : 'Free'
 
   async function handleManage() {
     setBusy(true)
@@ -103,6 +109,17 @@ export default function Settings() {
             </>
           )}
 
+          {onReferralTrial && (
+            <>
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+                You're on a Premium trial from a referral — unlimited connections and full compatibility breakdowns until it ends. Subscribe to keep Premium afterwards.
+              </p>
+              <Link to="/premium" className="btn-primary" style={{ alignSelf: 'flex-start', textDecoration: 'none' }}>
+                Upgrade to Premium
+              </Link>
+            </>
+          )}
+
           {!isPremium && (
             <>
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
@@ -116,6 +133,8 @@ export default function Settings() {
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b' }}>{error}</p>}
         </div>
+
+        <ReferralPanel profile={profile} isPremium={isPremium} />
 
         <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2rem', lineHeight: 1.7 }}>
           Looking for profile and notification settings? They're under{' '}

@@ -5,6 +5,7 @@ import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { createProfile, updateRelationPreferences, createTypeAssessment } from '../lib/profile'
+import { attributeAndRewardReferral, getStoredReferralCode, getStoredReferrerName } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
 
 export default function ProfileSetup() {
@@ -17,6 +18,9 @@ export default function ProfileSetup() {
   useEffect(() => {
     if (profile) navigate('/feed', { replace: true })
   }, [profile])
+
+  const referredByCode = getStoredReferralCode()
+  const referrerName = getStoredReferrerName()
 
   const savedType = sessionStorage.getItem('socion_type') || localStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || localStorage.getItem('socion_confidence') || 'null')
@@ -52,6 +56,11 @@ export default function ProfileSetup() {
       if (!newProfile) {
         throw new Error('Profile was not created — check Supabase RLS policies.')
       }
+
+      // Type + purpose (the qualifying action) are already set above, so
+      // attribution and reward fire together right here rather than from a
+      // separate "onboarding complete" event.
+      await attributeAndRewardReferral(newProfile.id)
 
       if (relations.length > 0) {
         await updateRelationPreferences(newProfile.id, relations)
@@ -102,6 +111,11 @@ export default function ProfileSetup() {
       <Layout>
         <section style={centreStyle}>
           <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            {referredByCode && (
+              <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '0.9rem 1.1rem', background: 'rgba(154,111,56,0.05)', fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.5 }}>
+                🎉 {referrerName ? <>You were invited by <strong>{referrerName}</strong></> : 'You were invited to Socion'} — finish your profile to unlock 7 days of Premium.
+              </div>
+            )}
             <div style={{ textAlign: 'center' }}>
               <p className="eyebrow">Step 3 of 4</p>
               <h1 style={{ fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
@@ -194,6 +208,9 @@ export default function ProfileSetup() {
                 <div>
                   <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🕵️ Anonymous mode</p>
                   <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Hides your name, age, photo, and location from other users. Your type and relation are always visible. A 🕵️ badge shows on your card. You can turn this off at any time to reveal your details.</p>
+                  {anonymous && (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', lineHeight: 1.5, fontWeight: 500 }}>⚠️ Anonymous profiles are hidden by default in the feed. Most users never see them, which means significantly less engagement. Anonymous mode is fine for a quick look around, but it's not a viable long-term option if you want to make connections.</p>
+                  )}
                 </div>
               </label>
               {!savedType && (

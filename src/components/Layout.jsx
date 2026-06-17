@@ -431,6 +431,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
                 {/* Group 3: Personal */}
                 <Link to={`/profile/${profile.id}`} style={navStyle(isActive(`/profile/${profile.id}`))}>Profile</Link>
+                <Link to="/settings" style={navStyle(isActive('/settings'))}>Settings</Link>
 
                 <Divider />
 
