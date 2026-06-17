@@ -5,6 +5,7 @@ import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { createProfile, updateRelationPreferences, createTypeAssessment } from '../lib/profile'
+import { attributeAndRewardReferral } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
 
 export default function ProfileSetup() {
@@ -52,6 +53,11 @@ export default function ProfileSetup() {
       if (!newProfile) {
         throw new Error('Profile was not created — check Supabase RLS policies.')
       }
+
+      // Type + purpose (the qualifying action) are already set above, so
+      // attribution and reward fire together right here rather than from a
+      // separate "onboarding complete" event.
+      await attributeAndRewardReferral(newProfile.id)
 
       if (relations.length > 0) {
         await updateRelationPreferences(newProfile.id, relations)

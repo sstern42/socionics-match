@@ -36,6 +36,7 @@ class ChunkErrorBoundary extends Component {
 const Support = lazy(() => import('./pages/Support'))
 const Help = lazy(() => import('./pages/Help'))
 const Home = lazy(() => import('./pages/Home'))
+const ReferralLink = lazy(() => import('./pages/ReferralLink'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 const Auth = lazy(() => import('./pages/Auth'))
 const ProfileSetup = lazy(() => import('./pages/ProfileSetup'))
@@ -70,6 +71,7 @@ function AppRoutes() {
     <div key={location.key} className="page-transition-wrapper">
       <Routes location={location}>
         <Route path="/" element={<Home />} />
+        <Route path="/r/:code" element={<ReferralLink />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile/setup" element={<ProfileSetup />} />
