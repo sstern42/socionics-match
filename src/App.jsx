@@ -1,7 +1,37 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, Component } from 'react'
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import FeedbackButton from './components/FeedbackButton'
 import './App.css'
+
+const CHUNK_ERROR_PATTERN = /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|error loading dynamically imported module/i
+
+class ChunkErrorBoundary extends Component {
+  state = { hasError: false }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, isChunkError: CHUNK_ERROR_PATTERN.test(error?.message || '') }
+  }
+
+  componentDidCatch(error) {
+    if (CHUNK_ERROR_PATTERN.test(error?.message || '')) {
+      // A new deploy shipped new chunk hashes while this tab had an old page open.
+      // Reload once to pick up the latest build instead of surfacing a crash.
+      const key = 'chunk-error-reload'
+      if (!sessionStorage.getItem(key)) {
+        sessionStorage.setItem(key, '1')
+        window.location.reload()
+      }
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      if (this.state.isChunkError) return null
+      throw new Error('chunk-error-boundary-rethrow')
+    }
+    return this.props.children
+  }
+}
 
 const Support = lazy(() => import('./pages/Support'))
 const Help = lazy(() => import('./pages/Help'))
@@ -75,11 +105,16 @@ function AppRoutes() {
 }
 
 export default function App() {
+  // A successful render means the current chunks loaded fine, so clear the
+  // one-shot reload flag in case a future deploy needs to trigger it again.
+  sessionStorage.removeItem('chunk-error-reload')
   return (
     <BrowserRouter>
-      <Suspense>
-        <AppRoutes />
-      </Suspense>
+      <ChunkErrorBoundary>
+        <Suspense fallback={null}>
+          <AppRoutes />
+        </Suspense>
+      </ChunkErrorBoundary>
       <FeedbackButton />
     </BrowserRouter>
   )
