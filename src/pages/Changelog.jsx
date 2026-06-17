@@ -4,6 +4,19 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '17 June 2026',
+       label: 'New',
+       items: [
+         'Referrals — invite friends from Settings. Each friend who joins and finishes their profile earns you 30 days of Premium (up to 180 days total), and unlocks a 7-day Premium trial for them',
+         'Referrals — founding members and Premium subscribers don\'t need extra days, so referring as one effectively gifts your friend a free 7-day Premium trial — and still counts toward your tier badge',
+         'Referrals — Connector, Networker, Catalyst, and Catalyst+ tier badges based on your qualifying referral count',
+         'Referrals — Top Connectors leaderboard on Settings, showing the highest-referring members (anonymous-mode users are excluded)',
+         'Referrals — referred friends see a "You were invited by [name]" banner during onboarding',
+         'Settings and Premium pages now show days remaining on a referral-earned Premium trial, with a clear path to subscribe before it ends',
+         'Settings is now linked from the desktop nav (previously only reachable from the mobile menu)',
+       ],
+     },
+     {
        date: '16 June 2026',
        label: 'New',
        items: [
