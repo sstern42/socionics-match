@@ -35,6 +35,7 @@ export default function ProfileSetup() {
   const [country, setCountry] = useState('')
   const [city, setCity] = useState('')
   const [anonymous, setAnonymous] = useState(false)
+  const [hideActivity, setHideActivity] = useState(false)
   const [type, setType] = useState(savedType)
   const [relations, setRelations] = useState([])
   const [error, setError] = useState(null)
@@ -49,7 +50,7 @@ export default function ProfileSetup() {
         authId: session.user.id,
         type,
         typeConfidence: savedConfidence ?? { [type]: 1.0 },
-        profileData: { name, dob: dob || null, gender, bio, country, city: city.trim(), anonymous },
+        profileData: { name, dob: dob || null, gender, bio, country, city: city.trim(), anonymous, hide_activity: hideActivity },
         purpose: savedPurpose,
       })
 
@@ -211,6 +212,18 @@ export default function ProfileSetup() {
                   {anonymous && (
                     <p style={{ fontSize: '0.75rem', color: 'var(--accent)', marginTop: '0.5rem', lineHeight: 1.5, fontWeight: 500 }}>⚠️ Anonymous profiles are hidden by default in the feed. Most users never see them, which means significantly less engagement. Anonymous mode is fine for a quick look around, but it's not a viable long-term option if you want to make connections.</p>
                   )}
+                </div>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: hideActivity ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
+                <input
+                  type="checkbox"
+                  checked={hideActivity}
+                  onChange={e => setHideActivity(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                />
+                <div>
+                  <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>👁️ Hide activity status</p>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>Others won't see when you were last active and you won't appear in the "Online now" or "Active today" filters. You'll also appear lower in the feed while this is on.</p>
                 </div>
               </label>
               {!savedType && (
