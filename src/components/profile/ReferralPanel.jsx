@@ -38,7 +38,7 @@ export default function ReferralPanel({ profile, isPremium }) {
 
   function handleShare() {
     if (navigator.share) {
-      navigator.share({ text: shareText, url: link }).catch(() => {})
+      navigator.share({ title: shareText, text: shareText, url: link }).catch(() => {})
     } else {
       handleCopy()
     }
