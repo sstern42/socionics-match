@@ -75,6 +75,13 @@ CREATE TRIGGER users_generate_referral_code
   FOR EACH ROW
   EXECUTE FUNCTION generate_referral_code();
 
+-- Backfill existing users: the trigger only fires on INSERT, so without this
+-- every pre-existing account would have referral_code = NULL indefinitely
+-- and be unable to use the invite panel. Idempotent: only touches NULLs.
+UPDATE users
+SET referral_code = substr(md5(id::text || clock_timestamp()::text), 1, 8)
+WHERE referral_code IS NULL;
+
 
 -- ============================================================================
 -- SECTION 3: referrals table
@@ -243,10 +250,9 @@ $$;
 --                          'referral_premium_until', 'referral_premium_days_granted',
 --                          'referral_count_qualified');
 
--- 2. Confirm referral_code trigger backfills on new inserts (codes are NULL
---    for existing rows until they next update — fine, since attribution only
---    matters for the referrer's *outgoing* link, which is generated lazily):
---    SELECT id, referral_code FROM users ORDER BY created_at DESC LIMIT 5;
+-- 2. Confirm every user (existing and new) has a referral_code — should
+--    return 0:
+--    SELECT count(*) FROM users WHERE referral_code IS NULL;
 
 -- 3. Confirm self-referral is blocked:
 --    UPDATE users SET referred_by_user_id = id WHERE id = (SELECT id FROM users LIMIT 1);
