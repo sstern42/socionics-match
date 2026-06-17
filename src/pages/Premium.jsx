@@ -30,6 +30,9 @@ export default function Premium() {
 
   const isFounding = profile?.is_founding_member === true
   const isSubscriber = !isFounding && (profile?.plan_status === 'active' || profile?.plan_status === 'past_due')
+  const referralTrialUntil = profile?.referral_premium_until ? new Date(profile.referral_premium_until) : null
+  const onReferralTrial = !isFounding && !isSubscriber && referralTrialUntil && referralTrialUntil > new Date()
+  const trialDaysLeft = onReferralTrial ? Math.max(1, Math.ceil((referralTrialUntil - new Date()) / 86400000)) : 0
 
   async function callFunction(name) {
     const { data: { session: s } } = await supabase.auth.getSession()
@@ -81,7 +84,7 @@ export default function Premium() {
       <section style={{ maxWidth: 600, margin: '0 auto', padding: '4rem 1.5rem 6rem' }}>
         <p className="eyebrow">Socion</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '0.75rem' }}>
-          {isPremium ? <>You're on <em>Premium</em></> : <>Socion <em>Premium</em></>}
+          {isFounding || isSubscriber ? <>You're on <em>Premium</em></> : <>Socion <em>Premium</em></>}
         </h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '2.5rem' }}>
           Socion's core is free and always will be. Premium unlocks the full experience for those who want it.
@@ -95,6 +98,18 @@ export default function Premium() {
             </p>
             <p style={{ fontSize: '0.85rem', lineHeight: 1.6, opacity: 0.9 }}>
               You joined during Socion's launch, so Premium is yours — full access, free, permanently. No subscription, nothing to manage.
+            </p>
+          </div>
+        )}
+
+        {/* Referral trial callout */}
+        {onReferralTrial && (
+          <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.25rem 1.5rem', marginBottom: '2.5rem' }}>
+            <p style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--accent)', marginBottom: '0.35rem' }}>
+              You're on a Premium trial — {trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left
+            </p>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
+              You got this from a referral. Subscribe below to keep Premium once it ends.
             </p>
           </div>
         )}
@@ -136,8 +151,8 @@ export default function Premium() {
           Your full message history and every connection you've made stay with you on either tier — nothing is ever deleted or locked away.
         </p>
 
-        {/* Price + CTA — only for free users */}
-        {!isPremium && (
+        {/* Price + CTA — for anyone without a real subscription (free tier or referral trial) */}
+        {!isFounding && !isSubscriber && (
           <div style={{ border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.75rem', textAlign: 'center', marginBottom: '2rem', background: 'rgba(154,111,56,0.04)' }}>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: '0.75rem', marginBottom: '0.25rem' }}>
               <span style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', color: 'var(--text)' }}>$14.99 / year</span>
@@ -162,7 +177,7 @@ export default function Premium() {
           </div>
         )}
 
-        {isPremium && error && (
+        {(isFounding || isSubscriber) && error && (
           <p style={{ fontSize: '0.82rem', color: '#c0392b', marginBottom: '1.5rem' }}>{error}</p>
         )}
 
