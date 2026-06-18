@@ -4,6 +4,14 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '18 June 2026',
+       label: 'Fixed',
+       items: [
+         'Connection cap — the free-tier 3-connection limit was only checked against the person initiating a connection, so a Premium user (unlimited connections) could push a free-tier user past their cap. Now enforced for both people across new connections, swipe matches, and reconnecting',
+         'Messages — connection list divider lines now match the app\'s standard border color instead of looking brighter/whiter than the rest of the UI',
+       ],
+     },
+     {
        date: '17 June 2026',
        label: 'New',
        items: [

@@ -8,6 +8,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ### Fixed
 - **Connection cap — recipient side**: Connecting, swipe-matching, or reconnecting was only checked against the initiator's 3-connection free-tier cap. A premium user (unlimited connections) could push a free-tier user past their cap by connecting to them. The cap is now enforced for both people in a connection across all three paths: new connections, mutual swipe matches, and reconnecting with a previously unmatched person. Blocked attempts now show a clear message instead of a generic error.
+- **Messages — connection list dividers**: The inner border lines between items in the connections list were brighter/whiter than other borders in the app. They now use the same standard border color as the rest of the UI.
 
 ---
 
