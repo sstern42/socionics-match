@@ -698,8 +698,10 @@ export default function Rooms() {
                 all inside one scroll container so the header can never be clipped off-screen on mobile */}
             <div ref={listRef} style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column' }}>
 
-            {/* Header */}
-            <div style={{ position:'sticky', top:0, zIndex:1, padding:'1rem 1.5rem', borderBottom:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
+            {/* Header + active members strip, kept together in one sticky wrapper so the
+                online indicator never scrolls out of view (e.g. on auto-scroll-to-bottom) */}
+            <div style={{ position:'sticky', top:0, zIndex:1 }}>
+            <div style={{ padding:'1rem 1.5rem', borderBottom:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
                   <span style={{ width:10, height:10, borderRadius:'50%', background:quadraColour, flexShrink:0, display:'inline-block' }} />
@@ -758,6 +760,7 @@ export default function Rooms() {
                 </div>
               )
             })()}
+            </div>
 
             {/* Load more */}
             {hasMore && (
