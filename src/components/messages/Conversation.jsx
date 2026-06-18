@@ -109,7 +109,7 @@ const MessageInput = React.memo(function MessageInput({
         </div>
       )}
 
-      <div style={{ padding:'1rem 1.5rem' }}>
+      <div style={{ padding:'0.6rem 1.5rem' }}>
         {activeBlock ? (
           <p style={{ fontSize:'0.82rem',color:'var(--muted)',textAlign:'center',padding:'0.5rem 0' }}>Messaging is paused for this conversation.</p>
         ) : (
@@ -119,9 +119,7 @@ const MessageInput = React.memo(function MessageInput({
                 <GifPicker onSelect={onGifSelect} onClose={() => setShowGifPicker(false)} />
               )}
               <div
-                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }}
-                onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
-                onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
+                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)' }}
               >
                 <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
                   <button
@@ -168,7 +166,7 @@ const MessageInput = React.memo(function MessageInput({
                     }, 2000)
                   }}
                   onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
-                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 0.5rem 0.9rem 0.75rem',maxHeight:'8rem' }}
+                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.5rem 0.5rem 0.5rem 0.75rem',maxHeight:'8rem' }}
                 />
                 <button
                   className="btn-primary"
