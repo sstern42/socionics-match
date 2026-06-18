@@ -222,7 +222,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { messages, userType } = await req.json()
+    const { messages, userType, connectionRelations } = await req.json()
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
 
     // ── Auth & rate limiting ──────────────────────────────────────────────────
@@ -303,6 +303,9 @@ Deno.serve(async (req) => {
       },
       ...(userType
         ? [{ type: 'text', text: `The user's Socionics type is: ${userType}` }]
+        : []),
+      ...(Array.isArray(connectionRelations) && connectionRelations.length
+        ? [{ type: 'text', text: `The user currently has the following active connection relation types: ${connectionRelations.join(', ')}. Where relevant, tailor relation-specific answers to these dynamics.` }]
         : []),
     ]
 

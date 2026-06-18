@@ -1,16 +1,31 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
+import { getRelation, getTypeForRelation, RELATIONS } from '../data/relations'
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/chat-socionics`
 
-const SUGGESTED_QUESTIONS = [
+const GENERIC_QUESTIONS = [
   'What is my Dual relation and why does it matter?',
   'How is Socionics different from MBTI?',
   'What does Model A actually tell us?',
   'Which relation types work best for romantic relationships?',
   'How do Reinin dichotomies go beyond the four basic Jungian dimensions?',
 ]
+
+function buildDefaultChips(userType) {
+  if (!userType) return GENERIC_QUESTIONS
+  const dualType = getTypeForRelation(userType, 'DUAL')
+  const activityType = getTypeForRelation(userType, 'ACTIVITY')
+  const mirrorType = getTypeForRelation(userType, 'MIRROR')
+  return [
+    `What's the ${userType}–${dualType} Dual dynamic like in practice?`,
+    `How do ${userType}s and ${activityType}s relate in close relationships?`,
+    `What are the ${userType}'s blind spots in relationships?`,
+    `Which relation types work best for ${userType} in a team?`,
+    `How do ${userType} and ${mirrorType} differ despite seeming similar?`,
+  ]
+}
 
 // ── Inline markdown renderer ──────────────────────────────────────────────────
 function renderInline(text) {
@@ -270,17 +285,52 @@ function UpgradePrompt() {
 
 const FREE_DAILY_LIMIT = 10
 
-export default function SocionicsChat({ userType = null, isPremium = false, initialQuestion = null }) {
+export default function SocionicsChat({ userType = null, userId = null, isPremium = false, initialQuestion = null }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [error, setError] = useState(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [messageCount, setMessageCount] = useState(null)
+  const [connectionRelations, setConnectionRelations] = useState([])
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const abortRef = useRef(null)
   const initialFired = useRef(false)
+
+  useEffect(() => {
+    if (!userId || !userType) return
+    async function fetchConnections() {
+      const { data, error } = await supabase
+        .from('matches')
+        .select('user_a_id, user_b_id, user_a:user_a_id(type), user_b:user_b_id(type)')
+        .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+        .is('unmatched_at', null)
+        .limit(3)
+
+      if (error || !data?.length) return
+
+      const relations = data
+        .map(m => {
+          const otherType = m.user_a_id === userId ? m.user_b?.type : m.user_a?.type
+          const rel = otherType ? getRelation(otherType, userType) : null
+          return rel ? RELATIONS[rel]?.name : null
+        })
+        .filter(Boolean)
+
+      setConnectionRelations(relations)
+    }
+    fetchConnections()
+  }, [userId, userType])
+
+  const chips = useMemo(() => {
+    const defaultChips = buildDefaultChips(userType)
+    if (!connectionRelations.length) return defaultChips
+    const connectionChips = [...new Set(connectionRelations)].slice(0, 2).map(rel =>
+      `What friction or strengths should I expect in a ${rel} relation?`
+    )
+    return [...connectionChips, ...defaultChips].slice(0, 5)
+  }, [userType, connectionRelations])
 
   useEffect(() => {
     async function fetchCount() {
@@ -335,7 +385,7 @@ export default function SocionicsChat({ userType = null, isPremium = false, init
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
       const res = await fetch(FUNCTION_URL, {
         method: 'POST', headers,
-        body: JSON.stringify({ messages: newMessages, userType }),
+        body: JSON.stringify({ messages: newMessages, userType, connectionRelations }),
         signal: abortRef.current.signal,
       })
       if (res.ok) {
@@ -470,7 +520,7 @@ export default function SocionicsChat({ userType = null, isPremium = false, init
               Ask anything about Socionics — types, relations, compatibility, Model A.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 380, margin: '0 auto' }}>
-              {SUGGESTED_QUESTIONS.map(q => (
+              {chips.map(q => (
                 <button key={q} onClick={() => send(q)} style={{
                   background: 'var(--card-bg)', border: '1px solid var(--border)',
                   borderRadius: 10, padding: '10px 14px', color: 'var(--text)',
