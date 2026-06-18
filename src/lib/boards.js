@@ -29,7 +29,7 @@ const BOARD_COMMENT_SELECT = `
   reactions:board_comment_reactions ( user_id, emoji )
 `
 
-// Fetch all active boards, ordered for display.
+// Fetch all active boards, ordered for display, with a live post count per board.
 export async function getBoards() {
   const { data, error } = await supabase
     .from('boards')
@@ -37,7 +37,19 @@ export async function getBoards() {
     .order('sort_order', { ascending: true })
 
   if (error) throw error
-  return data ?? []
+  const boards = data ?? []
+
+  const counts = await Promise.all(
+    boards.map(b =>
+      supabase
+        .from('board_posts')
+        .select('id', { count: 'exact', head: true })
+        .eq('board_id', b.id)
+        .is('deleted_at', null)
+    )
+  )
+
+  return boards.map((b, i) => ({ ...b, postCount: counts[i].count ?? 0 }))
 }
 
 export async function getBoardBySlug(slug) {
