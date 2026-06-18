@@ -58,9 +58,14 @@ export default function Boards() {
                 onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--accent-lt)'}
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border)'}
               >
-                <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.35rem' }}>
-                  {board.name}
-                </h2>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '0.75rem' }}>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.35rem' }}>
+                    {board.name}
+                  </h2>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+                    {board.postCount} {board.postCount === 1 ? 'post' : 'posts'}
+                  </span>
+                </div>
                 {board.description && (
                   <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
                     {board.description}
