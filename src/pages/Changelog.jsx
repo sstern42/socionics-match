@@ -7,6 +7,7 @@ export const ENTRIES = [
        date: '18 June 2026',
        label: 'New',
        items: [
+         'Boards — new discussion boards open to all members: introductions, type discussions, theory & typing, relationships, and general chat. Post, comment, react, and edit or delete your own posts and comments. Founders/mods can pin posts',
          'Messages — on desktop, the conversation header (profile, relation, compatibility breakdown) now lives in a right-hand sidebar instead of stacking above the message list, freeing up space to see more of the conversation. Inline action buttons replace the old "..." dropdown',
          'Connection cap — the free-tier 3-connection limit was only checked against the person initiating a connection, so a Premium user (unlimited connections) could push a free-tier user past their cap. Now enforced for both people across new connections, swipe matches, and reconnecting',
          'Messages — connection list divider lines now match the app\'s standard border color instead of looking brighter/whiter than the rest of the UI',
