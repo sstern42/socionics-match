@@ -25,3 +25,36 @@
 @media (max-width: 600px) {
   .nav-burger-bell { display: flex; align-items: center; margin-left: auto; margin-right: 0.5rem; }
 }
+
+/* Country flag hover tooltip (desktop only) */
+.flag-image-wrap {
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.flag-image-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.92);
+  color: #fff;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  z-index: 20;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .flag-image-wrap:hover .flag-image-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+}
