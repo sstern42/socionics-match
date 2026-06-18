@@ -7,7 +7,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ## 18 June 2026
 
 ### Added
-- **Boards**: New discussion boards open to all members — introductions, type discussions, theory & typing, relationships, and general chat. Post, comment, react with emoji, and edit or delete your own posts/comments. Founders/mods can pin posts. Author bylines show name and socionics type. Linked from the homepage and main nav.
+- **Boards**: New discussion boards open to all members — introductions, type discussions, theory & typing, relationships, and general chat. Post, comment, react with emoji, and edit or delete your own posts/comments. Founders/mods can pin posts. Author bylines show name and socionics type. Each board shows its post count, and posts show a view counter (your own views don't count). Linked from the homepage and main nav.
 - **Messages — desktop sidebar**: The conversation header (profile, relation, compatibility breakdown) has moved out of the message list and into a fixed-width right-hand sidebar on desktop, freeing up vertical space for the conversation itself. The discoverable "..." dropdown was replaced with inline action buttons. Mobile layout is unchanged.
 
 ### Fixed
