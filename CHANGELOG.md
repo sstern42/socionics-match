@@ -15,6 +15,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Connection cap — recipient side**: Connecting, swipe-matching, or reconnecting was only checked against the initiator's 3-connection free-tier cap. A premium user (unlimited connections) could push a free-tier user past their cap by connecting to them. The cap is now enforced for both people in a connection across all three paths: new connections, mutual swipe matches, and reconnecting with a previously unmatched person. Blocked attempts now show a clear message instead of a generic error.
 - **Messages — connection list dividers**: The inner border lines between items in the connections list were brighter/whiter than other borders in the app. They now use the same standard border color as the rest of the UI.
 - **Rooms — header clipped on Samsung mobile**: The room header, members strip, and notification banner could render above the visible viewport on some mobile browsers (where the available height shrinks), with no way to scroll up to reach them. They now live inside the same scroll container as the messages, with the header pinned to the top.
+- **Push notifications — blank square icon on Android**: The status bar badge for push notifications reused the full-color app icon, but Android renders that slot from the image's alpha channel only — since the icon is nearly opaque edge-to-edge, it showed up as a solid blank square instead of a recognizable mark. Push notifications now use a dedicated transparent silhouette badge.
 
 ---
 

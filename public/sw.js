@@ -10,7 +10,7 @@
 // Asset cache never needs bumping — hash changes do that automatically.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const SHELL_VERSION = 'socion-shell-v3'
+const SHELL_VERSION = 'socion-shell-v4'
 const ASSET_VERSION = 'socion-assets-v1'
 const IMAGE_VERSION = 'socion-images-v1'
 const ALL_CACHES    = [SHELL_VERSION, ASSET_VERSION, IMAGE_VERSION]
@@ -152,7 +152,7 @@ self.addEventListener('push', event => {
       return self.registration.showNotification(data.title ?? 'New message', {
         body:     data.body  ?? 'You have a new message on Socion',
         icon:     '/icon-192.png',
-        badge:    '/icon-192.png',
+        badge:    '/badge-96.png',
         data:     { url: data.url ?? '/messages' },
         tag:      data.tag  ?? 'socion-message',
         renotify: true,
