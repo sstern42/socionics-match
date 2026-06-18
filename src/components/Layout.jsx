@@ -402,6 +402,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {/* Group 1: Discovery */}
                 <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
                 <Link
+                  to="/ask"
+                  data-umami-event="ask-click"
+                  data-umami-event-source="nav-desktop"
+                  style={navStyle(isActive('/ask'))}
+                >
+                  Ask AI
+                </Link>
+                <Link
                   to="/saved"
                   title="Saved profiles"
                   aria-label="Saved profiles"
@@ -466,12 +474,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 <Link to="/help" title="Help & FAQ" aria-label="Help & FAQ"
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
-                </Link>
-                <Link to="/ask"
-                  title="Socionics AI" aria-label="Socionics AI"
-                  data-umami-event="ask-click" data-umami-event-source="nav-desktop"
-                  style={{ ...navStyle(isActive('/ask')), display: 'inline-flex', alignItems: 'center' }}>
-                  <IconBot />
                 </Link>
               </>
             ) : (
