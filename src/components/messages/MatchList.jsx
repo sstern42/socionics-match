@@ -47,6 +47,7 @@ export default function MatchList({ matches, selectedId, onSelect, currentUserId
             style={{
               display: 'flex', flexDirection: 'row', gap: '0.75rem', alignItems: 'flex-start',
               padding: '0.9rem 1.25rem',
+              border: 'none',
               // borderBottom line removed — handled by .match-list-item
               background: isSelected ? 'rgba(154,111,56,0.07)' : unread ? 'rgba(154,111,56,0.03)' : 'transparent',
               borderLeft: isSelected ? '2px solid var(--accent)' : unread ? '2px solid var(--accent-lt)' : '2px solid transparent',
