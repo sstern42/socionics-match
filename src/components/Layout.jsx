@@ -112,6 +112,13 @@ const IconHelp = () => (
   </svg>
 )
 
+const IconAdmin = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 2l6 2.5v4c0 4.5-2.8 7.5-6 9-3.2-1.5-6-4.5-6-9v-4L10 2z"/>
+    <path d="M7.5 10l1.8 1.8 3.2-3.6"/>
+  </svg>
+)
+
 const IconBot = () => (
   <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
     <rect x="3" y="7" width="14" height="10" rx="2"/>
@@ -446,10 +453,6 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
                 {/* Group 4: Services */}
                 <Link to="/typing" style={navStyle(isActive('/typing'))}>Get typed</Link>
-                {profile?.profile_data?.role === 'founder' && (
-                  <Link to="/admin" style={navStyle(isActive('/admin'))}>Admin</Link>
-                )}
-                <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
 
                 <Divider />
 
@@ -475,6 +478,16 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
                 </Link>
+                {profile?.profile_data?.role === 'founder' && (
+                  <Link to="/admin" title="Admin" aria-label="Admin"
+                    style={{ ...navStyle(isActive('/admin')), display: 'inline-flex', alignItems: 'center' }}>
+                    <IconAdmin />
+                  </Link>
+                )}
+
+                <Divider />
+
+                <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
               </>
             ) : (
               <>
