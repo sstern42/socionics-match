@@ -27,3 +27,6 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Local-only throwaway test scripts
+supabase/test_connection_cap_setup.sql
