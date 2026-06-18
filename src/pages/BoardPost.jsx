@@ -8,6 +8,7 @@ import {
   getBoardComments,
   createBoardComment,
   softDeleteBoardPost,
+  softDeleteBoardComment,
   setPostPinned,
   addPostReaction,
   removePostReaction,
@@ -50,6 +51,7 @@ export default function BoardPost() {
   const [commenting, setCommenting] = useState(false)
   const [commentError, setCommentError] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState(null)
 
   usePageTitle(post?.title ?? 'Post')
 
@@ -94,6 +96,18 @@ export default function BoardPost() {
       await softDeleteBoardPost(postId)
       navigate(`/boards/${slug}`)
     } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function handleDeleteComment(commentId) {
+    const now = new Date().toISOString()
+    setComments(prev => prev.map(c => c.id === commentId ? { ...c, deleted_at: now } : c))
+    setCommentDeleteConfirmId(null)
+    try {
+      await softDeleteBoardComment(commentId)
+    } catch (err) {
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, deleted_at: null } : c))
       setError(err.message)
     }
   }
@@ -268,11 +282,24 @@ export default function BoardPost() {
                   if (!commentGroups[r.emoji]) commentGroups[r.emoji] = []
                   commentGroups[r.emoji].push(r.user_id)
                 }
+                const isMyComment = c.author_id === profile?.id
                 return (
                   <div key={c.id} style={{ padding: '1rem 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '0.3rem' }}>
-                      {authorName(c.author)} · {timeAgo(c.created_at)}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+                      <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: 0 }}>
+                        {authorName(c.author)} · {timeAgo(c.created_at)}
+                      </p>
+                      {isMyComment && !c.deleted_at && (
+                        commentDeleteConfirmId === c.id ? (
+                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
+                            <button type="button" onClick={() => handleDeleteComment(c.id)} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.1rem 0.45rem', fontSize: '0.65rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
+                            <button type="button" onClick={() => setCommentDeleteConfirmId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.65rem' }}>Cancel</button>
+                          </div>
+                        ) : (
+                          <button type="button" onClick={() => setCommentDeleteConfirmId(c.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Delete</button>
+                        )
+                      )}
+                    </div>
                     <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', marginBottom: c.deleted_at ? 0 : '0.5rem' }}>
                       {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
                     </p>
