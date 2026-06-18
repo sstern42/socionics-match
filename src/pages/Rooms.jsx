@@ -694,8 +694,12 @@ export default function Rooms() {
         <div className="messages-outer" style={{ maxWidth:720, width:'100%', margin:'0 auto', flex:1, display:'flex', flexDirection:'column', padding:'0 1.5rem', minHeight:0, boxSizing:'border-box' }}>
           <div style={{ flex:1, display:'flex', flexDirection:'column', border:'1px solid var(--border)', borderLeft:isMobile?'none':undefined, borderRight:isMobile?'none':undefined, borderTop:'none', background:'var(--card-bg)', overflow:'hidden', minHeight:0 }}>
 
+            {/* Scrollable column: header + members strip + load more + notif banner + messages,
+                all inside one scroll container so the header can never be clipped off-screen on mobile */}
+            <div ref={listRef} style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column' }}>
+
             {/* Header */}
-            <div style={{ padding:'1rem 1.5rem', borderBottom:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
+            <div style={{ position:'sticky', top:0, zIndex:1, padding:'1rem 1.5rem', borderBottom:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
                   <span style={{ width:10, height:10, borderRadius:'50%', background:quadraColour, flexShrink:0, display:'inline-block' }} />
@@ -773,7 +777,7 @@ export default function Rooms() {
             )}
 
             {/* Messages */}
-            <div ref={listRef} style={{ flex:1, overflowY:'auto', padding:'1.25rem 1.5rem', display:'flex', flexDirection:'column', gap:'0.85rem', background:'var(--bg)' }}>
+            <div style={{ flex:1, padding:'1.25rem 1.5rem', display:'flex', flexDirection:'column', gap:'0.85rem', background:'var(--bg)' }}>
               {roomLoading ? (
                 <p style={{ color:'var(--muted)',fontSize:'0.85rem',textAlign:'center',marginTop:'2rem' }}>Loading…</p>
               ) : roomError ? (
@@ -785,6 +789,8 @@ export default function Rooms() {
                 </div>
               ) : renderMessages()}
               <div ref={bottomRef} />
+            </div>
+
             </div>
 
             {/* Errors */}
