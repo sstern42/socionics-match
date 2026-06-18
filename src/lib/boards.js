@@ -9,6 +9,7 @@ const BOARD_POST_SELECT = `
   title,
   content,
   pinned,
+  views,
   created_at,
   edited_at,
   deleted_at,
@@ -90,6 +91,12 @@ export async function getBoardPost(postId) {
 
   if (error) throw error
   return data
+}
+
+// Registers a view/impression on a post. No-op for the post's own author.
+export async function incrementBoardPostView(postId) {
+  const { error } = await supabase.rpc('increment_board_post_view', { p_post_id: postId })
+  if (error) throw error
 }
 
 export async function createBoardPost({ boardId, authorId, title, content }) {
