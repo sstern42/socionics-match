@@ -11,6 +11,13 @@ function authorName(author) {
   return author.profile_data?.name ?? author.type ?? 'Unknown'
 }
 
+function authorLabel(author) {
+  const name = authorName(author)
+  if (!author || author.profile_data?.anonymous) return name
+  const type = author.type
+  return type && type !== name ? `${name} · ${type}` : name
+}
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
@@ -190,7 +197,7 @@ export default function BoardDetail() {
                     </span>
                   )}
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
-                    {authorName(post.author)} · {timeAgo(post.created_at)}
+                    {authorLabel(post.author)} · {timeAgo(post.created_at)}
                   </span>
                   {isFounder && (
                     <button
