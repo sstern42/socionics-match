@@ -229,7 +229,7 @@ export default function BoardPost() {
   }
 
   return (
-    <Layout>
+    <Layout hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
         <p style={{ fontSize: '0.82rem', marginBottom: '0.75rem' }}>
           <Link to={`/boards/${slug}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>← Back to board</Link>
