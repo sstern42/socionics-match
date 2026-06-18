@@ -339,12 +339,9 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
   background: var(--accent-lt);
 }
 
-/* Match list item dividers — fainter than default border */
+/* Match list item dividers — match the app's standard border color */
 .match-list-item {
-  border-bottom: 1px solid rgba(60,50,30,0.07) !important;
-}
-html.dark .match-list-item {
-  border-bottom: 1px solid rgba(220,200,160,0.07) !important;
+  border-bottom: 1px solid var(--border) !important;
 }
 
 /* Founding-member live counter — soft pulsing presence dot */
