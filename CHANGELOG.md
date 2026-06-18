@@ -6,9 +6,13 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ## 18 June 2026
 
+### Added
+- **Messages — desktop sidebar**: The conversation header (profile, relation, compatibility breakdown) has moved out of the message list and into a fixed-width right-hand sidebar on desktop, freeing up vertical space for the conversation itself. The discoverable "..." dropdown was replaced with inline action buttons. Mobile layout is unchanged.
+
 ### Fixed
 - **Connection cap — recipient side**: Connecting, swipe-matching, or reconnecting was only checked against the initiator's 3-connection free-tier cap. A premium user (unlimited connections) could push a free-tier user past their cap by connecting to them. The cap is now enforced for both people in a connection across all three paths: new connections, mutual swipe matches, and reconnecting with a previously unmatched person. Blocked attempts now show a clear message instead of a generic error.
 - **Messages — connection list dividers**: The inner border lines between items in the connections list were brighter/whiter than other borders in the app. They now use the same standard border color as the rest of the UI.
+- **Rooms — header clipped on Samsung mobile**: The room header, members strip, and notification banner could render above the visible viewport on some mobile browsers (where the available height shrinks), with no way to scroll up to reach them. They now live inside the same scroll container as the messages, with the header pinned to the top.
 
 ---
 
