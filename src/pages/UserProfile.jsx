@@ -116,7 +116,12 @@ export default function UserProfile() {
       setJustConnected(true)
       window.umami?.track('profile-page-connect', { relation: MATRIX[profile.type]?.[other.type] })
     } catch (err) {
-      setConnectError(err.message)
+      const isCapBlocked = err.code === '42501' || /row-level security/i.test(err.message ?? '')
+      setConnectError(
+        isCapBlocked
+          ? "This person has reached their connection limit right now, so you can't connect just yet. Try again later!"
+          : err.message
+      )
     } finally {
       setConnecting(false)
     }
