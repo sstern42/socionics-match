@@ -60,6 +60,8 @@ create policy "Matches: create"
   on matches for insert
   with check (
     user_a_id in (select id from users where auth_id = auth.uid())
+    and can_add_connection(user_a_id)
+    and can_add_connection(user_b_id)
   );
 
 create policy "Matches: update feedback"
