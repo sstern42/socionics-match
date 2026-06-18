@@ -293,10 +293,34 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [messageCount, setMessageCount] = useState(null)
   const [connectionRelations, setConnectionRelations] = useState([])
+  const [copiedIndex, setCopiedIndex] = useState(null)
+  const [authUserId, setAuthUserId] = useState(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const abortRef = useRef(null)
   const initialFired = useRef(false)
+  const restoredRef = useRef(false)
+
+  // Restore persisted conversation once we know who's asking (skip if an initial question is queued)
+  useEffect(() => {
+    if (!authUserId || restoredRef.current) return
+    restoredRef.current = true
+    if (initialQuestion) return
+    try {
+      const saved = JSON.parse(localStorage.getItem(`chat_history_${authUserId}`) ?? 'null')
+      if (Array.isArray(saved) && saved.length) setMessages(saved)
+    } catch {}
+  }, [authUserId])
+
+  // Persist conversation as it evolves
+  useEffect(() => {
+    if (!authUserId) return
+    if (messages.length) {
+      localStorage.setItem(`chat_history_${authUserId}`, JSON.stringify(messages))
+    } else {
+      localStorage.removeItem(`chat_history_${authUserId}`)
+    }
+  }, [messages, authUserId])
 
   useEffect(() => {
     if (!userId || !userType) return
@@ -336,6 +360,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
     async function fetchCount() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      setAuthUserId(user.id)
       const today = new Date().toISOString().slice(0, 10)
       const storageKey = `msg_count_${user.id}_${today}`
       const cached = parseInt(localStorage.getItem(storageKey) ?? '0', 10)
@@ -369,13 +394,24 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   useEffect(() => { return () => abortRef.current?.abort() }, [])
 
 
-  async function send(text) {
+  function copyMessage(content, i) {
+    navigator.clipboard?.writeText(content)
+    setCopiedIndex(i)
+    setTimeout(() => setCopiedIndex(prev => (prev === i ? null : prev)), 1500)
+  }
+
+  function retry() {
+    const last = messages[messages.length - 1]
+    if (last?.role === 'user') send(last.content, { isRetry: true })
+  }
+
+  async function send(text, { isRetry = false } = {}) {
     const userMessage = text ?? input.trim()
     if (!userMessage || streaming) return
     setInput('')
     setError(null)
     setShowUpgrade(false)
-    const newMessages = [...messages, { role: 'user', content: userMessage }]
+    const newMessages = isRetry ? messages : [...messages, { role: 'user', content: userMessage }]
     setMessages([...newMessages, { role: 'assistant', content: '' }])
     setStreaming(true)
     abortRef.current = new AbortController()
@@ -535,11 +571,31 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
           </div>
         )}
 
-        {messages.map((m, i) => (
-          <Message key={i} role={m.role} content={m.content}
-            streaming={streaming && i === messages.length - 1 && m.role === 'assistant'}
-          />
-        ))}
+        {messages.map((m, i) => {
+          const isLastStreaming = streaming && i === messages.length - 1 && m.role === 'assistant'
+          return (
+            <div key={i}>
+              <Message role={m.role} content={m.content} streaming={isLastStreaming} />
+              {m.role === 'assistant' && m.content && !isLastStreaming && (
+                <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: -6, marginBottom: 12 }}>
+                  <button
+                    onClick={() => copyMessage(m.content, i)}
+                    style={{
+                      background: 'none', border: 'none',
+                      color: 'var(--muted)', fontSize: 11, cursor: 'pointer',
+                      padding: '2px 6px', borderRadius: 6,
+                      transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+                  >
+                    {copiedIndex === i ? 'Copied' : 'Copy'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )
+        })}
 
         {streaming && messages[messages.length - 1]?.content === '' && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: 12 }}>
@@ -551,7 +607,22 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
         {showUpgrade && <UpgradePrompt />}
         {error && !showUpgrade && (
-          <div style={{ textAlign: 'center', fontSize: 13, color: '#e87070', padding: '8px 0' }}>{error}</div>
+          <div style={{ textAlign: 'center', fontSize: 13, color: '#e87070', padding: '8px 0' }}>
+            {error}
+            {messages[messages.length - 1]?.role === 'user' && (
+              <button
+                onClick={retry}
+                style={{
+                  display: 'block', margin: '6px auto 0',
+                  background: 'none', border: '1px solid var(--border)',
+                  color: 'var(--text)', fontSize: 12, cursor: 'pointer',
+                  padding: '4px 12px', borderRadius: 14,
+                }}
+              >
+                Retry
+              </button>
+            )}
+          </div>
         )}
         <div ref={bottomRef} />
       </div>
