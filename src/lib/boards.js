@@ -102,6 +102,15 @@ export async function setPostPinned(postId, pinned) {
   window.umami?.track('board-post-pin-toggled', { pinned })
 }
 
+export async function editBoardPost({ postId, title, content }) {
+  const { error } = await supabase
+    .from('board_posts')
+    .update({ title: title.trim(), content: content.trim(), edited_at: new Date().toISOString() })
+    .eq('id', postId)
+
+  if (error) throw error
+}
+
 export async function softDeleteBoardPost(postId) {
   const { error } = await supabase
     .from('board_posts')
@@ -132,6 +141,15 @@ export async function createBoardComment({ postId, authorId, content }) {
   if (error) throw error
   window.umami?.track('board-comment-created')
   return data
+}
+
+export async function editBoardComment({ commentId, content }) {
+  const { error } = await supabase
+    .from('board_comments')
+    .update({ content: content.trim(), edited_at: new Date().toISOString() })
+    .eq('id', commentId)
+
+  if (error) throw error
 }
 
 export async function softDeleteBoardComment(commentId) {

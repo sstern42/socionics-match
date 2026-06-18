@@ -9,6 +9,8 @@ import {
   createBoardComment,
   softDeleteBoardPost,
   softDeleteBoardComment,
+  editBoardPost,
+  editBoardComment,
   setPostPinned,
   addPostReaction,
   removePostReaction,
@@ -52,6 +54,15 @@ export default function BoardPost() {
   const [commentError, setCommentError] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState(null)
+
+  const [editingPost, setEditingPost] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editContent, setEditContent] = useState('')
+  const [editPostError, setEditPostError] = useState(null)
+
+  const [editingCommentId, setEditingCommentId] = useState(null)
+  const [editCommentText, setEditCommentText] = useState('')
+  const [editCommentError, setEditCommentError] = useState(null)
 
   usePageTitle(post?.title ?? 'Post')
 
@@ -109,6 +120,41 @@ export default function BoardPost() {
     } catch (err) {
       setComments(prev => prev.map(c => c.id === commentId ? { ...c, deleted_at: null } : c))
       setError(err.message)
+    }
+  }
+
+  function startEditPost() {
+    setEditTitle(post.title)
+    setEditContent(post.content)
+    setEditPostError(null)
+    setEditingPost(true)
+  }
+
+  async function handleEditPostSave() {
+    if (!editTitle.trim() || !editContent.trim()) return
+    try {
+      await editBoardPost({ postId, title: editTitle, content: editContent })
+      setPost(prev => ({ ...prev, title: editTitle.trim(), content: editContent.trim(), edited_at: new Date().toISOString() }))
+      setEditingPost(false)
+    } catch (err) {
+      setEditPostError(err.message)
+    }
+  }
+
+  function startEditComment(comment) {
+    setEditingCommentId(comment.id)
+    setEditCommentText(comment.content)
+    setEditCommentError(null)
+  }
+
+  async function handleEditCommentSave(commentId) {
+    if (!editCommentText.trim()) return
+    try {
+      await editBoardComment({ commentId, content: editCommentText })
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, content: editCommentText.trim(), edited_at: new Date().toISOString() } : c))
+      setEditingCommentId(null)
+    } catch (err) {
+      setEditCommentError(err.message)
     }
   }
 
@@ -215,25 +261,58 @@ export default function BoardPost() {
                       {post.pinned ? 'Unpin' : 'Pin'}
                     </button>
                   )}
-                  {isMine && (
+                  {isMine && !editingPost && (
                     deleteConfirm ? (
                       <div style={{ display: 'flex', gap: '0.35rem' }}>
                         <button type="button" onClick={handleDeletePost} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.15rem 0.5rem', fontSize: '0.68rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
                         <button type="button" onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem' }}>Cancel</button>
                       </div>
                     ) : (
-                      <button type="button" onClick={() => setDeleteConfirm(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}>Delete</button>
+                      <>
+                        <button type="button" onClick={startEditPost} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}>Edit</button>
+                        <button type="button" onClick={() => setDeleteConfirm(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}>Delete</button>
+                      </>
                     )
                   )}
                 </div>
               </div>
-              <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,4vw,2.2rem)', marginBottom: '0.9rem' }}>
-                {post.title}
-              </h1>
-              <p style={{ fontSize: '0.95rem', lineHeight: 1.75, whiteSpace: 'pre-wrap', marginBottom: '1.1rem' }}>
-                {post.content}
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+              {editingPost ? (
+                <div style={{ marginBottom: '1.1rem' }}>
+                  <input
+                    className="input-standalone"
+                    value={editTitle}
+                    onChange={e => setEditTitle(e.target.value)}
+                    maxLength={200}
+                    style={{ marginBottom: '0.6rem' }}
+                  />
+                  <textarea
+                    className="input-standalone"
+                    value={editContent}
+                    onChange={e => setEditContent(e.target.value)}
+                    rows={4}
+                    maxLength={5000}
+                    style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.6rem' }}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <button type="button" className="btn-primary" onClick={handleEditPostSave} disabled={!editTitle.trim() || !editContent.trim()} style={{ fontSize: '0.78rem', padding: '0.45rem 1.1rem' }}>Save</button>
+                    <button type="button" className="btn-ghost" onClick={() => setEditingPost(false)} style={{ fontSize: '0.78rem', padding: '0.45rem 1.1rem' }}>Cancel</button>
+                    {editPostError && <p style={{ fontSize: '0.78rem', color: '#c0392b', margin: 0 }}>{editPostError}</p>}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,4vw,2.2rem)', marginBottom: '0.9rem' }}>
+                    {post.title}
+                  </h1>
+                  <p style={{ fontSize: '0.95rem', lineHeight: 1.75, whiteSpace: 'pre-wrap', marginBottom: '0.3rem' }}>
+                    {post.content}
+                  </p>
+                  {post.edited_at && (
+                    <p style={{ fontSize: '0.68rem', color: 'var(--muted)', marginBottom: '0.8rem' }}>edited</p>
+                  )}
+                </>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap', marginTop: '0.8rem' }}>
                 {REACTIONS.map(emoji => {
                   const users = groups[emoji] ?? []
                   const iReacted = users.includes(profile?.id)
@@ -289,21 +368,45 @@ export default function BoardPost() {
                       <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: 0 }}>
                         {authorName(c.author)} · {timeAgo(c.created_at)}
                       </p>
-                      {isMyComment && !c.deleted_at && (
+                      {isMyComment && !c.deleted_at && editingCommentId !== c.id && (
                         commentDeleteConfirmId === c.id ? (
                           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
                             <button type="button" onClick={() => handleDeleteComment(c.id)} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.1rem 0.45rem', fontSize: '0.65rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
                             <button type="button" onClick={() => setCommentDeleteConfirmId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.65rem' }}>Cancel</button>
                           </div>
                         ) : (
-                          <button type="button" onClick={() => setCommentDeleteConfirmId(c.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Delete</button>
+                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+                            <button type="button" onClick={() => startEditComment(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Edit</button>
+                            <button type="button" onClick={() => setCommentDeleteConfirmId(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Delete</button>
+                          </div>
                         )
                       )}
                     </div>
-                    <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', marginBottom: c.deleted_at ? 0 : '0.5rem' }}>
-                      {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
-                    </p>
-                    {!c.deleted_at && (
+                    {editingCommentId === c.id ? (
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <textarea
+                          className="input-standalone"
+                          value={editCommentText}
+                          onChange={e => setEditCommentText(e.target.value)}
+                          rows={2}
+                          maxLength={2000}
+                          style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.5rem' }}
+                        />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                          <button type="button" className="btn-primary" onClick={() => handleEditCommentSave(c.id)} disabled={!editCommentText.trim()} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Save</button>
+                          <button type="button" className="btn-ghost" onClick={() => setEditingCommentId(null)} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Cancel</button>
+                          {editCommentError && <p style={{ fontSize: '0.72rem', color: '#c0392b', margin: 0 }}>{editCommentError}</p>}
+                        </div>
+                      </div>
+                    ) : (
+                      <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', marginBottom: c.deleted_at ? 0 : '0.2rem' }}>
+                        {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
+                      </p>
+                    )}
+                    {!c.deleted_at && c.edited_at && editingCommentId !== c.id && (
+                      <p style={{ fontSize: '0.62rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>edited</p>
+                    )}
+                    {!c.deleted_at && editingCommentId !== c.id && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
                         {REACTIONS.map(emoji => {
                           const users = commentGroups[emoji] ?? []
