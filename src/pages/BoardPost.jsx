@@ -26,6 +26,13 @@ function authorName(author) {
   return author.profile_data?.name ?? author.type ?? 'Unknown'
 }
 
+function authorLabel(author) {
+  const name = authorName(author)
+  if (!author || author.profile_data?.anonymous) return name
+  const type = author.type
+  return type && type !== name ? `${name} · ${type}` : name
+}
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
@@ -249,7 +256,7 @@ export default function BoardPost() {
                   </span>
                 )}
                 <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  {authorName(post.author)} · {timeAgo(post.created_at)}
+                  {authorLabel(post.author)} · {timeAgo(post.created_at)}
                 </span>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {isFounder && (
@@ -366,7 +373,7 @@ export default function BoardPost() {
                   <div key={c.id} style={{ padding: '1rem 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
                       <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: 0 }}>
-                        {authorName(c.author)} · {timeAgo(c.created_at)}
+                        {authorLabel(c.author)} · {timeAgo(c.created_at)}
                       </p>
                       {isMyComment && !c.deleted_at && editingCommentId !== c.id && (
                         commentDeleteConfirmId === c.id ? (
