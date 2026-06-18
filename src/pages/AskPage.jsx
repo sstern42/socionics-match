@@ -16,6 +16,7 @@ export default function AskPage() {
     if (!loading && !session) navigate('/auth', { replace: true })
   }, [session, loading])
   const [userType, setUserType] = useState(null)
+  const [userId, setUserId] = useState(null)
 
   usePageTitle('Socionics AI')
 
@@ -25,10 +26,11 @@ export default function AskPage() {
       if (!user) return
       const { data } = await supabase
         .from('users')
-        .select('type')
+        .select('id, type')
         .eq('auth_id', user.id)
         .single()
       if (data?.type) setUserType(data.type)
+      if (data?.id) setUserId(data.id)
     }
     fetchType()
   }, [])
@@ -64,7 +66,7 @@ export default function AskPage() {
           Back
         </button>
         <div style={{ flex: 1, minHeight: 0 }}>
-          <SocionicsChat userType={userType} isPremium={isPremium} initialQuestion={initialQuestion} />
+          <SocionicsChat userType={userType} userId={userId} isPremium={isPremium} initialQuestion={initialQuestion} />
         </div>
       </div>
     </Layout>

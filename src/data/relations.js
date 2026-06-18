@@ -51,6 +51,12 @@ export function getRelation(typeA, typeB) {
   return MATRIX[typeA]?.[typeB] ?? null
 }
 
+// Returns the type that has the given relation to myType (from myType's perspective).
+export function getTypeForRelation(myType, relation) {
+  if (!myType) return null
+  return TYPES.find(t => getRelation(myType, t) === relation) ?? null
+}
+
 export function getMatchingTypes(userType, wantedRelations) {
   return TYPES.filter(t => {
     const rel = getRelation(userType, t)
