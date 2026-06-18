@@ -660,8 +660,27 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           {relInfo && <span style={{ fontSize:'0.68rem',color:'var(--muted)',letterSpacing:'0.04em' }}>· {relInfo.name}</span>}
           {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
           {memberSince && <span style={{ fontSize:'0.62rem',color:'var(--muted)' }}>· Member since {memberSince}</span>}
+          {breakdown && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = !breakdownOpen
+                if (breakdownUnlocked) window.umami?.track('breakdown-toggled',{open:next,source:'mobile'})
+                else if (next) window.umami?.track('breakdown-teaser-opened',{source:'mobile'})
+                setBreakdownOpen(next)
+              }}
+              aria-label={breakdownUnlocked ? 'Compatibility breakdown' : 'Compatibility breakdown (locked)'}
+              title={breakdownUnlocked ? (breakdownOpen ? 'Hide breakdown' : 'Full breakdown') : 'Full compatibility breakdown — locked'}
+              style={{ position:'relative',display:'flex',alignItems:'center',justifyContent:'center',width:32,height:32,borderRadius:'50%',background:breakdownOpen?'var(--accent-lt)':'var(--surface)',border:'none',cursor:'pointer',fontSize:'0.95rem',flexShrink:0,lineHeight:1 }}
+            >
+              📊
+              {!breakdownUnlocked && (
+                <span style={{ position:'absolute',top:-2,right:-2,width:11,height:11,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.4rem',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1 }}>🔒</span>
+              )}
+            </button>
+          )}
           <div style={{ position:'relative' }} ref={menuRef}>
-            <button type="button" onClick={() => setMenuOpen(o=>!o)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'1.1rem',padding:'0.25rem 0.25rem 0.25rem 0.5rem',lineHeight:1 }} aria-label="Options">···</button>
+            <button type="button" onClick={() => setMenuOpen(o=>!o)} style={{ display:'flex',alignItems:'center',justifyContent:'center',width:32,height:32,borderRadius:'50%',background:'var(--surface)',border:'none',cursor:'pointer',color:'var(--text)',fontSize:'1.1rem',lineHeight:1,flexShrink:0 }} aria-label="Options">⋮</button>
             {menuOpen && (
               <div style={{ position:'absolute',right:0,top:'100%',background:'var(--card-bg)',border:'1px solid var(--border)',borderRadius:4,minWidth:160,zIndex:50,boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}>
                 <MenuItems />
@@ -672,23 +691,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       </div>
 
       <div className="convo-main">
-
-      {/* Mobile breakdown toggle */}
-      {breakdown && (
-        <div className="show-mobile" style={{ borderBottom:'1px solid var(--border)',background:'var(--card-bg)',textAlign:'center' }}>
-          <button
-            onClick={() => {
-              const next = !breakdownOpen
-              if (breakdownUnlocked) window.umami?.track('breakdown-toggled',{open:next,source:'mobile'})
-              else if (next) window.umami?.track('breakdown-teaser-opened',{source:'mobile'})
-              setBreakdownOpen(next)
-            }}
-            style={{ fontSize:'0.68rem',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:'0.45rem 1rem',letterSpacing:'0.04em' }}
-          >
-            {breakdownUnlocked ? (breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓') : (breakdownOpen ? 'Hide breakdown ↑' : 'Full compatibility breakdown 🔒')}
-          </button>
-        </div>
-      )}
 
       {/* Mobile: breakdown panel / locked teaser inline above messages */}
       <div className="show-mobile" style={{ maxHeight:'45vh',overflowY:'auto',flexShrink:0 }}>
