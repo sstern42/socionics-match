@@ -600,6 +600,7 @@ export default function Home() {
             { title: '🕵️ Browse anonymously', body: "Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them." },
             { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
             { title: '🤖 Socionics AI', body: "Ask anything about types, relations, or your own dynamics. An AI assistant answers in seconds — and personalizes responses to your type.", link: '/ask' },
+            { title: '💬 Boards', body: "Discussion topics open to everyone — introductions, type discussions, theory, relationship advice, and more. Post, comment, and react.", link: '/boards' },
           ].map(({ title, body, link }) => (
             <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{title}</h3>
