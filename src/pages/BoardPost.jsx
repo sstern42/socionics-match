@@ -8,8 +8,11 @@ import {
   getBoardComments,
   createBoardComment,
   softDeleteBoardPost,
+  setPostPinned,
   addPostReaction,
   removePostReaction,
+  addCommentReaction,
+  removeCommentReaction,
 } from '../lib/boards'
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
@@ -36,6 +39,7 @@ export default function BoardPost() {
   const { slug, postId } = useParams()
   const { session, loading: authLoading, profile } = useAuth()
   const navigate = useNavigate()
+  const isFounder = profile?.profile_data?.role === 'founder'
 
   const [post, setPost] = useState(null)
   const [comments, setComments] = useState([])
@@ -94,6 +98,45 @@ export default function BoardPost() {
     }
   }
 
+  async function handleTogglePin() {
+    if (!post) return
+    const nextPinned = !post.pinned
+    setPost(prev => ({ ...prev, pinned: nextPinned }))
+    try {
+      await setPostPinned(postId, nextPinned)
+    } catch (err) {
+      setPost(prev => ({ ...prev, pinned: !nextPinned }))
+      setError(err.message)
+    }
+  }
+
+  async function toggleCommentReaction(commentId, emoji) {
+    if (!profile?.id) return
+    const comment = comments.find(c => c.id === commentId)
+    if (!comment) return
+    const reactions = comment.reactions ?? []
+    const hasReacted = reactions.some(r => r.user_id === profile.id && r.emoji === emoji)
+    const snapshot = reactions
+
+    setComments(prev => prev.map(c => {
+      if (c.id !== commentId) return c
+      const updated = hasReacted
+        ? reactions.filter(r => !(r.user_id === profile.id && r.emoji === emoji))
+        : [...reactions, { user_id: profile.id, emoji }]
+      return { ...c, reactions: updated }
+    }))
+
+    try {
+      if (hasReacted) {
+        await removeCommentReaction({ commentId, userId: profile.id, emoji })
+      } else {
+        await addCommentReaction({ commentId, userId: profile.id, emoji })
+      }
+    } catch {
+      setComments(prev => prev.map(c => c.id === commentId ? { ...c, reactions: snapshot } : c))
+    }
+  }
+
   async function toggleReaction(emoji) {
     if (!profile?.id || !post) return
     const reactions = post.reactions ?? []
@@ -140,19 +183,35 @@ export default function BoardPost() {
           <>
             <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                {post.pinned && (
+                  <span style={{ fontSize: '0.62rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 600 }}>
+                    Pinned
+                  </span>
+                )}
                 <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
                   {authorName(post.author)} · {timeAgo(post.created_at)}
                 </span>
-                {isMine && (
-                  deleteConfirm ? (
-                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
-                      <button type="button" onClick={handleDeletePost} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.15rem 0.5rem', fontSize: '0.68rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
-                      <button type="button" onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem' }}>Cancel</button>
-                    </div>
-                  ) : (
-                    <button type="button" onClick={() => setDeleteConfirm(true)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}>Delete</button>
-                  )
-                )}
+                <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {isFounder && (
+                    <button
+                      type="button"
+                      onClick={handleTogglePin}
+                      style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.1rem 0.5rem', fontSize: '0.68rem', color: 'var(--muted)', cursor: 'pointer' }}
+                    >
+                      {post.pinned ? 'Unpin' : 'Pin'}
+                    </button>
+                  )}
+                  {isMine && (
+                    deleteConfirm ? (
+                      <div style={{ display: 'flex', gap: '0.35rem' }}>
+                        <button type="button" onClick={handleDeletePost} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.15rem 0.5rem', fontSize: '0.68rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
+                        <button type="button" onClick={() => setDeleteConfirm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.68rem' }}>Cancel</button>
+                      </div>
+                    ) : (
+                      <button type="button" onClick={() => setDeleteConfirm(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}>Delete</button>
+                    )
+                  )}
+                </div>
               </div>
               <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.6rem,4vw,2.2rem)', marginBottom: '0.9rem' }}>
                 {post.title}
@@ -203,16 +262,37 @@ export default function BoardPost() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {comments.map((c, i) => (
-                <div key={c.id} style={{ padding: '1rem 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '0.3rem' }}>
-                    {authorName(c.author)} · {timeAgo(c.created_at)}
-                  </p>
-                  <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap' }}>
-                    {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
-                  </p>
-                </div>
-              ))}
+              {comments.map((c, i) => {
+                const commentGroups = {}
+                for (const r of c.reactions ?? []) {
+                  if (!commentGroups[r.emoji]) commentGroups[r.emoji] = []
+                  commentGroups[r.emoji].push(r.user_id)
+                }
+                return (
+                  <div key={c.id} style={{ padding: '1rem 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginBottom: '0.3rem' }}>
+                      {authorName(c.author)} · {timeAgo(c.created_at)}
+                    </p>
+                    <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', marginBottom: c.deleted_at ? 0 : '0.5rem' }}>
+                      {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
+                    </p>
+                    {!c.deleted_at && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+                        {REACTIONS.map(emoji => {
+                          const users = commentGroups[emoji] ?? []
+                          const iReacted = users.includes(profile?.id)
+                          return (
+                            <button key={emoji} type="button" onClick={() => toggleCommentReaction(c.id, emoji)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: iReacted ? 'rgba(154,111,56,0.1)' : 'var(--surface)', border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'var(--border)'}`, borderRadius: 20, padding: '0.1rem 0.45rem', cursor: 'pointer', fontSize: '0.78rem', lineHeight: 1.5 }}>
+                              <span>{emoji}</span>
+                              {users.length > 0 && <span style={{ fontSize: '0.62rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{users.length}</span>}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </>
         )}

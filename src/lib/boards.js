@@ -92,6 +92,16 @@ export async function createBoardPost({ boardId, authorId, title, content }) {
   return data
 }
 
+export async function setPostPinned(postId, pinned) {
+  const { error } = await supabase
+    .from('board_posts')
+    .update({ pinned })
+    .eq('id', postId)
+
+  if (error) throw error
+  window.umami?.track('board-post-pin-toggled', { pinned })
+}
+
 export async function softDeleteBoardPost(postId) {
   const { error } = await supabase
     .from('board_posts')

@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { getBoardBySlug, getBoardPosts, createBoardPost } from '../lib/boards'
+import { getBoardBySlug, getBoardPosts, createBoardPost, setPostPinned } from '../lib/boards'
 
 function authorName(author) {
   if (!author) return 'Unknown'
@@ -27,6 +27,7 @@ export default function BoardDetail() {
   const { slug } = useParams()
   const { session, loading: authLoading, profile } = useAuth()
   const navigate = useNavigate()
+  const isFounder = profile?.profile_data?.role === 'founder'
 
   const [board, setBoard] = useState(null)
   const [posts, setPosts] = useState([])
@@ -61,6 +62,19 @@ export default function BoardDetail() {
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
   }, [slug])
+
+  async function handleTogglePin(post) {
+    const nextPinned = !post.pinned
+    setPosts(prev => prev
+      .map(p => p.id === post.id ? { ...p, pinned: nextPinned } : p)
+      .sort((a, b) => (b.pinned - a.pinned) || (new Date(b.created_at) - new Date(a.created_at))))
+    try {
+      await setPostPinned(post.id, nextPinned)
+    } catch (err) {
+      setPosts(prev => prev.map(p => p.id === post.id ? { ...p, pinned: post.pinned } : p))
+      setError(err.message)
+    }
+  }
 
   async function handlePost() {
     if (!title.trim() || !content.trim() || posting || !board || !profile?.id) return
@@ -162,11 +176,9 @@ export default function BoardDetail() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {posts.map((post, i) => (
-              <Link
+              <div
                 key={post.id}
-                to={`/boards/${slug}/${post.id}`}
                 style={{
-                  display: 'block', textDecoration: 'none', color: 'var(--text)',
                   padding: '1.25rem 0',
                   borderBottom: i < posts.length - 1 ? '1px solid var(--border)' : 'none',
                 }}
@@ -180,17 +192,28 @@ export default function BoardDetail() {
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>
                     {authorName(post.author)} · {timeAgo(post.created_at)}
                   </span>
+                  {isFounder && (
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePin(post)}
+                      style={{ marginLeft: 'auto', background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.1rem 0.5rem', fontSize: '0.68rem', color: 'var(--muted)', cursor: 'pointer' }}
+                    >
+                      {post.pinned ? 'Unpin' : 'Pin'}
+                    </button>
+                  )}
                 </div>
-                <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', marginBottom: '0.3rem' }}>
-                  {post.title}
-                </h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                  {post.content}
-                </p>
-                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
-                  {post.comments?.length ?? 0} {post.comments?.length === 1 ? 'comment' : 'comments'}
-                </p>
-              </Link>
+                <Link to={`/boards/${slug}/${post.id}`} style={{ display: 'block', textDecoration: 'none', color: 'var(--text)' }}>
+                  <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', marginBottom: '0.3rem' }}>
+                    {post.title}
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {post.content}
+                  </p>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
+                    {post.comments?.length ?? 0} {post.comments?.length === 1 ? 'comment' : 'comments'}
+                  </p>
+                </Link>
+              </div>
             ))}
           </div>
         )}
