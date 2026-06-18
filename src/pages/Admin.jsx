@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
+import { liftBlock } from '../lib/blocks'
 import { COUNTRIES } from '../data/countries'
 
 const ADMIN_ROLE = 'founder'
@@ -53,6 +54,7 @@ export default function Admin() {
   const [siteBannerActive, setSiteBannerActive] = useState(false)
   const [savingSiteBanner, setSavingSiteBanner] = useState(false)
   const [siteBannerSaved, setSiteBannerSaved] = useState(false)
+  const [unblockingId, setUnblockingId] = useState(null)
 
   useEffect(() => {
     if (loading) return
@@ -189,6 +191,18 @@ export default function Admin() {
       setError(err.message)
     } finally {
       setFetching(false)
+    }
+  }
+
+  async function handleUnblock(reportId) {
+    setUnblockingId(reportId)
+    try {
+      await liftBlock(reportId)
+      await loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setUnblockingId(null)
     }
   }
 
@@ -489,11 +503,31 @@ export default function Admin() {
             {reports.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
                 {reports.map(r => (
-                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
-                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>{r.reason}</p>
+                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: `2px solid ${r.lifted_at ? 'var(--border)' : '#c0392b'}`, paddingLeft: '0.75rem' }}>
+                    <p style={{ color: r.lifted_at ? 'var(--muted)' : '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+                      {r.reason}{r.lifted_at && ' — unblocked'}
+                    </p>
+                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
+                      <strong>{r.blocked_name ?? r.blocked_id}</strong> blocked by <strong>{r.blocker_name ?? r.blocker_id}</strong>
+                    </p>
                     <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
                       {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </p>
+                    {!r.lifted_at && (
+                      <button
+                        type="button"
+                        onClick={() => handleUnblock(r.id)}
+                        disabled={unblockingId === r.id}
+                        style={{
+                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
+                          color: 'var(--accent)', cursor: unblockingId === r.id ? 'default' : 'pointer',
+                          opacity: unblockingId === r.id ? 0.6 : 1,
+                        }}
+                      >
+                        {unblockingId === r.id ? 'Unblocking…' : 'Unblock'}
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

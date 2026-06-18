@@ -40,10 +40,15 @@ begin
     'recent_blocks',     (
                            select coalesce(jsonb_agg(b order by b.created_at desc), '[]')
                            from (
-                             select id, blocker_id, blocked_id, reason, expires_at, created_at,
-                                    case when expires_at is not null then 'cooloff' else 'block' end as type
-                             from blocks
-                             order by created_at desc
+                             select bl.id, bl.blocker_id, bl.blocked_id, bl.reason, bl.expires_at,
+                                    bl.created_at, bl.lifted_at,
+                                    case when bl.expires_at is not null then 'cooloff' else 'block' end as type,
+                                    blocker.profile_data->>'name' as blocker_name,
+                                    blocked.profile_data->>'name' as blocked_name
+                             from blocks bl
+                             left join users blocker on blocker.id = bl.blocker_id
+                             left join users blocked on blocked.id = bl.blocked_id
+                             order by bl.created_at desc
                              limit 20
                            ) b
                          ),
