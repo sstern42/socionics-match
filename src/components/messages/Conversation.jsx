@@ -659,7 +659,6 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           </button>
           {relInfo && <span style={{ fontSize:'0.68rem',color:'var(--muted)',letterSpacing:'0.04em' }}>· {relInfo.name}</span>}
           {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
-          {memberSince && <span style={{ fontSize:'0.62rem',color:'var(--muted)' }}>· Member since {memberSince}</span>}
           {breakdown && (
             <button
               type="button"
