@@ -118,6 +118,11 @@ begin
     return NEW;   -- not mutual yet
   end if;
 
+  -- respect the free-tier connection cap on both sides before matching
+  if not can_add_connection(NEW.swiper_id) or not can_add_connection(NEW.target_id) then
+    return NEW;
+  end if;
+
   -- ── mutual match confirmed ──────────────────────────────────
   -- Use least/greatest to prevent duplicate pairs (same pattern
   -- as existing matches constraint in the codebase)
