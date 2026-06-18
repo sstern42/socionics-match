@@ -16,6 +16,7 @@ import {
   removePostReaction,
   addCommentReaction,
   removeCommentReaction,
+  incrementBoardPostView,
 } from '../lib/boards'
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
@@ -87,6 +88,7 @@ export default function BoardPost() {
         if (!p) { setError('Post not found.'); return }
         setPost(p)
         setComments(c)
+        incrementBoardPostView(postId).catch(() => {})
       })
       .catch(err => { if (!cancelled) setError(err.message) })
       .finally(() => { if (!cancelled) setLoading(false) })
@@ -256,7 +258,7 @@ export default function BoardPost() {
                   </span>
                 )}
                 <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  {authorLabel(post.author)} · {timeAgo(post.created_at)}
+                  {authorLabel(post.author)} · {timeAgo(post.created_at)} · {post.views ?? 0} {post.views === 1 ? 'view' : 'views'}
                 </span>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {isFounder && (

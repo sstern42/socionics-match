@@ -217,7 +217,7 @@ export default function BoardDetail() {
                     {post.content}
                   </p>
                   <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
-                    {post.comments?.length ?? 0} {post.comments?.length === 1 ? 'comment' : 'comments'}
+                    {post.comments?.length ?? 0} {post.comments?.length === 1 ? 'comment' : 'comments'} · {post.views ?? 0} {post.views === 1 ? 'view' : 'views'}
                   </p>
                 </Link>
               </div>
