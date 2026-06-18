@@ -109,7 +109,7 @@ const MessageInput = React.memo(function MessageInput({
         </div>
       )}
 
-      <div style={{ padding:'1rem 1.5rem' }}>
+      <div style={{ padding:'0.6rem 1.5rem' }}>
         {activeBlock ? (
           <p style={{ fontSize:'0.82rem',color:'var(--muted)',textAlign:'center',padding:'0.5rem 0' }}>Messaging is paused for this conversation.</p>
         ) : (
@@ -119,9 +119,7 @@ const MessageInput = React.memo(function MessageInput({
                 <GifPicker onSelect={onGifSelect} onClose={() => setShowGifPicker(false)} />
               )}
               <div
-                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)',transition:'border-color 0.2s' }}
-                onFocusCapture={e=>e.currentTarget.style.borderColor='var(--accent)'}
-                onBlurCapture={e=>e.currentTarget.style.borderColor='var(--border)'}
+                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)' }}
               >
                 <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
                   <button
@@ -168,7 +166,7 @@ const MessageInput = React.memo(function MessageInput({
                     }, 2000)
                   }}
                   onKeyDown={e => { if(e.key==='Enter'&&!e.shiftKey&&!isMobile){e.preventDefault();handleSend()} }}
-                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.9rem 0.5rem 0.9rem 0.75rem',maxHeight:'8rem' }}
+                  style={{ flex:1,resize:'none',overflow:'hidden',lineHeight:1.5,fontFamily:'var(--sans)',fontSize:'0.92rem',fontWeight:300,color:'var(--text)',background:'transparent',border:'none',outline:'none',padding:'0.5rem 0.5rem 0.5rem 0.75rem',maxHeight:'8rem' }}
                 />
                 <button
                   className="btn-primary"
@@ -566,9 +564,76 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     )
   }
 
+  function BreakdownPanel() {
+    return (
+      <div style={{ borderBottom:'1px solid var(--border)',background:'var(--bg)',padding:isMobile?'0.75rem 1rem':'1rem 1.25rem',display:'flex',flexDirection:'column',gap:'0.75rem',flexShrink:0 }}>
+        <div>
+          <p style={bsl}>Function interactions</p>
+          <div style={{ display:'flex',flexDirection:'column',gap:'0.4rem' }}>
+            <p style={bt}>Your leading <strong>{breakdown.functions.myLeading}</strong> sits at {otherName}'s <strong>{breakdown.functions.myLeadingPosName}</strong> position.{' '}<span style={{ color:'var(--muted)' }}>{breakdown.functions.myLeadingMeaning}</span></p>
+            <p style={bt}>{otherName}'s leading <strong>{breakdown.functions.otherLeading}</strong> sits at your <strong>{breakdown.functions.otherLeadingPosName}</strong> position.</p>
+            <p style={bt}>Your creative <strong>{breakdown.functions.myCreative}</strong> sits at {otherName}'s <strong>{breakdown.functions.myCreativePosName}</strong> position.{' '}<span style={{ color:'var(--muted)' }}>{breakdown.functions.myCreativeMeaning}</span></p>
+          </div>
+        </div>
+        {breakdown.strengths.length > 0 && (
+          <div>
+            <p style={bsl}>Strengths</p>
+            <ul style={{ margin:0,paddingLeft:'1rem',display:'flex',flexDirection:'column',gap:'0.2rem' }}>
+              {breakdown.strengths.map((s,i) => <li key={i} style={bt}>{s}</li>)}
+            </ul>
+          </div>
+        )}
+        {breakdown.friction.length > 0 && (
+          <div>
+            <p style={bsl}>Friction points</p>
+            <ul style={{ margin:0,paddingLeft:'1rem',display:'flex',flexDirection:'column',gap:'0.2rem' }}>
+              {breakdown.friction.map((f,i) => <li key={i} style={bt}>{f}</li>)}
+            </ul>
+          </div>
+        )}
+        {breakdown.advice && (
+          <div>
+            <p style={bsl}>Practical note</p>
+            <p style={{ ...bt,color:'var(--muted)',fontStyle:'italic' }}>{breakdown.advice}</p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  function LockedTeaser() {
+    return (
+      <div style={{ borderBottom:'1px solid var(--border)',background:'var(--bg)',padding:isMobile?'0.75rem 1rem':'1rem 1.25rem',flexShrink:0 }}>
+        <div style={{ position:'relative',borderRadius:6,overflow:'hidden' }}>
+          <div aria-hidden="true" style={{ display:'flex',flexDirection:'column',gap:'0.75rem',filter:'blur(5px)',opacity:0.55,userSelect:'none',pointerEvents:'none',padding:'0.1rem' }}>
+            <div>
+              <p style={bsl}>Function interactions</p>
+              <div style={{ display:'flex',flexDirection:'column',gap:'0.4rem' }}>
+                <p style={bt}>Your leading <strong>{breakdown.functions.myLeading}</strong> at {otherName}'s <strong>{breakdown.functions.myLeadingPosName}</strong>.</p>
+                <p style={bt}>{otherName}'s leading <strong>{breakdown.functions.otherLeading}</strong> at your <strong>{breakdown.functions.otherLeadingPosName}</strong>.</p>
+              </div>
+            </div>
+          </div>
+          <div style={{ position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'0.5rem',padding:'1.5rem 1rem 1rem',background:'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 35%, transparent), color-mix(in srgb, var(--bg) 85%, transparent))' }}>
+            <span style={{ fontSize:'1.4rem',lineHeight:1 }}>🔒</span>
+            <p style={{ fontFamily:'var(--serif)',fontSize:isMobile?'0.95rem':'1.05rem',fontWeight:500,color:'var(--text)',margin:0 }}>
+              See exactly how you and {otherName} fit
+            </p>
+            <p style={{ fontSize:'0.78rem',color:'var(--muted)',lineHeight:1.5,margin:0,maxWidth:360 }}>
+              Premium unlocks your full Model A breakdown — function-by-function strengths, friction points and a practical note.
+            </p>
+            <Link to="/premium" onClick={() => window.umami?.track('breakdown-teaser-cta',{source:isMobile?'mobile':'desktop'})} style={{ marginTop:'0.15rem',display:'inline-block',background:'var(--accent)',color:'#fff',textDecoration:'none',fontSize:'0.8rem',fontWeight:500,padding:'0.5rem 1.1rem',borderRadius:4 }}>
+              Unlock with Premium
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
-    <div style={{ display:'flex',flexDirection:'column',height:'100%' }}>
+    <div className="convo-root">
 
       {/* Mobile header */}
       <div className="convo-header-mobile show-mobile">
@@ -604,6 +669,8 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         </div>
       </div>
 
+      <div className="convo-main">
+
       {/* Mobile breakdown toggle */}
       {breakdown && (
         <div className="show-mobile" style={{ borderBottom:'1px solid var(--border)',background:'var(--card-bg)',textAlign:'center' }}>
@@ -621,127 +688,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         </div>
       )}
 
-      {/* Desktop header */}
-      <div className="hidden-mobile" style={{ padding:'1.25rem 1.5rem',borderBottom:'1px solid var(--border)',background:'var(--card-bg)' }}>
-        <div style={{ display:'flex',justifyContent:'space-between',alignItems:'flex-start' }}>
-          <div style={{ display:'flex',alignItems:'center',gap:'0.85rem' }}>
-            <Link to={`/profile/${otherUserId}`} style={{ flexShrink:0,textDecoration:'none' }}>
-              <div style={{ width:40,height:40,borderRadius:'50%',background:'var(--surface)',border:'1px solid var(--border)',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center' }}>
-                {match.other.avatar_url && !isOtherAnonymous
-                  ? <img src={match.other.avatar_url} alt={otherName} style={{ width:'100%',height:'100%',objectFit:'cover' }} />
-                  : <span style={{ fontFamily:'var(--serif)',fontSize:'1rem',color:'var(--muted)',lineHeight:1 }}>{isOtherAnonymous ? '🕵️' : (match.other.profile_data?.name?.[0]?.toUpperCase() ?? '?')}</span>
-                }
-              </div>
-            </Link>
-            <div>
-              <Link to={`/profile/${otherUserId}`} style={{ fontFamily:'var(--serif)',fontSize:'1.25rem',fontWeight:500,color:'var(--text)',textDecoration:'none' }}>{otherName}</Link>{otherBadge}
-              <div style={{ display:'flex',alignItems:'center',gap:'0.5rem',marginTop:'0.15rem' }}>
-                <p style={{ fontSize:'0.72rem',color:'var(--accent)',letterSpacing:'0.1em',textTransform:'uppercase',fontWeight:500,margin:0 }}>
-                  <button onClick={() => { window.umami?.track('si-link-type',{type:match.other.type}); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,fontSize:'inherit',letterSpacing:'inherit',textTransform:'inherit',fontWeight:'inherit' }}>
-                    {match.other.type}
-                  </button>
-                </p>
-                {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:13,height:13,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.5rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
-                {memberSince && <span style={{ fontSize:'0.65rem',color:'var(--muted)',letterSpacing:'0.02em' }}>· Member since {memberSince}</span>}
-              </div>
-            </div>
-          </div>
-          <div style={{ display:'flex',alignItems:'flex-start',gap:'1rem' }}>
-            {relInfo && (
-              <div style={{ textAlign:'right',maxWidth:220 }}>
-                <p style={{ fontSize:'0.72rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--accent)',fontWeight:500 }}>{relInfo.name}</p>
-                <p style={{ fontSize:'0.72rem',color:'var(--muted)',lineHeight:1.5,marginTop:'0.15rem' }}>{relInfo.description}</p>
-                {breakdownUnlocked ? (
-                  <button onClick={() => { window.umami?.track('breakdown-toggled',{open:!breakdownOpen,source:'desktop'}); setBreakdownOpen(o=>!o) }} style={{ fontSize:'0.68rem',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,marginTop:'0.15rem' }}>
-                    {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
-                  </button>
-                ) : breakdown ? (
-                  <button onClick={() => { const next=!breakdownOpen; if(next) window.umami?.track('breakdown-teaser-opened',{source:'desktop'}); setBreakdownOpen(next) }} style={{ fontSize:'0.68rem',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,marginTop:'0.15rem' }}>
-                    {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown 🔒'}
-                  </button>
-                ) : relInfo.siSlug ? (
-                  <button onClick={() => { window.umami?.track('si-link-relation',{relation:relInfo.siSlug}); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }} style={{ fontSize:'0.68rem',color:'var(--accent)',opacity:0.7,background:'none',border:'none',cursor:'pointer',padding:0 }}>
-                    Learn more →
-                  </button>
-                ) : null}
-              </div>
-            )}
-            <div style={{ position:'relative' }} ref={menuRef}>
-              <button type="button" onClick={() => setMenuOpen(o=>!o)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'1.1rem',padding:'0.25rem',lineHeight:1 }} aria-label="Options">···</button>
-              {menuOpen && (
-                <div style={{ position:'absolute',right:0,top:'100%',background:'var(--card-bg)',border:'1px solid var(--border)',borderRadius:4,minWidth:160,zIndex:50,boxShadow:'0 4px 12px rgba(0,0,0,0.08)' }}>
-                  <MenuItems />
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+      {/* Mobile: breakdown panel / locked teaser inline above messages */}
+      <div className="show-mobile" style={{ maxHeight:'45vh',overflowY:'auto',flexShrink:0 }}>
+        {breakdownOpen && breakdown && breakdownUnlocked && <BreakdownPanel />}
+        {breakdownOpen && breakdown && !breakdownUnlocked && <LockedTeaser />}
       </div>
-
-      {/* Compatibility breakdown panel */}
-      {breakdownOpen && breakdown && breakdownUnlocked && (
-        <div style={{ borderBottom:'1px solid var(--border)',background:'var(--bg)',padding:isMobile?'0.75rem 1rem':'1rem 1.5rem',display:'flex',flexDirection:'column',gap:'0.75rem',maxHeight:'45vh',overflowY:'auto',flexShrink:0 }}>
-          <div>
-            <p style={bsl}>Function interactions</p>
-            <div style={{ display:'flex',flexDirection:'column',gap:'0.4rem' }}>
-              <p style={bt}>Your leading <strong>{breakdown.functions.myLeading}</strong> sits at {otherName}'s <strong>{breakdown.functions.myLeadingPosName}</strong> position.{' '}<span style={{ color:'var(--muted)' }}>{breakdown.functions.myLeadingMeaning}</span></p>
-              <p style={bt}>{otherName}'s leading <strong>{breakdown.functions.otherLeading}</strong> sits at your <strong>{breakdown.functions.otherLeadingPosName}</strong> position.</p>
-              <p style={bt}>Your creative <strong>{breakdown.functions.myCreative}</strong> sits at {otherName}'s <strong>{breakdown.functions.myCreativePosName}</strong> position.{' '}<span style={{ color:'var(--muted)' }}>{breakdown.functions.myCreativeMeaning}</span></p>
-            </div>
-          </div>
-          {breakdown.strengths.length > 0 && (
-            <div>
-              <p style={bsl}>Strengths</p>
-              <ul style={{ margin:0,paddingLeft:'1rem',display:'flex',flexDirection:'column',gap:'0.2rem' }}>
-                {breakdown.strengths.map((s,i) => <li key={i} style={bt}>{s}</li>)}
-              </ul>
-            </div>
-          )}
-          {breakdown.friction.length > 0 && (
-            <div>
-              <p style={bsl}>Friction points</p>
-              <ul style={{ margin:0,paddingLeft:'1rem',display:'flex',flexDirection:'column',gap:'0.2rem' }}>
-                {breakdown.friction.map((f,i) => <li key={i} style={bt}>{f}</li>)}
-              </ul>
-            </div>
-          )}
-          {breakdown.advice && (
-            <div>
-              <p style={bsl}>Practical note</p>
-              <p style={{ ...bt,color:'var(--muted)',fontStyle:'italic' }}>{breakdown.advice}</p>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Locked teaser */}
-      {breakdownOpen && breakdown && !breakdownUnlocked && (
-        <div style={{ borderBottom:'1px solid var(--border)',background:'var(--bg)',padding:isMobile?'0.75rem 1rem':'1rem 1.5rem',maxHeight:'45vh',overflowY:'auto',flexShrink:0 }}>
-          <div style={{ position:'relative',borderRadius:6,overflow:'hidden' }}>
-            <div aria-hidden="true" style={{ display:'flex',flexDirection:'column',gap:'0.75rem',filter:'blur(5px)',opacity:0.55,userSelect:'none',pointerEvents:'none',padding:'0.1rem' }}>
-              <div>
-                <p style={bsl}>Function interactions</p>
-                <div style={{ display:'flex',flexDirection:'column',gap:'0.4rem' }}>
-                  <p style={bt}>Your leading <strong>{breakdown.functions.myLeading}</strong> at {otherName}'s <strong>{breakdown.functions.myLeadingPosName}</strong>.</p>
-                  <p style={bt}>{otherName}'s leading <strong>{breakdown.functions.otherLeading}</strong> at your <strong>{breakdown.functions.otherLeadingPosName}</strong>.</p>
-                </div>
-              </div>
-            </div>
-            <div style={{ position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',textAlign:'center',gap:'0.5rem',padding:'1.5rem 1rem 1rem',background:'linear-gradient(to bottom, color-mix(in srgb, var(--bg) 35%, transparent), color-mix(in srgb, var(--bg) 85%, transparent))' }}>
-              <span style={{ fontSize:'1.4rem',lineHeight:1 }}>🔒</span>
-              <p style={{ fontFamily:'var(--serif)',fontSize:isMobile?'0.95rem':'1.05rem',fontWeight:500,color:'var(--text)',margin:0 }}>
-                See exactly how you and {otherName} fit
-              </p>
-              <p style={{ fontSize:'0.78rem',color:'var(--muted)',lineHeight:1.5,margin:0,maxWidth:360 }}>
-                Premium unlocks your full Model A breakdown — function-by-function strengths, friction points and a practical note.
-              </p>
-              <Link to="/premium" onClick={() => window.umami?.track('breakdown-teaser-cta',{source:isMobile?'mobile':'desktop'})} style={{ marginTop:'0.15rem',display:'inline-block',background:'var(--accent)',color:'#fff',textDecoration:'none',fontSize:'0.8rem',fontWeight:500,padding:'0.5rem 1.1rem',borderRadius:4 }}>
-                Unlock with Premium
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Cooling off banner */}
       {isCoolingOff && (
@@ -957,6 +908,59 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         typingTimer={typingTimer}
         currentUserId={currentUserId}
       />
+
+      </div>
+
+      {/* Desktop sidebar — profile, relation info, breakdown and actions */}
+      <aside className="convo-sidebar hidden-mobile">
+        <div style={{ padding:'1.5rem 1.25rem 1.25rem',borderBottom:'1px solid var(--border)',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:'0.5rem' }}>
+          <Link to={`/profile/${otherUserId}`} style={{ flexShrink:0,textDecoration:'none' }}>
+            <div style={{ width:64,height:64,borderRadius:'50%',background:'var(--surface)',border:'1px solid var(--border)',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center' }}>
+              {match.other.avatar_url && !isOtherAnonymous
+                ? <img src={match.other.avatar_url} alt={otherName} style={{ width:'100%',height:'100%',objectFit:'cover' }} />
+                : <span style={{ fontFamily:'var(--serif)',fontSize:'1.5rem',color:'var(--muted)',lineHeight:1 }}>{isOtherAnonymous ? '🕵️' : (match.other.profile_data?.name?.[0]?.toUpperCase() ?? '?')}</span>
+              }
+            </div>
+          </Link>
+          <div>
+            <Link to={`/profile/${otherUserId}`} style={{ fontFamily:'var(--serif)',fontSize:'1.1rem',fontWeight:500,color:'var(--text)',textDecoration:'none' }}>{otherName}</Link>{otherBadge}
+          </div>
+          <div style={{ display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'center',gap:'0.4rem' }}>
+            <button onClick={() => { window.umami?.track('si-link-type',{type:match.other.type}); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ fontSize:'0.7rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--accent)',fontWeight:500,background:'none',border:'none',cursor:'pointer',padding:0 }}>
+              {match.other.type}
+            </button>
+            {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:13,height:13,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.5rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
+          </div>
+          {memberSince && <span style={{ fontSize:'0.65rem',color:'var(--muted)',letterSpacing:'0.02em' }}>Member since {memberSince}</span>}
+        </div>
+
+        {relInfo && (
+          <div style={{ padding:'1.25rem',borderBottom:'1px solid var(--border)' }}>
+            <p style={{ fontSize:'0.72rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--accent)',fontWeight:500 }}>{relInfo.name}</p>
+            <p style={{ fontSize:'0.78rem',color:'var(--muted)',lineHeight:1.6,marginTop:'0.35rem' }}>{relInfo.description}</p>
+            {breakdownUnlocked ? (
+              <button onClick={() => { window.umami?.track('breakdown-toggled',{open:!breakdownOpen,source:'desktop'}); setBreakdownOpen(o=>!o) }} style={{ fontSize:'0.7rem',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,marginTop:'0.5rem' }}>
+                {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown ↓'}
+              </button>
+            ) : breakdown ? (
+              <button onClick={() => { const next=!breakdownOpen; if(next) window.umami?.track('breakdown-teaser-opened',{source:'desktop'}); setBreakdownOpen(next) }} style={{ fontSize:'0.7rem',color:'var(--accent)',background:'none',border:'none',cursor:'pointer',padding:0,marginTop:'0.5rem' }}>
+                {breakdownOpen ? 'Hide breakdown ↑' : 'Full breakdown 🔒'}
+              </button>
+            ) : relInfo.siSlug ? (
+              <button onClick={() => { window.umami?.track('si-link-relation',{relation:relInfo.siSlug}); setWebviewUrl(`https://socionicsinsight.com/relations/${relInfo.siSlug}/`) }} style={{ fontSize:'0.7rem',color:'var(--accent)',opacity:0.7,background:'none',border:'none',cursor:'pointer',padding:0,marginTop:'0.5rem' }}>
+                Learn more →
+              </button>
+            ) : null}
+          </div>
+        )}
+
+        {breakdownOpen && breakdown && breakdownUnlocked && <BreakdownPanel />}
+        {breakdownOpen && breakdown && !breakdownUnlocked && <LockedTeaser />}
+
+        <div style={{ padding:'0.75rem 0',marginTop:'auto' }}>
+          <MenuItems />
+        </div>
+      </aside>
 
       {/* Cool off modal */}
       {modal === 'cooloff' && (

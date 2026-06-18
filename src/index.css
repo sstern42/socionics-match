@@ -242,10 +242,15 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 .show-mobile { display: none; }
 .hidden-mobile { display: revert; }
 
+.convo-root { display: flex; flex-direction: row; height: 100%; overflow: hidden; }
+.convo-main { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow: hidden; }
+.convo-sidebar { width: 280px; flex-shrink: 0; border-left: 1px solid var(--border); background: var(--card-bg); overflow-y: auto; display: flex; flex-direction: column; }
+
 @media (max-width: 700px) {
   .show-mobile { display: revert; }
   .hidden-mobile { display: none !important; }
   .footer-desktop-only { display: none !important; }
+  .convo-root { flex-direction: column; }
 
   .messages-grid {
     grid-template-columns: 1fr !important;
