@@ -54,6 +54,9 @@ const Network = lazy(() => import('./pages/Network'))
 const Feed = lazy(() => import('./pages/Feed'))
 const Messages = lazy(() => import('./pages/Messages'))
 const Rooms = lazy(() => import('./pages/Rooms'))
+const Boards = lazy(() => import('./pages/Boards'))
+const BoardDetail = lazy(() => import('./pages/BoardDetail'))
+const BoardPost = lazy(() => import('./pages/BoardPost'))
 const Typing = lazy(() => import('./pages/Typing'))
 const TypistProfile = lazy(() => import('./pages/TypistProfile'))
 const Premium = lazy(() => import('./pages/Premium'))
@@ -93,6 +96,9 @@ function AppRoutes() {
         <Route path="/feed" element={<Feed />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/rooms" element={<Rooms />} />
+        <Route path="/boards" element={<Boards />} />
+        <Route path="/boards/:slug" element={<BoardDetail />} />
+        <Route path="/boards/:slug/:postId" element={<BoardPost />} />
         <Route path="/typing" element={<Typing />} />
         <Route path="/typing/:slug" element={<TypistProfile />} />
         <Route path="/premium" element={<Premium />} />

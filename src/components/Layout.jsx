@@ -426,6 +426,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--accent)', flexShrink: 0, display: 'inline-block' }} />
                   )}
                 </Link>
+                <Link to="/boards" style={navStyle(isActive('/boards'))}>Boards</Link>
 
                 <Divider />
 
@@ -555,6 +556,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   {roomUnread && !isActive('/rooms') && (
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block', flexShrink: 0 }} />
                   )}
+                </Link>
+
+                <Link to="/boards" onClick={closeMenu} style={mobileNavStyle(isActive('/boards'))}>
+                  Boards
                 </Link>
 
                 {/* ── Profile submenu ──────────────────────────────────── */}
