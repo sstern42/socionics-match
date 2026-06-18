@@ -414,7 +414,7 @@ export default function Feed() {
       setConnectMessage('')
       navigate('/messages')
     } catch (err) {
-      const isCapBlocked = err.code === '42501' || /row-level security/i.test(err.message ?? '')
+      const isCapBlocked = err.code === '42501' || /row-level security|connection cap reached/i.test(err.message ?? '')
       setConnectError(
         isCapBlocked
           ? "This person has reached their connection limit right now, so you can't connect just yet. Try again later!"
