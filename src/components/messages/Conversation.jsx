@@ -510,6 +510,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       await coolOff(currentUserId, otherUserId)
       const block = await getBlockBetween(currentUserId, otherUserId)
       setActiveBlock(block); setModal(null); setMenuOpen(false)
+      queryClient.invalidateQueries({ queryKey: ['matches', currentUserId] })
     } catch (err) { setBlockError(err.message) }
     finally { setBlocking(false) }
   }
@@ -518,6 +519,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setBlocking(true); setBlockError(null)
     try {
       await hardBlock(currentUserId, otherUserId, blockReason, blockNotes)
+      queryClient.invalidateQueries({ queryKey: ['matches', currentUserId] })
       navigate('/messages', { replace: true })
     } catch (err) { setBlockError(err.message); setBlocking(false) }
   }

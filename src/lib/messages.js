@@ -1,5 +1,6 @@
 import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
+import { getActiveBlocks } from './blocks'
 
 const MSG_SELECT = `
   id, sender_id, content, created_at, edited, read_at, reply_to_id,
@@ -11,19 +12,30 @@ const MSG_SELECT = `
 const PAGE_SIZE = 50
 
 export async function getMatches(userId) {
-  const { data, error } = await supabase
-    .from('matches')
-    .select(`
-      id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b, unmatched_at,
-      user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status ),
-      user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status ),
-      messages ( content, created_at, sender_id )
-    `)
-    .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
-    .is('unmatched_at', null)
-    .order('created_at', { ascending: false })
+  const [{ data, error }, blocks] = await Promise.all([
+    supabase
+      .from('matches')
+      .select(`
+        id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b, unmatched_at,
+        user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status ),
+        user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status ),
+        messages ( content, created_at, sender_id )
+      `)
+      .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+      .is('unmatched_at', null)
+      .order('created_at', { ascending: false }),
+    getActiveBlocks(userId),
+  ])
   if (error) throw error
-  return (data ?? []).map(m => {
+  const blockedIds = new Set(blocks.map(b =>
+    b.blocker_id === userId ? b.blocked_id : b.blocker_id
+  ))
+  return (data ?? [])
+    .filter(m => {
+      const otherId = m.user_a_id === userId ? m.user_b_id : m.user_a_id
+      return !blockedIds.has(otherId)
+    })
+    .map(m => {
     const msgs = m.messages ?? []
     const lastMsg = msgs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0] ?? null
     const other = m.user_a.id === userId ? m.user_b : m.user_a
