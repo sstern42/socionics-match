@@ -119,7 +119,7 @@ const MessageInput = React.memo(function MessageInput({
                 <GifPicker onSelect={onGifSelect} onClose={() => setShowGifPicker(false)} />
               )}
               <div
-                style={{ display:'flex',alignItems:'flex-end',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)' }}
+                style={{ display:'flex',alignItems:'center',border:'1px solid var(--border)',borderRadius:4,overflow:'hidden',background:'var(--card-bg)' }}
               >
                 <div style={{ display:'flex',flexDirection:'row',alignItems:'center',alignSelf:'center',padding:'0 0.25rem 0 0.75rem',gap:'0.15rem',flexShrink:0 }}>
                   <button
@@ -172,7 +172,7 @@ const MessageInput = React.memo(function MessageInput({
                   className="btn-primary"
                   onClick={handleSend}
                   disabled={(!text.trim()&&!pendingImage)||sending||uploadingImage}
-                  style={{ borderRadius:0,alignSelf:'stretch',opacity:((!text.trim()&&!pendingImage)||sending||uploadingImage)?0.5:1 }}
+                  style={{ borderRadius:0,alignSelf:'center',padding:'0.5rem 1.5rem',opacity:((!text.trim()&&!pendingImage)||sending||uploadingImage)?0.5:1 }}
                 >
                   Send
                 </button>
