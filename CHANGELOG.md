@@ -9,6 +9,10 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ### Added
 - **Boards**: New discussion boards open to all members — introductions, type discussions, theory & typing, relationships, and general chat. Post, comment, react with emoji, and edit or delete your own posts/comments. Founders/mods can pin posts. Author bylines show name and socionics type. Each board shows its post count, and posts show a view counter (your own views don't count). Linked from the homepage and main nav.
 - **Messages — desktop sidebar**: The conversation header (profile, relation, compatibility breakdown) has moved out of the message list and into a fixed-width right-hand sidebar on desktop, freeing up vertical space for the conversation itself. The discoverable "..." dropdown was replaced with inline action buttons. Mobile layout is unchanged.
+- **Socionics AI — chat history & message actions**: Conversations now persist across page reloads (stored per account). Assistant replies have a Copy button; failed sends have a Retry button that resends your last message without duplicating it.
+- **Socionics AI — personalised suggestion chips**: Suggested questions are now derived from your Socionics type's Dual/Activity/Mirror relations, and up to two chips reference your actual active match relation types, with that context passed along to the AI for a more relevant answer.
+- **Navigation — Ask AI promoted**: The AI chat link moved from a buried utility icon into the main desktop nav as a labeled "Ask AI" link next to Matches.
+- **Admin — unblock from Reports**: The Reports panel now shows who blocked whom and includes an Unblock button to reverse a hard block directly, without needing direct database access.
 
 ### Fixed
 - **Boards — permission denied on post/comment**: Creating a post or comment failed with "permission denied for table users" because the anonymous-account check queried `auth.users` directly, which the database role isn't granted access to. Now reads the same claim from the session token instead.
@@ -16,6 +20,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Messages — connection list dividers**: The inner border lines between items in the connections list were brighter/whiter than other borders in the app. They now use the same standard border color as the rest of the UI.
 - **Rooms — header clipped on Samsung mobile**: The room header, members strip, and notification banner could render above the visible viewport on some mobile browsers (where the available height shrinks), with no way to scroll up to reach them. They now live inside the same scroll container as the messages, with the header pinned to the top.
 - **Push notifications — blank square icon on Android**: The status bar badge for push notifications reused the full-color app icon, but Android renders that slot from the image's alpha channel only — since the icon is nearly opaque edge-to-edge, it showed up as a solid blank square instead of a recognizable mark. Push notifications now use a dedicated transparent silhouette badge.
+- **Messages — mobile header clutter**: Merged the full-width "Full breakdown" bar and the "···" options button into a single compact header row on mobile, with a higher-contrast circular options chip.
+- **Messages — mobile header name truncation**: Dropped the redundant "member since" line from the mobile conversation header so longer names no longer get cut off.
+
+### Changed
+- **Navigation — Admin link**: Moved from the main nav into the desktop utility icon group, with Sign out now separated from the Services menu.
 
 ---
 

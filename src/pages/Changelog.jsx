@@ -12,6 +12,11 @@ export const ENTRIES = [
          'Connection cap — the free-tier 3-connection limit was only checked against the person initiating a connection, so a Premium user (unlimited connections) could push a free-tier user past their cap. Now enforced for both people across new connections, swipe matches, and reconnecting',
          'Messages — connection list divider lines now match the app\'s standard border color instead of looking brighter/whiter than the rest of the UI',
          'Rooms — fixed the room header and notification banner rendering above the visible screen on some mobile browsers (e.g. Samsung devices), with no way to scroll up to reach them',
+         'Socionics AI — chat history now persists across reloads, and replies get Copy and Retry buttons',
+         'Socionics AI — suggested questions are now personalised to your type\'s relations and your actual active matches',
+         'Ask AI — promoted from a buried icon into a labeled link in the main desktop nav',
+         'Admin — Reports panel now shows who blocked whom, with an Unblock button to reverse hard blocks',
+         'Messages — merged the mobile "Full breakdown" bar and options button into a single compact header row',
        ],
      },
      {
