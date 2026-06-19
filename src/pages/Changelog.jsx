@@ -4,6 +4,18 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '19 June 2026',
+       label: 'New',
+       items: [
+         'Rooms — on desktop, the quadra header, switcher, and active-member list now live in a right-hand sidebar with online status, mirroring the Messages layout',
+         'Boards — comments now support one level of threaded replies',
+         'Admin — new Top Referrers dashboard card, plus a list of users currently holding referral-earned premium with days remaining',
+         'Settings — choose between 12-hour and 24-hour clock display for message timestamps',
+         'Referrals — the 180-day cumulative cap is now disclosed in the reward email and on the Premium page, not just in Settings',
+         'Connection cap — users who hit the cap right after their referral premium lapsed now see a targeted refer-again-or-upgrade message',
+       ],
+     },
+     {
        date: '18 June 2026',
        label: 'New',
        items: [

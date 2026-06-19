@@ -4,6 +4,28 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 19 June 2026
+
+### Added
+- **Rooms — desktop sidebar**: The quadra header, switcher, and active-member list have moved out of the chat column and into a fixed-width right-hand sidebar on desktop, mirroring the Messages page layout, with a vertical activity list showing online status. Mobile keeps the original inline header/strip layout.
+- **Boards — threaded replies**: Top-level comments now have a Reply action; replies render indented one level beneath the comment they're replying to.
+- **Admin — top referrers**: New dashboard card surfaces top users by qualified referral count (with pending+qualified totals), labels referrers who earned 0 premium days because they're already a founding member or paid subscriber, and shows each referrer's own remaining premium days.
+- **Admin — referral premium rewards**: New dashboard list of users currently holding referral-earned premium, showing their role (referrer/referee/both) and days remaining.
+- **Settings — 12/24-hour clock toggle**: Choose between 12-hour and 24-hour time display, applied to message timestamps in conversations, quadra rooms, and the admin dashboard.
+
+### Fixed
+- **Admin — site banner not loading**: The stats query only selected announcement fields, so the site banner checkbox/text always appeared blank even though it had been saved correctly. Also added the missing migration for these columns, which previously only existed in production.
+- **Admin — silent failure saving announcement/site banner**: An RLS policy gap silently rejected these updates while the Save button still reported success. Added a founder-only update policy and now surface save errors in the UI.
+- **Site banner — permanent dismissal**: Dismissing the support banner hid it forever; it now reappears 3 days after dismissal.
+- **Rooms — typing indicator leaking across quadras**: Switching rooms could briefly still show a typing indicator left over from the previous room because state and pending timers weren't cleared on teardown; later hardened so a null profile during cleanup can't abort the reset.
+- **Rooms — sidebar gap**: Removed stray padding that left a visible band between the chat card and the new desktop sidebar.
+
+### Changed
+- **Referral premium cap visibility**: The 180-day cumulative cap is now also disclosed in the referral-reward-earned email (with running total) and on the Premium page's referral-trial callout, not just in Settings.
+- **Connection cap messaging**: Users who hit the free-tier connection cap right after their referral-earned premium lapsed (within 14 days) now see a targeted refer-again-or-upgrade message instead of the generic free-tier copy.
+
+---
+
 ## 18 June 2026
 
 ### Added
