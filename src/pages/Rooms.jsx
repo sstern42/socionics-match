@@ -590,6 +590,8 @@ export default function Rooms() {
       typingChannel.current?.unsubscribe()
       typingChannel.current = null
       Object.values(typingTimers.current).forEach(clearTimeout)
+      typingTimers.current = {}
+      setTypingUsers({})
     }
   }, [roomId, profile?.id])
 
