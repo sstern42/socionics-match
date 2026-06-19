@@ -60,6 +60,10 @@ export default function BoardPost() {
   const [commentText, setCommentText] = useState('')
   const [commenting, setCommenting] = useState(false)
   const [commentError, setCommentError] = useState(null)
+  const [replyTo, setReplyTo] = useState(null)
+  const [replyText, setReplyText] = useState('')
+  const [replying, setReplying] = useState(false)
+  const [replyError, setReplyError] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [commentDeleteConfirmId, setCommentDeleteConfirmId] = useState(null)
 
@@ -107,6 +111,28 @@ export default function BoardPost() {
       setCommentError(err.message)
     } finally {
       setCommenting(false)
+    }
+  }
+
+  function startReply(commentId) {
+    setReplyTo(commentId)
+    setReplyText('')
+    setReplyError(null)
+  }
+
+  async function handleReply() {
+    if (!replyText.trim() || replying || !profile?.id || !replyTo) return
+    setReplying(true)
+    setReplyError(null)
+    try {
+      const comment = await createBoardComment({ postId, authorId: profile.id, content: replyText, parentCommentId: replyTo })
+      setComments(prev => [...prev, comment])
+      setReplyTo(null)
+      setReplyText('')
+    } catch (err) {
+      setReplyError(err.message)
+    } finally {
+      setReplying(false)
     }
   }
 
@@ -237,6 +263,109 @@ export default function BoardPost() {
     groups[r.emoji].push(r.user_id)
   }
 
+  const topLevelComments = comments.filter(c => !c.parent_comment_id)
+  const repliesByParent = {}
+  for (const c of comments) {
+    if (!c.parent_comment_id) continue
+    if (!repliesByParent[c.parent_comment_id]) repliesByParent[c.parent_comment_id] = []
+    repliesByParent[c.parent_comment_id].push(c)
+  }
+
+  function renderComment(c, { isReply = false } = {}) {
+    const commentGroups = {}
+    for (const r of c.reactions ?? []) {
+      if (!commentGroups[r.emoji]) commentGroups[r.emoji] = []
+      commentGroups[r.emoji].push(r.user_id)
+    }
+    const isMyComment = c.author_id === profile?.id
+    return (
+      <div key={c.id} style={isReply ? { padding: '0.85rem 0 0', marginLeft: '1.5rem', borderLeft: '2px solid var(--border)', paddingLeft: '0.9rem' } : { padding: '1rem 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: 0 }}>
+            {authorLabel(c.author)} · {timeAgo(c.created_at)}
+          </p>
+          {isMyComment && !c.deleted_at && editingCommentId !== c.id && (
+            commentDeleteConfirmId === c.id ? (
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
+                <button type="button" onClick={() => handleDeleteComment(c.id)} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.1rem 0.45rem', fontSize: '0.65rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
+                <button type="button" onClick={() => setCommentDeleteConfirmId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.65rem' }}>Cancel</button>
+              </div>
+            ) : (
+              <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
+                <button type="button" onClick={() => startEditComment(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Edit</button>
+                <button type="button" onClick={() => setCommentDeleteConfirmId(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Delete</button>
+              </div>
+            )
+          )}
+        </div>
+        {editingCommentId === c.id ? (
+          <div style={{ marginBottom: '0.5rem' }}>
+            <textarea
+              className="input-standalone"
+              value={editCommentText}
+              onChange={e => setEditCommentText(e.target.value)}
+              rows={2}
+              maxLength={2000}
+              style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.5rem' }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <button type="button" className="btn-primary" onClick={() => handleEditCommentSave(c.id)} disabled={!editCommentText.trim()} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Save</button>
+              <button type="button" className="btn-ghost" onClick={() => setEditingCommentId(null)} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Cancel</button>
+              {editCommentError && <p style={{ fontSize: '0.72rem', color: '#c0392b', margin: 0 }}>{editCommentError}</p>}
+            </div>
+          </div>
+        ) : (
+          <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', marginBottom: c.deleted_at ? 0 : '0.2rem' }}>
+            {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
+          </p>
+        )}
+        {!c.deleted_at && c.edited_at && editingCommentId !== c.id && (
+          <p style={{ fontSize: '0.62rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>edited</p>
+        )}
+        {!c.deleted_at && editingCommentId !== c.id && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
+            {REACTIONS.map(emoji => {
+              const users = commentGroups[emoji] ?? []
+              const iReacted = users.includes(profile?.id)
+              return (
+                <button key={emoji} type="button" onClick={() => toggleCommentReaction(c.id, emoji)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: iReacted ? 'rgba(154,111,56,0.1)' : 'var(--surface)', border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'var(--border)'}`, borderRadius: 20, padding: '0.1rem 0.45rem', cursor: 'pointer', fontSize: '0.78rem', lineHeight: 1.5 }}>
+                  <span>{emoji}</span>
+                  {users.length > 0 && <span style={{ fontSize: '0.62rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{users.length}</span>}
+                </button>
+              )
+            })}
+            {!isReply && (
+              <button type="button" onClick={() => startReply(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.72rem', marginLeft: '0.25rem' }}>
+                Reply
+              </button>
+            )}
+          </div>
+        )}
+        {!isReply && replyTo === c.id && (
+          <div style={{ marginTop: '0.6rem', marginLeft: '1.5rem' }}>
+            <textarea
+              className="input-standalone"
+              placeholder={`Reply to ${authorName(c.author)}…`}
+              value={replyText}
+              onChange={e => setReplyText(e.target.value)}
+              rows={2}
+              maxLength={2000}
+              style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.5rem' }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <button type="button" className="btn-primary" onClick={handleReply} disabled={replying || !replyText.trim()} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem', opacity: (replying || !replyText.trim()) ? 0.5 : 1 }}>
+                {replying ? 'Posting…' : 'Reply'}
+              </button>
+              <button type="button" className="btn-ghost" onClick={() => setReplyTo(null)} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Cancel</button>
+              {replyError && <p style={{ fontSize: '0.72rem', color: '#c0392b', margin: 0 }}>{replyError}</p>}
+            </div>
+          </div>
+        )}
+        {!isReply && (repliesByParent[c.id] ?? []).map(reply => renderComment(reply, { isReply: true }))}
+      </div>
+    )
+  }
+
   return (
     <Layout hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
@@ -364,74 +493,11 @@ export default function BoardPost() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              {comments.map((c, i) => {
-                const commentGroups = {}
-                for (const r of c.reactions ?? []) {
-                  if (!commentGroups[r.emoji]) commentGroups[r.emoji] = []
-                  commentGroups[r.emoji].push(r.user_id)
-                }
-                const isMyComment = c.author_id === profile?.id
-                return (
-                  <div key={c.id} style={{ padding: '1rem 0', borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.3rem' }}>
-                      <p style={{ fontSize: '0.78rem', color: 'var(--muted)', margin: 0 }}>
-                        {authorLabel(c.author)} · {timeAgo(c.created_at)}
-                      </p>
-                      {isMyComment && !c.deleted_at && editingCommentId !== c.id && (
-                        commentDeleteConfirmId === c.id ? (
-                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.35rem' }}>
-                            <button type="button" onClick={() => handleDeleteComment(c.id)} style={{ background: '#c0392b', border: 'none', borderRadius: 3, padding: '0.1rem 0.45rem', fontSize: '0.65rem', color: '#fff', cursor: 'pointer' }}>Delete</button>
-                            <button type="button" onClick={() => setCommentDeleteConfirmId(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.65rem' }}>Cancel</button>
-                          </div>
-                        ) : (
-                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem' }}>
-                            <button type="button" onClick={() => startEditComment(c)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Edit</button>
-                            <button type="button" onClick={() => setCommentDeleteConfirmId(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Delete</button>
-                          </div>
-                        )
-                      )}
-                    </div>
-                    {editingCommentId === c.id ? (
-                      <div style={{ marginBottom: '0.5rem' }}>
-                        <textarea
-                          className="input-standalone"
-                          value={editCommentText}
-                          onChange={e => setEditCommentText(e.target.value)}
-                          rows={2}
-                          maxLength={2000}
-                          style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.5rem' }}
-                        />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                          <button type="button" className="btn-primary" onClick={() => handleEditCommentSave(c.id)} disabled={!editCommentText.trim()} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Save</button>
-                          <button type="button" className="btn-ghost" onClick={() => setEditingCommentId(null)} style={{ fontSize: '0.72rem', padding: '0.35rem 0.9rem' }}>Cancel</button>
-                          {editCommentError && <p style={{ fontSize: '0.72rem', color: '#c0392b', margin: 0 }}>{editCommentError}</p>}
-                        </div>
-                      </div>
-                    ) : (
-                      <p style={{ fontSize: '0.9rem', lineHeight: 1.65, whiteSpace: 'pre-wrap', marginBottom: c.deleted_at ? 0 : '0.2rem' }}>
-                        {c.deleted_at ? <em style={{ color: 'var(--muted)' }}>Comment deleted</em> : c.content}
-                      </p>
-                    )}
-                    {!c.deleted_at && c.edited_at && editingCommentId !== c.id && (
-                      <p style={{ fontSize: '0.62rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>edited</p>
-                    )}
-                    {!c.deleted_at && editingCommentId !== c.id && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexWrap: 'wrap' }}>
-                        {REACTIONS.map(emoji => {
-                          const users = commentGroups[emoji] ?? []
-                          const iReacted = users.includes(profile?.id)
-                          return (
-                            <button key={emoji} type="button" onClick={() => toggleCommentReaction(c.id, emoji)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', background: iReacted ? 'rgba(154,111,56,0.1)' : 'var(--surface)', border: `1px solid ${iReacted ? 'var(--accent-lt)' : 'var(--border)'}`, borderRadius: 20, padding: '0.1rem 0.45rem', cursor: 'pointer', fontSize: '0.78rem', lineHeight: 1.5 }}>
-                              <span>{emoji}</span>
-                              {users.length > 0 && <span style={{ fontSize: '0.62rem', color: iReacted ? 'var(--accent)' : 'var(--muted)', fontWeight: 500 }}>{users.length}</span>}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              {topLevelComments.map((c, i) => (
+                <div key={c.id} style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
+                  {renderComment(c)}
+                </div>
+              ))}
             </div>
           </>
         )}
