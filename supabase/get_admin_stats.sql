@@ -112,6 +112,21 @@ begin
                              from matches
                              where feedback_b->>'comment' is not null
                            ) row
+                         ),
+    'top_referrers',     (
+                           select coalesce(jsonb_agg(row order by row.qualified_count desc), '[]')
+                           from (
+                             select
+                               u.id,
+                               u.profile_data->>'name' as name,
+                               u.referral_code,
+                               u.referral_count_qualified as qualified_count,
+                               (select count(*) from referrals r where r.referrer_id = u.id) as total_count
+                             from users u
+                             where u.referral_count_qualified > 0
+                             order by u.referral_count_qualified desc
+                             limit 10
+                           ) row
                          )
   ) into result;
 
