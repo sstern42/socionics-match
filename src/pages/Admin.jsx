@@ -6,6 +6,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
 import { liftBlock } from '../lib/blocks'
 import { COUNTRIES } from '../data/countries'
+import { formatTime } from '../lib/dateUtils'
 
 const ADMIN_ROLE = 'founder'
 export const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
@@ -752,7 +753,7 @@ export default function Admin() {
                 <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0', borderBottom: i < incompleteSignups.length - 1 ? '1px solid var(--border)' : 'none' }}>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{u.email}</span>
                   <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, marginLeft: '1rem' }}>
-                    {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(u.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {formatTime(u.created_at, profile?.profile_data?.use_24hour_clock)}
                   </span>
                 </div>
               ))}
@@ -810,7 +811,7 @@ export default function Admin() {
                   </div>
                 </div>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0 }}>
-                  {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(u.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                  {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {formatTime(u.created_at, profile?.profile_data?.use_24hour_clock)}
                 </span>
               </div>
             ))}
@@ -863,7 +864,7 @@ function TypingRequestsPanel({ requests, users, onUpdate }) {
                   {r.discord_handle && <p style={{ fontSize: '0.78rem', color: 'var(--accent)', paddingLeft: '3rem' }}>Discord: {r.discord_handle}</p>}
                   {r.notes && <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>}
                   <p style={{ fontSize: '0.68rem', color: 'var(--muted)', paddingLeft: '3rem' }}>
-                    {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {new Date(r.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {formatTime(r.created_at, profile?.profile_data?.use_24hour_clock)}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap' }}>
