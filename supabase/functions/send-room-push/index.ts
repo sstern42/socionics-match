@@ -51,14 +51,14 @@ Deno.serve(async (req) => {
       return new Response('Missing fields', { status: 200 })
     }
 
-    // 1. Get the room's quadra for the notification title
+    // 1. Get the room's quadra (or global flag) for the notification title
     const { data: room } = await supabase
       .from('rooms')
-      .select('quadra')
+      .select('quadra, is_global')
       .eq('id', roomId)
       .single()
 
-    const quadraLabel = room?.quadra ? capitalize(room.quadra) : 'Quadra'
+    const quadraLabel = room?.is_global ? 'Socion' : room?.quadra ? capitalize(room.quadra) : 'Quadra'
 
     // 2. Get sender's display name (respect anonymous mode)
     const { data: sender } = await supabase
@@ -72,13 +72,20 @@ Deno.serve(async (req) => {
       ? 'Anonymous'
       : (sender?.profile_data?.name ?? sender?.type ?? 'Someone')
 
-    // 3. Find eligible users: same room, not sender, room_notifications on
-    const { data: eligibleUsers } = await supabase
+    // 3. Find eligible users: not sender, room_notifications on, and either
+    //    assigned to this quadra room OR this is the global Socion room
+    //    (which every user can read/post in regardless of their room_id)
+    let eligibleQuery = supabase
       .from('users')
       .select('auth_id')
-      .eq('room_id', roomId)
       .neq('id', senderId)
       .filter('profile_data->>room_notifications', 'eq', 'true')
+
+    eligibleQuery = room?.is_global
+      ? eligibleQuery.not('room_id', 'is', null)
+      : eligibleQuery.eq('room_id', roomId)
+
+    const { data: eligibleUsers } = await eligibleQuery
 
     if (!eligibleUsers?.length) {
       return new Response('No eligible users', { status: 200 })

@@ -62,7 +62,7 @@ CREATE POLICY "room_messages_insert_own_quadra"
       OR room_id IN (SELECT id FROM rooms WHERE is_global)
     )
     -- anonymous mode users cannot send
-    AND (SELECT is_anonymous FROM auth.users WHERE id = auth.uid()) IS NOT TRUE
+    AND (auth.jwt() ->> 'is_anonymous')::boolean IS NOT TRUE
     -- muted users cannot send
     AND (
       (SELECT room_muted_until FROM users WHERE auth_id = auth.uid()) IS NULL
