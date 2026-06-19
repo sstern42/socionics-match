@@ -130,6 +130,8 @@ export default function Admin() {
 
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
+      const topReferrers = adminStats?.top_referrers ?? []
+
       const dayCounts = {}
       for (const u of users ?? []) {
         const day = new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
@@ -180,6 +182,7 @@ export default function Admin() {
         relAvgRatings,
         comments,
         growthData,
+        topReferrers,
         typingRequests: typingRequestsData ?? [],
         // Swipe stats
         totalSwipes:  adminStats?.total_swipes  ?? 0,
@@ -253,7 +256,7 @@ export default function Admin() {
     purposeCounts, countryCounts, reports,
     totalConnections, connectionsToday, totalMessages, messagesToday,
     messagesEver, totalAssessments, totalCooloffs, totalReports,
-    feedbackCount, relAvgRatings, comments, growthData,
+    feedbackCount, relAvgRatings, comments, growthData, topReferrers,
     active7d, inactive, messagingActive, anonCount, knownCount,
     typingRequests,
     totalSwipes, rightSwipes, leftSwipes, swipeMatches,
@@ -497,6 +500,29 @@ export default function Admin() {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Top referrers */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Top referrers {topReferrers.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none yet</span>}</p>
+            {topReferrers.length > 0 && (
+              <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', paddingRight: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {topReferrers.map((r, i) => (
+                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text)', display: 'flex', gap: '0.5rem', alignItems: 'baseline', overflow: 'hidden' }}>
+                      <span style={{ color: 'var(--muted)', fontSize: '0.72rem', flexShrink: 0 }}>{i + 1}.</span>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name ?? r.id}</span>
+                    </span>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>
+                      {r.qualified_count}
+                      {r.total_count > r.qualified_count && (
+                        <span style={{ color: 'var(--muted)', fontWeight: 400 }}> / {r.total_count}</span>
+                      )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Reports */}
