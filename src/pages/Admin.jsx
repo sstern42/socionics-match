@@ -514,8 +514,10 @@ export default function Admin() {
                     <span style={{ fontSize: '0.82rem', color: 'var(--text)', display: 'flex', gap: '0.5rem', alignItems: 'baseline', overflow: 'hidden' }}>
                       <span style={{ color: 'var(--muted)', fontSize: '0.72rem', flexShrink: 0 }}>{i + 1}.</span>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name ?? r.id}</span>
-                      {r.premium_days_left > 0 && (
+                      {r.premium_days_left > 0 ? (
                         <span style={{ color: 'var(--muted)', fontSize: '0.68rem', flexShrink: 0 }}>· {r.premium_days_left}d premium left</span>
+                      ) : r.already_premium && (
+                        <span style={{ color: 'var(--muted)', fontSize: '0.68rem', flexShrink: 0 }}>· already premium, no days needed</span>
                       )}
                     </span>
                     <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>
