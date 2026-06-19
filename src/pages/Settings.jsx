@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
+import { updateProfileData } from '../lib/profile'
 import ReferralPanel from '../components/profile/ReferralPanel'
 
 // Lightweight settings page. Exists primarily as the return target for the
@@ -16,6 +17,8 @@ export default function Settings() {
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
+  const [use24Hour, setUse24Hour] = useState(false)
+  const [savingClock, setSavingClock] = useState(false)
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
@@ -25,6 +28,27 @@ export default function Settings() {
     if (session) refreshProfile()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
+
+  useEffect(() => {
+    setUse24Hour(profile?.profile_data?.use_24hour_clock ?? false)
+  }, [profile])
+
+  async function handleToggleClock(checked) {
+    setUse24Hour(checked)
+    if (!profile) return
+    setSavingClock(true)
+    try {
+      await updateProfileData(profile.id, {
+        profileData: { ...profile.profile_data, use_24hour_clock: checked },
+      })
+      await refreshProfile()
+    } catch (err) {
+      setError(err.message)
+      setUse24Hour(!checked)
+    } finally {
+      setSavingClock(false)
+    }
+  }
 
   const isFounding = profile?.is_founding_member === true
   const isSubscriber = !isFounding && (profile?.plan_status === 'active' || profile?.plan_status === 'past_due')
@@ -135,6 +159,25 @@ export default function Settings() {
         </div>
 
         <ReferralPanel profile={profile} isPremium={isPremium} />
+
+        <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginTop: '1.5rem' }}>
+          <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.75rem' }}>Display</p>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={use24Hour}
+              disabled={savingClock}
+              onChange={e => handleToggleClock(e.target.checked)}
+              style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+            />
+            <div>
+              <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🕒 Use 24-hour clock</p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>
+                Show times like 14:30 instead of 2:30 PM across the site.
+              </p>
+            </div>
+          </label>
+        </div>
 
         <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '2rem', lineHeight: 1.7 }}>
           Looking for profile and notification settings? They're under{' '}

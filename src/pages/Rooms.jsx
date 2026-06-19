@@ -10,6 +10,7 @@ import SIWebview from '../components/SIWebview'
 import { usePushNotifications } from '../lib/usePushNotifications'
 import { getRoomActiveMembers, ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES } from '../lib/rooms'
 import { updateProfileData } from '../lib/profile'
+import { formatTime } from '../lib/dateUtils'
 import GifPicker from '../components/GifPicker'
 
 const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5' }
@@ -24,10 +25,10 @@ function getSenderName(msg) {
   return msg.sender?.profile_data?.name ?? msg.sender?.type ?? 'Unknown'
 }
 
-function timeStr(dateStr) {
+function timeStr(dateStr, use24Hour) {
   const d = new Date(dateStr), now = new Date()
   const diffDays = Math.floor((now - d) / 86400000)
-  if (diffDays === 0) return d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' })
+  if (diffDays === 0) return formatTime(d, use24Hour)
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return d.toLocaleDateString('en-GB', { weekday:'short' })
   return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
@@ -66,7 +67,7 @@ function RoomMessage({
   onReply, onEdit, onReport, onTypeClick, onReact, onImageClick, onScrollToMessage,
   editingId, editText, setEditText, onEditSave, onEditCancel,
   deleteConfirmId, setDeleteConfirmId, deleting, onDeleteConfirm,
-  isMobile, isReadOnly,
+  isMobile, isReadOnly, use24Hour,
 }) {
   const [hovered, setHovered] = useState(false)
   const [showPicker, setShowPicker] = useState(false)
@@ -145,7 +146,7 @@ function RoomMessage({
         )}
 
         <span style={{ fontSize:'0.68rem', color:'var(--muted)', marginLeft:'auto', flexShrink:0 }}>
-          {timeStr(msg.created_at)}{msg.edited_at && !isDeleted ? ' · edited' : ''}
+          {timeStr(msg.created_at, use24Hour)}{msg.edited_at && !isDeleted ? ' · edited' : ''}
         </span>
       </div>
 
@@ -739,6 +740,7 @@ export default function Rooms() {
             isReadOnly={isReadOnly}
             isFounder={isFounder}
             msg={msg} isMine={msg.sender_id===profile?.id} currentUserId={profile?.id} isMobile={isMobile}
+            use24Hour={profile?.profile_data?.use_24hour_clock}
             onReply={setReplyTo} onEdit={handleStartEdit} onReport={id=>setReportTarget(id)} onReact={toggleReaction}
             onTypeClick={url=>{ window.umami?.track('room-type-badge-clicked'); setWebviewUrl(url) }}
             onImageClick={url=>setLightboxUrl(url)} onScrollToMessage={handleScrollToMessage}

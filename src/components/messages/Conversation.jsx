@@ -9,6 +9,7 @@ import { unmatch } from '../../lib/unmatch'
 import { markMatchRead, subtractUnread, getMatchLastRead } from '../../lib/useUnreadCount'
 import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabase'
+import { formatTime } from '../../lib/dateUtils'
 import GifPicker from '../GifPicker'
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
@@ -760,7 +761,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               )
             }
             const isMine = msg.sender_id === currentUserId
-            const timeStr = new Date(msg.created_at).toLocaleTimeString('en-GB', { hour:'2-digit',minute:'2-digit' })
+            const timeStr = formatTime(msg.created_at, profile?.profile_data?.use_24hour_clock)
             const quotedMsg = msg.reply_to
             const showReplyBtn = hoveredMsgId === msg.id && !activeBlock
 
