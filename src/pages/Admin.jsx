@@ -131,6 +131,7 @@ export default function Admin() {
       const reports = adminStats?.recent_blocks?.filter(b => b.type === 'block' && b.reason) ?? []
 
       const topReferrers = adminStats?.top_referrers ?? []
+      const referralRewarded = adminStats?.referral_rewarded ?? []
 
       const dayCounts = {}
       for (const u of users ?? []) {
@@ -183,6 +184,7 @@ export default function Admin() {
         comments,
         growthData,
         topReferrers,
+        referralRewarded,
         typingRequests: typingRequestsData ?? [],
         // Swipe stats
         totalSwipes:  adminStats?.total_swipes  ?? 0,
@@ -256,7 +258,7 @@ export default function Admin() {
     purposeCounts, countryCounts, reports,
     totalConnections, connectionsToday, totalMessages, messagesToday,
     messagesEver, totalAssessments, totalCooloffs, totalReports,
-    feedbackCount, relAvgRatings, comments, growthData, topReferrers,
+    feedbackCount, relAvgRatings, comments, growthData, topReferrers, referralRewarded,
     active7d, inactive, messagingActive, anonCount, knownCount,
     typingRequests,
     totalSwipes, rightSwipes, leftSwipes, swipeMatches,
@@ -512,12 +514,35 @@ export default function Admin() {
                     <span style={{ fontSize: '0.82rem', color: 'var(--text)', display: 'flex', gap: '0.5rem', alignItems: 'baseline', overflow: 'hidden' }}>
                       <span style={{ color: 'var(--muted)', fontSize: '0.72rem', flexShrink: 0 }}>{i + 1}.</span>
                       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name ?? r.id}</span>
+                      {r.premium_days_left > 0 && (
+                        <span style={{ color: 'var(--muted)', fontSize: '0.68rem', flexShrink: 0 }}>· {r.premium_days_left}d premium left</span>
+                      )}
                     </span>
                     <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>
                       {r.qualified_count}
                       {r.total_count > r.qualified_count && (
                         <span style={{ color: 'var(--muted)', fontWeight: 400 }}> / {r.total_count}</span>
                       )}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Referral premium rewards */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Referral premium {referralRewarded.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none active</span>}</p>
+            {referralRewarded.length > 0 && (
+              <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', paddingRight: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {referralRewarded.map(r => (
+                  <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--text)', display: 'flex', gap: '0.5rem', alignItems: 'baseline', overflow: 'hidden' }}>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.name ?? r.id}</span>
+                      <span style={{ color: 'var(--muted)', fontSize: '0.68rem', flexShrink: 0, textTransform: 'capitalize' }}>{r.role}</span>
+                    </span>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 500, flexShrink: 0 }}>
+                      {r.days_left}d left
                     </span>
                   </div>
                 ))}

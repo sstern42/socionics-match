@@ -121,11 +121,36 @@ begin
                                u.profile_data->>'name' as name,
                                u.referral_code,
                                u.referral_count_qualified as qualified_count,
-                               (select count(*) from referrals r where r.referrer_id = u.id) as total_count
+                               (select count(*) from referrals r where r.referrer_id = u.id) as total_count,
+                               u.referral_premium_days_granted as premium_days_granted,
+                               case when u.referral_premium_until is not null and u.referral_premium_until > now()
+                                 then ceil(extract(epoch from (u.referral_premium_until - now())) / 86400)
+                                 else 0
+                               end as premium_days_left
                              from users u
                              where u.referral_count_qualified > 0
                              order by u.referral_count_qualified desc
                              limit 10
+                           ) row
+                         ),
+    'referral_rewarded', (
+                           select coalesce(jsonb_agg(row order by row.days_left desc), '[]')
+                           from (
+                             select
+                               u.id,
+                               u.profile_data->>'name' as name,
+                               u.referral_premium_days_granted as days_granted,
+                               ceil(extract(epoch from (u.referral_premium_until - now())) / 86400) as days_left,
+                               case when u.referral_count_qualified > 0 and u.referred_by_user_id is not null then 'both'
+                                    when u.referral_count_qualified > 0 then 'referrer'
+                                    when u.referred_by_user_id is not null then 'referee'
+                                    else 'referrer'
+                               end as role
+                             from users u
+                             where u.referral_premium_until is not null
+                               and u.referral_premium_until > now()
+                             order by days_left desc
+                             limit 20
                            ) row
                          )
   ) into result;
