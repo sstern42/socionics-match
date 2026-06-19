@@ -100,13 +100,14 @@ function emailRefereeWelcome(name: string | null, referrerName: string | null): 
 `)
 }
 
-function emailReferrerRewardEarned(name: string | null, days: number): string {
+function emailReferrerRewardEarned(name: string | null, days: number, totalDaysGranted: number): string {
   const greeting = name ? `Hi ${name},` : 'Hi,'
   return emailShell(`
 <h2 style="margin-top: 0;">🎉 You earned ${days} days of Premium</h2>
 <p>${greeting}</p>
 <p>Someone you invited just finished setting up their Socion profile — your referral reward is now active.</p>
 <p><a href="https://socion.app/settings" style="display: inline-block; background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-top: 8px;">See your invite stats</a></p>
+<p style="color: #666; font-size: 13px; margin-top: 16px;">Referral rewards cap at 180 days of Premium total — you're at ${totalDaysGranted} so far.</p>
 `)
 }
 
@@ -173,10 +174,15 @@ serve(async (req) => {
 
   if (referrerContact) {
     if (referral.reward_days_granted > 0) {
+      const { data: referrerRow } = await supabase
+        .from('users')
+        .select('referral_premium_days_granted')
+        .eq('id', referral.referrer_id)
+        .maybeSingle()
       await sendEmailSafe({
         to: referrerContact.email,
         subject: `You earned ${referral.reward_days_granted} days of Premium`,
-        html: emailReferrerRewardEarned(referrerContact.name, referral.reward_days_granted),
+        html: emailReferrerRewardEarned(referrerContact.name, referral.reward_days_granted, referrerRow?.referral_premium_days_granted ?? referral.reward_days_granted),
       })
     } else {
       const { data: referrerRow } = await supabase

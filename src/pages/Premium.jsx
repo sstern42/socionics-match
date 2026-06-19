@@ -109,7 +109,7 @@ export default function Premium() {
               You're on a Premium trial — {trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left
             </p>
             <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-              You got this from a referral. Subscribe below to keep Premium once it ends.
+              You got this from a referral. Subscribe below to keep Premium once it ends, or keep referring — referral rewards can earn you up to 180 days of free Premium in total.
             </p>
           </div>
         )}
