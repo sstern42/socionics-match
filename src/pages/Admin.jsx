@@ -208,19 +208,21 @@ export default function Admin() {
 
   async function saveAnnouncement() {
     setSavingAnnouncement(true)
-    await supabase.from('stats').update({ announcement, announcement_active: announcementActive }).eq('id', 1)
+    const { error: saveErr } = await supabase.from('stats').update({ announcement, announcement_active: announcementActive }).eq('id', 1)
     setSavingAnnouncement(false)
+    if (saveErr) { setError(saveErr.message); return }
     setAnnouncementSaved(true)
     setTimeout(() => setAnnouncementSaved(false), 2500)
   }
 
   async function saveSiteBanner() {
     setSavingSiteBanner(true)
-    await supabase
+    const { error: saveErr } = await supabase
       .from('stats')
       .update({ site_banner: siteBanner, site_banner_active: siteBannerActive })
       .eq('id', 1)
     setSavingSiteBanner(false)
+    if (saveErr) { setError(saveErr.message); return }
     setSiteBannerSaved(true)
     setTimeout(() => setSiteBannerSaved(false), 2500)
   }
