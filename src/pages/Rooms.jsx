@@ -33,6 +33,14 @@ function timeStr(dateStr) {
   return d.toLocaleDateString('en-GB', { day:'numeric', month:'short' })
 }
 
+function lastActiveLabel(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  if (diff < 15*60*1000) return 'Online now'
+  if (diff < 60*60*1000) return `Active ${Math.round(diff/60000)}m ago`
+  if (diff < 24*60*60*1000) return `Active ${Math.round(diff/3600000)}h ago`
+  return `Active ${Math.round(diff/86400000)}d ago`
+}
+
 function dateDividerLabel(dateStr) {
   const d = new Date(dateStr), now = new Date()
   if (d.toDateString() === now.toDateString()) return 'Today'
@@ -418,6 +426,72 @@ const RoomInput = React.memo(function RoomInput({
   )
 })
 
+// ─── RoomSidebar ──────────────────────────────────────────────────────────────
+function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder, profile, viewingQuadra, onQuadraSwitch, onTypeClick, activeMembers }) {
+  const now    = Date.now()
+  const online = activeMembers.filter(u => now - new Date(u.last_active).getTime() < 15*60*1000)
+
+  return (
+    <div className="room-sidebar messages-sidebar">
+      <div style={{ padding:'1.25rem 1.25rem 1rem', borderBottom:'1px solid var(--border)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
+          <span style={{ width:10, height:10, borderRadius:'50%', background:quadraColour, flexShrink:0, display:'inline-block' }} />
+          <h2 style={{ fontFamily:'var(--serif)', fontSize:'1.2rem', fontWeight:500, margin:0, color:quadraColour }}>{quadra} quadra</h2>
+        </div>
+        {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>{memberCount} {memberCount===1?'member':'members'}</span>}
+        <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.35rem' }}>
+          {isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
+        </p>
+        <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.6rem', flexWrap:'wrap' }}>
+          {['Alpha','Beta','Gamma','Delta'].map(q => {
+            const ownQ  = profile?.type ? getQuadra(profile.type) : null
+            const active = viewingQuadra ? viewingQuadra===q : ownQ===q
+            return (
+              <button key={q} type="button" onClick={() => onQuadraSwitch(q)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, padding:'0.15rem 0.5rem', borderRadius:2, border:`1px solid ${QUADRA_COLOURS[q]}55`, background:active?QUADRA_COLOURS[q]:'none', color:active?'#fff':QUADRA_COLOURS[q], cursor:'pointer', transition:'all 0.15s' }}>
+                {q}
+              </button>
+            )
+          })}
+        </div>
+        <button type="button" onClick={onTypeClick} style={{ marginTop:'0.75rem', fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer' }}>
+          {profile?.type} →
+        </button>
+      </div>
+
+      <div style={{ padding:'1rem 1.25rem', overflowY:'auto', flex:1 }}>
+        <p style={{ fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--muted)', marginBottom:'0.75rem' }}>
+          Activity {online.length>0 && <span style={{ color:'#4caf50' }}>· {online.length} online</span>}
+        </p>
+        {activeMembers.length === 0 ? (
+          <p style={{ fontSize:'0.78rem', color:'var(--muted)' }}>No recent activity.</p>
+        ) : (
+          <div style={{ display:'flex', flexDirection:'column', gap:'0.65rem' }}>
+            {activeMembers.map(u => {
+              const isOnline = now - new Date(u.last_active).getTime() < 15*60*1000
+              const initial   = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
+              const name      = u.profile_data?.anonymous ? 'Anonymous' : (u.profile_data?.name ?? u.type)
+              return (
+                <div key={u.id} style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
+                  <div style={{ position:'relative', flexShrink:0 }}>
+                    <div style={{ width:28, height:28, borderRadius:'50%', overflow:'hidden', border:'1px solid var(--border)', background:'var(--surface)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.6rem', fontWeight:600, color:'var(--accent)' }}>
+                      {u.avatar_url && !u.profile_data?.anonymous ? <img src={u.avatar_url} alt="" style={{ width:'100%',height:'100%',objectFit:'cover' }} /> : <span>{initial}</span>}
+                    </div>
+                    <span style={{ position:'absolute', bottom:0, right:0, width:8, height:8, borderRadius:'50%', background:isOnline?'#4caf50':'#f5a623', border:'1.5px solid var(--card-bg)', display:'block' }} />
+                  </div>
+                  <div style={{ minWidth:0, flex:1 }}>
+                    <p style={{ fontSize:'0.8rem', color:'var(--text)', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</p>
+                    <p style={{ fontSize:'0.68rem', color:isOnline?'#4caf50':'var(--muted)' }}>{isOnline ? 'Online now' : lastActiveLabel(u.last_active)}</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ─── Rooms (main page) ────────────────────────────────────────────────────────
 export default function Rooms() {
   usePageTitle('Quadra Rooms')
@@ -691,15 +765,17 @@ export default function Rooms() {
   return (
     <Layout hideFooter noScroll>
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0 }}>
-        <div className="messages-outer" style={{ maxWidth:720, width:'100%', margin:'0 auto', flex:1, display:'flex', flexDirection:'column', padding:'0 1.5rem', minHeight:0, boxSizing:'border-box' }}>
+        <div className="room-root">
+        <div className="messages-outer" style={{ maxWidth:720, width:'100%', margin:isMobile?'0 auto':0, flex:1, display:'flex', flexDirection:'column', padding:'0 1.5rem', minHeight:0, boxSizing:'border-box' }}>
           <div style={{ flex:1, display:'flex', flexDirection:'column', border:'1px solid var(--border)', borderLeft:isMobile?'none':undefined, borderRight:isMobile?'none':undefined, borderTop:'none', background:'var(--card-bg)', overflow:'hidden', minHeight:0 }}>
 
             {/* Scrollable column: header + members strip + load more + notif banner + messages,
                 all inside one scroll container so the header can never be clipped off-screen on mobile */}
             <div ref={listRef} style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column' }}>
 
-            {/* Header + active members strip, kept together in one sticky wrapper so the
-                online indicator never scrolls out of view (e.g. on auto-scroll-to-bottom) */}
+            {/* Header + active members strip (mobile only — on desktop these live in the sidebar),
+                kept together in one sticky wrapper so the online indicator never scrolls out of view */}
+            {isMobile && (
             <div style={{ position:'sticky', top:0, zIndex:1 }}>
             <div style={{ padding:'1rem 1.5rem', borderBottom:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', gap:'1rem' }}>
               <div>
@@ -761,6 +837,7 @@ export default function Rooms() {
               )
             })()}
             </div>
+            )}
 
             {/* Load more */}
             {hasMore && (
@@ -833,6 +910,22 @@ export default function Rooms() {
             />
 
           </div>
+        </div>
+
+        {!isMobile && (
+          <RoomSidebar
+            quadra={quadra}
+            quadraColour={quadraColour}
+            memberCount={memberCount}
+            isReadOnly={isReadOnly}
+            isFounder={isFounder}
+            profile={profile}
+            viewingQuadra={viewingQuadra}
+            onQuadraSwitch={handleQuadraSwitcher}
+            onTypeClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }}
+            activeMembers={activeMembers}
+          />
+        )}
         </div>
       </div>
 
