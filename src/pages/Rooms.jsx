@@ -428,7 +428,7 @@ const RoomInput = React.memo(function RoomInput({
 })
 
 // ─── RoomSidebar ──────────────────────────────────────────────────────────────
-function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder, profile, viewingQuadra, onQuadraSwitch, onTypeClick, activeMembers }) {
+function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder, profile, viewingQuadra, onQuadraSwitch, activeMembers }) {
   const now    = Date.now()
   const online = activeMembers.filter(u => now - new Date(u.last_active).getTime() < 15*60*1000)
 
@@ -454,9 +454,6 @@ function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder,
             )
           })}
         </div>
-        <button type="button" onClick={onTypeClick} style={{ marginTop:'0.75rem', fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer' }}>
-          {profile?.type} →
-        </button>
       </div>
 
       <div style={{ padding:'1rem 1.25rem', overflowY:'auto', flex:1 }}>
@@ -809,9 +806,6 @@ export default function Rooms() {
                   })}
                 </div>
               </div>
-              <button type="button" onClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }} style={{ fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer', flexShrink:0 }}>
-                {profile?.type} →
-              </button>
             </div>
 
             {/* Active members strip */}
@@ -932,7 +926,6 @@ export default function Rooms() {
             profile={profile}
             viewingQuadra={viewingQuadra}
             onQuadraSwitch={handleQuadraSwitcher}
-            onTypeClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }}
             activeMembers={activeMembers}
           />
         )}
