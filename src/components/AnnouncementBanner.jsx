@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
 const BANNER_KEY = 'socion_site_banner_dismissed_'
+const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000
 
 function dismissKey(text) {
   try { return BANNER_KEY + btoa(encodeURIComponent(text)).slice(0, 8) }
@@ -20,7 +21,8 @@ export default function AnnouncementBanner() {
       .single()
       .then(({ data }) => {
         if (data?.site_banner_active && data?.site_banner) {
-          const dismissed = localStorage.getItem(dismissKey(data.site_banner)) === 'true'
+          const dismissedAt = Number(localStorage.getItem(dismissKey(data.site_banner)))
+          const dismissed = dismissedAt && Date.now() - dismissedAt < DISMISS_DURATION_MS
           if (!dismissed) {
             setBanner(data.site_banner)
             setVisible(true)
@@ -31,7 +33,7 @@ export default function AnnouncementBanner() {
 
   function dismiss() {
     if (!banner) return
-    localStorage.setItem(dismissKey(banner), 'true')
+    localStorage.setItem(dismissKey(banner), String(Date.now()))
     setVisible(false)
     window.umami?.track('site-banner-dismissed')
   }
