@@ -13,7 +13,8 @@ import { updateProfileData } from '../lib/profile'
 import { formatTime } from '../lib/dateUtils'
 import GifPicker from '../components/GifPicker'
 
-const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5' }
+const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5', Socion:'#9A6F38' }
+const ROOM_TABS = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Socion']
 const ROOM_LAST_VISITED_KEY = 'socion_room_last_visited'
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
@@ -399,7 +400,7 @@ const RoomInput = React.memo(function RoomInput({
                 <input ref={imageInputRef} type="file" accept={ACCEPTED_IMAGE_TYPES.join(',')} onChange={onImageFileChange} style={{ display:'none' }} />
                 <textarea
                   ref={inputRef}
-                  placeholder={pendingImage?'Add a caption (optional)…':`Message the ${quadra} quadra…`}
+                  placeholder={pendingImage?'Add a caption (optional)…':quadra==='Socion'?'Message the Socion room…':`Message the ${quadra} quadra…`}
                   value={text}
                   rows={1}
                   maxLength={2000}
@@ -428,7 +429,7 @@ const RoomInput = React.memo(function RoomInput({
 })
 
 // ─── RoomSidebar ──────────────────────────────────────────────────────────────
-function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder, profile, viewingQuadra, onQuadraSwitch, onTypeClick, activeMembers }) {
+function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder, profile, viewingQuadra, onQuadraSwitch, activeMembers }) {
   const now    = Date.now()
   const online = activeMembers.filter(u => now - new Date(u.last_active).getTime() < 15*60*1000)
 
@@ -437,14 +438,14 @@ function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder,
       <div style={{ padding:'1.25rem 1.25rem 1rem', borderBottom:'1px solid var(--border)' }}>
         <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
           <span style={{ width:10, height:10, borderRadius:'50%', background:quadraColour, flexShrink:0, display:'inline-block' }} />
-          <h2 style={{ fontFamily:'var(--serif)', fontSize:'1.2rem', fontWeight:500, margin:0, color:quadraColour }}>{quadra} quadra</h2>
+          <h2 style={{ fontFamily:'var(--serif)', fontSize:'1.2rem', fontWeight:500, margin:0, color:quadraColour }}>{quadra==='Socion' ? 'Socion room' : `${quadra} quadra`}</h2>
         </div>
         {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>{memberCount} {memberCount===1?'member':'members'}</span>}
         <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.35rem' }}>
-          {isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
+          {quadra==='Socion' ? `${profile?.type} — all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
         </p>
         <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.6rem', flexWrap:'wrap' }}>
-          {['Alpha','Beta','Gamma','Delta'].map(q => {
+          {ROOM_TABS.map(q => {
             const ownQ  = profile?.type ? getQuadra(profile.type) : null
             const active = viewingQuadra ? viewingQuadra===q : ownQ===q
             return (
@@ -454,9 +455,6 @@ function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder,
             )
           })}
         </div>
-        <button type="button" onClick={onTypeClick} style={{ marginTop:'0.75rem', fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer' }}>
-          {profile?.type} →
-        </button>
       </div>
 
       <div style={{ padding:'1rem 1.25rem', overflowY:'auto', flex:1 }}>
@@ -554,7 +552,8 @@ export default function Rooms() {
   const isAnonymous  = profile?.profile_data?.anonymous ?? false
 
   const isFounder  = profile?.profile_data?.role === 'founder' || profile?.profile_data?.role === 'moderator'
-  const isReadOnly = !isFounder && !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
+  const isSocion   = quadra === 'Socion'
+  const isReadOnly = !isFounder && !isSocion && !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
 
   useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading])
 
@@ -604,7 +603,10 @@ export default function Rooms() {
 
   useEffect(() => {
     if (!roomId) return
-    supabase.from('users').select('id',{count:'exact',head:true}).eq('room_id',roomId).then(({count})=>setMemberCount(count))
+    const memberQuery = isSocion
+      ? supabase.from('users').select('id',{count:'exact',head:true}).not('room_id','is',null)
+      : supabase.from('users').select('id',{count:'exact',head:true}).eq('room_id',roomId)
+    memberQuery.then(({count})=>setMemberCount(count))
     function fetchActive() { getRoomActiveMembers(roomId).then(setActiveMembers).catch(()=>{}) }
     fetchActive()
     const id = setInterval(fetchActive, 60000)
@@ -639,7 +641,10 @@ export default function Rooms() {
     if (q === ownQuadra) { setViewingRoomId(null); setViewingQuadra(null); return }
     if (q === viewingQuadra) return
     try {
-      const { data, error } = await supabase.from('rooms').select('id').eq('quadra', q.toLowerCase()).single()
+      const query = q === 'Socion'
+        ? supabase.from('rooms').select('id').eq('is_global', true).single()
+        : supabase.from('rooms').select('id').eq('quadra', q.toLowerCase()).single()
+      const { data, error } = await query
       if (!error && data) { setViewingRoomId(data.id); setViewingQuadra(q) }
     } catch (err) { console.error('Could not switch room:', err) }
   }
@@ -791,14 +796,14 @@ export default function Rooms() {
               <div>
                 <div style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
                   <span style={{ width:10, height:10, borderRadius:'50%', background:quadraColour, flexShrink:0, display:'inline-block' }} />
-                  <h2 style={{ fontFamily:'var(--serif)', fontSize:'1.2rem', fontWeight:500, margin:0, color:quadraColour }}>{quadra} quadra</h2>
+                  <h2 style={{ fontFamily:'var(--serif)', fontSize:'1.2rem', fontWeight:500, margin:0, color:quadraColour }}>{quadra==='Socion' ? 'Socion room' : `${quadra} quadra`}</h2>
                   {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>· {memberCount} {memberCount===1?'member':'members'}</span>}
                 </div>
                 <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>
-                  {isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
+                  {quadra==='Socion' ? `${profile?.type} — all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
                 </p>
                 <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
-                  {['Alpha','Beta','Gamma','Delta'].map(q => {
+                  {ROOM_TABS.map(q => {
                     const ownQ  = profile?.type ? getQuadra(profile.type) : null
                     const active = viewingQuadra ? viewingQuadra===q : ownQ===q
                     return (
@@ -809,9 +814,6 @@ export default function Rooms() {
                   })}
                 </div>
               </div>
-              <button type="button" onClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }} style={{ fontSize:'0.68rem', letterSpacing:'0.08em', textTransform:'uppercase', color:quadraColour, border:`1px solid ${quadraColour}44`, padding:'0.25rem 0.6rem', borderRadius:3, background:'none', cursor:'pointer', flexShrink:0 }}>
-                {profile?.type} →
-              </button>
             </div>
 
             {/* Active members strip */}
@@ -875,7 +877,7 @@ export default function Rooms() {
               ) : messages.length === 0 ? (
                 <div style={{ textAlign:'center',marginTop:'3rem' }}>
                   <p style={{ fontFamily:'var(--serif)',fontStyle:'italic',fontSize:'1.1rem',color:'var(--muted)',marginBottom:'0.5rem' }}>No messages yet.</p>
-                  <p style={{ fontSize:'0.78rem',color:'var(--muted)' }}>Be the first to say something to your {quadra} quadra.</p>
+                  <p style={{ fontSize:'0.78rem',color:'var(--muted)' }}>{quadra==='Socion' ? 'Be the first to say something to the Socion room.' : `Be the first to say something to your ${quadra} quadra.`}</p>
                 </div>
               ) : renderMessages()}
               <div ref={bottomRef} />
@@ -932,7 +934,6 @@ export default function Rooms() {
             profile={profile}
             viewingQuadra={viewingQuadra}
             onQuadraSwitch={handleQuadraSwitcher}
-            onTypeClick={() => { window.umami?.track('room-header-type-clicked',{type:profile?.type}); setWebviewUrl(`https://socionicsinsight.com/types/${profile?.type?.toLowerCase()}/`) }}
             activeMembers={activeMembers}
           />
         )}
