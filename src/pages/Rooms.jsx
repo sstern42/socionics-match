@@ -567,6 +567,15 @@ export default function Rooms() {
   useEffect(() => { markRoomVisited(); window.dispatchEvent(new Event('socion-room-visited')) }, [])
   useEffect(() => { document.body.classList.add('messages-page'); return () => document.body.classList.remove('messages-page') }, [])
 
+  // Reset any leftover typing state whenever the active room changes, in its
+  // own effect so it always runs regardless of what happens in the channel
+  // subscribe/teardown effect below.
+  useEffect(() => {
+    Object.values(typingTimers.current).forEach(clearTimeout)
+    typingTimers.current = {}
+    setTypingUsers({})
+  }, [roomId])
+
   useEffect(() => {
     if (!roomId || !profile?.id) return
     typingChannel.current = supabase.channel(`room_typing:${roomId}`)
@@ -586,12 +595,9 @@ export default function Rooms() {
       })
       .subscribe()
     return () => {
-      typingChannel.current?.send({ type:'broadcast', event:'typing', payload:{ tab_id:tabId.current, user_id:profile.id, typing:false } })
+      typingChannel.current?.send({ type:'broadcast', event:'typing', payload:{ tab_id:tabId.current, user_id:profile?.id, typing:false } })
       typingChannel.current?.unsubscribe()
       typingChannel.current = null
-      Object.values(typingTimers.current).forEach(clearTimeout)
-      typingTimers.current = {}
-      setTypingUsers({})
     }
   }, [roomId, profile?.id])
 
