@@ -13,7 +13,7 @@ import { updateProfileData } from '../lib/profile'
 import { formatTime } from '../lib/dateUtils'
 import GifPicker from '../components/GifPicker'
 
-const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5', Socion:'#9A6F38' }
+const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5', Socion:'#6B4C9A' }
 const ROOM_TABS = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Socion']
 const ROOM_LAST_VISITED_KEY = 'socion_room_last_visited'
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
@@ -444,12 +444,12 @@ function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder,
         <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.35rem' }}>
           {quadra==='Socion' ? `${profile?.type} — all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
         </p>
-        <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.6rem', flexWrap:'wrap' }}>
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'0.35rem', marginTop:'0.6rem' }}>
           {ROOM_TABS.map(q => {
             const ownQ  = profile?.type ? getQuadra(profile.type) : null
             const active = viewingQuadra ? viewingQuadra===q : ownQ===q
             return (
-              <button key={q} type="button" onClick={() => onQuadraSwitch(q)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, padding:'0.15rem 0.5rem', borderRadius:2, border:`1px solid ${QUADRA_COLOURS[q]}55`, background:active?QUADRA_COLOURS[q]:'none', color:active?'#fff':QUADRA_COLOURS[q], cursor:'pointer', transition:'all 0.15s' }}>
+              <button key={q} type="button" onClick={() => onQuadraSwitch(q)} style={{ gridColumn:q==='Socion'?'1 / -1':undefined, fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, padding:'0.15rem 0.5rem', borderRadius:2, border:`1px solid ${QUADRA_COLOURS[q]}55`, background:active?QUADRA_COLOURS[q]:'none', color:active?'#fff':QUADRA_COLOURS[q], cursor:'pointer', transition:'all 0.15s' }}>
                 {q}
               </button>
             )
