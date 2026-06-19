@@ -126,7 +126,8 @@ begin
                                case when u.referral_premium_until is not null and u.referral_premium_until > now()
                                  then ceil(extract(epoch from (u.referral_premium_until - now())) / 86400)
                                  else 0
-                               end as premium_days_left
+                               end as premium_days_left,
+                               (u.is_founding_member or u.plan_status in ('active', 'past_due')) as already_premium
                              from users u
                              where u.referral_count_qualified > 0
                              order by u.referral_count_qualified desc
