@@ -22,6 +22,7 @@ const BOARD_COMMENT_SELECT = `
   id,
   post_id,
   author_id,
+  parent_comment_id,
   content,
   created_at,
   edited_at,
@@ -150,10 +151,10 @@ export async function getBoardComments(postId) {
   return data ?? []
 }
 
-export async function createBoardComment({ postId, authorId, content }) {
+export async function createBoardComment({ postId, authorId, content, parentCommentId = null }) {
   const { data, error } = await supabase
     .from('board_comments')
-    .insert({ post_id: postId, author_id: authorId, content: content.trim() })
+    .insert({ post_id: postId, author_id: authorId, content: content.trim(), parent_comment_id: parentCommentId })
     .select(BOARD_COMMENT_SELECT)
     .single()
 
