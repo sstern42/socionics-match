@@ -7,6 +7,7 @@ export const ENTRIES = [
        date: '19 June 2026',
        label: 'New',
        items: [
+         'Rooms — new Socion room, open to all 16 types in one shared conversation alongside the four quadra rooms. Toast and push notifications now cover it too',
          'Rooms — on desktop, the quadra header, switcher, and active-member list now live in a right-hand sidebar with online status, mirroring the Messages layout',
          'Boards — comments now support one level of threaded replies',
          'Admin — new Top Referrers dashboard card, plus a list of users currently holding referral-earned premium with days remaining',

@@ -7,6 +7,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ## 19 June 2026
 
 ### Added
+- **Rooms — Socion room**: A fifth room open to all 16 types in one shared conversation, alongside the four quadra rooms. Membership is universal — every non-anonymous, unmuted member can read and post regardless of their assigned quadra. Selectable from the room switcher (desktop sidebar shows it as a full-width row below the quadra grid, with its own violet accent colour), and wired into both in-app toast notifications and push notifications.
 - **Rooms — desktop sidebar**: The quadra header, switcher, and active-member list have moved out of the chat column and into a fixed-width right-hand sidebar on desktop, mirroring the Messages page layout, with a vertical activity list showing online status. Mobile keeps the original inline header/strip layout.
 - **Boards — threaded replies**: Top-level comments now have a Reply action; replies render indented one level beneath the comment they're replying to.
 - **Admin — top referrers**: New dashboard card surfaces top users by qualified referral count (with pending+qualified totals), labels referrers who earned 0 premium days because they're already a founding member or paid subscriber, and shows each referrer's own remaining premium days.
