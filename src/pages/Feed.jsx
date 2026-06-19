@@ -12,6 +12,7 @@ import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
+import { hasLapsedReferralPremium } from '../lib/premium'
 import { RELATIONS, MATRIX, QUADRAS, getQuadra } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
@@ -1048,21 +1049,46 @@ export default function Feed() {
             onClick={e => e.stopPropagation()}
             style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}
           >
-            <div>
-              <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Free tier limit</p>
-              <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You've reached your free tier limits</h2>
-            </div>
-            <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
-              The free tier includes up to 3 active connections. Upgrade to Premium for unlimited connections, or end an existing connection to free up a slot.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-              <Link to="/premium" onClick={() => window.umami?.track('connection-cap-upgrade-clicked')} className="btn-primary" style={{ textAlign: 'center', textDecoration: 'none' }}>
-                Upgrade to Premium
-              </Link>
-              <button type="button" className="btn-ghost" onClick={() => { window.umami?.track('connection-cap-manage-clicked'); navigate('/messages') }}>
-                Manage existing connections
-              </button>
-            </div>
+            {hasLapsedReferralPremium(profile) ? (
+              <>
+                <div>
+                  <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Your referral premium has ended</p>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You're over the free tier limit</h2>
+                </div>
+                <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                  Your premium trial from referrals has ended, and you've got more than the free tier's 3 active connections. Refer another friend for 30 more days, upgrade to Premium, or end an existing connection to free up a slot.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <Link to="/settings" onClick={() => window.umami?.track('connection-cap-refer-clicked')} className="btn-primary" style={{ textAlign: 'center', textDecoration: 'none' }}>
+                    Refer a friend
+                  </Link>
+                  <Link to="/premium" onClick={() => window.umami?.track('connection-cap-upgrade-clicked')} className="btn-ghost" style={{ textAlign: 'center', textDecoration: 'none' }}>
+                    Upgrade to Premium
+                  </Link>
+                  <button type="button" className="btn-ghost" onClick={() => { window.umami?.track('connection-cap-manage-clicked'); navigate('/messages') }}>
+                    Manage existing connections
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Free tier limit</p>
+                  <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 500, margin: 0, color: 'var(--text)' }}>You've reached your free tier limits</h2>
+                </div>
+                <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                  The free tier includes up to 3 active connections. Upgrade to Premium for unlimited connections, or end an existing connection to free up a slot.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                  <Link to="/premium" onClick={() => window.umami?.track('connection-cap-upgrade-clicked')} className="btn-primary" style={{ textAlign: 'center', textDecoration: 'none' }}>
+                    Upgrade to Premium
+                  </Link>
+                  <button type="button" className="btn-ghost" onClick={() => { window.umami?.track('connection-cap-manage-clicked'); navigate('/messages') }}>
+                    Manage existing connections
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
