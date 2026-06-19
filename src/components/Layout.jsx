@@ -141,6 +141,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const [profileOpen, setProfileOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
+  const [socionRoomId, setSocionRoomId] = useState(null)
   const [updatesUnread, setUpdatesUnread] = useState(false)
   const [toasts, setToasts] = useState([])
   const { notifications, unreadCount: notifUnreadCount, loading: notifLoading, markOneRead, markAllRead } = useNotifications(profile?.id)
@@ -188,6 +189,53 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .subscribe()
     return () => channel.unsubscribe()
   }, [profile?.room_id, profile?.id])
+
+  // ── Socion (global) room unread — independent of the user's quadra room_id ──
+  useEffect(() => {
+    supabase.from('rooms').select('id').eq('is_global', true).single()
+      .then(({ data }) => { if (data) setSocionRoomId(data.id) })
+      .catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!socionRoomId) return
+    const lastVisited = getRoomLastVisited()
+    if (!lastVisited) { setRoomUnread(true); return }
+    supabase
+      .from('room_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('room_id', socionRoomId)
+      .neq('sender_id', profile?.id)
+      .is('deleted_at', null)
+      .gt('created_at', lastVisited)
+      .then(({ count }) => { if (count > 0) setRoomUnread(true) })
+  }, [socionRoomId, profile?.id])
+
+  useEffect(() => {
+    if (!socionRoomId || !profile?.id) return
+    const channel = supabase
+      .channel(`room-unread:${socionRoomId}`)
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'room_messages',
+        filter: `room_id=eq.${socionRoomId}`,
+      }, payload => {
+        if (payload.new?.sender_id !== profile.id) {
+          if (window.location.pathname !== '/rooms') {
+            setRoomUnread(true)
+            pushToastRef.current({
+              id: nextToastId(),
+              kind: 'room',
+              colour: '#6B4C9A',
+              label: 'Socion',
+            })
+          }
+        }
+      })
+      .subscribe()
+    return () => channel.unsubscribe()
+  }, [socionRoomId, profile?.id])
 
   useEffect(() => {
     function handleRoomVisited() { setRoomUnread(false) }
