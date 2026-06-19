@@ -81,7 +81,7 @@ export default function Admin() {
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at, verified_by').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
-        supabase.from('stats').select('announcement, announcement_active').eq('id', 1).single(),
+        supabase.from('stats').select('announcement, announcement_active, site_banner, site_banner_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
         supabase.rpc('get_member_emails'),
         supabase.from('typing_requests').select('id, user_id, notes, discord_handle, status, created_at').order('created_at', { ascending: false }),
