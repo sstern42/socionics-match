@@ -766,7 +766,7 @@ export default function Rooms() {
     <Layout hideFooter noScroll>
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minHeight:0 }}>
         <div className="room-root">
-        <div className="messages-outer" style={{ maxWidth:720, width:'100%', margin:isMobile?'0 auto':0, flex:1, display:'flex', flexDirection:'column', padding:'0 1.5rem', minHeight:0, boxSizing:'border-box' }}>
+        <div className="messages-outer" style={{ maxWidth:720, width:'100%', margin:isMobile?'0 auto':0, flex:1, display:'flex', flexDirection:'column', padding:isMobile?'0 1.5rem':'0 0 0 1.5rem', minHeight:0, boxSizing:'border-box' }}>
           <div style={{ flex:1, display:'flex', flexDirection:'column', border:'1px solid var(--border)', borderLeft:isMobile?'none':undefined, borderRight:isMobile?'none':undefined, borderTop:'none', background:'var(--card-bg)', overflow:'hidden', minHeight:0 }}>
 
             {/* Scrollable column: header + members strip + load more + notif banner + messages,
