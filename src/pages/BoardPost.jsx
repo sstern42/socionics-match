@@ -17,6 +17,7 @@ import {
   addCommentReaction,
   removeCommentReaction,
   incrementBoardPostView,
+  reportBoardContent,
 } from '../lib/boards'
 
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
@@ -75,6 +76,13 @@ export default function BoardPost() {
   const [editingCommentId, setEditingCommentId] = useState(null)
   const [editCommentText, setEditCommentText] = useState('')
   const [editCommentError, setEditCommentError] = useState(null)
+
+  const [reportTarget, setReportTarget] = useState(null) // { type: 'post'|'comment', id }
+  const [reportReason, setReportReason] = useState('spam')
+  const [reportNotes, setReportNotes] = useState('')
+  const [reportSubmitting, setReportSubmitting] = useState(false)
+  const [reportError, setReportError] = useState(null)
+  const [reportedIds, setReportedIds] = useState(new Set())
 
   usePageTitle(post?.title ?? 'Post')
 
@@ -232,6 +240,33 @@ export default function BoardPost() {
     }
   }
 
+  function openReportModal(type, id) {
+    setReportTarget({ type, id })
+    setReportReason('spam')
+    setReportNotes('')
+    setReportError(null)
+  }
+
+  async function handleSubmitReport() {
+    if (!reportTarget || !profile?.id || reportSubmitting) return
+    setReportSubmitting(true)
+    setReportError(null)
+    try {
+      await reportBoardContent({
+        postId: reportTarget.type === 'post' ? reportTarget.id : null,
+        commentId: reportTarget.type === 'comment' ? reportTarget.id : null,
+        reporterId: profile.id,
+        reason: reportNotes.trim() ? `${reportReason}: ${reportNotes.trim()}` : reportReason,
+      })
+      setReportedIds(prev => new Set(prev).add(reportTarget.id))
+      setReportTarget(null)
+    } catch (err) {
+      setReportError(err.message)
+    } finally {
+      setReportSubmitting(false)
+    }
+  }
+
   async function toggleReaction(emoji) {
     if (!profile?.id || !post) return
     const reactions = post.reactions ?? []
@@ -296,6 +331,16 @@ export default function BoardPost() {
                 <button type="button" onClick={() => setCommentDeleteConfirmId(c.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}>Delete</button>
               </div>
             )
+          )}
+          {!isMyComment && !c.deleted_at && editingCommentId !== c.id && (
+            <button
+              type="button"
+              onClick={() => openReportModal('comment', c.id)}
+              disabled={reportedIds.has(c.id)}
+              style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: reportedIds.has(c.id) ? 'default' : 'pointer', color: 'var(--muted)', fontSize: '0.7rem' }}
+            >
+              {reportedIds.has(c.id) ? 'Reported' : 'Report'}
+            </button>
           )}
         </div>
         {editingCommentId === c.id ? (
@@ -412,6 +457,16 @@ export default function BoardPost() {
                       </>
                     )
                   )}
+                  {!isMine && !editingPost && (
+                    <button
+                      type="button"
+                      onClick={() => openReportModal('post', post.id)}
+                      disabled={reportedIds.has(post.id)}
+                      style={{ background: 'none', border: 'none', cursor: reportedIds.has(post.id) ? 'default' : 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}
+                    >
+                      {reportedIds.has(post.id) ? 'Reported' : 'Report'}
+                    </button>
+                  )}
                 </div>
               </div>
               {editingPost ? (
@@ -502,6 +557,35 @@ export default function BoardPost() {
           </>
         )}
       </section>
+
+      {reportTarget && (
+        <div onClick={() => setReportTarget(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1.5rem' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', borderRadius: 6, padding: '1.75rem', maxWidth: 420, width: '100%' }}>
+            <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', marginBottom: '0.6rem' }}>
+              Report {reportTarget.type === 'post' ? 'post' : 'comment'}
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.1rem' }}>
+              A founder will review this. The author isn't notified.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', marginBottom: '1.1rem' }}>
+              <select className="input-standalone" value={reportReason} onChange={e => setReportReason(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
+                <option value="spam">Spam or fake profile</option>
+                <option value="inappropriate">Inappropriate content</option>
+                <option value="harassment">Harassment or abuse</option>
+                <option value="other">Other</option>
+              </select>
+              <textarea className="input-standalone" placeholder="Additional details (optional)" value={reportNotes} onChange={e => setReportNotes(e.target.value)} rows={3} maxLength={500} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
+            </div>
+            {reportError && <p style={{ fontSize: '0.8rem', color: '#c0392b', marginBottom: '0.75rem' }}>{reportError}</p>}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button type="button" className="btn-ghost" onClick={() => setReportTarget(null)}>Cancel</button>
+              <button type="button" className="btn-primary" onClick={handleSubmitReport} disabled={reportSubmitting} style={{ opacity: reportSubmitting ? 0.6 : 1 }}>
+                {reportSubmitting ? 'Reporting…' : 'Submit report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 }
