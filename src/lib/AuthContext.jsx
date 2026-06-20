@@ -15,7 +15,9 @@ const AUTH_BOOT_TIMEOUT_MS = 6000
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined)
   const [profile, setProfile] = useState(undefined)
+  const [previousLastActive, setPreviousLastActive] = useState(null)
   const settledRef = useRef(false)
+  const capturedRef = useRef(false)
 
   useEffect(() => {
     // Boot timeout — if nothing has resolved auth yet, stop blocking first paint.
@@ -47,6 +49,12 @@ export function AuthProvider({ children }) {
     try {
       const p = await getProfile(authId)
       setProfile(p)
+      // Capture the pre-update last_active once per session — used to compute
+      // a "what you missed" catch-up summary on login.
+      if (!capturedRef.current) {
+        capturedRef.current = true
+        setPreviousLastActive(p?.last_active ?? null)
+      }
       // Update last_active silently — fire and forget (skip if hide_activity is on)
       if (p?.id && !p.profile_data?.hide_activity) {
         supabase.from('users').update({ last_active: new Date().toISOString() }).eq('id', p.id).then(() => {})
@@ -75,7 +83,7 @@ export function AuthProvider({ children }) {
   const isPremium = computeIsPremium(profile)
 
   return (
-    <AuthContext.Provider value={{ session, profile, refreshProfile, loading, isPremium }}>
+    <AuthContext.Provider value={{ session, profile, refreshProfile, loading, isPremium, previousLastActive }}>
       {children}
     </AuthContext.Provider>
   )

@@ -10,6 +10,7 @@ import AnnouncementBanner from './AnnouncementBanner'
 import NotificationBell from './NotificationBell'
 import { useNotifications } from '../hooks/useNotifications'
 import { createNotification } from '../lib/notifications'
+import { shouldShowCatchup, markCatchupShown, getCatchupSummary } from '../lib/catchup'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
 
@@ -134,7 +135,7 @@ const Divider = () => (
 )
 
 export default function Layout({ children, hideFooter = false, noScroll = false }) {
-  const { session, profile, isPremium } = useAuth()
+  const { session, profile, isPremium, previousLastActive } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -377,6 +378,20 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .subscribe()
     return () => { supabase.removeChannel(channel) }
   }, [session, profile?.id])
+
+  // Catch-up summary — "what you missed while offline", shown once per login
+  useEffect(() => {
+    if (!session || !profile?.id) return
+    if (!shouldShowCatchup(previousLastActive)) return
+
+    getCatchupSummary({ profile, previousLastActive }).then(groups => {
+      if (groups.length === 0) return
+      markCatchupShown(previousLastActive)
+      groups.forEach(group => {
+        pushToastRef.current({ id: nextToastId(), wide: true, ...group })
+      })
+    })
+  }, [session, profile?.id, previousLastActive])
 
   const isActive = (to) => location.pathname === to
   const hasNewChangelog = localStorage.getItem('socion_changelog_seen') !== CHANGELOG_ENTRIES[0].date
@@ -757,18 +772,24 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       {/* Live toasts */}
       <style>{`@keyframes toast-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }`}</style>
       {toasts.map((toast, i) => {
-        const TOAST_H = 68
-        const bottomPx = 160 + i * TOAST_H
+        const precedingHeight = toasts.slice(0, i).reduce((sum, t) => sum + (t.wide ? 84 : 68), 0)
+        const bottomPx = 160 + precedingHeight
 
-        const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post'
+        const isCatchup = toast.kind?.startsWith('catchup_')
+        const isClickable = toast.kind === 'message' || toast.kind === 'connection' || toast.kind === 'room' || toast.kind === 'founder_post' ||
+          toast.kind === 'catchup_message' || toast.kind === 'catchup_connection' || toast.kind === 'catchup_member' || toast.kind === 'catchup_founder_post'
         const onClick = isClickable ? () => {
           setToasts(prev => prev.filter(t => t.id !== toast.id))
-          if (toast.kind === 'founder_post') navigate('/updates')
+          if (toast.kind === 'founder_post' || toast.kind === 'catchup_founder_post') navigate('/updates')
           else if (toast.kind === 'room') navigate('/rooms')
+          else if (toast.kind === 'catchup_message') navigate('/messages')
+          else if (toast.kind === 'catchup_connection') navigate('/messages')
+          else if (toast.kind === 'catchup_member') navigate('/feed')
           else if (toast.matchId) navigate(`/messages?match=${toast.matchId}`)
         } : undefined
 
         const heading = (() => {
+          if (isCatchup) return toast.heading
           if (toast.kind === 'message')      return 'new dm received'
           if (toast.kind === 'room')         return 'new room message'
           if (toast.kind === 'connection')   return 'new connection'
@@ -779,6 +800,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         })()
 
         const body = (() => {
+          if (isCatchup) return toast.body
           if (toast.kind === 'message') {
             const countBadge = (toast.count ?? 1) > 1 ? ` +${(toast.count ?? 1) - 1}` : ''
             return (toast.name ? `${toast.name}: ${toast.preview}` : toast.preview) + countBadge
@@ -799,6 +821,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               position: 'fixed',
               bottom: bottomPx,
               left: '2rem',
+              right: toast.wide ? '2rem' : undefined,
               zIndex: 300,
               background: 'var(--bg)',
               border: '1px solid var(--border)',
@@ -808,10 +831,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
               boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
               display: 'flex', alignItems: 'flex-start', gap: '0.55rem',
               animation: 'toast-in 0.2s ease',
-              width: 240,
+              width: toast.wide ? 'auto' : 240,
+              maxWidth: toast.wide ? 380 : undefined,
               cursor: isClickable ? 'pointer' : 'default',
             }}
           >
+            {toast.icon && (
+              <span style={{ fontSize: '0.95rem', lineHeight: 1, marginTop: '0.05rem' }}>{toast.icon}</span>
+            )}
             {toast.type && (
               <span style={{
                 fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase',
@@ -829,7 +856,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                 {heading}
               </span>
               {body && (
-                <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <span style={{
+                  fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.4,
+                  overflow: 'hidden', textOverflow: 'ellipsis',
+                  whiteSpace: toast.wide ? 'normal' : 'nowrap',
+                }}>
                   {body}
                 </span>
               )}
