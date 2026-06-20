@@ -201,17 +201,17 @@ export default function TypistProfile() {
           </div>
         )}
 
-        {/* Testimonial */}
-        {typist.testimonial && (
-          <div style={{ borderLeft: '3px solid var(--accent-lt)', paddingLeft: '1.25rem', marginBottom: '2.5rem' }}>
+        {/* Testimonials */}
+        {(typist.testimonials || (typist.testimonial ? [typist.testimonial] : [])).map((t, i) => (
+          <div key={i} style={{ borderLeft: '3px solid var(--accent-lt)', paddingLeft: '1.25rem', marginBottom: '2.5rem' }}>
             <p style={{ fontFamily: 'var(--serif)', fontSize: '1rem', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
-              "{typist.testimonial.quote}"
+              "{t.quote}"
             </p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-              — {typist.testimonial.name}{typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
+              — {t.name}{t.type ? `, ${t.type}` : ''}
             </p>
           </div>
-        )}
+        ))}
 
         {/* Tiers */}
         {typist.tiersLabel && (

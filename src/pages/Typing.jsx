@@ -146,16 +146,19 @@ export default function Typing() {
                   )}
 
                   {/* Testimonial preview */}
-                  {typist.testimonial && (
-                    <div style={{ borderLeft: '2px solid var(--accent-lt)', paddingLeft: '0.75rem', margin: '0.25rem 0 0' }}>
-                      <p style={{ fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
-                        "{typist.testimonial.quote}"
-                      </p>
-                      <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                        — {typist.testimonial.name}{typist.testimonial.type ? `, ${typist.testimonial.type}` : ''}
-                      </p>
-                    </div>
-                  )}
+                  {(() => {
+                    const t = typist.testimonials?.[0] || typist.testimonial;
+                    return t && (
+                      <div style={{ borderLeft: '2px solid var(--accent-lt)', paddingLeft: '0.75rem', margin: '0.25rem 0 0' }}>
+                        <p style={{ fontSize: '0.82rem', color: 'var(--text)', lineHeight: 1.6, fontStyle: 'italic', margin: 0 }}>
+                          "{t.quote}"
+                        </p>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
+                          — {t.name}{t.type ? `, ${t.type}` : ''}
+                        </p>
+                      </div>
+                    );
+                  })()}
 
                   {/* Method + experience + availability */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
