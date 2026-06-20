@@ -818,7 +818,7 @@ export default function Admin() {
           </div>
         </div>
 
-        <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} />
+        <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} use24hourClock={profile?.profile_data?.use_24hour_clock} />
         <VerificationPanel users={users} onUpdate={loadData} />
         <FeedbackPanel />
 
@@ -827,7 +827,7 @@ export default function Admin() {
   )
 }
 
-function TypingRequestsPanel({ requests, users, onUpdate }) {
+function TypingRequestsPanel({ requests, users, onUpdate, use24hourClock }) {
   const [updating, setUpdating] = useState(null)
   const [error, setError] = useState(null)
   const userMap = Object.fromEntries(users.map(u => [u.id, u]))
@@ -864,7 +864,7 @@ function TypingRequestsPanel({ requests, users, onUpdate }) {
                   {r.discord_handle && <p style={{ fontSize: '0.78rem', color: 'var(--accent)', paddingLeft: '3rem' }}>Discord: {r.discord_handle}</p>}
                   {r.notes && <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>}
                   <p style={{ fontSize: '0.68rem', color: 'var(--muted)', paddingLeft: '3rem' }}>
-                    {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {formatTime(r.created_at, profile?.profile_data?.use_24hour_clock)}
+                    {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {formatTime(r.created_at, use24hourClock)}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap' }}>

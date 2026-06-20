@@ -9,11 +9,10 @@ class ChunkErrorBoundary extends Component {
   state = { hasError: false }
 
   static getDerivedStateFromError(error) {
-    console.error('ChunkErrorBoundary real error:', error?.name, error?.message, error?.stack)
     return { hasError: true, isChunkError: CHUNK_ERROR_PATTERN.test(error?.message || '') }
   }
 
-  componentDidCatch(error, info) {
+  componentDidCatch(error) {
     if (CHUNK_ERROR_PATTERN.test(error?.message || '')) {
       // A new deploy shipped new chunk hashes while this tab had an old page open.
       // Reload once to pick up the latest build instead of surfacing a crash.
