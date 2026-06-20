@@ -4,6 +4,16 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '20 June 2026',
+       label: 'New',
+       items: [
+         'Boards — posts and comments now have a Report action (reason + optional notes). Founders can review and resolve open reports in Admin',
+         'Profiles — a Report button on member profiles lets you flag a user with a reason and optional notes, reviewed by founders in Admin',
+         'Catch-up summary — if you\'ve been offline more than 30 minutes, signing back in now shows a few grouped toasts summarizing what you missed (messages, connections, new compatible members, founder posts) instead of replaying every notification one by one',
+         'Rooms — toast notifications for new messages now cover every room, not just your own quadra and the Socion room',
+       ],
+     },
+     {
        date: '19 June 2026',
        label: 'New',
        items: [
