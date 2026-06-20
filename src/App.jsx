@@ -12,7 +12,8 @@ class ChunkErrorBoundary extends Component {
     return { hasError: true, isChunkError: CHUNK_ERROR_PATTERN.test(error?.message || '') }
   }
 
-  componentDidCatch(error) {
+  componentDidCatch(error, info) {
+    console.error('ChunkErrorBoundary caught:', error, info)
     if (CHUNK_ERROR_PATTERN.test(error?.message || '')) {
       // A new deploy shipped new chunk hashes while this tab had an old page open.
       // Reload once to pick up the latest build instead of surfacing a crash.
