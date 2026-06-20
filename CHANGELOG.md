@@ -4,6 +4,18 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 20 June 2026
+
+### Added
+- **Boards — report posts/comments**: Posts and comments now have a Report action (reason + optional notes). Founders see open reports in Admin with full context and a "Mark resolved" action.
+- **Profiles — report a user**: A Report button on member profiles lets you flag a user with a reason and optional notes. Founders see open reports in a new Admin card, fed by a dedicated reports table.
+- **Catch-up summary**: If you were offline for more than 30 minutes, signing back in now shows a small set of grouped toasts summarizing what you missed — new messages, connections, new compatible members, and founder posts — instead of replaying every individual notification.
+
+### Fixed
+- **Rooms — toasts outside your quadra**: Toast notifications for new room messages previously only covered your assigned quadra room and the Socion room. Now any room you're not actively viewing will toast you, including the other three quadra rooms you're browsing read-only.
+
+---
+
 ## 19 June 2026
 
 ### Added
