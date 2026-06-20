@@ -141,101 +141,56 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const [profileOpen, setProfileOpen] = useState(false)
   const unread = useUnreadCount(profile?.id)
   const [roomUnread, setRoomUnread] = useState(() => !getRoomLastVisited())
-  const [socionRoomId, setSocionRoomId] = useState(null)
   const [updatesUnread, setUpdatesUnread] = useState(false)
   const [toasts, setToasts] = useState([])
   const { notifications, unreadCount: notifUnreadCount, loading: notifLoading, markOneRead, markAllRead } = useNotifications(profile?.id)
 
-  // ── Room unread ───────────────────────────────────────────────────────────
+  // ── Room unread (all rooms: every quadra + the Socion global room) ─────────
+  const [allRooms, setAllRooms] = useState([])
+
   useEffect(() => {
-    if (!profile?.room_id) return
+    supabase.from('rooms').select('id, quadra, is_global').then(({ data }) => {
+      setAllRooms(data ?? [])
+    }).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    if (!allRooms.length || !profile?.id) return
     const lastVisited = getRoomLastVisited()
     if (!lastVisited) { setRoomUnread(true); return }
     supabase
       .from('room_messages')
       .select('id', { count: 'exact', head: true })
-      .eq('room_id', profile.room_id)
+      .in('room_id', allRooms.map(r => r.id))
       .neq('sender_id', profile.id)
       .is('deleted_at', null)
       .gt('created_at', lastVisited)
       .then(({ count }) => { if (count > 0) setRoomUnread(true) })
-  }, [profile?.room_id])
+  }, [allRooms, profile?.id])
 
   useEffect(() => {
-    if (!profile?.room_id || !profile?.id) return
+    if (!allRooms.length || !profile?.id) return
+    const roomIds = allRooms.map(r => r.id)
     const channel = supabase
-      .channel(`room-unread:${profile.room_id}`)
+      .channel('room-toasts-all')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'room_messages',
-        filter: `room_id=eq.${profile.room_id}`,
+        filter: `room_id=in.(${roomIds.join(',')})`,
       }, payload => {
-        if (payload.new?.sender_id !== profile.id) {
-          if (window.location.pathname !== '/rooms') {
-            setRoomUnread(true)
-            const quadra = TYPE_QUADRA[profile.type] ?? 'alpha'
-            const colour = QUADRA_COLOURS[quadra] ?? '#9a6f38'
-            const label = quadra.charAt(0).toUpperCase() + quadra.slice(1)
-            pushToastRef.current({
-              id: nextToastId(),
-              kind: 'room',
-              colour,
-              label,
-            })
-          }
-        }
+        if (payload.new?.sender_id === profile.id) return
+        if (window.location.pathname === '/rooms') return
+        setRoomUnread(true)
+        const room = allRooms.find(r => r.id === payload.new.room_id)
+        if (!room) return
+        const label  = room.is_global ? 'Socion' : room.quadra.charAt(0).toUpperCase() + room.quadra.slice(1)
+        const colour = room.is_global ? '#6B4C9A' : (QUADRA_COLOURS[room.quadra] ?? '#9a6f38')
+        pushToastRef.current({ id: nextToastId(), kind: 'room', colour, label })
       })
       .subscribe()
-    return () => channel.unsubscribe()
-  }, [profile?.room_id, profile?.id])
-
-  // ── Socion (global) room unread — independent of the user's quadra room_id ──
-  useEffect(() => {
-    supabase.from('rooms').select('id').eq('is_global', true).single()
-      .then(({ data }) => { if (data) setSocionRoomId(data.id) })
-      .catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    if (!socionRoomId) return
-    const lastVisited = getRoomLastVisited()
-    if (!lastVisited) { setRoomUnread(true); return }
-    supabase
-      .from('room_messages')
-      .select('id', { count: 'exact', head: true })
-      .eq('room_id', socionRoomId)
-      .neq('sender_id', profile?.id)
-      .is('deleted_at', null)
-      .gt('created_at', lastVisited)
-      .then(({ count }) => { if (count > 0) setRoomUnread(true) })
-  }, [socionRoomId, profile?.id])
-
-  useEffect(() => {
-    if (!socionRoomId || !profile?.id) return
-    const channel = supabase
-      .channel(`room-unread:${socionRoomId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'room_messages',
-        filter: `room_id=eq.${socionRoomId}`,
-      }, payload => {
-        if (payload.new?.sender_id !== profile.id) {
-          if (window.location.pathname !== '/rooms') {
-            setRoomUnread(true)
-            pushToastRef.current({
-              id: nextToastId(),
-              kind: 'room',
-              colour: '#6B4C9A',
-              label: 'Socion',
-            })
-          }
-        }
-      })
-      .subscribe()
-    return () => channel.unsubscribe()
-  }, [socionRoomId, profile?.id])
+    return () => { supabase.removeChannel(channel) }
+  }, [allRooms, profile?.id])
 
   useEffect(() => {
     function handleRoomVisited() { setRoomUnread(false) }
