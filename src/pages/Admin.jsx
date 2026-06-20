@@ -6,6 +6,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
 import { liftBlock } from '../lib/blocks'
 import { resolveBoardReport } from '../lib/boards'
+import { resolveUserReport } from '../lib/userReports'
 import { COUNTRIES } from '../data/countries'
 import { formatTime } from '../lib/dateUtils'
 
@@ -58,6 +59,7 @@ export default function Admin() {
   const [siteBannerSaved, setSiteBannerSaved] = useState(false)
   const [unblockingId, setUnblockingId] = useState(null)
   const [resolvingReportId, setResolvingReportId] = useState(null)
+  const [resolvingUserReportId, setResolvingUserReportId] = useState(null)
 
   useEffect(() => {
     if (loading) return
@@ -190,6 +192,7 @@ export default function Admin() {
         referralRewarded,
         typingRequests: typingRequestsData ?? [],
         boardReports: adminStats?.board_reports ?? [],
+        userReports: adminStats?.user_reports ?? [],
         // Swipe stats
         totalSwipes:  adminStats?.total_swipes  ?? 0,
         rightSwipes:  adminStats?.right_swipes  ?? 0,
@@ -224,6 +227,18 @@ export default function Admin() {
       setError(err.message)
     } finally {
       setResolvingReportId(null)
+    }
+  }
+
+  async function handleResolveUserReport(reportId) {
+    setResolvingUserReportId(reportId)
+    try {
+      await resolveUserReport(reportId, 'reviewed')
+      await loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setResolvingUserReportId(null)
     }
   }
 
@@ -276,7 +291,7 @@ export default function Admin() {
     messagesEver, totalAssessments, totalCooloffs, totalReports,
     feedbackCount, relAvgRatings, comments, growthData, topReferrers, referralRewarded,
     active7d, inactive, messagingActive, anonCount, knownCount,
-    typingRequests, boardReports,
+    typingRequests, boardReports, userReports,
     totalSwipes, rightSwipes, leftSwipes, swipeMatches,
   } = data
 
@@ -644,6 +659,49 @@ export default function Admin() {
                         }}
                       >
                         {resolvingReportId === r.id ? 'Resolving…' : 'Mark resolved'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* User reports */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>User reports {userReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
+            {userReports.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
+                {userReports.map(r => (
+                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
+                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+                      {r.reason ?? 'No reason given'}
+                    </p>
+                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
+                      <strong>{r.reported_name ?? r.reported_user_id}</strong> reported by <strong>{r.reporter_name ?? r.reporter_id}</strong>
+                    </p>
+                    {r.notes && (
+                      <p style={{ color: 'var(--muted)', marginTop: '0.25rem', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {r.notes}
+                      </p>
+                    )}
+                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
+                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    <a href={`/profile/${r.reported_user_id}`} style={{ fontSize: '0.72rem', color: 'var(--accent)' }}>View profile →</a>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleResolveUserReport(r.id)}
+                        disabled={resolvingUserReportId === r.id}
+                        style={{
+                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
+                          color: 'var(--accent)', cursor: resolvingUserReportId === r.id ? 'default' : 'pointer',
+                          opacity: resolvingUserReportId === r.id ? 0.6 : 1,
+                        }}
+                      >
+                        {resolvingUserReportId === r.id ? 'Resolving…' : 'Mark resolved'}
                       </button>
                     </div>
                   </div>
