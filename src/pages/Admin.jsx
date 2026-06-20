@@ -820,7 +820,6 @@ export default function Admin() {
 
         <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} />
         <VerificationPanel users={users} onUpdate={loadData} />
-        <BannedEmailsPanel />
         <FeedbackPanel />
 
       </section>
@@ -981,110 +980,6 @@ const miniBtn = colour => ({
   fontWeight: 600,
   cursor: 'pointer',
 })
-
-function BannedEmailsPanel() {
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [email, setEmail] = useState('')
-  const [reason, setReason] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [removingEmail, setRemovingEmail] = useState(null)
-  const [error, setError] = useState(null)
-
-  async function load() {
-    setLoading(true)
-    const { data, error: loadErr } = await supabase
-      .from('banned_emails')
-      .select('*')
-      .order('created_at', { ascending: false })
-    if (loadErr) { setError(loadErr.message); setLoading(false); return }
-    setItems(data ?? [])
-    setLoading(false)
-  }
-
-  useEffect(() => { load() }, [])
-
-  async function addBan() {
-    const cleaned = email.trim().toLowerCase()
-    if (!cleaned) return
-    setSaving(true)
-    setError(null)
-    const { error: saveErr } = await supabase
-      .from('banned_emails')
-      .insert({ email: cleaned, reason: reason.trim() || null, banned_by: 'Spencer' })
-    setSaving(false)
-    if (saveErr) { setError(saveErr.message); return }
-    setEmail('')
-    setReason('')
-    await load()
-  }
-
-  async function removeBan(targetEmail) {
-    setRemovingEmail(targetEmail)
-    const { error: delErr } = await supabase.from('banned_emails').delete().eq('email', targetEmail)
-    setRemovingEmail(null)
-    if (delErr) { setError(delErr.message); return }
-    setItems(prev => prev.filter(i => i.email !== targetEmail))
-  }
-
-  return (
-    <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
-      <p style={cardTitleStyle}>
-        Banned emails
-        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {items.length} blocked</span>
-      </p>
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
-        <input
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          placeholder="email@example.com"
-          style={{ flex: '1 1 220px', padding: '0.4rem 0.75rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }}
-        />
-        <input
-          value={reason}
-          onChange={e => setReason(e.target.value)}
-          placeholder="Reason (optional)"
-          style={{ flex: '1 1 220px', padding: '0.4rem 0.75rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }}
-        />
-        <button
-          type="button"
-          onClick={addBan}
-          disabled={saving || !email.trim()}
-          style={{ background: 'var(--accent)', border: 'none', borderRadius: 3, padding: '0.4rem 1rem', fontSize: '0.78rem', color: '#fff', cursor: 'pointer', opacity: saving || !email.trim() ? 0.5 : 1, flexShrink: 0 }}
-        >
-          {saving ? 'Adding…' : 'Ban email'}
-        </button>
-      </div>
-
-      {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
-      {loading && <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>Loading…</p>}
-      {!loading && items.length === 0 && (
-        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>No banned emails yet.</p>
-      )}
-
-      <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
-        {items.map((item, i) => (
-          <div key={item.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0', borderBottom: i < items.length - 1 ? '1px solid var(--border)' : 'none', gap: '0.75rem' }}>
-            <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.email}</p>
-              <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.1rem' }}>
-                {item.reason ?? 'No reason given'} · {new Date(item.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => removeBan(item.email)}
-              disabled={removingEmail === item.email}
-              style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: removingEmail === item.email ? 0.6 : 1, flexShrink: 0 }}
-            >
-              {removingEmail === item.email ? 'Removing…' : 'Unban'}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
 
 function FeedbackPanel() {
   const [items, setItems] = useState([])
