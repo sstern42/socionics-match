@@ -891,10 +891,11 @@ function VerificationPanel({ users, onUpdate }) {
   const [error, setError]               = useState(null)
   const [typeOverrides, setTypeOverrides] = useState({})
 
-  const [showVerified, setShowVerified] = useState(false)
-  
+  const [filterMode, setFilterMode] = useState('unverified') // 'unverified' | 'verified' | 'all'
+
     const filtered = users.filter(u => {
-      if (!showVerified && u.verified_by) return false
+      if (filterMode === 'unverified' && u.verified_by) return false
+      if (filterMode === 'verified' && !u.verified_by) return false
       const q = search.toLowerCase()
       return !q || (u.profile_data?.name ?? '').toLowerCase().includes(q) || u.type.toLowerCase().includes(q)
     })
@@ -929,12 +930,33 @@ function VerificationPanel({ users, onUpdate }) {
           <input value={verifierName} onChange={e => setVerifierName(e.target.value)} style={{ width: 100, padding: '0.4rem 0.6rem', fontSize: '0.82rem', border: '1px solid var(--border)', borderRadius: 3, fontFamily: 'var(--sans)', outline: 'none' }} />
         </div>
       </div>
-      <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', marginTop: '0.5rem' }}>
-        <input type="checkbox" checked={showVerified} onChange={e => setShowVerified(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 14, height: 14 }} />
-        Show verified ({users.filter(u => u.verified_by).length})
-      </label>
+      <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.5rem' }}>
+        {[
+          { key: 'unverified', label: `Unverified (${users.filter(u => !u.verified_by).length})` },
+          { key: 'verified',   label: `Verified (${users.filter(u => u.verified_by).length})` },
+          { key: 'all',        label: `All (${users.length})` },
+        ].map(opt => (
+          <button
+            key={opt.key}
+            type="button"
+            onClick={() => setFilterMode(opt.key)}
+            style={{
+              fontSize: '0.72rem',
+              padding: '0.3rem 0.65rem',
+              borderRadius: 3,
+              border: '1px solid var(--border)',
+              background: filterMode === opt.key ? 'var(--accent)' : 'none',
+              color: filterMode === opt.key ? '#fff' : 'var(--muted)',
+              cursor: 'pointer',
+              fontWeight: 500,
+            }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
       {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
-      <div style={{ marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+      <div style={{ marginTop: '0.75rem', maxHeight: '28rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0 }}>
         {filtered.map((u, i) => {
           const isVerified  = !!u.verified_by
           const currentType = selectedType(u)
