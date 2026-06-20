@@ -33,7 +33,10 @@ export const TYPISTS = {
     paymentNote:     "Payment is taken by Stripe. Straight after, you'll be taken to the questionnaire to complete in your own time. The clock on your turnaround starts once you submit it — not at payment.",
     referralNote:    null,
     tiersLabel:      null,
-    testimonial:     { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
+    testimonials:    [
+      { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
+      { quote: "A typing report backed with enough evidence and reasoning to assuage any doubts… and that's coming from an EII.", name: 'Chihuahua' },
+    ],
     tiers: [
       {
         key:            'standard',
