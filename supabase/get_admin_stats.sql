@@ -134,6 +134,30 @@ begin
                              limit 10
                            ) row
                          ),
+    'board_reports',     (
+                           select coalesce(jsonb_agg(r order by r.created_at desc), '[]')
+                           from (
+                             select br.id, br.post_id, br.comment_id, br.reason,
+                                    br.created_at, br.resolved_at, br.resolution,
+                                    reporter.profile_data->>'name' as reporter_name,
+                                    coalesce(post.title, '') as post_title,
+                                    coalesce(post.content, comment.content) as content,
+                                    coalesce(post_author.profile_data->>'name', comment_author.profile_data->>'name') as author_name,
+                                    b.slug as board_slug,
+                                    coalesce(post.board_id, comment_post.board_id) as board_id
+                             from board_reports br
+                             left join users reporter on reporter.id = br.reporter_id
+                             left join board_posts post on post.id = br.post_id
+                             left join users post_author on post_author.id = post.author_id
+                             left join board_comments comment on comment.id = br.comment_id
+                             left join users comment_author on comment_author.id = comment.author_id
+                             left join board_posts comment_post on comment_post.id = comment.post_id
+                             left join boards b on b.id = coalesce(post.board_id, comment_post.board_id)
+                             where br.resolved_at is null
+                             order by br.created_at desc
+                             limit 50
+                           ) r
+                         ),
     'referral_rewarded', (
                            select coalesce(jsonb_agg(row order by row.days_left desc), '[]')
                            from (

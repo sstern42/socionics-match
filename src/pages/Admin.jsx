@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
 import { liftBlock } from '../lib/blocks'
+import { resolveBoardReport } from '../lib/boards'
 import { COUNTRIES } from '../data/countries'
 import { formatTime } from '../lib/dateUtils'
 
@@ -56,6 +57,7 @@ export default function Admin() {
   const [savingSiteBanner, setSavingSiteBanner] = useState(false)
   const [siteBannerSaved, setSiteBannerSaved] = useState(false)
   const [unblockingId, setUnblockingId] = useState(null)
+  const [resolvingReportId, setResolvingReportId] = useState(null)
 
   useEffect(() => {
     if (loading) return
@@ -187,6 +189,7 @@ export default function Admin() {
         topReferrers,
         referralRewarded,
         typingRequests: typingRequestsData ?? [],
+        boardReports: adminStats?.board_reports ?? [],
         // Swipe stats
         totalSwipes:  adminStats?.total_swipes  ?? 0,
         rightSwipes:  adminStats?.right_swipes  ?? 0,
@@ -209,6 +212,18 @@ export default function Admin() {
       setError(err.message)
     } finally {
       setUnblockingId(null)
+    }
+  }
+
+  async function handleResolveReport(reportId) {
+    setResolvingReportId(reportId)
+    try {
+      await resolveBoardReport(reportId, 'reviewed')
+      await loadData()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setResolvingReportId(null)
     }
   }
 
@@ -261,7 +276,7 @@ export default function Admin() {
     messagesEver, totalAssessments, totalCooloffs, totalReports,
     feedbackCount, relAvgRatings, comments, growthData, topReferrers, referralRewarded,
     active7d, inactive, messagingActive, anonCount, knownCount,
-    typingRequests,
+    typingRequests, boardReports,
     totalSwipes, rightSwipes, leftSwipes, swipeMatches,
   } = data
 
@@ -584,6 +599,53 @@ export default function Admin() {
                         {unblockingId === r.id ? 'Unblocking…' : 'Unblock'}
                       </button>
                     )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Board reports */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Board reports {boardReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
+            {boardReports.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
+                {boardReports.map(r => (
+                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
+                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+                      {r.reason ?? 'No reason given'} {r.post_id ? '— post' : '— comment'}
+                    </p>
+                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
+                      Reported by <strong>{r.reporter_name ?? 'Unknown'}</strong>
+                      {r.author_name && <> · by <strong>{r.author_name}</strong></>}
+                      {r.board_slug && <> · in <strong>{r.board_slug}</strong></>}
+                    </p>
+                    {r.content && (
+                      <p style={{ color: 'var(--muted)', marginTop: '0.25rem', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {r.post_title ? `${r.post_title}: ` : ''}{r.content}
+                      </p>
+                    )}
+                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
+                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    {r.board_slug && (r.post_id || r.comment_id) && (
+                      <a href={`/boards/${r.board_slug}`} style={{ fontSize: '0.72rem', color: 'var(--accent)' }}>View board →</a>
+                    )}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleResolveReport(r.id)}
+                        disabled={resolvingReportId === r.id}
+                        style={{
+                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
+                          color: 'var(--accent)', cursor: resolvingReportId === r.id ? 'default' : 'pointer',
+                          opacity: resolvingReportId === r.id ? 0.6 : 1,
+                        }}
+                      >
+                        {resolvingReportId === r.id ? 'Resolving…' : 'Mark resolved'}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

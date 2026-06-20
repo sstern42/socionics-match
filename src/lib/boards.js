@@ -190,6 +190,15 @@ export async function reportBoardContent({ postId = null, commentId = null, repo
   window.umami?.track('board-content-reported')
 }
 
+export async function resolveBoardReport(reportId, resolution = null) {
+  const { error } = await supabase
+    .from('board_reports')
+    .update({ resolved_at: new Date().toISOString(), resolution })
+    .eq('id', reportId)
+
+  if (error) throw error
+}
+
 export async function addPostReaction({ postId, userId, emoji }) {
   const { error } = await supabase
     .from('board_post_reactions')
