@@ -11,6 +11,7 @@ import FlagImage from '../components/FlagImage'
 import { createMatch } from '../lib/feed'
 import { sendMessage } from '../lib/messages'
 import { logProfileView, getProfileViews, getProfileViewCount } from '../lib/profileViews'
+import { reportUser } from '../lib/userReports'
 import DynamicsTab from '../components/profile/DynamicsTab'
 import SIWebview from '../components/SIWebview'
 import { SMS_BOOKS } from '../data/books'
@@ -48,6 +49,13 @@ export default function UserProfile() {
   const [connecting, setConnecting]           = useState(false)
   const [connectError, setConnectError]       = useState(null)
   const [justConnected, setJustConnected]     = useState(false)
+
+  const [reportOpen, setReportOpen]           = useState(false)
+  const [reportReason, setReportReason]       = useState('spam')
+  const [reportNotes, setReportNotes]         = useState('')
+  const [reportSubmitting, setReportSubmitting] = useState(false)
+  const [reportError, setReportError]         = useState(null)
+  const [reported, setReported]               = useState(false)
 
   useEffect(() => {
     if (!userId) return
@@ -124,6 +132,26 @@ export default function UserProfile() {
       )
     } finally {
       setConnecting(false)
+    }
+  }
+
+  async function handleSubmitReport() {
+    if (!profile?.id || !other?.id || reportSubmitting) return
+    setReportSubmitting(true)
+    setReportError(null)
+    try {
+      await reportUser({
+        reporterId: profile.id,
+        reportedUserId: other.id,
+        reason: reportReason,
+        notes: reportNotes.trim() || null,
+      })
+      setReported(true)
+      setReportOpen(false)
+    } catch (err) {
+      setReportError(err.message)
+    } finally {
+      setReportSubmitting(false)
     }
   }
 
@@ -417,6 +445,20 @@ export default function UserProfile() {
               </div>
             )}
 
+            {/* Report user */}
+            {!isSelf && !isAnon && profile && (
+              <div style={{ textAlign: 'center' }}>
+                <button
+                  type="button"
+                  onClick={() => { setReportReason('spam'); setReportNotes(''); setReportError(null); setReportOpen(true) }}
+                  disabled={reported}
+                  style={{ background: 'none', border: 'none', cursor: reported ? 'default' : 'pointer', color: 'var(--muted)', fontSize: '0.72rem' }}
+                >
+                  {reported ? 'Reported' : `Report ${name}`}
+                </button>
+              </div>
+            )}
+
             {/* Photo gallery */}
             {galleryPhotos.length > 0 && (
               <div>
@@ -515,6 +557,34 @@ export default function UserProfile() {
               </button>
             </div>
             <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', margin: 0 }}>Ctrl + Enter to send</p>
+          </div>
+        </div>
+      )}
+
+      {/* Report modal */}
+      {reportOpen && (
+        <div onClick={() => !reportSubmitting && setReportOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 8, padding: '1.75rem', width: '100%', maxWidth: 420, display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div>
+              <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', margin: 0, marginBottom: '0.4rem' }}>Report {name}</h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                A founder will review this. {name} isn't notified.
+              </p>
+            </div>
+            <select className="input-standalone" value={reportReason} onChange={e => setReportReason(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
+              <option value="spam">Spam or fake profile</option>
+              <option value="inappropriate">Inappropriate content</option>
+              <option value="harassment">Harassment or abuse</option>
+              <option value="other">Other</option>
+            </select>
+            <textarea className="input-standalone" placeholder="Additional details (optional)" value={reportNotes} onChange={e => setReportNotes(e.target.value)} rows={3} maxLength={500} disabled={reportSubmitting} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
+            {reportError && <p style={{ fontSize: '0.82rem', color: '#c0392b', margin: 0 }}>{reportError}</p>}
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button type="button" className="btn-ghost" onClick={() => setReportOpen(false)} disabled={reportSubmitting}>Cancel</button>
+              <button type="button" className="btn-primary" onClick={handleSubmitReport} disabled={reportSubmitting} style={{ opacity: reportSubmitting ? 0.6 : 1 }}>
+                {reportSubmitting ? 'Reporting…' : 'Submit report'}
+              </button>
+            </div>
           </div>
         </div>
       )}

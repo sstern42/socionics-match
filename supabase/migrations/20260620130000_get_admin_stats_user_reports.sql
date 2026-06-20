@@ -1,3 +1,6 @@
+-- Migration: 20260620130000_get_admin_stats_user_reports.sql
+-- Adds user_reports to get_admin_stats() RPC for the admin dashboard.
+
 -- Run in Supabase SQL editor
 -- Replaces the existing get_admin_stats function with site-wide match aggregations
 
