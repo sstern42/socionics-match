@@ -136,6 +136,19 @@ export default function HomeDashboard() {
           <Link to="/ask" className="btn-ghost">Ask the AI</Link>
         </div>
 
+        <div style={{ marginBottom: '1.25rem' }}>
+          <DashboardCard
+            eyebrow="Your type"
+            title={uncertainType ? 'Not fully confirmed' : `${profile?.type} — confirmed`}
+            to={uncertainType ? '/typing' : '/ask'}
+            cta={uncertainType ? 'Get professionally typed →' : 'Ask the AI →'}
+          >
+            {uncertainType
+              ? "Your self-typing result wasn't highly confident. Ask the AI or book a professional typist to confirm it."
+              : 'Explore your type further — ask the AI about your relations, dynamics, and compatibility.'}
+          </DashboardCard>
+        </div>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
           <DashboardCard
             eyebrow="Messages"
@@ -181,17 +194,6 @@ export default function HomeDashboard() {
               ? 'Ask about your type, your matches, or any relation dynamic.'
               : `You've used ${aiUsedToday} of ${FREE_DAILY_AI_LIMIT} free questions today.`}
           </DashboardCard>
-
-          {uncertainType && (
-            <DashboardCard
-              eyebrow="Your type"
-              title="Not fully confirmed"
-              to="/typing"
-              cta="Get professionally typed →"
-            >
-              Your self-typing result wasn't highly confident. Ask the AI or book a professional typist to confirm it.
-            </DashboardCard>
-          )}
 
           <DashboardCard
             eyebrow="Founder Updates"
