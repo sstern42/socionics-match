@@ -121,7 +121,7 @@ export default function HomeDashboard() {
   const recentNotifications = notifications.slice(0, 3)
 
   return (
-    <Layout>
+    <Layout hideFooter>
       <section style={{ maxWidth: 880, margin: '0 auto', padding: 'clamp(2rem,5vw,3rem) 1.5rem 5rem' }}>
         <p className="eyebrow">Socion</p>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem,4.5vw,2.6rem)', marginTop: '0.5rem', marginBottom: '0.75rem' }}>
