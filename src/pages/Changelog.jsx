@@ -4,6 +4,17 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '21 June 2026',
+       label: 'New',
+       items: [
+         'Dashboard — signed-in members now land on a personalized homepage instead of the public landing page. Cards summarize unread messages, quadra/Socion room activity, this week\'s board activity, your daily Ask AI usage, founder updates since your last visit, and your most recent notifications, each linking straight to where the action is',
+         'Dashboard — a "Your type" banner always shows: a nudge to get professionally typed if your self-typing result wasn\'t confident, or a prompt to explore your type further with the AI if it was',
+         'Dashboard — the referral panel is right there on your homepage, so inviting friends is always one scroll away',
+         'Navigation — new Dashboard link with a home icon, on both desktop and mobile, takes you back to your personalized homepage anytime',
+         'Sign in — signing in now takes you to your dashboard instead of straight to the swipe feed (brand new accounts finishing onboarding still land in the feed)',
+       ],
+     },
+     {
        date: '20 June 2026',
        label: 'New',
        items: [

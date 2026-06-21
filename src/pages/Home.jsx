@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import { RELATIONS, TYPES, getRelation } from '../data/relations'
 import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
+import HomeDashboard from './HomeDashboard'
 
 const FOUNDING_CUTOFF = new Date('2026-06-17T05:00:00Z')
 
@@ -271,11 +272,12 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
 }
 
 export default function Home() {
+  const { session, profile } = useAuth()
   useEffect(() => {
+    if (session && profile) return // dashboard branch sets its own title via Layout
     document.title = 'Socion™ — Match by Socionics type, not algorithm'
     return () => { document.title = 'Socion™' }
-  }, [])
-  const { session, profile } = useAuth()
+  }, [session, profile])
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [stats, setStats] = useState(null)
   const [selectedPill, setSelectedPill] = useState(null)
@@ -327,6 +329,8 @@ export default function Home() {
     const id = setInterval(fetchCount, 60000)
     return () => { cancelled = true; clearInterval(id) }
   }, [foundingActive, session])
+
+  if (session && profile) return <HomeDashboard />
 
   return (
     <>

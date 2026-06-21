@@ -64,6 +64,14 @@ function ThemeToggle() {
 }
 
 // ── Shared nav icon SVGs ──────────────────────────────────────────────
+const IconHome = () => (
+  <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3.5 10 10 4l6.5 6"/>
+    <path d="M5.5 8.5V16h9V8.5"/>
+    <path d="M8 16v-4h4v4"/>
+  </svg>
+)
+
 const IconBookmark = ({ filled }) => filled ? (
   <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
     <path d="M4 2h8a1 1 0 0 1 1 1v11l-5-3-5 3V3a1 1 0 0 1 1-1z"/>
@@ -424,6 +432,14 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           <nav style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }} className="nav-desktop">
             {session && profile ? (
               <>
+                {/* Group 0: Home */}
+                <Link to="/" style={{ ...navStyle(isActive('/')), display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <IconHome />
+                  Dashboard
+                </Link>
+
+                <Divider />
+
                 {/* Group 1: Discovery */}
                 <Link to="/feed" style={navStyle(isActive('/feed'))}>Matches</Link>
                 <Link
@@ -565,6 +581,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
             {session && profile ? (
               <>
+                {/* ── Home ────────────────────────────────────────────── */}
+                <Link to="/" onClick={closeMenu} style={{ ...mobileNavStyle(isActive('/')), display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <IconHome />
+                  Dashboard
+                </Link>
+
                 {/* ── Discovery ───────────────────────────────────────── */}
                 <Link to="/feed" onClick={closeMenu} style={mobileNavStyle(isActive('/feed'))}>
                   Matches
