@@ -7,7 +7,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ## 21 June 2026
 
 ### Added
-- **Dashboard — personalized homepage for signed-in members**: Signed-in members now land on a personalized dashboard instead of the public marketing page. Cards summarize unread messages, quadra/Socion room activity, board activity over the last 7 days, daily Ask AI usage (free tier), founder updates since your last visit, and your 3 most recent notifications — each linking directly into the relevant page. A "Get professionally typed" nudge appears when your self-typing confidence is below 60%. The referral panel sits below the cards.
+- **Dashboard — personalized homepage for signed-in members**: Signed-in members now land on a personalized dashboard instead of the public marketing page. A full-width "Your type" banner always shows first — a "Get professionally typed" nudge if your self-typing confidence is below 60%, or a prompt to explore your type further with the AI if it's confirmed. Below it, cards summarize unread messages, quadra/Socion room activity, board activity over the last 7 days, daily Ask AI usage (free tier), founder updates since your last visit, and your 3 most recent notifications — each linking directly into the relevant page. The referral panel sits below the cards.
 - **Navigation — Dashboard link**: New nav item (desktop and mobile) with a home icon, always available to jump back to your personalized homepage.
 
 ### Changed
