@@ -10,6 +10,7 @@ import ReferralPanel from '../components/profile/ReferralPanel'
 
 const FREE_DAILY_AI_LIMIT = 10
 const BOARD_ACTIVITY_WINDOW_DAYS = 7
+const UPDATES_LAST_VISITED_KEY = 'socion_updates_last_visited'
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -47,6 +48,7 @@ export default function HomeDashboard() {
   const [roomActivity, setRoomActivity] = useState(0)
   const [boardActivity, setBoardActivity] = useState(0)
   const [aiUsedToday, setAiUsedToday] = useState(0)
+  const [updatesActivity, setUpdatesActivity] = useState(0)
 
   useEffect(() => {
     if (!profile?.id) return
@@ -79,6 +81,19 @@ export default function HomeDashboard() {
         .is('deleted_at', null)
         .gt('created_at', since)
       if (!cancelled) setBoardActivity(count ?? 0)
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      const lastVisited = localStorage.getItem(UPDATES_LAST_VISITED_KEY)
+      let query = supabase.from('founder_posts').select('id', { count: 'exact', head: true })
+      if (lastVisited) query = query.gt('created_at', lastVisited)
+      const { count } = await query
+      if (!cancelled) setUpdatesActivity(count ?? 0)
     }
     load()
     return () => { cancelled = true }
@@ -177,6 +192,17 @@ export default function HomeDashboard() {
               Your self-typing result wasn't highly confident. Ask the AI or book a professional typist to confirm it.
             </DashboardCard>
           )}
+
+          <DashboardCard
+            eyebrow="Founder Updates"
+            title={updatesActivity > 0 ? `${updatesActivity} new update${updatesActivity === 1 ? '' : 's'}` : 'No new updates'}
+            to="/updates"
+            cta="Read updates →"
+          >
+            {updatesActivity > 0
+              ? "See what's new from the team since you last checked in."
+              : "You're caught up on news from the team."}
+          </DashboardCard>
 
           <DashboardCard
             eyebrow="Notifications"

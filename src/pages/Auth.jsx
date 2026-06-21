@@ -19,7 +19,7 @@ export default function Auth() {
   const [otpCode, setOtpCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [linkError, setLinkError] = useState(null)
-  const { session, loading: authLoading } = useAuth()
+  const { session, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const incomingType = searchParams.get('type')
@@ -27,8 +27,8 @@ export default function Auth() {
 
   useEffect(() => {
     if (authLoading) return
-    if (session) navigate('/feed')
-  }, [session, authLoading])
+    if (session) navigate(profile ? '/' : '/onboarding')
+  }, [session, profile, authLoading])
 
   useEffect(() => {
     const hash = window.location.hash
