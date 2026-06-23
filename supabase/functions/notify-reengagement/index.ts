@@ -6,6 +6,7 @@
 
 import webpush from 'npm:web-push'
 import { createClient } from 'npm:@supabase/supabase-js'
+import { requireServiceRole } from '../_shared/auth.ts'
 
 const VAPID_PUBLIC  = Deno.env.get('VAPID_PUBLIC_KEY')!
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
@@ -17,7 +18,10 @@ webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE)
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
-Deno.serve(async (_req) => {
+Deno.serve(async (req) => {
+  const authError = requireServiceRole(req)
+  if (authError) return authError
+
   try {
     const now = new Date()
     const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString()
@@ -61,6 +65,18 @@ Deno.serve(async (_req) => {
     let sent = 0
 
     for (const sub of subscriptions) {
+      // Claim this subscription before sending — an atomic conditional update
+      // that only succeeds if no other (retried/concurrent) invocation has
+      // already claimed it. Only send if we actually won the claim.
+      const { data: claimed } = await supabase
+        .from('push_subscriptions')
+        .update({ reengagement_sent_at: now.toISOString() })
+        .eq('user_id', sub.user_id)
+        .or(`reengagement_sent_at.is.null,reengagement_sent_at.lt.${sevenDaysAgo}`)
+        .select('user_id')
+
+      if (!claimed?.length) continue // lost the claim race — already sent elsewhere
+
       const payload = JSON.stringify({
         title: 'Anyone catch your eye?',
         body:  "New members have joined since your last visit — check who's on the feed.",
@@ -70,15 +86,14 @@ Deno.serve(async (_req) => {
 
       try {
         await webpush.sendNotification(sub.subscription, payload)
-
-        await supabase
-          .from('push_subscriptions')
-          .update({ reengagement_sent_at: now.toISOString() })
-          .eq('user_id', sub.user_id)
-
         sent++
       } catch (err) {
         console.error(`Push failed for ${sub.user_id}:`, err)
+        // Release the claim so this subscription is retried on the next run
+        await supabase
+          .from('push_subscriptions')
+          .update({ reengagement_sent_at: sub.reengagement_sent_at })
+          .eq('user_id', sub.user_id)
       }
     }
 

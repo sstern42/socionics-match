@@ -21,6 +21,7 @@
 
 import webpush from 'npm:web-push'
 import { createClient } from 'npm:@supabase/supabase-js'
+import { requireServiceRole } from '../_shared/auth.ts'
 
 const VAPID_PUBLIC  = Deno.env.get('VAPID_PUBLIC_KEY')!
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
@@ -39,6 +40,9 @@ function capitalize(str: string): string {
 }
 
 Deno.serve(async (req) => {
+  const authError = requireServiceRole(req)
+  if (authError) return authError
+
   try {
     const body = await req.json()
     const record = body.record

@@ -6,6 +6,7 @@
 //   typing-request    typing_requests INSERT → 🧠 New typing request (private channel)
 
 import { createClient } from 'npm:@supabase/supabase-js'
+import { requireServiceRole } from '../_shared/auth.ts'
 
 const DISCORD_WEBHOOK        = Deno.env.get('DISCORD_WEBHOOK_URL')!
 const DISCORD_TYPING_WEBHOOK = Deno.env.get('DISCORD_TYPING_WEBHOOK_URL')!
@@ -37,6 +38,9 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
+
+  const authError = requireServiceRole(req)
+  if (authError) return authError
 
   const event = req.headers.get('x-webhook-event') ?? 'profile-created'
   const body = await req.json()

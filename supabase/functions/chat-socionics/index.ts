@@ -263,19 +263,29 @@ Deno.serve(async (req) => {
       userRow.plan_status === 'past_due'
 
     // Track daily message count for all users (used for rate limiting + usage analytics)
+    // Atomically checks-and-increments server-side (row lock, see
+    // increment_ai_message_count migration), so the limit check can't pass
+    // on a stale read from a concurrent request, and a rejected message
+    // doesn't inflate the stored count.
     {
       const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
 
-      const { data: countRow } = await supabase
-        .from('ai_message_counts')
-        .select('count')
-        .eq('user_id', userRow.id)
-        .eq('date', today)
-        .single()
+      const { data: allowed, error: countError } = await supabase
+        .rpc('increment_ai_message_count', {
+          p_user_id: userRow.id,
+          p_date: today,
+          p_limit: isPremium ? null : FREE_DAILY_LIMIT,
+        })
 
-      const currentCount = countRow?.count ?? 0
+      if (countError) {
+        console.error('increment_ai_message_count error:', countError)
+        return new Response(
+          JSON.stringify({ error: 'Something went wrong — please try again.' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
 
-      if (!isPremium && currentCount >= FREE_DAILY_LIMIT) {
+      if (!allowed) {
         return new Response(
           JSON.stringify({
             error: `You've used your ${FREE_DAILY_LIMIT} free AI messages for today. Upgrade to Premium for unlimited access.`,
@@ -284,14 +294,6 @@ Deno.serve(async (req) => {
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-
-      // Increment count (upsert — creates row on first message of the day)
-      await supabase
-        .from('ai_message_counts')
-        .upsert(
-          { user_id: userRow.id, date: today, count: currentCount + 1 },
-          { onConflict: 'user_id,date' }
-        )
     }
     // ── End rate limiting / usage tracking ──────────────────────────────────
 
