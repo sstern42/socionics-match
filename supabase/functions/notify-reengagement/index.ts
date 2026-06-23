@@ -6,7 +6,6 @@
 
 import webpush from 'npm:web-push'
 import { createClient } from 'npm:@supabase/supabase-js'
-import { requireServiceRole } from '../_shared/auth.ts'
 
 const VAPID_PUBLIC  = Deno.env.get('VAPID_PUBLIC_KEY')!
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
@@ -19,8 +18,12 @@ webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE)
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
 Deno.serve(async (req) => {
-  const authError = requireServiceRole(req)
-  if (authError) return authError
+  // Only this project's own cron job should be able to trigger this
+  // function — it should be configured to send the service role key as a
+  // bearer token.
+  if (req.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
+    return new Response('Unauthorized', { status: 401 })
+  }
 
   try {
     const now = new Date()

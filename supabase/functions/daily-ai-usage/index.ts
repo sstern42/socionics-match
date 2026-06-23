@@ -3,7 +3,6 @@
 // messages sent via the Anthropic API today to a Discord webhook.
 
 import { createClient } from 'npm:@supabase/supabase-js'
-import { requireServiceRole } from '../_shared/auth.ts'
 
 const SUPABASE_URL              = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -14,8 +13,12 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
   }
 
-  const authError = requireServiceRole(req)
-  if (authError) return authError
+  // Only this project's own pg_cron job should be able to trigger this
+  // function — it's configured to send the service role key as a bearer
+  // token (see stats.sql).
+  if (req.headers.get('Authorization') !== `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`) {
+    return new Response('Unauthorized', { status: 401 })
+  }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
   const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD

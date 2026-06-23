@@ -6,7 +6,6 @@
 //   typing-request    typing_requests INSERT → 🧠 New typing request (private channel)
 
 import { createClient } from 'npm:@supabase/supabase-js'
-import { requireServiceRole } from '../_shared/auth.ts'
 
 const DISCORD_WEBHOOK        = Deno.env.get('DISCORD_WEBHOOK_URL')!
 const DISCORD_TYPING_WEBHOOK = Deno.env.get('DISCORD_TYPING_WEBHOOK_URL')!
@@ -39,8 +38,12 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  const authError = requireServiceRole(req)
-  if (authError) return authError
+  // Only this project's own database webhooks should be able to trigger
+  // this function — they're configured to send the service role key as a
+  // bearer token.
+  if (req.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders })
+  }
 
   const event = req.headers.get('x-webhook-event') ?? 'profile-created'
   const body = await req.json()
