@@ -38,6 +38,13 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // Only this project's own database webhooks should be able to trigger
+  // this function — they're configured to send the service role key as a
+  // bearer token.
+  if (req.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders })
+  }
+
   const event = req.headers.get('x-webhook-event') ?? 'profile-created'
   const body = await req.json()
   const record = body.record

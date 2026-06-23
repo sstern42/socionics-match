@@ -19,6 +19,13 @@ const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
 Deno.serve(async (req) => {
   console.log('send-push invoked', req.method)
+  // Only this project's own database webhook should be able to trigger
+  // this function — it's configured to send the service role key as a
+  // bearer token.
+  if (req.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
   try {
     const body = await req.json()
     console.log('body:', JSON.stringify(body).slice(0, 200))

@@ -7,6 +7,14 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
   }
+
+  // Only this project's own pg_cron job should be able to trigger this
+  // function — it's configured to send the service role key as a bearer
+  // token.
+  if (req.headers.get('Authorization') !== `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
   // Count users

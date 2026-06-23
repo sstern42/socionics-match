@@ -30,6 +30,13 @@ const DUAL_MAP: Record<string, string> = {
 }
 
 Deno.serve(async (req) => {
+  // Only this project's own database webhook should be able to trigger
+  // this function — it's configured to send the service role key as a
+  // bearer token.
+  if (req.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
+    return new Response('Unauthorized', { status: 401 })
+  }
+
   try {
     const body = await req.json()
     const record = body.record
