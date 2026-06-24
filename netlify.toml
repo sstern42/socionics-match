@@ -1,6 +1,7 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!supabase' ':!.github' ':!*.md'"
 
 [[redirects]]
   from = "https://socionics-match.netlify.app/*"
