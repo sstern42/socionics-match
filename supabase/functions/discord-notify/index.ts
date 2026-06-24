@@ -10,7 +10,7 @@ import { createClient } from 'npm:@supabase/supabase-js'
 const DISCORD_WEBHOOK        = Deno.env.get('DISCORD_WEBHOOK_URL')!
 const DISCORD_TYPING_WEBHOOK = Deno.env.get('DISCORD_TYPING_WEBHOOK_URL')!
 const SUPABASE_URL           = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY            = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const SERVICE_KEY            = Deno.env.get('PROJECT_SECRET_KEY')!
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',

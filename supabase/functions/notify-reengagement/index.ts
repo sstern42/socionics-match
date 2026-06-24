@@ -11,7 +11,7 @@ const VAPID_PUBLIC  = Deno.env.get('VAPID_PUBLIC_KEY')!
 const VAPID_PRIVATE = Deno.env.get('VAPID_PRIVATE_KEY')!
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:hello@socion.app'
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY   = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const SERVICE_KEY   = Deno.env.get('PROJECT_SECRET_KEY')!
 
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC, VAPID_PRIVATE)
 
