@@ -21,6 +21,8 @@ alter table stats
 -- Public read access (no auth needed for home page)
 alter table stats enable row level security;
 
+drop policy if exists "Stats are publicly readable" on stats;
+
 create policy "Stats are publicly readable"
   on stats for select
   using (true);
