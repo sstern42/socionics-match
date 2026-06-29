@@ -27,6 +27,18 @@ create policy "Stats are publicly readable"
   on stats for select
   using (true);
 
+-- Required one-time setup: the cron jobs below read these via current_setting(),
+-- but Supabase does not set them by default — "unrecognized configuration
+-- parameter" means they're missing. Set them at the database level (NOT just
+-- the current session — pg_cron runs in its own backend and only picks up
+-- database-level settings on a fresh connection):
+--
+--   alter database postgres set app.supabase_url = 'https://<project-ref>.supabase.co';
+--   alter database postgres set app.service_role_key = '<service-role-key>';
+--
+-- After running these, reconnect (or wait for the next pg_cron run) before
+-- the jobs below will succeed.
+
 -- Schedule: run compute-stats every 6 hours via pg_cron
 -- Note: pg_cron must be enabled in Supabase (Database → Extensions → pg_cron)
 select cron.schedule(
