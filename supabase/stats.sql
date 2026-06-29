@@ -27,6 +27,20 @@ create policy "Stats are publicly readable"
   on stats for select
   using (true);
 
+-- Required one-time setup: the cron jobs below previously read
+-- app.supabase_url / app.service_role_key via current_setting(), but those
+-- custom GUCs were never set ("unrecognized configuration parameter"), and
+-- `alter database postgres set ...` fails on hosted Supabase because the
+-- `postgres` role isn't a real superuser there.
+--
+-- Fix: the project URL isn't secret, so it's inlined as a literal below.
+-- The service role key is secret, so it's stored in Supabase Vault instead
+-- of a GUC. Run this once in the SQL editor with your real key:
+--
+--   select vault.create_secret('<service-role-key>', 'service_role_key');
+--
+-- (If it already exists, use vault.update_secret with the secret's id instead.)
+
 -- Schedule: run compute-stats every 6 hours via pg_cron
 -- Note: pg_cron must be enabled in Supabase (Database → Extensions → pg_cron)
 select cron.schedule(
@@ -34,9 +48,9 @@ select cron.schedule(
   '0 */6 * * *',
   $$
     select net.http_post(
-      url := current_setting('app.supabase_url') || '/functions/v1/compute-stats',
+      url := 'https://hetjmvwhyibsxrkkgury.supabase.co/functions/v1/compute-stats',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
+        'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
         'Content-Type', 'application/json'
       ),
       body := '{}'::jsonb
@@ -50,9 +64,9 @@ select cron.schedule(
   '55 23 * * *',
   $$
     select net.http_post(
-      url := current_setting('app.supabase_url') || '/functions/v1/daily-ai-usage',
+      url := 'https://hetjmvwhyibsxrkkgury.supabase.co/functions/v1/daily-ai-usage',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
+        'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
         'Content-Type', 'application/json'
       ),
       body := '{}'::jsonb
@@ -66,9 +80,9 @@ select cron.schedule(
   '0 9 * * *',
   $$
     select net.http_post(
-      url := current_setting('app.supabase_url') || '/functions/v1/daily-digest',
+      url := 'https://hetjmvwhyibsxrkkgury.supabase.co/functions/v1/daily-digest',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || current_setting('app.service_role_key'),
+        'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
         'Content-Type', 'application/json'
       ),
       body := '{}'::jsonb
