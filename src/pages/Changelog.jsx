@@ -4,14 +4,6 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
-       date: '29 June 2026',
-       label: 'New',
-       items: [
-         'Boards — replying to a post or comment now notifies the original poster or commenter via the notification bell',
-         'Behind the scenes — closed several server-side security gaps and fixed a couple of background-job race conditions',
-       ],
-     },
-     {
        date: '21 June 2026',
        label: 'New',
        items: [
