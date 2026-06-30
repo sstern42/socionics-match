@@ -4,6 +4,16 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 29 June 2026
+
+### Added
+- **Boards — comment reply notifications**: Replying to a post or to another comment now notifies the original poster and/or parent commenter via the existing notification bell.
+
+### Fixed
+- **Security hardening**: Closed several server-side authorization gaps — the admin stats endpoint now checks for founder role, users can no longer self-escalate role/premium/billing fields or tamper with feedback and block records via direct API calls, referral and profile-view attribution can no longer be spoofed with a caller-supplied ID, and a race condition that could let the free-tier connection cap be exceeded under concurrent requests was closed. Also hardened the background job endpoints (push notifications, digests, AI usage tracking) against unauthenticated calls, and fixed a race in the AI chat daily message cap that could let concurrent messages both slip past a stale count check.
+
+---
+
 ## 21 June 2026
 
 ### Added
