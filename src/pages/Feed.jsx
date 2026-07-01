@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
@@ -17,7 +18,6 @@ import { hasLapsedReferralPremium } from '../lib/premium'
 import { RELATIONS, MATRIX, QUADRAS, getQuadra } from '../data/relations'
 import { supabase } from '../lib/supabase'
 
-const BANNER_KEY = 'socion_announcement_dismissed_v'
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
 const FEED_MODE_KEY = 'socion_feed_mode'
@@ -110,7 +110,6 @@ export default function Feed() {
   const navigate = useNavigate()
 
   const [announcement, setAnnouncement] = useState(null)
-  const [bannerDismissed, setBannerDismissed] = useState(false)
   const [memberCount, setMemberCount] = useState(null)
   const [shareState, setShareState] = useState('idle')
   const [webviewUrl, setWebviewUrl] = useState(null)
@@ -145,11 +144,6 @@ export default function Feed() {
     try { localStorage.setItem(AD_DISMISSED_KEY, JSON.stringify(next)) } catch {}
   }
 
-  function announcementKey(text) {
-    try { return BANNER_KEY + btoa(encodeURIComponent(text)).slice(0, 8) }
-    catch { return BANNER_KEY + text.length }
-  }
-
   useEffect(() => {
     supabase
       .from('stats')
@@ -157,20 +151,10 @@ export default function Feed() {
       .eq('id', 1)
       .single()
       .then(({ data }) => {
-        if (data?.announcement_active && data?.announcement) {
-          setAnnouncement(data.announcement)
-          setBannerDismissed(localStorage.getItem(announcementKey(data.announcement)) === 'true')
-        }
+        if (data?.announcement_active && data?.announcement) setAnnouncement(data.announcement)
         if (data?.users) setMemberCount(data.users)
       })
   }, [])
-
-  function dismissBanner() {
-    if (!announcement) return
-    localStorage.setItem(announcementKey(announcement), 'true')
-    setBannerDismissed(true)
-    window.umami?.track('announcement-dismissed')
-  }
 
   function handleShare() {
     const url = 'https://socion.app'
@@ -495,8 +479,53 @@ export default function Feed() {
             previewOpen={showCard}
             onTogglePreview={() => setShowCard(c => !c)}
           />
-          {showCard && (
-            <div style={{ marginTop: '0.75rem' }}>
+
+          {announcement && (
+            <div style={{
+              marginTop: '1rem', background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
+              borderRadius: 6, padding: '0.75rem 0.9rem',
+            }}>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text)', lineHeight: 1.6 }}>
+                👋 {announcement.split(/(https?:\/\/[^\s]+|discord\.gg\/[^\s]+)/g).map((part, i) =>
+                  /^https?:\/\/|^discord\.gg\//.test(part)
+                    ? <a key={i} href={part.startsWith('http') ? part : `https://${part}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{part}</a>
+                    : part
+                )}
+              </p>
+            </div>
+          )}
+
+          <div style={{ marginTop: '1rem' }}>
+            <SeekingYou
+              userType={profile?.type}
+              isPremium={isPremium}
+              onExploreRelation={(rel) => {
+                setSwipeMode(false)
+                localStorage.setItem(FEED_MODE_KEY, 'browse')
+                setFilterRelation(rel)
+              }}
+            />
+          </div>
+        </aside>
+
+        {showCard && createPortal(
+          <div
+            onClick={() => setShowCard(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.6)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto',
+            }}
+          >
+            <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 380 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <p className="eyebrow" style={{ margin: 0, color: '#fff' }}>How you appear to others</p>
+                <button
+                  type="button"
+                  onClick={() => setShowCard(false)}
+                  aria-label="Close"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#fff', fontSize: '1.4rem', lineHeight: 1, padding: 0 }}
+                >×</button>
+              </div>
               <ProfileCard
                 profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
                 onConnect={() => {}}
@@ -504,9 +533,18 @@ export default function Feed() {
                 matchId={null}
                 connecting={false}
               />
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={() => navigate('/profile/edit')}
+                style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
+              >
+                Edit profile →
+              </button>
             </div>
-          )}
-        </aside>
+          </div>,
+          document.body
+        )}
 
       <section className="feed-main" style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
 
@@ -600,53 +638,16 @@ export default function Feed() {
           <div className="feed-card-toggle">
             <button
               type="button"
-              onClick={() => setShowCard(c => !c)}
+              onClick={() => setShowCard(true)}
               style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '0.75rem', padding: 0 }}
             >
-              {showCard ? 'Hide your card ↑' : 'How you appear to others ↓'}
+              How you appear to others ↓
             </button>
-            {showCard && (
-              <div style={{ marginTop: '1rem', maxWidth: 340 }}>
-                <ProfileCard
-                  profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
-                  onConnect={() => {}}
-                  alreadyMatched={false}
-                  matchId={null}
-                  connecting={false}
-                />
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  onClick={() => navigate('/profile/edit')}
-                  style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
-                >
-                  Edit profile →
-                </button>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Banners + SeekingYou — hidden in mobile swipe mode */}
+        {/* Banners — hidden in mobile swipe mode */}
         <div className="feed-preamble">
-
-        {/* Announcement banner */}
-        {announcement && !bannerDismissed && (
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem',
-            background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
-            borderRadius: 4, padding: '0.75rem 1rem', marginBottom: '1.5rem',
-          }}>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.6 }}>
-              👋 {announcement.split(/(https?:\/\/[^\s]+|discord\.gg\/[^\s]+)/g).map((part, i) =>
-                /^https?:\/\/|^discord\.gg\//.test(part)
-                  ? <a key={i} href={part.startsWith('http') ? part : `https://${part}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{part}</a>
-                  : part
-              )}
-            </p>
-            <button type="button" onClick={dismissBanner} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '1rem', flexShrink: 0, padding: '0 0.25rem', lineHeight: 1 }} aria-label="Dismiss">×</button>
-          </div>
-        )}
 
         {/* Free-tier quadra notice */}
         {!isPremium && (
@@ -691,17 +692,6 @@ export default function Feed() {
             >×</button>
           </div>
         )}
-
-        {/* Who's looking for you */}
-        <SeekingYou
-          userType={profile?.type}
-          isPremium={isPremium}
-          onExploreRelation={(rel) => {
-            setSwipeMode(false)
-            localStorage.setItem(FEED_MODE_KEY, 'browse')
-            setFilterRelation(rel)
-          }}
-        />
 
         </div>{/* end feed-preamble */}
 
