@@ -257,9 +257,9 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
   .feed-sidebar {
     display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem;
     position: sticky; top: 0;
-    /* Content here can grow taller than the viewport (announcement + strongest
-       matches stack up); cap it and let it scroll internally instead of being
-       silently clipped by the sticky container with no way to reach the rest. */
+    /* Cap it and let it scroll internally if content ever grows taller than the
+       viewport, instead of being silently clipped by the sticky container with
+       no way to reach the rest. */
     max-height: calc(100vh - 260px); overflow-y: auto;
   }
   .feed-main { flex: 1; min-width: 0; }
