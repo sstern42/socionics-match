@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import MiniProfileCard from '../components/feed/MiniProfileCard'
+import FeedRightSidebar from '../components/feed/FeedRightSidebar'
 import FeedAd from '../components/feed/FeedAd'
 import SwipeDeck from '../components/feed/SwipeDeck'
 import MatchModal from '../components/feed/MatchModal'
@@ -467,7 +468,7 @@ export default function Feed() {
 
   return (
     <Layout noScroll hideFooter>
-      <div className="feed-layout" style={{ maxWidth: 1240, margin: '0 auto', width: '100%' }}>
+      <div className="feed-layout" style={{ maxWidth: 1650, margin: '0 auto', width: '100%' }}>
 
         {/* Desktop-only persistent sidebar — compact profile widget, room for future widgets */}
         <aside className="feed-sidebar">
@@ -1003,6 +1004,11 @@ export default function Feed() {
         )}
         </div>{/* end feed-content-enter */}
       </section>
+
+        {/* Desktop-only persistent right rail — only shows once there's room to keep the feed column centred */}
+        <aside className="feed-sidebar-right">
+          <FeedRightSidebar isPremium={isPremium} />
+        </aside>
       </div>{/* end feed-layout */}
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
