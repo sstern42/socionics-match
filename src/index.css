@@ -124,6 +124,8 @@ h3 { font-family: var(--serif); font-size: 1.35rem; font-weight: 500; }
 }
 .btn-ghost:hover { border-color: var(--accent); }
 
+.social-icon-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
 /* field-group and input-standalone now use --card-bg so they switch in dark mode */
 .field-group { display: flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; transition: border-color 0.2s; }
 .field-group:focus-within { border-color: var(--accent); }
