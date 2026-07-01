@@ -73,7 +73,30 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
 
   return (
     <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
-      <div style={{ height: 52, background: `linear-gradient(120deg, ${colours.hex ?? 'var(--accent)'} 0%, color-mix(in srgb, ${colours.hex ?? 'var(--accent)'} 70%, #000) 100%)` }} />
+      <div style={{ height: 52, position: 'relative', background: `linear-gradient(120deg, ${colours.hex ?? 'var(--accent)'} 0%, color-mix(in srgb, ${colours.hex ?? 'var(--accent)'} 70%, #000) 100%)` }}>
+        {isPremium ? (
+          <span style={{
+            position: 'absolute', top: 8, right: 10, fontSize: '0.58rem', letterSpacing: '0.06em',
+            textTransform: 'uppercase', fontWeight: 700, color: '#2c2a22', background: 'rgba(255,255,255,0.85)',
+            borderRadius: 3, padding: '0.2rem 0.5rem',
+          }}>
+            Premium ✦
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate('/premium')}
+            title="Upgrade to Premium"
+            style={{
+              position: 'absolute', top: 8, right: 10, fontSize: '0.58rem', letterSpacing: '0.06em',
+              textTransform: 'uppercase', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.3)',
+              border: '1px solid rgba(255,255,255,0.5)', borderRadius: 3, padding: '0.2rem 0.5rem', cursor: 'pointer',
+            }}
+          >
+            Free tier
+          </button>
+        )}
+      </div>
 
       <div style={{ position: 'relative', padding: '0 1rem 0.9rem' }}>
         <div style={{
