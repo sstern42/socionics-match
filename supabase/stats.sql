@@ -75,6 +75,9 @@ select cron.schedule(
 );
 
 -- Schedule: send daily member stats digest email (09:00 UTC)
+-- Uses a custom x-cron-secret header instead of Authorization: the Supabase
+-- dashboard keeps overriding/reverting the Authorization header, so
+-- daily-digest checks x-cron-secret instead (see its source for details).
 select cron.schedule(
   'daily-digest',
   '0 9 * * *',
@@ -82,7 +85,7 @@ select cron.schedule(
     select net.http_post(
       url := 'https://hetjmvwhyibsxrkkgury.supabase.co/functions/v1/daily-digest',
       headers := jsonb_build_object(
-        'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
+        'x-cron-secret', (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
         'Content-Type', 'application/json'
       ),
       body := '{}'::jsonb
