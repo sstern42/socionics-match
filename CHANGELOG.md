@@ -9,15 +9,34 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ### Added
 - **Feed — "With bio" filter**: New filter pill alongside "With photos" to show only profiles that have written a bio.
 - **Changelog — Roadmap link**: Links to the GitHub milestones view so visitors can see what's coming, not just what's shipped.
+- **Get Typed — testimonials**: Added testimonials from Andrew and Sol to Spencer's typist profile.
+- **Rooms — clickable member names**: Names in the desktop Activity sidebar are now links to that member's profile (unless they're anonymous).
+- **Updates — clickable links**: URLs in Founder Updates posts are now automatically turned into clickable links.
 
 ### Fixed
 - **Network — tooltip cursor tracking**: The graph tooltip only positioned itself once on hover-enter and stayed put while you kept moving over the same node or edge. It now follows the cursor.
+- **Network — fullscreen resize**: Fullscreen graph view read the viewport height once at render time, so rotating a device or resizing the window while fullscreen left the graph sized for the old viewport. It now tracks resize.
 - **Verified badge color**: The verified checkmark badge was hardcoded to a fixed accent color instead of matching the type/quadra color shown right next to it, in profile cards, swipe cards, and quadra rooms.
 - **Messages — quoted-message highlight**: Jumping to a quoted message highlighted the entire message row (avatar, timestamp, action buttons included), not just the bubble. Now only the bubble is highlighted.
+- **Messages — unmatch not reflected in list**: Unmatching from inside a conversation removed the match but never told the parent conversation list, so the stale entry stuck around until the page was reloaded.
+- **Messages — scroll-to-latest with images**: The conversation view could settle short of the newest message when a late-loading image attachment grew the list's height after the initial scroll.
+- **Messages — mobile bubble width**: Bubbles were capped at the same 70% width as desktop and the react/reply/edit/delete icons squeezed in alongside them. Bubbles now grow to 88% width on mobile with the action row stacked beneath instead.
+- **Feedback button — dark mode**: The feedback modal referenced theme CSS variables that don't exist in the stylesheet, so it always rendered with hardcoded light colors regardless of dark mode.
+- **Dashboard — stale AI-usage counter**: The daily Ask AI usage count on the dashboard only refetched on mount, so it went stale after asking a question on /ask and returning. It now also refetches on window focus.
+- **Match modal — layout**: Fixed a malformed CSS `calc()` expression that was missing a closing parenthesis.
+- **Saved — retry button crash**: Tapping "Try again" after a failed load threw a ReferenceError instead of retrying.
+- **Sign-in — 6-digit code**: The code input silently dropped leading zeros; it now accepts and preserves them.
+- **Get Typed — accessibility**: Added an aria-label to the avatar lightbox button and a focus-visible outline to the social icon links.
+- **Profile edit — birth date**: Added a minimum bound (1900) to the birth date field.
+- **Ask AI page**: Chat could briefly render before the signed-in user's type/ID finished loading; it now waits for both before rendering.
 
 ### Changed
 - **Settings — past-due subscribers**: Subscribers whose last payment failed previously saw the same generic "manage your subscription" copy as active subscribers, with no indication anything was wrong. Now shown a distinct warning and an "Update payment method" CTA.
 - **Navigation — Sign out**: Moved to the true right-most position in the desktop nav (previously the theme toggle rendered after it) and restyled as a distinct ghost button instead of looking like a plain nav link; mobile menu's Sign out gets matching styling.
+- **Get Typed — turnaround copy**: Standard/Express delivery windows now read "5 working days" / "2 working days" instead of "5 days" / "48 hours", which read as calendar/wall-clock time.
+- **Feed — filter naming**: The ambiguous "Show anonymous" filter pill was renamed to "Non-anonymous" to make clear which profiles it shows.
+- **Support & Feed — shop removed**: Removed the defunct "Grab a type mug" shop block from the Support page and feed ad slot; the feed slot now promotes /boards instead.
+- **SEO — robots.txt**: Added missing `Disallow` rules for `/ask`, `/r/`, and `/premium/welcome`.
 
 ---
 
