@@ -20,7 +20,7 @@ const KNOWN_EVENTS = new Set([
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type, x-webhook-event',
+  'Access-Control-Allow-Headers': 'authorization, content-type, x-webhook-event, x-webhook-secret',
 }
 
 function maskEmail(email: string): string {
@@ -48,10 +48,12 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // Only this project's own database webhooks should be able to trigger
-  // this function — they're configured to send the service role key as a
-  // bearer token.
-  if (req.headers.get('Authorization') !== `Bearer ${SERVICE_KEY}`) {
+  // Only this project's own database webhooks should be able to trigger this
+  // function. Deliberately not using the standard Authorization header here —
+  // the Supabase dashboard's webhook editor treats that header specially and
+  // keeps reverting it to the project's legacy service_role JWT, which no
+  // longer matches PROJECT_SECRET_KEY. A custom header sidesteps that.
+  if (req.headers.get('x-webhook-secret') !== SERVICE_KEY) {
     return new Response('Unauthorized', { status: 401, headers: corsHeaders })
   }
 
