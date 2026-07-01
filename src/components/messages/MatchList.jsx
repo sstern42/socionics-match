@@ -14,6 +14,15 @@ function timeAgo(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 }
 
+// Mirrors the online-dot convention in ProfileCard.jsx / Rooms.jsx.
+function onlineDotColour(other) {
+  if (!other.last_active || other.profile_data?.hide_activity) return null
+  const diff = Date.now() - new Date(other.last_active).getTime()
+  if (diff < 15 * 60 * 1000) return '#4caf50'
+  if (diff < 24 * 60 * 60 * 1000) return '#f5a623'
+  return null
+}
+
 export default function MatchList({ matches, selectedId, onSelect, currentUserId }) {
   const navigate = useNavigate()
 
@@ -38,6 +47,7 @@ export default function MatchList({ matches, selectedId, onSelect, currentUserId
         const unread = isMatchUnread(match, currentUserId)
         const avatarUrl = isOtherAnonymous ? null : match.other.avatar_url
         const initial = isOtherAnonymous ? '🕵️' : (match.other.profile_data?.name?.[0]?.toUpperCase() ?? '?')
+        const dotColour = isOtherAnonymous ? null : onlineDotColour(match.other)
 
         return (
           <button
@@ -66,13 +76,16 @@ export default function MatchList({ matches, selectedId, onSelect, currentUserId
                 width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', marginTop: '0.1rem',
+                cursor: 'pointer', marginTop: '0.1rem', position: 'relative',
               }}
             >
               {avatarUrl
                 ? <img src={avatarUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <span style={{ fontFamily: 'var(--serif)', fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1 }}>{initial}</span>
               }
+              {dotColour && (
+                <span style={{ position: 'absolute', bottom: 0, right: 0, width: 9, height: 9, borderRadius: '50%', background: dotColour, border: '1.5px solid var(--card-bg)' }} />
+              )}
             </div>
 
             {/* Text content */}

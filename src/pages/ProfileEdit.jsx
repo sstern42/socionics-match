@@ -345,12 +345,12 @@ export default function ProfileEdit() {
                   </span>
                 </div>
               ) : (
-                <input className="input-standalone" placeholder="Socionics type (e.g. LII)" value={type} onChange={e => setType(e.target.value.toUpperCase())} />
+                <select className="input-standalone" value={type} onChange={e => setType(e.target.value)} style={{ fontFamily: 'var(--sans)' }}>
+                  <option value="">Select your type…</option>
+                  {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               )}
-              {!isVerified && type && !typeValid && (
-                <p style={{ fontSize: '0.75rem', color: '#c0392b', marginTop: '0.25rem' }}>Not a recognised type — check spelling.</p>
-              )}
-              {!isVerified && (!type || typeValid) && (
+              {!isVerified && (
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.35rem', lineHeight: 1.5 }}>
                   Self-typed · want certainty?{' '}
                   <a href="/typing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>

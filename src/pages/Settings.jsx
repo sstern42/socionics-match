@@ -181,7 +181,7 @@ export default function Settings() {
             <div>
               <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>🕒 Use 24-hour clock</p>
               <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>
-                Show times like 14:30 instead of 2:30 PM across the site.
+                Show times like 14:30 instead of 2:30 PM wherever an exact time is shown (Messages, Rooms, Admin). Relative timestamps like "2h ago" are unaffected.
               </p>
             </div>
           </label>

@@ -12,6 +12,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Get Typed — testimonials**: Added testimonials from Andrew and Sol to Spencer's typist profile.
 - **Rooms — clickable member names**: Names in the desktop Activity sidebar are now links to that member's profile (unless they're anonymous).
 - **Updates — clickable links**: URLs in Founder Updates posts are now automatically turned into clickable links.
+- **Messages — last-active indicator**: Shows whether the person you're messaging is online now, active today, or active this week, in both the Messages sidebar and the conversation header. Respects each user's "Hide activity status" setting.
 
 ### Fixed
 - **Network — tooltip cursor tracking**: The graph tooltip only positioned itself once on hover-enter and stayed put while you kept moving over the same node or edge. It now follows the cursor.
@@ -29,6 +30,10 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Get Typed — accessibility**: Added an aria-label to the avatar lightbox button and a focus-visible outline to the social icon links.
 - **Profile edit — birth date**: Added a minimum bound (1900) to the birth date field.
 - **Ask AI page**: Chat could briefly render before the signed-in user's type/ID finished loading; it now waits for both before rendering.
+- **Notifications — duplicate connection/message alerts**: A realtime reconnect or a rapid double-tap on a slow connection could fire the same "connected with you" or new-message notification twice. Notifications are now deduped by row id.
+- **Mobile — nav dropdown overlapping header**: The mobile nav dropdown used a hardcoded pixel offset to sit below the header, which could leave it overlapping the header on some devices. It now anchors to the header's actual rendered height instead.
+- **Messages (iOS Safari) — header overlap**: The sticky site header could visually collide with the in-conversation header on iOS Safari. It's no longer sticky on the no-scroll Messages layout, where sticking offered no benefit anyway.
+- **Messages (Firefox) — couldn't scroll while composing**: A missing `min-height: 0` on the conversation's flex containers meant Firefox could lock the message list from scrolling once the composer grew past one line.
 
 ### Changed
 - **Settings — past-due subscribers**: Subscribers whose last payment failed previously saw the same generic "manage your subscription" copy as active subscribers, with no indication anything was wrong. Now shown a distinct warning and an "Update payment method" CTA.
@@ -37,6 +42,8 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Feed — filter naming**: The ambiguous "Show anonymous" filter pill was renamed to "Non-anonymous" to make clear which profiles it shows.
 - **Support & Feed — shop removed**: Removed the defunct "Grab a type mug" shop block from the Support page and feed ad slot; the feed slot now promotes /boards instead.
 - **SEO — robots.txt**: Added missing `Disallow` rules for `/ask`, `/r/`, and `/premium/welcome`.
+- **Profile edit — personality type field**: Replaced the free-text type field with a 16-option dropdown to prevent typos and invalid entries.
+- **Settings — 24-hour clock description**: Corrected the copy to clarify the preference only affects exact-time displays (Messages, Rooms, Admin), not relative timestamps like "2h ago".
 
 ---
 

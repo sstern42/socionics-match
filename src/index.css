@@ -251,8 +251,8 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 .show-mobile { display: none; }
 .hidden-mobile { display: revert; }
 
-.convo-root { display: flex; flex-direction: row; height: 100%; overflow: hidden; }
-.convo-main { display: flex; flex-direction: column; flex: 1; min-width: 0; overflow: hidden; }
+.convo-root { display: flex; flex-direction: row; height: 100%; overflow: hidden; min-height: 0; }
+.convo-main { display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; overflow: hidden; }
 .convo-sidebar { width: 280px; flex-shrink: 0; border-left: 1px solid var(--border); background: var(--card-bg); overflow-y: auto; display: flex; flex-direction: column; }
 
 .room-root { display: flex; flex-direction: row; flex: 1; overflow: hidden; min-height: 0; justify-content: center; }
