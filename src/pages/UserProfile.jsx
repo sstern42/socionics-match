@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageMeta } from '../hooks/usePageMeta'
@@ -33,6 +33,7 @@ export default function UserProfile() {
   const { userId } = useParams()
   const { profile, loading, isPremium } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
 
   const [other, setOther]           = useState(null)
   const [fetching, setFetching]     = useState(true)
@@ -40,7 +41,14 @@ export default function UserProfile() {
   const [lightbox, setLightbox]     = useState(null)
   const [webviewUrl, setWebviewUrl] = useState(null)
 
-  const [activeTab, setActiveTab] = useState('profile')
+  const [activeTab, setActiveTab] = useState(() => (
+    searchParams.get('tab') === 'views' || searchParams.get('tab') === 'dynamics' ? searchParams.get('tab') : 'profile'
+  ))
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'views' || tab === 'dynamics') setActiveTab(tab)
+  }, [searchParams])
 
   const [existingMatchId, setExistingMatchId] = useState(null)
   const [checkingMatch, setCheckingMatch]     = useState(false)

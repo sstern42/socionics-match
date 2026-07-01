@@ -119,7 +119,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
     else { onConnect(profile) }
   }
 
-  const showBookmark = isLinkable && !isPreviewCard
+  const showBookmark = !isAnonymous && !!profile.id
 
   return (
     <>
@@ -191,16 +191,16 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
           <button
             type="button"
             onClick={handleBookmark}
-            disabled={savePending}
-            title={savedState ? 'Remove from saved' : 'Save profile'}
-            aria-label={savedState ? 'Remove from saved' : 'Save profile'}
+            disabled={savePending || isPreviewCard}
+            title={isPreviewCard ? 'This is how the save button looks to others' : savedState ? 'Remove from saved' : 'Save profile'}
+            aria-label={isPreviewCard ? 'Save (preview only)' : savedState ? 'Remove from saved' : 'Save profile'}
             style={{
               background: 'none',
               border: `1px solid ${savedState ? 'var(--accent)' : 'var(--border)'}`,
               borderRadius: 3,
               padding: '0 0.75rem',
-              cursor: savePending ? 'default' : 'pointer',
-              opacity: savePending ? 0.5 : 1,
+              cursor: (savePending || isPreviewCard) ? 'default' : 'pointer',
+              opacity: (savePending || isPreviewCard) ? 0.5 : 1,
               color: savedState ? 'var(--accent)' : 'var(--muted)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,

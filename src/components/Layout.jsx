@@ -777,7 +777,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           <div>
             <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" data-umami-event="spencerstern-click" data-umami-event-source="footer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern ↗</a></p>
           </div>
-          <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '1.1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" data-umami-event="si-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" data-umami-event="github-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" data-umami-event="discord-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>

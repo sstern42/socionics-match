@@ -14,12 +14,20 @@ function quadraColours(type) {
   return { text: hex, border: `${hex}88`, bg: `${hex}12`, hex }
 }
 
-function StatRow({ label, value }) {
+function StatRow({ label, value, onClick }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0', fontSize: '0.8rem' }}>
+    <Tag
+      {...(onClick ? { type: 'button', onClick } : {})}
+      style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0',
+        fontSize: '0.8rem', width: '100%', background: 'none', border: 'none',
+        cursor: onClick ? 'pointer' : 'default', textAlign: 'left',
+      }}
+    >
       <span style={{ color: 'var(--muted)' }}>{label}</span>
       <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{value}</span>
-    </div>
+    </Tag>
   )
 }
 
@@ -65,7 +73,30 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
 
   return (
     <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}>
-      <div style={{ height: 52, background: `linear-gradient(120deg, ${colours.hex ?? 'var(--accent)'} 0%, color-mix(in srgb, ${colours.hex ?? 'var(--accent)'} 70%, #000) 100%)` }} />
+      <div style={{ height: 52, position: 'relative', background: `linear-gradient(120deg, ${colours.hex ?? 'var(--accent)'} 0%, color-mix(in srgb, ${colours.hex ?? 'var(--accent)'} 70%, #000) 100%)` }}>
+        {isPremium ? (
+          <span style={{
+            position: 'absolute', top: 8, right: 10, fontSize: '0.58rem', letterSpacing: '0.06em',
+            textTransform: 'uppercase', fontWeight: 700, color: '#2c2a22', background: 'rgba(255,255,255,0.85)',
+            borderRadius: 3, padding: '0.2rem 0.5rem',
+          }}>
+            Premium ✦
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={() => navigate('/premium')}
+            title="Upgrade to Premium"
+            style={{
+              position: 'absolute', top: 8, right: 10, fontSize: '0.58rem', letterSpacing: '0.06em',
+              textTransform: 'uppercase', fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.3)',
+              border: '1px solid rgba(255,255,255,0.5)', borderRadius: 3, padding: '0.2rem 0.5rem', cursor: 'pointer',
+            }}
+          >
+            Free tier
+          </button>
+        )}
+      </div>
 
       <div style={{ position: 'relative', padding: '0 1rem 0.9rem' }}>
         <div style={{
@@ -115,7 +146,7 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
       </div>
 
       <div style={{ borderTop: '1px solid var(--border)', padding: '0.5rem 1rem' }}>
-        <StatRow label="Profile viewers" value={viewCount ?? '—'} />
+        <StatRow label="Profile viewers" value={viewCount ?? '—'} onClick={() => navigate(`/profile/${profile.id}?tab=views`)} />
         <StatRow label="Connections" value={isPremium ? connectionCount : `${connectionCount} of 3`} />
       </div>
 

@@ -93,7 +93,7 @@ body {
 .site-header nav a:hover { color: var(--accent); }
 
 .site-footer {
-  border-top: 1px solid var(--border); padding: 2rem 3rem;
+  border-top: 1px solid var(--border); padding: 0.4rem 3rem;
   display: flex; align-items: center; justify-content: space-between;
   gap: 1rem; flex-wrap: wrap; margin-top: auto;
 }
@@ -250,12 +250,19 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 /* ── Feed desktop sidebar (#828) — own-card rail replaces the reveal
    toggle once there's enough width for it alongside the 860px feed column */
 .feed-sidebar { display: none; }
+.feed-sidebar-right { display: none; }
 
 @media (min-width: 1240px) {
   .feed-layout { display: flex; align-items: flex-start; gap: 2rem; }
   .feed-sidebar { display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem; position: sticky; top: 0; }
   .feed-main { flex: 1; min-width: 0; }
   .feed-card-toggle { display: none; }
+}
+
+/* Right rail needs room for both 340px columns plus the 860px feed
+   column without squeezing it, so it only appears on wider desktops */
+@media (min-width: 1650px) {
+  .feed-sidebar-right { display: block; width: 340px; flex-shrink: 0; padding: 3rem 1.5rem 3rem 0; position: sticky; top: 0; }
 }
 
 /* Mobile utility */
