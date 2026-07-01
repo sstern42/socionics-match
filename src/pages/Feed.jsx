@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
+import MiniProfileCard from '../components/feed/MiniProfileCard'
 import FeedAd from '../components/feed/FeedAd'
 import SwipeDeck from '../components/feed/SwipeDeck'
 import MatchModal from '../components/feed/MatchModal'
@@ -484,24 +485,27 @@ export default function Feed() {
     <Layout noScroll hideFooter>
       <div className="feed-layout" style={{ maxWidth: 1240, margin: '0 auto', width: '100%' }}>
 
-        {/* Desktop-only persistent sidebar — own card always visible, room for future widgets */}
+        {/* Desktop-only persistent sidebar — compact profile widget, room for future widgets */}
         <aside className="feed-sidebar">
-          <p className="eyebrow" style={{ marginBottom: '0.75rem' }}>How you appear to others</p>
-          <ProfileCard
-            profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
-            onConnect={() => {}}
-            alreadyMatched={false}
-            matchId={null}
-            connecting={false}
+          <MiniProfileCard
+            profile={profile}
+            isPremium={isPremium}
+            connectionCount={connectionCount}
+            savedCount={savedIds.size}
+            previewOpen={showCard}
+            onTogglePreview={() => setShowCard(c => !c)}
           />
-          <button
-            type="button"
-            className="btn-ghost"
-            onClick={() => navigate('/profile/edit')}
-            style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
-          >
-            Edit profile →
-          </button>
+          {showCard && (
+            <div style={{ marginTop: '0.75rem' }}>
+              <ProfileCard
+                profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
+                onConnect={() => {}}
+                alreadyMatched={false}
+                matchId={null}
+                connecting={false}
+              />
+            </div>
+          )}
         </aside>
 
       <section className="feed-main" style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
