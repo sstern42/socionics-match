@@ -251,9 +251,9 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
    toggle once there's enough width for it alongside the 860px feed column */
 .feed-sidebar { display: none; }
 
-@media (min-width: 1180px) {
+@media (min-width: 1240px) {
   .feed-layout { display: flex; align-items: flex-start; gap: 2rem; }
-  .feed-sidebar { display: block; width: 280px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem; position: sticky; top: 0; }
+  .feed-sidebar { display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem; position: sticky; top: 0; }
   .feed-main { flex: 1; min-width: 0; }
   .feed-card-toggle { display: none; }
 }

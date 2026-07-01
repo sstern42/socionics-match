@@ -482,7 +482,7 @@ export default function Feed() {
 
   return (
     <Layout noScroll hideFooter>
-      <div className="feed-layout" style={{ maxWidth: 1180, margin: '0 auto', width: '100%' }}>
+      <div className="feed-layout" style={{ maxWidth: 1240, margin: '0 auto', width: '100%' }}>
 
         {/* Desktop-only persistent sidebar — own card always visible, room for future widgets */}
         <aside className="feed-sidebar">
