@@ -14,12 +14,20 @@ function quadraColours(type) {
   return { text: hex, border: `${hex}88`, bg: `${hex}12`, hex }
 }
 
-function StatRow({ label, value }) {
+function StatRow({ label, value, onClick }) {
+  const Tag = onClick ? 'button' : 'div'
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0', fontSize: '0.8rem' }}>
+    <Tag
+      {...(onClick ? { type: 'button', onClick } : {})}
+      style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.35rem 0',
+        fontSize: '0.8rem', width: '100%', background: 'none', border: 'none',
+        cursor: onClick ? 'pointer' : 'default', textAlign: 'left',
+      }}
+    >
       <span style={{ color: 'var(--muted)' }}>{label}</span>
       <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{value}</span>
-    </div>
+    </Tag>
   )
 }
 
@@ -115,7 +123,7 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
       </div>
 
       <div style={{ borderTop: '1px solid var(--border)', padding: '0.5rem 1rem' }}>
-        <StatRow label="Profile viewers" value={viewCount ?? '—'} />
+        <StatRow label="Profile viewers" value={viewCount ?? '—'} onClick={() => navigate(`/profile/${profile.id}?tab=views`)} />
         <StatRow label="Connections" value={isPremium ? connectionCount : `${connectionCount} of 3`} />
       </div>
 
