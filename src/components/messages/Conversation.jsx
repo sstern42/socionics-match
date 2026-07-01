@@ -791,11 +791,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               <div
                 key={msg.id}
                 id={`msg-${msg.id}`}
-                style={{ alignSelf:isMine?'flex-end':'flex-start',maxWidth:'70%',width:'fit-content',display:'flex',flexDirection:'column',gap:'0.2rem',borderRadius:6,transition:'background 0.4s' }}
+                style={{ alignSelf:isMine?'flex-end':'flex-start',maxWidth:isMobile?'88%':'70%',width:'fit-content',display:'flex',flexDirection:'column',gap:'0.2rem',borderRadius:6,transition:'background 0.4s' }}
                 onMouseEnter={() => !activeBlock && setHoveredMsgId(msg.id)}
                 onMouseLeave={() => { setHoveredMsgId(null) }}
               >
-                <div style={{ display:'flex',alignItems:'center',gap:'0.4rem',flexDirection:isMine?'row-reverse':'row' }}>
+                <div style={{ display:'flex',alignItems:isMobile?(isMine?'flex-end':'flex-start'):'center',gap:isMobile?'0.3rem':'0.4rem',flexDirection:isMobile?'column':(isMine?'row-reverse':'row') }}>
                   {/* Bubble */}
                   <div
                     onClick={() => !activeBlock && !editingId && setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })}
@@ -839,29 +839,31 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                   </div>
 
                   {/* Action buttons */}
-                  <button type="button" onClick={e => { e.stopPropagation(); setReactionPickerMsgId(prev => prev === msg.id ? null : msg.id) }} aria-label="React" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0 }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="7" cy="7" r="6"/><path d="M4.5 8.5c.6.9 1.6 1.2 2.5 1.2s1.9-.3 2.5-1.2"/><circle cx="5" cy="5.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="9" cy="5.5" r="0.6" fill="currentColor" stroke="none"/></svg>
-                  </button>
-                  <button type="button" onClick={() => setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })} aria-label="Reply" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:showReplyBtn?1:(isMobile?0.3:0),transition:'opacity 0.15s',flexShrink:0,pointerEvents:'auto' }}>
-                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
-                  </button>
-                  {isMine && msg.id === lastMineId && !deleteConfirmId && (
-                    <button type="button" onClick={() => { setEditingId(msg.id);setEditText(msg.content) }} aria-label="Edit" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0,opacity:showReplyBtn?1:0.3 }}>
-                      <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/></svg>
+                  <div style={{ display:'flex',alignItems:'center',gap:'0.4rem',flexDirection:isMine?'row-reverse':'row' }}>
+                    <button type="button" onClick={e => { e.stopPropagation(); setReactionPickerMsgId(prev => prev === msg.id ? null : msg.id) }} aria-label="React" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:isMobile?1:(showReplyBtn?1:0),transition:'opacity 0.15s',flexShrink:0 }}>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="7" cy="7" r="6"/><path d="M4.5 8.5c.6.9 1.6 1.2 2.5 1.2s1.9-.3 2.5-1.2"/><circle cx="5" cy="5.5" r="0.6" fill="currentColor" stroke="none"/><circle cx="9" cy="5.5" r="0.6" fill="currentColor" stroke="none"/></svg>
                     </button>
-                  )}
-                  {isMine && msg.id === lastMineId && (
-                    deleteConfirmId === msg.id ? (
-                      <div style={{ display:'flex',gap:'0.25rem',alignItems:'center' }}>
-                        <button type="button" onClick={() => deleteMessage(msg.id)} disabled={deleting} style={{ background:'#c0392b',color:'#fff',border:'none',borderRadius:4,padding:'0.2rem 0.5rem',fontSize:'0.68rem',cursor:'pointer',opacity:deleting?0.6:1 }}>{deleting?'…':'Delete'}</button>
-                        <button type="button" onClick={() => setDeleteConfirmId(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'0.68rem',padding:'0.2rem' }}>Cancel</button>
-                      </div>
-                    ) : (
-                      <button type="button" onClick={() => setDeleteConfirmId(msg.id)} aria-label="Delete" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0,opacity:showReplyBtn?1:(isMobile?0.3:0.15) }}>
-                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/><line x1="6" y1="6" x2="6" y2="10"/><line x1="8" y1="6" x2="8" y2="10"/></svg>
+                    <button type="button" onClick={() => setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })} aria-label="Reply" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,opacity:isMobile?1:(showReplyBtn?1:0),transition:'opacity 0.15s',flexShrink:0,pointerEvents:'auto' }}>
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="4,3 1,6 4,9"/><path d="M1 6h7a5 5 0 0 1 5 5v1"/></svg>
+                    </button>
+                    {isMine && msg.id === lastMineId && !deleteConfirmId && (
+                      <button type="button" onClick={() => { setEditingId(msg.id);setEditText(msg.content) }} aria-label="Edit" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0,opacity:isMobile?1:(showReplyBtn?1:0.3) }}>
+                        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9.5 2.5l2 2L5 11H3v-2L9.5 2.5z"/></svg>
                       </button>
-                    )
-                  )}
+                    )}
+                    {isMine && msg.id === lastMineId && (
+                      deleteConfirmId === msg.id ? (
+                        <div style={{ display:'flex',gap:'0.25rem',alignItems:'center' }}>
+                          <button type="button" onClick={() => deleteMessage(msg.id)} disabled={deleting} style={{ background:'#c0392b',color:'#fff',border:'none',borderRadius:4,padding:'0.2rem 0.5rem',fontSize:'0.68rem',cursor:'pointer',opacity:deleting?0.6:1 }}>{deleting?'…':'Delete'}</button>
+                          <button type="button" onClick={() => setDeleteConfirmId(null)} style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',fontSize:'0.68rem',padding:'0.2rem' }}>Cancel</button>
+                        </div>
+                      ) : (
+                        <button type="button" onClick={() => setDeleteConfirmId(msg.id)} aria-label="Delete" style={{ background:'none',border:'none',cursor:'pointer',color:'var(--muted)',padding:'0.25rem',lineHeight:1,flexShrink:0,opacity:isMobile?1:(showReplyBtn?1:0.15) }}>
+                          <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/><line x1="6" y1="6" x2="6" y2="10"/><line x1="8" y1="6" x2="8" y2="10"/></svg>
+                        </button>
+                      )
+                    )}
+                  </div>
                 </div>
 
                 {/* Reaction picker */}
