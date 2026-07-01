@@ -799,7 +799,7 @@ export default function Feed() {
                     <p style={{ fontSize: '0.62rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Profile</p>
                     <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                       <button type="button" className={`rel-pill clickable${withPhotos ? ' active' : ''}`} onClick={() => setWithPhotos(v => !v)} style={{ fontSize: '0.7rem' }}>{withPhotos ? '✓ ' : ''}With photos</button>
-                      <button type="button" className={`rel-pill clickable${!excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{!excludeAnon ? '✓ ' : ''}Show anonymous</button>
+                      <button type="button" className={`rel-pill clickable${excludeAnon ? ' active' : ''}`} onClick={() => setExcludeAnon(v => !v)} style={{ fontSize: '0.7rem' }}>{excludeAnon ? '✓ ' : ''}Non-anonymous</button>
                       <button type="button" className={`rel-pill clickable${verifiedOnly ? ' active' : ''}`} onClick={() => setVerifiedOnly(v => !v)} style={{ fontSize: '0.7rem' }}>{verifiedOnly ? '✓ ' : ''}Verified types only</button>
                     </div>
                   </div>
@@ -939,8 +939,8 @@ export default function Feed() {
                     {i === 14 && !dismissedAds.support && (
                       <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion is built and maintained by one person, without investors or ads. The core will always be free. If it's helped you find connections or finally make sense of your dynamics, there are a few ways to help keep it running." ctaLabel="Support Socion →" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
                     )}
-                    {i === 17 && !dismissedAds.shop && (
-                      <FeedAd id="shop" eyebrow="SI Shop" headline="A mug for every type" body="16 type-specific ceramic mugs in quadra colours — Alpha blue, Beta amber, Gamma green, Delta steel. Dictionary-definition style, printed on demand. A decent way to signal your type to anyone who knows what it means." ctaLabel="Browse the shop →" onClick={() => { window.umami?.track('feed-shop-clicked'); window.open('https://shop.socionicsinsight.com', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('shop')} />
+                    {i === 17 && !dismissedAds.boards && (
+                      <FeedAd id="boards" eyebrow="Community" headline="Join the conversation on the boards" body="The Socion boards are where members discuss dynamics, debate typings, and dig into the theory beyond a single profile. Start a thread or jump into an existing one." ctaLabel="Browse boards →" onClick={() => { window.umami?.track('feed-boards-clicked'); navigate('/boards') }} onDismiss={() => dismissAd('boards')} />
                     )}
                   </>
                 ))}
