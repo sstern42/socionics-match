@@ -5,16 +5,24 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('PROJECT_SECRET_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')!
 const DIGEST_TO = Deno.env.get('DIGEST_TO') ?? 'spencer.stern@gmail.com'
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, content-type, x-cron-secret',
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
+    return new Response('ok', { headers: corsHeaders })
   }
 
   // Only this project's own cron job should be able to trigger this
-  // function — it should be configured to send the service role key as a
-  // bearer token.
-  if (req.headers.get('Authorization') !== `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`) {
-    return new Response('Unauthorized', { status: 401 })
+  // function. Deliberately not using the standard Authorization header —
+  // the Supabase dashboard keeps overriding/reverting it to the project's
+  // legacy service_role JWT, which doesn't match PROJECT_SECRET_KEY. A
+  // custom header sidesteps that (same fix as discord-notify) and lets you
+  // test from the dashboard's function GUI.
+  if (req.headers.get('x-cron-secret') !== SUPABASE_SERVICE_ROLE_KEY) {
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders })
   }
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
