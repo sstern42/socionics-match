@@ -4,6 +4,19 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '1 July 2026',
+       label: 'Update',
+       items: [
+         'Feed — new "With bio" filter to show only profiles that have written something about themselves',
+         'Settings — subscribers whose last payment failed now see a clear warning and a one-click way to update their payment method, instead of the same copy shown to active subscribers',
+         'Network — the graph tooltip now follows your cursor while you hover a node or connection, instead of staying fixed where you first hovered',
+         'Changelog — new Roadmap link to see what\'s coming next on GitHub',
+         'Profile cards — the verified checkmark now matches your type\'s quadra color instead of a fixed brown',
+         'Messages — jumping to a quoted message now highlights the message bubble itself instead of the whole row',
+         'Navigation — Sign out is now a clearly distinct button at the far right of the nav, on both desktop and mobile',
+       ],
+     },
+     {
        date: '21 June 2026',
        label: 'New',
        items: [
