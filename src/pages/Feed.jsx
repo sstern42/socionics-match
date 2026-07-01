@@ -479,17 +479,6 @@ export default function Feed() {
             onTogglePreview={() => setShowCard(c => !c)}
           />
 
-          <div style={{ marginTop: '1rem' }}>
-            <SeekingYou
-              userType={profile?.type}
-              isPremium={isPremium}
-              onExploreRelation={(rel) => {
-                setSwipeMode(false)
-                localStorage.setItem(FEED_MODE_KEY, 'browse')
-                setFilterRelation(rel)
-              }}
-            />
-          </div>
         </aside>
 
         {showCard && createPortal(
@@ -676,6 +665,17 @@ export default function Feed() {
             >×</button>
           </div>
         )}
+
+        {/* Who's looking for you */}
+        <SeekingYou
+          userType={profile?.type}
+          isPremium={isPremium}
+          onExploreRelation={(rel) => {
+            setSwipeMode(false)
+            localStorage.setItem(FEED_MODE_KEY, 'browse')
+            setFilterRelation(rel)
+          }}
+        />
 
         </div>{/* end feed-preamble */}
 
