@@ -482,7 +482,29 @@ export default function Feed() {
 
   return (
     <Layout noScroll hideFooter>
-      <section style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
+      <div className="feed-layout" style={{ maxWidth: 1180, margin: '0 auto', width: '100%' }}>
+
+        {/* Desktop-only persistent sidebar — own card always visible, room for future widgets */}
+        <aside className="feed-sidebar">
+          <p className="eyebrow" style={{ marginBottom: '0.75rem' }}>How you appear to others</p>
+          <ProfileCard
+            profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
+            onConnect={() => {}}
+            alreadyMatched={false}
+            matchId={null}
+            connecting={false}
+          />
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => navigate('/profile/edit')}
+            style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
+          >
+            Edit profile →
+          </button>
+        </aside>
+
+      <section className="feed-main" style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
 
         {/* Header */}
         {/* Browse / Swipe toggle — always visible */}
@@ -571,32 +593,34 @@ export default function Feed() {
               </Link>
             </p>
           )}
-          <button
-            type="button"
-            onClick={() => setShowCard(c => !c)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '0.75rem', padding: 0 }}
-          >
-            {showCard ? 'Hide your card ↑' : 'How you appear to others ↓'}
-          </button>
-          {showCard && (
-            <div style={{ marginTop: '1rem', maxWidth: 340 }}>
-              <ProfileCard
-                profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
-                onConnect={() => {}}
-                alreadyMatched={false}
-                matchId={null}
-                connecting={false}
-              />
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={() => navigate('/profile/edit')}
-                style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
-              >
-                Edit profile →
-              </button>
-            </div>
-          )}
+          <div className="feed-card-toggle">
+            <button
+              type="button"
+              onClick={() => setShowCard(c => !c)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '0.08em', textTransform: 'uppercase', marginTop: '0.75rem', padding: 0 }}
+            >
+              {showCard ? 'Hide your card ↑' : 'How you appear to others ↓'}
+            </button>
+            {showCard && (
+              <div style={{ marginTop: '1rem', maxWidth: 340 }}>
+                <ProfileCard
+                  profile={{ ...profile, profile_data: profile.profile_data, relation: null, displayRelation: null }}
+                  onConnect={() => {}}
+                  alreadyMatched={false}
+                  matchId={null}
+                  connecting={false}
+                />
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => navigate('/profile/edit')}
+                  style={{ marginTop: '0.75rem', width: '100%', padding: '0.6rem', fontSize: '0.78rem' }}
+                >
+                  Edit profile →
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Banners + SeekingYou — hidden in mobile swipe mode */}
@@ -985,6 +1009,7 @@ export default function Feed() {
         )}
         </div>{/* end feed-content-enter */}
       </section>
+      </div>{/* end feed-layout */}
 
       <SIWebview url={webviewUrl} onClose={() => setWebviewUrl(null)} />
 

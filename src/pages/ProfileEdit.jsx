@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { updateProfileData, uploadAvatar, uploadPhoto, deletePhoto } from '../lib/profile'
+import { updateProfileData, uploadAvatar, uploadPhoto, deletePhoto, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { TYPES } from '../data/relations'
 import { COUNTRIES } from '../data/countries'
@@ -102,7 +102,7 @@ export default function ProfileEdit() {
       await refreshProfile()
       navigate('/feed')
     } catch (err) {
-      setError(err.message)
+      setError(isDuplicateNameError(err) ? DUPLICATE_NAME_MESSAGE : err.message)
     } finally {
       setSaving(false)
     }

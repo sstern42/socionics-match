@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
+import MentionTextarea from '../components/boards/MentionTextarea'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import {
@@ -59,10 +60,12 @@ export default function BoardPost() {
   const [error, setError] = useState(null)
 
   const [commentText, setCommentText] = useState('')
+  const [commentMentionedIds, setCommentMentionedIds] = useState([])
   const [commenting, setCommenting] = useState(false)
   const [commentError, setCommentError] = useState(null)
   const [replyTo, setReplyTo] = useState(null)
   const [replyText, setReplyText] = useState('')
+  const [replyMentionedIds, setReplyMentionedIds] = useState([])
   const [replying, setReplying] = useState(false)
   const [replyError, setReplyError] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
@@ -112,9 +115,10 @@ export default function BoardPost() {
     setCommenting(true)
     setCommentError(null)
     try {
-      const comment = await createBoardComment({ postId, authorId: profile.id, content: commentText })
+      const comment = await createBoardComment({ postId, authorId: profile.id, content: commentText, mentionedUserIds: commentMentionedIds })
       setComments(prev => [...prev, comment])
       setCommentText('')
+      setCommentMentionedIds([])
     } catch (err) {
       setCommentError(err.message)
     } finally {
@@ -125,6 +129,7 @@ export default function BoardPost() {
   function startReply(commentId) {
     setReplyTo(commentId)
     setReplyText('')
+    setReplyMentionedIds([])
     setReplyError(null)
   }
 
@@ -133,10 +138,11 @@ export default function BoardPost() {
     setReplying(true)
     setReplyError(null)
     try {
-      const comment = await createBoardComment({ postId, authorId: profile.id, content: replyText, parentCommentId: replyTo })
+      const comment = await createBoardComment({ postId, authorId: profile.id, content: replyText, parentCommentId: replyTo, mentionedUserIds: replyMentionedIds })
       setComments(prev => [...prev, comment])
       setReplyTo(null)
       setReplyText('')
+      setReplyMentionedIds([])
     } catch (err) {
       setReplyError(err.message)
     } finally {
@@ -388,11 +394,13 @@ export default function BoardPost() {
         )}
         {!isReply && replyTo === c.id && (
           <div style={{ marginTop: '0.6rem', marginLeft: '1.5rem' }}>
-            <textarea
-              className="input-standalone"
-              placeholder={`Reply to ${authorName(c.author)}…`}
+            <MentionTextarea
               value={replyText}
-              onChange={e => setReplyText(e.target.value)}
+              onChange={setReplyText}
+              mentionedIds={replyMentionedIds}
+              onMentionsChange={setReplyMentionedIds}
+              excludeUserId={profile?.id}
+              placeholder={`Reply to ${authorName(c.author)}… Type @ to mention someone`}
               rows={2}
               maxLength={2000}
               style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.5rem' }}
@@ -524,11 +532,13 @@ export default function BoardPost() {
             </h2>
 
             <div style={{ marginBottom: '2rem' }}>
-              <textarea
-                className="input-standalone"
-                placeholder="Add a comment…"
+              <MentionTextarea
                 value={commentText}
-                onChange={e => setCommentText(e.target.value)}
+                onChange={setCommentText}
+                mentionedIds={commentMentionedIds}
+                onMentionsChange={setCommentMentionedIds}
+                excludeUserId={profile?.id}
+                placeholder="Add a comment… Type @ to mention someone"
                 rows={2}
                 maxLength={2000}
                 style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.6rem' }}

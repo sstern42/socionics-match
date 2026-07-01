@@ -2,6 +2,40 @@ import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
 import { getActiveBlocks } from './blocks'
 
+// Past (unmatched) connections — kept as soft-deleted rows so a disconnected
+// profile can still be found and viewed (#822). Message history is
+// deliberately not surfaced here; only enough to identify and link to the
+// profile, mirroring getMatches() below minus the conversation data.
+export async function getPastConnections(userId) {
+  const [{ data, error }, blocks] = await Promise.all([
+    supabase
+      .from('matches')
+      .select(`
+        id, relation_type, created_at, unmatched_at, user_a_id, user_b_id,
+        user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by ),
+        user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by )
+      `)
+      .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+      .not('unmatched_at', 'is', null)
+      .order('unmatched_at', { ascending: false }),
+    getActiveBlocks(userId),
+  ])
+  if (error) throw error
+  const blockedIds = new Set(blocks.map(b =>
+    b.blocker_id === userId ? b.blocked_id : b.blocker_id
+  ))
+  return (data ?? [])
+    .filter(m => {
+      const otherId = m.user_a_id === userId ? m.user_b_id : m.user_a_id
+      return !blockedIds.has(otherId)
+    })
+    .map(m => {
+      const other = m.user_a.id === userId ? m.user_b : m.user_a
+      const me = m.user_a.id === userId ? m.user_a : m.user_b
+      return { ...m, other, displayRelationType: getRelation(other.type, me.type) }
+    })
+}
+
 const MSG_SELECT = `
   id, sender_id, content, created_at, edited, read_at, reply_to_id,
   attachment_url, attachment_type,

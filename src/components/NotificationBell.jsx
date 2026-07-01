@@ -20,6 +20,8 @@ const TYPE_META = {
   new_message:    { label: 'message',    colour: '#9a6f38' },
   new_connection: { label: 'connection', colour: '#4caf50' },
   founder_post:   { label: 'update',     colour: '#185FA5' },
+  board_reply:    { label: 'reply',      colour: '#9a6f38' },
+  board_mention:  { label: 'mention',    colour: '#791F1F' },
 }
 
 // ── Sub-components ───────────────────────────────────────────────────────────

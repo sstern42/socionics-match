@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { createProfile, updateRelationPreferences, createTypeAssessment } from '../lib/profile'
+import { createProfile, updateRelationPreferences, createTypeAssessment, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
 import { attributeAndRewardReferral, getStoredReferralCode, getStoredReferrerName } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
 
@@ -101,7 +101,7 @@ export default function ProfileSetup() {
       }
       trackSignup()
     } catch (err) {
-      setError(err.message)
+      setError(isDuplicateNameError(err) ? DUPLICATE_NAME_MESSAGE : err.message)
     } finally {
       setLoading(false)
     }
