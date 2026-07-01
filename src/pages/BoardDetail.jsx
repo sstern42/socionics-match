@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
+import MentionTextarea from '../components/boards/MentionTextarea'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { getBoardBySlug, getBoardPosts, createBoardPost, setPostPinned } from '../lib/boards'
@@ -43,6 +44,7 @@ export default function BoardDetail() {
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [mentionedIds, setMentionedIds] = useState([])
   const [posting, setPosting] = useState(false)
   const [postError, setPostError] = useState(null)
   const [composing, setComposing] = useState(false)
@@ -88,10 +90,11 @@ export default function BoardDetail() {
     setPosting(true)
     setPostError(null)
     try {
-      const post = await createBoardPost({ boardId: board.id, authorId: profile.id, title, content })
+      const post = await createBoardPost({ boardId: board.id, authorId: profile.id, title, content, mentionedUserIds: mentionedIds })
       setPosts(prev => [post, ...prev])
       setTitle('')
       setContent('')
+      setMentionedIds([])
       setComposing(false)
     } catch (err) {
       setPostError(err.message)
@@ -135,11 +138,13 @@ export default function BoardDetail() {
                 maxLength={200}
                 style={{ marginBottom: '0.75rem' }}
               />
-              <textarea
-                className="input-standalone"
-                placeholder="What do you want to say?"
+              <MentionTextarea
                 value={content}
-                onChange={e => setContent(e.target.value)}
+                onChange={setContent}
+                mentionedIds={mentionedIds}
+                onMentionsChange={setMentionedIds}
+                excludeUserId={profile?.id}
+                placeholder="What do you want to say? Type @ to mention someone"
                 rows={4}
                 maxLength={5000}
                 style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6, marginBottom: '0.75rem' }}

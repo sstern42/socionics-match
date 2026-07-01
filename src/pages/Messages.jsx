@@ -3,10 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import MatchList from '../components/messages/MatchList'
+import PastConnectionsList from '../components/messages/PastConnectionsList'
 import Conversation from '../components/messages/Conversation'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { getMatches } from '../lib/messages'
+import { getMatches, getPastConnections } from '../lib/messages'
 import { supabase } from '../lib/supabase'
 import { markMessagesRead, markMatchRead } from '../lib/useUnreadCount'
 import { archiveMatch, unarchiveMatch, getArchivedMatchIds } from '../lib/archive'
@@ -24,6 +25,7 @@ export default function Messages() {
   const [selectedMatchId, setSelectedMatchId] = useState(null)
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
+  const [showPastConnections, setShowPastConnections] = useState(false)
   const queryClient = useQueryClient()
   const matchesQueryKey = ['matches', profile?.id]
 
@@ -49,6 +51,13 @@ export default function Messages() {
       getMatches(profile.id),
       getArchivedMatchIds(profile.id),
     ]).then(([data, archived]) => ({ matches: data, archivedIds: archived })),
+    enabled: !!profile,
+    staleTime: 60_000,
+  })
+
+  const { data: pastConnections = [] } = useQuery({
+    queryKey: ['past-connections', profile?.id],
+    queryFn: () => getPastConnections(profile.id),
     enabled: !!profile,
     staleTime: 60_000,
   })
@@ -228,6 +237,27 @@ export default function Messages() {
                       currentUserId={profile.id}
                     />
                   )}
+                </div>
+              )}
+
+              {pastConnections.length > 0 && (
+                <div style={{ borderTop: '1px solid var(--border)', flexShrink: 0 }}>
+                  <button
+                    onClick={() => setShowPastConnections(o => !o)}
+                    style={{
+                      width: '100%', textAlign: 'left', background: 'none', border: 'none',
+                      cursor: 'pointer', padding: '0.75rem 1.25rem',
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    }}
+                  >
+                    <span style={{ fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
+                      Past connections ({pastConnections.length})
+                    </span>
+                    <span style={{ color: 'var(--muted)', fontSize: '0.62rem' }}>
+                      {showPastConnections ? '▲' : '▼'}
+                    </span>
+                  </button>
+                  {showPastConnections && <PastConnectionsList connections={pastConnections} />}
                 </div>
               )}
             </div>

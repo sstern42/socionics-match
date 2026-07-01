@@ -100,10 +100,10 @@ export async function incrementBoardPostView(postId) {
   if (error) throw error
 }
 
-export async function createBoardPost({ boardId, authorId, title, content }) {
+export async function createBoardPost({ boardId, authorId, title, content, mentionedUserIds = [] }) {
   const { data, error } = await supabase
     .from('board_posts')
-    .insert({ board_id: boardId, author_id: authorId, title: title.trim(), content: content.trim() })
+    .insert({ board_id: boardId, author_id: authorId, title: title.trim(), content: content.trim(), mentioned_user_ids: mentionedUserIds })
     .select(BOARD_POST_SELECT)
     .single()
 
@@ -151,10 +151,10 @@ export async function getBoardComments(postId) {
   return data ?? []
 }
 
-export async function createBoardComment({ postId, authorId, content, parentCommentId = null }) {
+export async function createBoardComment({ postId, authorId, content, parentCommentId = null, mentionedUserIds = [] }) {
   const { data, error } = await supabase
     .from('board_comments')
-    .insert({ post_id: postId, author_id: authorId, content: content.trim(), parent_comment_id: parentCommentId })
+    .insert({ post_id: postId, author_id: authorId, content: content.trim(), parent_comment_id: parentCommentId, mentioned_user_ids: mentionedUserIds })
     .select(BOARD_COMMENT_SELECT)
     .single()
 
