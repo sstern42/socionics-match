@@ -143,10 +143,13 @@ export default function Auth() {
           <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <input
               className="input-standalone"
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={6}
               placeholder="6-digit code"
               value={otpCode}
-              onChange={e => setOtpCode(e.target.value)}
+              onChange={e => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
               onKeyDown={e => e.key === 'Enter' && handleVerifyOtp()}
               autoFocus
               style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.2em' }}

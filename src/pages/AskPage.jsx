@@ -17,25 +17,30 @@ export default function AskPage() {
   }, [session, loading])
   const [userType, setUserType] = useState(null)
   const [userId, setUserId] = useState(null)
+  const [typeLoading, setTypeLoading] = useState(true)
 
   usePageTitle('Socionics AI')
 
   useEffect(() => {
     async function fetchType() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase
-        .from('users')
-        .select('id, type')
-        .eq('auth_id', user.id)
-        .single()
-      if (data?.type) setUserType(data.type)
-      if (data?.id) setUserId(data.id)
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase
+          .from('users')
+          .select('id, type')
+          .eq('auth_id', user.id)
+          .single()
+        if (data?.type) setUserType(data.type)
+        if (data?.id) setUserId(data.id)
+      } finally {
+        setTypeLoading(false)
+      }
     }
     fetchType()
   }, [])
 
-  if (loading || !session) return null
+  if (loading || !session || typeLoading) return null
   
   return (
     <Layout noScroll hideFooter>

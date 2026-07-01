@@ -250,6 +250,7 @@ export default function ProfileEdit() {
                 className="input-standalone"
                 type="date"
                 value={dob}
+                min="1900-01-01"
                 max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
                 onChange={e => setDob(e.target.value)}
               />

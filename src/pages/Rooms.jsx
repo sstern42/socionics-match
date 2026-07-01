@@ -469,18 +469,30 @@ function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder,
               const isOnline = now - new Date(u.last_active).getTime() < 15*60*1000
               const initial   = (u.profile_data?.name?.[0] ?? u.type?.[0] ?? '?').toUpperCase()
               const name      = u.profile_data?.anonymous ? 'Anonymous' : (u.profile_data?.name ?? u.type)
-              return (
+              const clickable = !u.profile_data?.anonymous
+              const avatar = (
+                <div style={{ position:'relative', flexShrink:0 }}>
+                  <div style={{ width:28, height:28, borderRadius:'50%', overflow:'hidden', border:'1px solid var(--border)', background:'var(--surface)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.6rem', fontWeight:600, color:'var(--accent)' }}>
+                    {u.avatar_url && !u.profile_data?.anonymous ? <img src={u.avatar_url} alt="" style={{ width:'100%',height:'100%',objectFit:'cover' }} /> : <span>{initial}</span>}
+                  </div>
+                  <span style={{ position:'absolute', bottom:0, right:0, width:8, height:8, borderRadius:'50%', background:isOnline?'#4caf50':'#f5a623', border:'1.5px solid var(--card-bg)', display:'block' }} />
+                </div>
+              )
+              const nameBlock = (
+                <div style={{ minWidth:0, flex:1 }}>
+                  <p style={{ fontSize:'0.8rem', color:'var(--text)', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</p>
+                  <p style={{ fontSize:'0.68rem', color:isOnline?'#4caf50':'var(--muted)' }}>{isOnline ? 'Online now' : lastActiveLabel(u.last_active)}</p>
+                </div>
+              )
+              return clickable ? (
+                <Link key={u.id} to={`/profile/${u.id}`} style={{ display:'flex', alignItems:'center', gap:'0.6rem', textDecoration:'none' }}>
+                  {avatar}
+                  {nameBlock}
+                </Link>
+              ) : (
                 <div key={u.id} style={{ display:'flex', alignItems:'center', gap:'0.6rem' }}>
-                  <div style={{ position:'relative', flexShrink:0 }}>
-                    <div style={{ width:28, height:28, borderRadius:'50%', overflow:'hidden', border:'1px solid var(--border)', background:'var(--surface)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.6rem', fontWeight:600, color:'var(--accent)' }}>
-                      {u.avatar_url && !u.profile_data?.anonymous ? <img src={u.avatar_url} alt="" style={{ width:'100%',height:'100%',objectFit:'cover' }} /> : <span>{initial}</span>}
-                    </div>
-                    <span style={{ position:'absolute', bottom:0, right:0, width:8, height:8, borderRadius:'50%', background:isOnline?'#4caf50':'#f5a623', border:'1.5px solid var(--card-bg)', display:'block' }} />
-                  </div>
-                  <div style={{ minWidth:0, flex:1 }}>
-                    <p style={{ fontSize:'0.8rem', color:'var(--text)', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{name}</p>
-                    <p style={{ fontSize:'0.68rem', color:isOnline?'#4caf50':'var(--muted)' }}>{isOnline ? 'Online now' : lastActiveLabel(u.last_active)}</p>
-                  </div>
+                  {avatar}
+                  {nameBlock}
                 </div>
               )
             })}

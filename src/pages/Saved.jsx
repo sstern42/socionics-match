@@ -20,7 +20,7 @@ export default function Saved() {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
 
-  const { data: savedData, isFetching, dataUpdatedAt, error: queryError } = useQuery({
+  const { data: savedData, isFetching, dataUpdatedAt, error: queryError, refetch } = useQuery({
     queryKey: ['saved', profile?.id],
     queryFn: async () => {
       const [{ data, error }, existingMatches] = await Promise.all([
@@ -76,7 +76,7 @@ export default function Saved() {
         {error && !fetching && (
           <div style={{ background: 'rgba(192,57,43,0.07)', border: '1px solid rgba(192,57,43,0.3)', borderRadius: 4, padding: '0.75rem 1rem' }}>
             <p style={{ color: '#c0392b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{error}</p>
-            <button type="button" className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={load}>Try again</button>
+            <button type="button" className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }} onClick={() => refetch()}>Try again</button>
           </div>
         )}
 

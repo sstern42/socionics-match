@@ -101,14 +101,19 @@ export default function HomeDashboard() {
 
   useEffect(() => {
     if (!session?.user?.id || isPremium) return
-    const today = new Date().toISOString().slice(0, 10)
-    supabase
-      .from('ai_message_counts')
-      .select('count')
-      .eq('user_id', session.user.id)
-      .eq('date', today)
-      .maybeSingle()
-      .then(({ data }) => setAiUsedToday(data?.count ?? 0))
+    function loadAiUsage() {
+      const today = new Date().toISOString().slice(0, 10)
+      supabase
+        .from('ai_message_counts')
+        .select('count')
+        .eq('user_id', session.user.id)
+        .eq('date', today)
+        .maybeSingle()
+        .then(({ data }) => setAiUsedToday(data?.count ?? 0))
+    }
+    loadAiUsage()
+    window.addEventListener('focus', loadAiUsage)
+    return () => window.removeEventListener('focus', loadAiUsage)
   }, [session?.user?.id, isPremium])
 
   const confidence = profile?.type_confidence

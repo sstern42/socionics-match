@@ -78,6 +78,7 @@ export default function Typing() {
                     <button
                       type="button"
                       onClick={() => typist.avatarUrl && setLightbox(typist.avatarUrl)}
+                      aria-label="View photo"
                       style={{
                         width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
                         background: 'var(--surface)', border: '1px solid var(--border)',
@@ -113,12 +114,14 @@ export default function Typing() {
                       )}
                       {typist.linkedin && (
                         <a href={typist.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
+                          className="social-icon-link"
                           style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                           {LINKEDIN_ICON}
                         </a>
                       )}
                       {typist.discordUrl && !typist.linkedin && (
                         <a href={typist.discordUrl} target="_blank" rel="noopener noreferrer" aria-label="Discord"
+                          className="social-icon-link"
                           style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
                           {DISCORD_ICON}
                         </a>

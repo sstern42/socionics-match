@@ -15,6 +15,17 @@ const POST_TYPE_META = {
   note:      { label: 'Note',      colour: 'var(--muted)' },
 }
 
+function renderContent(text) {
+  if (!text) return null
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts = text.split(urlRegex)
+  return parts.map((part, i) =>
+    urlRegex.test(part)
+      ? <a key={i} href={part} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline', wordBreak: 'break-all' }}>{part}</a>
+      : part
+  )
+}
+
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
@@ -332,7 +343,7 @@ export default function Updates() {
                   </div>
 
                   <p style={{ fontSize: '0.95rem', color: 'var(--text)', lineHeight: 1.75, fontWeight: 300, whiteSpace: 'pre-wrap', marginBottom: '1rem' }}>
-                    {post.content}
+                    {renderContent(post.content)}
                   </p>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>

@@ -71,7 +71,7 @@ export default function MatchModal({ matchData, currentProfile, onDismiss }) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', height: 80 }}>
-          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(calc(-50% - 28px)', zIndex: 2 }}>
+          <div style={{ position: 'absolute', left: '50%', transform: 'translateX(calc(-50% - 28px))', zIndex: 2 }}>
             <Avatar profile={currentProfile} size={72} />
           </div>
           <div style={{ position: 'absolute', left: '50%', transform: 'translateX(calc(-50% + 28px))', zIndex: 1 }}>
