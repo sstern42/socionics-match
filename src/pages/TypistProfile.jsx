@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useParams, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabase'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { TYPISTS, calcAge, yearsExperience } from '../lib/typists'
@@ -234,7 +235,17 @@ export default function TypistProfile() {
                   href: tier.href,
                   target: '_blank',
                   rel: 'noopener noreferrer',
-                  onClick: () => window.umami?.track('typing-checkout-clicked', { tier: tier.key, typist: typist.slug }),
+                  onClick: () => {
+                    window.umami?.track('typing-checkout-clicked', { tier: tier.key, typist: typist.slug })
+                    if (profile) {
+                      supabase.from('typing_checkout_clicks').insert({
+                        user_id: profile.id,
+                        typist_slug: typist.slug,
+                        tier_key: tier.key,
+                        tier_price: tier.price,
+                      }).then(({ error }) => { if (error) console.error('typing_checkout_clicks insert failed:', error) })
+                    }
+                  },
                 }
               : needsSignIn
               ? {
