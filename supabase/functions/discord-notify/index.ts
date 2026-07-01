@@ -32,11 +32,15 @@ function maskEmail(email: string): string {
 }
 
 async function postToDiscord(content: string, webhookUrl: string = DISCORD_WEBHOOK) {
-  return fetch(webhookUrl, {
+  const res = await fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content }),
   })
+  if (!res.ok) {
+    console.error(`Discord webhook post failed: ${res.status} ${await res.text()}`)
+  }
+  return res
 }
 
 Deno.serve(async (req) => {
