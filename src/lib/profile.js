@@ -1,10 +1,10 @@
 import { supabase } from './supabase'
 
-// True when `err` is the unique-constraint violation from
-// idx_users_display_name_unique (supabase/migrations/20260701120000_display_name_uniqueness.sql).
-// Callers use this to show a friendly message instead of the raw Postgres error.
+// True when `err` is the display-name collision raised by
+// enforce_unique_display_name() (supabase/migrations/20260701120000_display_name_uniqueness.sql).
+// Callers use this to show a friendly message instead of the raw trigger error.
 export function isDuplicateNameError(err) {
-  return err?.code === '23505' && /idx_users_display_name_unique/.test(err?.message ?? '')
+  return err?.code === '23505' && /display_name_taken/.test(err?.message ?? '')
 }
 
 export const DUPLICATE_NAME_MESSAGE = 'That display name is already taken — please choose another.'
