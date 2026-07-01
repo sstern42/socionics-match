@@ -314,12 +314,11 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   }
 
   function scrollToMessage(msgId) {
-    const el = document.getElementById(`msg-${msgId}`)
+    const el = document.getElementById(`msg-bubble-${msgId}`)
     if (!el) return
     el.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    el.style.transition = 'background 0.15s'
-    el.style.background = 'rgba(154,111,56,0.1)'
-    setTimeout(() => { el.style.background = '' }, 900)
+    el.style.boxShadow = '0 0 0 3px var(--accent)'
+    setTimeout(() => { el.style.boxShadow = '' }, 900)
   }
 
   const relInfo = RELATIONS[match.displayRelationType ?? match.relation_type]
@@ -798,9 +797,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 <div style={{ display:'flex',alignItems:isMobile?(isMine?'flex-end':'flex-start'):'center',gap:isMobile?'0.3rem':'0.4rem',flexDirection:isMobile?'column':(isMine?'row-reverse':'row') }}>
                   {/* Bubble */}
                   <div
+                    id={`msg-bubble-${msg.id}`}
                     onClick={() => !activeBlock && !editingId && setReplyTo({ id:msg.id,content:msg.content,sender_id:msg.sender_id })}
                     onTouchStart={() => startLongPress(msg)} onTouchEnd={cancelLongPress} onTouchMove={cancelLongPress}
-                    style={{ background: isMine ? 'var(--accent)' : 'var(--card-bg)', color: isMine ? '#fff' : 'var(--text)', border:`1px solid ${isMine?'var(--accent)':'var(--border)'}`, borderRadius:isMine?'12px 12px 2px 12px':'12px 12px 12px 2px', padding: msg.attachment_url && !msg.content ? '0.35rem' : '0.65rem 0.9rem', fontSize:'0.9rem', lineHeight:1.6, fontWeight:300, whiteSpace:'pre-wrap', width:'fit-content', cursor:activeBlock?'default':'pointer', overflow:'hidden' }}
+                    style={{ background: isMine ? 'var(--accent)' : 'var(--card-bg)', color: isMine ? '#fff' : 'var(--text)', border:`1px solid ${isMine?'var(--accent)':'var(--border)'}`, borderRadius:isMine?'12px 12px 2px 12px':'12px 12px 12px 2px', padding: msg.attachment_url && !msg.content ? '0.35rem' : '0.65rem 0.9rem', fontSize:'0.9rem', lineHeight:1.6, fontWeight:300, whiteSpace:'pre-wrap', width:'fit-content', cursor:activeBlock?'default':'pointer', overflow:'hidden', transition:'box-shadow 0.4s' }}
                   >
                     {quotedMsg && (
                       <div

@@ -134,7 +134,7 @@ export default function SwipeCard({ profile, onSwipe, onSkip, isTop, zIndex = 1,
             </div>
             <div style={{ display:'flex',alignItems:'center',gap:'0.25rem',flexShrink:0,fontSize:'0.7rem',letterSpacing:'0.08em',textTransform:'uppercase',fontWeight:500,color:colours.text,background:colours.bg,border:`1px solid ${colours.border}`,padding:'0.22rem 0.55rem',borderRadius:3 }}>
               {type}
-              {verified_by && !isAnon && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:11,height:11,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.42rem',fontWeight:700,lineHeight:1 }}>✓</span>}
+              {verified_by && !isAnon && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:11,height:11,borderRadius:'50%',background:colours.text,color:'#fff',fontSize:'0.42rem',fontWeight:700,lineHeight:1 }}>✓</span>}
             </div>
           </div>
 

@@ -133,7 +133,7 @@ function RoomMessage({
         </button>
 
         {msg.sender?.verified_by && (
-          <span title={`Verified by ${msg.sender.verified_by}`} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:11, height:11, borderRadius:'50%', background:'var(--accent)', color:'#fff', fontSize:'0.4rem', fontWeight:700, lineHeight:1 }}>✓</span>
+          <span title={`Verified by ${msg.sender.verified_by}`} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:11, height:11, borderRadius:'50%', background:badgeColour, color:'#fff', fontSize:'0.4rem', fontWeight:700, lineHeight:1 }}>✓</span>
         )}
 
         {showFounderBadge && (

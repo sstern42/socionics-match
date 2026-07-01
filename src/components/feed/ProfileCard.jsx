@@ -160,7 +160,7 @@ export default function ProfileCard({ profile, onConnect, alreadyMatched, matchI
         </div>
         <button onClick={()=>{window.umami?.track('si-link-type',{type});setWebviewUrl(`https://socionicsinsight.com/types/${type.toLowerCase()}/`)}} title={verified_by?`Verified by ${verified_by}`:undefined} style={{ fontSize:'0.72rem',letterSpacing:'0.08em',textTransform:'uppercase',fontWeight:500,color:colours.text,background:colours.bg,border:`1px solid ${colours.border}`,padding:'0.25rem 0.6rem',borderRadius:3,flexShrink:0,textDecoration:'none',cursor:'pointer',display:'inline-flex',alignItems:'center',gap:'0.3rem' }}>
           {type}
-          {verified_by && !isAnonymous && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1 }}>✓</span>}
+          {verified_by && !isAnonymous && <span style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:colours.text,color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1 }}>✓</span>}
         </button>
       </div>
 
