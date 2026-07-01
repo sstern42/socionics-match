@@ -4,6 +4,23 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 1 July 2026
+
+### Added
+- **Feed — "With bio" filter**: New filter pill alongside "With photos" to show only profiles that have written a bio.
+- **Changelog — Roadmap link**: Links to the GitHub milestones view so visitors can see what's coming, not just what's shipped.
+
+### Fixed
+- **Network — tooltip cursor tracking**: The graph tooltip only positioned itself once on hover-enter and stayed put while you kept moving over the same node or edge. It now follows the cursor.
+- **Verified badge color**: The verified checkmark badge was hardcoded to a fixed accent color instead of matching the type/quadra color shown right next to it, in profile cards, swipe cards, and quadra rooms.
+- **Messages — quoted-message highlight**: Jumping to a quoted message highlighted the entire message row (avatar, timestamp, action buttons included), not just the bubble. Now only the bubble is highlighted.
+
+### Changed
+- **Settings — past-due subscribers**: Subscribers whose last payment failed previously saw the same generic "manage your subscription" copy as active subscribers, with no indication anything was wrong. Now shown a distinct warning and an "Update payment method" CTA.
+- **Navigation — Sign out**: Moved to the true right-most position in the desktop nav (previously the theme toggle rendered after it) and restyled as a distinct ghost button instead of looking like a plain nav link; mobile menu's Sign out gets matching styling.
+
+---
+
 ## 29 June 2026
 
 ### Added
