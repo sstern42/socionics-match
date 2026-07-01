@@ -228,7 +228,7 @@ export default function Network() {
   const nodes = TYPES.map(id => ({ id }))
   const edges = graphData?.edges ?? []
 
-  const { session, profile } = useAuth()
+  const { session } = useAuth()
 
   const { positions, dragNode, spread, settled } = useForceSimulation(
     graphData ? nodes : [],

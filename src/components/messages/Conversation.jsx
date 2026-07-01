@@ -53,7 +53,7 @@ const MessageInput = React.memo(function MessageInput({
   otherName, isMobile, activeBlock, otherTyping,
   presenceChannel, tabId,
   showGifPicker, setShowGifPicker, onGifSelect, onImageSelect,
-  fileInputRef, onClearPendingImage, inputRef, typingTimer, currentUserId,
+  fileInputRef, onClearPendingImage, inputRef, typingTimerRef, currentUserId,
 }) {
   const [text, setText] = useState('')
 
@@ -161,8 +161,8 @@ const MessageInput = React.memo(function MessageInput({
                     setText(e.target.value)
                     e.target.style.height='auto'; e.target.style.height=`${e.target.scrollHeight}px`
                     presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:true } })
-                    clearTimeout(typingTimer.current)
-                    typingTimer.current = setTimeout(() => {
+                    clearTimeout(typingTimerRef.current)
+                    typingTimerRef.current = setTimeout(() => {
                       presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:false } })
                     }, 2000)
                   }}
@@ -224,7 +224,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const [pendingImage, setPendingImage] = useState(null)
 
   const longPressTimer   = useRef(null)
-  const typingTimer      = useRef(null)
+  const typingTimerRef      = useRef(null)
   const presenceChannel  = useRef(null)
   const tabId            = useRef(Math.random().toString(36).slice(2))
   const bottomRef        = useRef(null)
@@ -290,7 +290,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setSending(true)
     const replyToId = replyTo?.id ?? null
     setReplyTo(null)
-    clearTimeout(typingTimer.current)
+    clearTimeout(typingTimerRef.current)
     presenceChannel.current?.send({ type: 'broadcast', event: 'typing', payload: { tab_id: tabId.current, typing: false } })
     try {
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: '', replyToId, attachmentUrl: gifUrl, attachmentType: 'gif' })
@@ -489,7 +489,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     const imageSnapshot = pendingImage
     setReplyTo(null)
     setPendingImage(null)
-    clearTimeout(typingTimer.current)
+    clearTimeout(typingTimerRef.current)
     presenceChannel.current?.send({ type:'broadcast',event:'typing',payload:{ tab_id:tabId.current,typing:false } })
     try {
       let msg
@@ -538,6 +538,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     try {
       await unmatch(match.id)
       setUnmatched(true)
+      onUnmatch?.(match.id)
     } catch (err) { setBlockError(err.message); setUnmatching(false) }
   }
 
@@ -918,7 +919,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         fileInputRef={fileInputRef}
         onClearPendingImage={handleClearPendingImage}
         inputRef={inputRef}
-        typingTimer={typingTimer}
+        typingTimerRef={typingTimerRef}
         currentUserId={currentUserId}
       />
 
