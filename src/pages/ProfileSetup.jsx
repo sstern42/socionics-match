@@ -109,7 +109,7 @@ export default function ProfileSetup() {
 
   if (step === 'details') {
     return (
-      <Layout>
+      <Layout noScroll hideFooter>
         <section style={centreStyle}>
           <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {referredByCode && (
@@ -263,7 +263,7 @@ export default function ProfileSetup() {
   }
 
   return (
-    <Layout>
+    <Layout noScroll hideFooter>
       <section style={centreStyle}>
         <div style={{ width: '100%', maxWidth: 640, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ textAlign: 'center' }}>

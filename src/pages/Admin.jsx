@@ -48,11 +48,7 @@ export default function Admin() {
   const [data, setData] = useState(null)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState(null)
-  const [announcement, setAnnouncement] = useState('')
-  const [announcementActive, setAnnouncementActive] = useState(false)
-  const [savingAnnouncement, setSavingAnnouncement] = useState(false)
   const [trackingExcluded, setTrackingExcluded] = useState(() => localStorage.getItem('umami.disabled') === '1')
-  const [announcementSaved, setAnnouncementSaved] = useState(false)
   const [siteBanner, setSiteBanner] = useState('')
   const [siteBannerActive, setSiteBannerActive] = useState(false)
   const [savingSiteBanner, setSavingSiteBanner] = useState(false)
@@ -86,14 +82,12 @@ export default function Admin() {
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at, verified_by').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
-        supabase.from('stats').select('announcement, announcement_active, site_banner, site_banner_active').eq('id', 1).single(),
+        supabase.from('stats').select('site_banner, site_banner_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
         supabase.rpc('get_member_emails'),
         supabase.from('typing_requests').select('id, user_id, notes, discord_handle, status, created_at').order('created_at', { ascending: false }),
       ])
 
-      setAnnouncement(statsRow?.announcement ?? '')
-      setAnnouncementActive(statsRow?.announcement_active ?? false)
       setSiteBanner(statsRow?.site_banner ?? '')
       setSiteBannerActive(statsRow?.site_banner_active ?? false)
 
@@ -240,15 +234,6 @@ export default function Admin() {
     } finally {
       setResolvingUserReportId(null)
     }
-  }
-
-  async function saveAnnouncement() {
-    setSavingAnnouncement(true)
-    const { error: saveErr } = await supabase.from('stats').update({ announcement, announcement_active: announcementActive }).eq('id', 1)
-    setSavingAnnouncement(false)
-    if (saveErr) { setError(saveErr.message); return }
-    setAnnouncementSaved(true)
-    setTimeout(() => setAnnouncementSaved(false), 2500)
   }
 
   async function saveSiteBanner() {
@@ -783,34 +768,10 @@ export default function Admin() {
           </button>
         </div>
 
-        {/* Announcement editor */}
-        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
-          <p style={cardTitleStyle}>Feed announcement</p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
-            Shown as a dismissible banner on the feed. Each unique message shows once per user.
-          </p>
-          <textarea
-            value={announcement}
-            onChange={e => { setAnnouncement(e.target.value); setAnnouncementSaved(false) }}
-            rows={3}
-            style={{ width: '100%', fontFamily: 'var(--sans)', fontSize: '0.88rem', lineHeight: 1.6, padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: 4, resize: 'vertical', boxSizing: 'border-box', background: 'var(--bg)' }}
-            placeholder="e.g. I'm Spencer, the founder. Connect with me on the feed for feedback or just to chat about Socionics."
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text)', cursor: 'pointer' }}>
-              <input type="checkbox" checked={announcementActive} onChange={e => setAnnouncementActive(e.target.checked)} style={{ accentColor: 'var(--accent)', width: 16, height: 16 }} />
-              Active (visible on feed)
-            </label>
-            <button type="button" className="btn-ghost" onClick={saveAnnouncement} disabled={savingAnnouncement} style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingAnnouncement ? 0.5 : 1 }}>
-              {savingAnnouncement ? 'Saving…' : announcementSaved ? '✓ Saved' : 'Save'}
-            </button>
-          </div>
-        </div>
-
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <p style={cardTitleStyle}>Site-wide banner</p>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
-            Shown on every page above the nav — separate from the feed announcement. CTA always links to /support. Changing the message resets the dismiss state for all users.
+            Shown on every page above the nav. CTA always links to /support. Not dismissable, so keep it short and evergreen.
           </p>
           <textarea
             value={siteBanner}

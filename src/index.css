@@ -254,7 +254,14 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 
 @media (min-width: 1240px) {
   .feed-layout { display: flex; align-items: flex-start; gap: 2rem; }
-  .feed-sidebar { display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem; position: sticky; top: 0; }
+  .feed-sidebar {
+    display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem;
+    position: sticky; top: 0;
+    /* Cap it and let it scroll internally if content ever grows taller than the
+       viewport, instead of being silently clipped by the sticky container with
+       no way to reach the rest. */
+    max-height: calc(100vh - 260px); overflow-y: auto;
+  }
   .feed-main { flex: 1; min-width: 0; }
   .feed-card-toggle { display: none; }
 }
@@ -262,7 +269,10 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 /* Right rail needs room for both 340px columns plus the 860px feed
    column without squeezing it, so it only appears on wider desktops */
 @media (min-width: 1650px) {
-  .feed-sidebar-right { display: block; width: 340px; flex-shrink: 0; padding: 3rem 1.5rem 3rem 0; position: sticky; top: 0; }
+  .feed-sidebar-right {
+    display: block; width: 340px; flex-shrink: 0; padding: 3rem 1.5rem 3rem 0;
+    position: sticky; top: 0; max-height: calc(100vh - 260px); overflow-y: auto;
+  }
 }
 
 /* Mobile utility */

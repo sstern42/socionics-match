@@ -164,12 +164,12 @@ export default function UserProfile() {
   }
 
   if (loading || fetching) {
-    return <Layout><div style={centreStyle}><p style={{ color: 'var(--muted)' }}>Loading…</p></div></Layout>
+    return <Layout noScroll hideFooter><div style={centreStyle}><p style={{ color: 'var(--muted)' }}>Loading…</p></div></Layout>
   }
 
   if (!other) {
     return (
-      <Layout>
+      <Layout noScroll hideFooter>
         <div style={centreStyle}>
           <p style={{ color: 'var(--muted)' }}>Profile not found.</p>
           <button className="btn-ghost" onClick={() => navigate(-1)}>Go back</button>
@@ -332,7 +332,7 @@ export default function UserProfile() {
   })
 
   return (
-    <Layout hideFooter>
+    <Layout noScroll hideFooter>
       <section style={{ maxWidth: 480, width: '100%', margin: '0 auto', padding: '3rem 1.5rem' }}>
         {!isSelf && (
           <button
