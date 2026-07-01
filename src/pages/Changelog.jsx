@@ -27,6 +27,13 @@ export const ENTRIES = [
          'Network — the fullscreen graph now resizes properly when you rotate your device or resize the window',
          'Sign in — the 6-digit code field no longer drops leading zeros',
          'Saved — fixed the "Try again" button crashing instead of retrying after a failed load',
+         'Messages — see whether the person you\'re chatting with is online now, active today, or active this week, right in the sidebar and conversation header',
+         'Notifications — fixed connection and message notifications sometimes arriving twice on a slow connection or reconnect',
+         'Mobile navigation — fixed the dropdown menu sometimes overlapping the header instead of sitting cleanly below it',
+         'Messages (iOS) — fixed the site header sometimes overlapping the conversation header',
+         'Messages (Firefox) — fixed not being able to scroll the message list while composing a long message',
+         'Profile edit — your Socionics type is now chosen from a dropdown of the 16 types instead of typed in, to avoid typos',
+         'Settings — clarified that the 24-hour clock preference only affects exact times (Messages, Rooms, Admin), not relative ones like "2h ago"',
        ],
      },
      {
