@@ -36,6 +36,8 @@ export const TYPISTS = {
     testimonials:    [
       { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
       { quote: "A typing report backed with enough evidence and reasoning to assuage any doubts… and that's coming from an EII.", name: 'Chihuahua' },
+      { quote: "Spencer provided a thorough, well-analyzed typing that I hadn't considered but is accurate.", name: 'Andrew' },
+      { quote: 'Reasonable and enjoyable — both process and result. Highly recommend for anyone who strives to get know themselves.', name: 'Sol' },
     ],
     tiers: [
       {
@@ -43,8 +45,8 @@ export const TYPISTS = {
         name:           'Standard',
         price:          '$29',
         wasPrice:       '$49',
-        turnaround:     '5 days',
-        turnaroundLabel:'Delivered within 5 days of questionnaire completion',
+        turnaround:     '5 working days',
+        turnaroundLabel:'Delivered within 5 working days of questionnaire completion',
         description:    null,
         href:           'https://buy.stripe.com/fZu14m91Pfwl163fIudIA00',
         highlight:      false,
@@ -54,8 +56,8 @@ export const TYPISTS = {
         name:           'Express',
         price:          '$49',
         wasPrice:       '$79',
-        turnaround:     '48 hours',
-        turnaroundLabel:'Delivered within 48 hours of questionnaire completion',
+        turnaround:     '2 working days',
+        turnaroundLabel:'Delivered within 2 working days of questionnaire completion',
         description:    null,
         href:           'https://buy.stripe.com/bJefZg7XL4RH6qnbsedIA01',
         highlight:      true,

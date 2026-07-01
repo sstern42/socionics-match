@@ -2,7 +2,7 @@ import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Support() {
-  usePageMeta('Support Socion™ — Ad-Free & Independent', 'Socion is ad-free and built by one person. Tip on Ko-fi, browse the shop, or keep using it free — every bit of support helps.')
+  usePageMeta('Support Socion™ — Ad-Free & Independent', 'Socion is ad-free and built by one person. Tip on Ko-fi or keep using it free — every bit of support helps.')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>
@@ -48,37 +48,13 @@ export default function Support() {
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>one-time · no account needed · takes 30 seconds</p>
         </div>
 
-        {/* Shop + typing — secondary, inline */}
+        {/* Typing — secondary, inline */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
           gap: '1rem',
           marginBottom: '3rem',
         }}>
-          <div style={{
-            border: '1px solid var(--border)',
-            borderRadius: 8,
-            padding: '1.5rem',
-            display: 'flex', flexDirection: 'column', gap: '0.75rem',
-          }}>
-            <p style={{ fontFamily: 'var(--serif)', fontSize: '1.05rem', color: 'var(--text)' }}>
-              <em>Grab a type mug</em>
-            </p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7, flex: 1 }}>
-              16 type-specific mugs in quadra colours. Dictionary-definition style, printed on demand. Ships worldwide.
-            </p>
-            <a
-              href="https://shop.socionicsinsight.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-ghost"
-              style={{ textDecoration: 'none', fontSize: '0.85rem', padding: '0.6rem 1.25rem', display: 'inline-block', textAlign: 'center' }}
-              onClick={() => window.umami?.track('support-shop-clicked')}
-            >
-              Browse the shop →
-            </a>
-          </div>
-
           <div style={{
             border: '1px solid var(--border)',
             borderRadius: 8,

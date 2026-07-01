@@ -11,5 +11,8 @@ Disallow: /settings
 Disallow: /saved
 Disallow: /rooms
 Disallow: /updates
+Disallow: /ask
+Disallow: /r/
+Disallow: /premium/welcome
 
 Sitemap: https://socion.app/sitemap.xml
