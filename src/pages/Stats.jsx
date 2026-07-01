@@ -56,7 +56,7 @@ export default function Stats() {
   }, [])
 
   if (loading) return (
-    <Layout hideFooter>
+    <Layout noScroll hideFooter>
       <section style={centreStyle}>
         <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>Loading…</p>
       </section>
@@ -64,7 +64,7 @@ export default function Stats() {
   )
 
   if (error) return (
-    <Layout hideFooter>
+    <Layout noScroll hideFooter>
       <section style={centreStyle}>
         <p style={{ color: '#c0392b', fontSize: '0.88rem' }}>{error}</p>
       </section>
@@ -99,7 +99,7 @@ export default function Stats() {
     .sort((a, b) => b.count - a.count)
 
   return (
-    <Layout hideFooter>
+    <Layout noScroll hideFooter>
       <section style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
 
         {/* Header */}
