@@ -1,10 +1,11 @@
 // supabase/functions/discord-notify/index.ts
-// Five webhook events via X-Webhook-Event header:
-//   auth-signup       auth.users INSERT    → 🔔 New sign-up
-//   profile-created   public.users INSERT  → ✅ Profile complete
-//   match-created     matches INSERT       → 🤝 New connection with type pair
-//   typing-request    typing_requests INSERT → 🧠 New typing request (private channel)
-//   feedback-created  feedback INSERT      → 📮 New feedback/bug report (private channel)
+// Six webhook events via X-Webhook-Event header:
+//   auth-signup             auth.users INSERT             → 🔔 New sign-up
+//   profile-created         public.users INSERT           → ✅ Profile complete
+//   match-created           matches INSERT                → 🤝 New connection with type pair
+//   typing-request          typing_requests INSERT        → 🧠 New typing request (private channel, unused)
+//   feedback-created        feedback INSERT                → 📮 New feedback/bug report (private channel)
+//   typing-checkout-clicked typing_checkout_clicks INSERT  → 💳 Typing tier "Book" clicked (private channel)
 
 import { createClient } from 'npm:@supabase/supabase-js'
 
@@ -16,6 +17,7 @@ const SERVICE_KEY              = Deno.env.get('PROJECT_SECRET_KEY')!
 
 const KNOWN_EVENTS = new Set([
   'auth-signup', 'profile-created', 'match-created', 'typing-request', 'feedback-created',
+  'typing-checkout-clicked',
 ])
 
 const corsHeaders = {
@@ -139,6 +141,23 @@ Deno.serve(async (req) => {
     await postToDiscord(
       `${kind} — ${name} · \`${type}\`${page}${msg}`,
       DISCORD_FEEDBACK_WEBHOOK
+    )
+
+  } else if (event === 'typing-checkout-clicked') {
+    // record: { user_id, typist_slug, tier_key, tier_price }
+    const { data: user } = await supabase
+      .from('users')
+      .select('type, profile_data')
+      .eq('id', record.user_id)
+      .maybeSingle()
+
+    const type  = user?.type ?? '?'
+    const name  = user?.profile_data?.name ?? 'Anonymous'
+    const price = record.tier_price ? ` · ${record.tier_price}` : ''
+
+    await postToDiscord(
+      `💳 **Typing checkout clicked** — ${name} · \`${type}\` → ${record.typist_slug} (${record.tier_key})${price}`,
+      DISCORD_TYPING_WEBHOOK
     )
 
   } else {
