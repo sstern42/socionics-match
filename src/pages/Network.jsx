@@ -160,12 +160,19 @@ export default function Network() {
   const [tooltip, setTooltip] = useState(null)
   const [dragging, setDragging] = useState(null)
   const [fullscreen, setFullscreen] = useState(false)
-  const HEIGHT = fullscreen ? (window.innerHeight - 0) : 560
+  const [viewportHeight, setViewportHeight] = useState(() => window.innerHeight)
+  const HEIGHT = fullscreen ? viewportHeight : 560
 
   useEffect(() => {
     document.body.style.overflow = fullscreen ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
   }, [fullscreen])
+
+  useEffect(() => {
+    function handleResize() { setViewportHeight(window.innerHeight) }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -227,7 +234,7 @@ export default function Network() {
     graphData ? nodes : [],
     edges,
     width,
-    fullscreen ? window.innerHeight : HEIGHT
+    HEIGHT
   )
 
   function handleMouseDown(e, id) {
@@ -354,7 +361,7 @@ export default function Network() {
           <svg
             ref={svgRef}
             style={{ display: 'block', width: '100%', height: fullscreen ? '100vh' : HEIGHT, cursor: dragging ? 'grabbing' : 'default', touchAction: 'none' }}
-            viewBox={`0 0 ${width || 800} ${fullscreen ? window.innerHeight : HEIGHT}`}
+            viewBox={`0 0 ${width || 800} ${HEIGHT}`}
           >
             {width > 0 && edges.map(edge => {
               const src = positions[edge.source]

@@ -436,6 +436,14 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
   }, [messages.length])
 
+  // Re-check scroll position once late-loading media (e.g. an image attachment) resizes the list
+  function handleMediaLoad() {
+    const el = listRef.current
+    if (!el) return
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120
+    if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+  }
+
   // Scroll to bottom on initial load (once)
   useEffect(() => {
     if (!loading) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
@@ -811,6 +819,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                           src={msg.attachment_url}
                           alt={msg.attachment_type === 'gif' ? 'GIF' : 'Image'}
                           onClick={e => { e.stopPropagation(); setLightboxUrl(msg.attachment_url) }}
+                          onLoad={handleMediaLoad}
                           style={{ maxWidth:'100%',maxHeight:220,borderRadius:4,display:'block',objectFit:'contain',cursor:'zoom-in' }}
                           loading="lazy"
                         />
