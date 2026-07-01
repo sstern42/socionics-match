@@ -245,6 +245,12 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
   const profileIdRef  = useRef(profile?.id)
   const toastIdRef    = useRef(0)
   const nextToastId   = () => `t-${++toastIdRef.current}`
+  // Guards against the same DB row firing a toast/notification twice (e.g. a
+  // realtime reconnect redelivering backlog, or a rapid double-fire on a slow
+  // connection) — keyed by row id, not by event, so a genuine retry of the
+  // same insert is a no-op instead of a second notification.
+  const notifiedMessageIdsRef = useRef(new Set())
+  const notifiedMatchIdsRef   = useRef(new Set())
 
   function pushToast(toast) {
     if (toast.kind === 'message') {
@@ -304,6 +310,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, async (payload) => {
         const msg = payload.new
         if (msg.sender_id === profileIdRef.current) return
+        if (notifiedMessageIdsRef.current.has(msg.id)) return
+        notifiedMessageIdsRef.current.add(msg.id)
         const onMessages = window.location.pathname === '/messages'
         const activeMatch = new URLSearchParams(window.location.search).get('match')
         if (onMessages && activeMatch === msg.match_id) return
@@ -337,6 +345,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const match = payload.new
         const otherId = match.user_a_id === profile.id ? match.user_b_id : match.user_a_id
         if (!otherId || otherId === profile.id) return
+        if (notifiedMatchIdsRef.current.has(match.id)) return
+        notifiedMatchIdsRef.current.add(match.id)
         const { data: other } = await supabase
           .from('users').select('type, profile_data').eq('id', otherId).maybeSingle()
         const isAnon = other?.profile_data?.anonymous === true
@@ -410,7 +420,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         {TYPES.map(t => <span key={t}>{t}</span>)}
       </div>
       <div className="page" style={noScroll ? { height: '100dvh', overflow: 'clip', display: 'flex', flexDirection: 'column' } : undefined}>
-        <header className="site-header" style={{ position: 'sticky', top: 0, zIndex: 50, background: 'var(--bg)' }}>
+        <div style={{ position: 'relative' }}>
+        <header className="site-header" style={{ position: noScroll ? 'relative' : 'sticky', top: 0, zIndex: 50, background: 'var(--bg)' }}>
           <Link className="wordmark" to="/" onClick={closeMenu}>
             Socion™{' '}
             {isPremium ? (
@@ -576,7 +587,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         {/* ── Mobile dropdown menu ─────────────────────────────────────────── */}
         {menuOpen && (
           <nav style={{
-            position: 'absolute', top: 72, left: 0, right: 0, zIndex: 100,
+            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
             background: 'var(--bg)', borderBottom: '1px solid var(--border)',
             display: 'flex', flexDirection: 'column',
           }} className="nav-mobile-open">
@@ -753,6 +764,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
             )}
           </nav>
         )}
+        </div>
 
         <IOSInstallBanner />
         <AnnouncementBanner />

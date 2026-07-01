@@ -335,6 +335,15 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       ? <span title="Premium subscriber" style={{ fontSize: '0.8rem', color: 'var(--accent)', marginLeft: '0.3rem', verticalAlign: 'middle', lineHeight: 1 }}>★</span>
       : null
 
+  const otherActivity = (() => {
+    if (isOtherAnonymous || !match.other.last_active || match.other.profile_data?.hide_activity) return null
+    const diff = Date.now() - new Date(match.other.last_active).getTime()
+    if (diff < 15 * 60 * 1000) return { label: 'Online now', colour: '#4caf50' }
+    if (diff < 24 * 60 * 60 * 1000) return { label: 'Active today', colour: '#f5a623' }
+    if (diff < 7 * 24 * 60 * 60 * 1000) return { label: 'Active this week', colour: '#9a6f38' }
+    return null
+  })()
+
   const breakdown = profile?.type
     ? getCompatibilityBreakdown(profile.type, match.other.type, match.displayRelationType ?? match.relation_type)
     : null
@@ -667,6 +676,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
             {match.other.type}
           </button>
           {relInfo && <span style={{ fontSize:'0.68rem',color:'var(--muted)',letterSpacing:'0.04em' }}>· {relInfo.name}</span>}
+          {otherActivity && <span style={{ fontSize:'0.68rem',color:otherActivity.colour,letterSpacing:'0.04em' }}>· {otherActivity.label}</span>}
           {otherVerifiedBy && <span title={`Verified by ${otherVerifiedBy}`} style={{ display:'inline-flex',alignItems:'center',justifyContent:'center',width:12,height:12,borderRadius:'50%',background:'var(--accent)',color:'#fff',fontSize:'0.45rem',fontWeight:700,lineHeight:1,flexShrink:0 }}>✓</span>}
           {breakdown && (
             <button
@@ -726,7 +736,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       {/* Messages list */}
       <div
         ref={listRef}
-        style={{ flex:1,overflowY:'auto',padding:'1.25rem 1.5rem',display:'flex',flexDirection:'column',gap:'0.75rem',background:'var(--bg)' }}
+        style={{ flex:1,minHeight:0,overflowY:'auto',padding:'1.25rem 1.5rem',display:'flex',flexDirection:'column',gap:'0.75rem',background:'var(--bg)' }}
         onScroll={() => setReactionPickerMsgId(null)}
       >
         {/* Load earlier messages */}
@@ -941,6 +951,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
           <div>
             <Link to={`/profile/${otherUserId}`} style={{ fontFamily:'var(--serif)',fontSize:'1.1rem',fontWeight:500,color:'var(--text)',textDecoration:'none' }}>{otherName}</Link>{otherBadge}
           </div>
+          {otherActivity && <span style={{ fontSize:'0.68rem',color:otherActivity.colour,letterSpacing:'0.02em' }}>{otherActivity.label}</span>}
           <div style={{ display:'flex',flexWrap:'wrap',alignItems:'center',justifyContent:'center',gap:'0.4rem' }}>
             <button onClick={() => { window.umami?.track('si-link-type',{type:match.other.type}); setWebviewUrl(`https://socionicsinsight.com/types/${match.other.type.toLowerCase()}/`) }} style={{ fontSize:'0.7rem',letterSpacing:'0.08em',textTransform:'uppercase',color:'var(--accent)',fontWeight:500,background:'none',border:'none',cursor:'pointer',padding:0 }}>
               {match.other.type}
