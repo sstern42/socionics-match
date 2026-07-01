@@ -519,9 +519,11 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   </Link>
                 )}
 
+                <ThemeToggle />
+
                 <Divider />
 
-                <button onClick={handleSignOut} style={signOutStyle}>Sign out</button>
+                <button onClick={handleSignOut} className="nav-signout" style={signOutStyle}>Sign out</button>
               </>
             ) : (
               <>
@@ -543,9 +545,9 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   style={{ ...navStyle(isActive('/help')), display: 'inline-flex', alignItems: 'center' }}>
                   <IconHelp />
                 </Link>
+                <ThemeToggle />
               </>
             )}
-            <ThemeToggle />
           </nav>
 
           {/* Mobile burger */}
@@ -723,17 +725,18 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   <ThemeToggle />
                 </div>
 
-                <button
-                  onClick={() => { closeMenu(); handleSignOut() }}
-                  style={{
-                    ...mobileNavStyle(false),
-                    textAlign: 'left', background: 'none', border: 'none',
-                    cursor: 'pointer', width: '100%',
-                    color: 'var(--muted)', borderTop: '1px solid var(--border)',
-                  }}
-                >
-                  Sign out
-                </button>
+                <div style={{ padding: '0.75rem 1.5rem', borderTop: '1px solid var(--border)' }}>
+                  <button
+                    onClick={() => { closeMenu(); handleSignOut() }}
+                    className="nav-signout"
+                    style={{
+                      fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
+                      color: 'var(--muted)', width: '100%',
+                    }}
+                  >
+                    Sign out
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -907,9 +910,8 @@ const navStyle = (active) => ({
 })
 
 const signOutStyle = {
-  background: 'none', border: 'none', cursor: 'pointer',
   fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase',
-  color: 'var(--nav-link)', transition: 'color 0.2s',
+  color: 'var(--nav-link)',
 }
 
 const mobileNavStyle = (active) => ({

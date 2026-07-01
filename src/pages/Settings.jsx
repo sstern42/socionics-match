@@ -51,7 +51,8 @@ export default function Settings() {
   }
 
   const isFounding = profile?.is_founding_member === true
-  const isSubscriber = !isFounding && (profile?.plan_status === 'active' || profile?.plan_status === 'past_due')
+  const isPastDue = profile?.plan_status === 'past_due'
+  const isSubscriber = !isFounding && (profile?.plan_status === 'active' || isPastDue)
   const referralTrialUntil = profile?.referral_premium_until ? new Date(profile.referral_premium_until) : null
   const onReferralTrial = !isFounding && !isSubscriber && referralTrialUntil && referralTrialUntil > new Date()
   const trialDaysLeft = onReferralTrial ? Math.max(1, Math.ceil((referralTrialUntil - new Date()) / 86400000)) : 0
@@ -124,11 +125,18 @@ export default function Settings() {
 
           {isSubscriber && (
             <>
+              {isPastDue && (
+                <p style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--accent)', lineHeight: 1.6 }}>
+                  We had trouble taking your last payment. Update your payment method to keep Premium.
+                </p>
+              )}
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                Manage your subscription, update your payment method, or view invoices.
+                {isPastDue
+                  ? 'Your access stays on in the meantime — manage your subscription or update your card below.'
+                  : 'Manage your subscription, update your payment method, or view invoices.'}
               </p>
               <button type="button" className="btn-primary" onClick={handleManage} disabled={busy} style={{ alignSelf: 'flex-start', opacity: busy ? 0.6 : 1 }}>
-                {busy ? 'Opening…' : 'Manage subscription'}
+                {busy ? 'Opening…' : isPastDue ? 'Update payment method' : 'Manage subscription'}
               </button>
             </>
           )}

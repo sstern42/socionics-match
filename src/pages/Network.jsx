@@ -380,6 +380,7 @@ export default function Network() {
                     x: e.clientX, y: e.clientY,
                     edge: { ...edge }
                   })}
+                  onMouseMove={e => setTooltip(t => t && t.edge ? { ...t, x: e.clientX, y: e.clientY } : t)}
                   onMouseLeave={() => setTooltip(null)}
                 />
               )
@@ -402,6 +403,7 @@ export default function Network() {
                     x: e.clientX, y: e.clientY,
                     node: { id, conn, messages: graphData?.nodeStats[id]?.messages ?? 0 }
                   })}
+                  onMouseMove={e => setTooltip(t => t && t.node ? { ...t, x: e.clientX, y: e.clientY } : t)}
                   onMouseLeave={() => setTooltip(null)}
                 >
                   <circle
