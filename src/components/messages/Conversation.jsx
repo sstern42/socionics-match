@@ -234,6 +234,23 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
   const menuRef          = useRef(null)
   const fileInputRef     = useRef(null)
 
+  // Keep the sidebar's "last message" preview (react-query ['matches', userId] cache)
+  // in sync with messages sent/received in the open conversation — it's otherwise
+  // only refreshed on the query's 60s staleTime.
+  function syncMatchPreview(newMsg) {
+    queryClient.setQueryData(['matches', currentUserId], old => {
+      if (!old) return old
+      const matches = old.matches
+        .map(m => (m.id === match.id ? { ...m, lastMessage: newMsg } : m))
+        .sort((a, b) => {
+          const aTime = a.lastMessage?.created_at ?? a.created_at
+          const bTime = b.lastMessage?.created_at ?? b.created_at
+          return new Date(bTime) - new Date(aTime)
+        })
+      return { ...old, matches }
+    })
+  }
+
   async function editMessage(msgId) {
     if (!editText.trim()) return
     setSaving(true)
@@ -295,6 +312,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     try {
       const msg = await sendMessage({ matchId: match.id, senderId: currentUserId, content: '', replyToId, attachmentUrl: gifUrl, attachmentType: 'gif' })
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
+      syncMatchPreview(msg)
       window.umami?.track('gif-sent')
     } finally { setSending(false) }
   }
@@ -386,6 +404,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       newMsg => {
         if (!cancelled) {
           setMessages(prev => prev.find(m => m.id === newMsg.id) ? prev : [...prev, { ...newMsg, reactions: [] }])
+          syncMatchPreview(newMsg)
           markMatchRead(matchId)
           if (newMsg.sender_id !== currentUserId) markRead(matchId)
         }
@@ -512,6 +531,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         msg = await sendMessage({ matchId, senderId: currentUserId, content: text.trim(), replyToId })
       }
       setMessages(prev => prev.find(m => m.id === msg.id) ? prev : [...prev, msg])
+      syncMatchPreview(msg)
       clearText?.()
       inputRef.current?.focus()
     } catch (err) {
