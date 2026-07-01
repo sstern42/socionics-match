@@ -34,6 +34,7 @@ export const ENTRIES = [
          'Messages (Firefox) — fixed not being able to scroll the message list while composing a long message',
          'Profile edit — your Socionics type is now chosen from a dropdown of the 16 types instead of typed in, to avoid typos',
          'Settings — clarified that the 24-hour clock preference only affects exact times (Messages, Rooms, Admin), not relative ones like "2h ago"',
+         'Feed — the sidebar now shows a compact profile widget with your profile viewers, connections, and quick links to saved profiles, matches, rooms, and boards, instead of your full profile card. A "Preview your card" link still shows exactly how you appear to others',
        ],
      },
      {
