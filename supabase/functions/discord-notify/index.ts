@@ -1,16 +1,22 @@
 // supabase/functions/discord-notify/index.ts
-// Four webhook events via X-Webhook-Event header:
+// Five webhook events via X-Webhook-Event header:
 //   auth-signup       auth.users INSERT    → 🔔 New sign-up
 //   profile-created   public.users INSERT  → ✅ Profile complete
 //   match-created     matches INSERT       → 🤝 New connection with type pair
 //   typing-request    typing_requests INSERT → 🧠 New typing request (private channel)
+//   feedback-created  feedback INSERT      → 📮 New feedback/bug report (private channel)
 
 import { createClient } from 'npm:@supabase/supabase-js'
 
-const DISCORD_WEBHOOK        = Deno.env.get('DISCORD_WEBHOOK_URL')!
-const DISCORD_TYPING_WEBHOOK = Deno.env.get('DISCORD_TYPING_WEBHOOK_URL')!
-const SUPABASE_URL           = Deno.env.get('SUPABASE_URL')!
-const SERVICE_KEY            = Deno.env.get('PROJECT_SECRET_KEY')!
+const DISCORD_WEBHOOK          = Deno.env.get('DISCORD_WEBHOOK_URL')!
+const DISCORD_TYPING_WEBHOOK   = Deno.env.get('DISCORD_TYPING_WEBHOOK_URL')!
+const DISCORD_FEEDBACK_WEBHOOK = Deno.env.get('DISCORD_FEEDBACK_WEBHOOK_URL')!
+const SUPABASE_URL             = Deno.env.get('SUPABASE_URL')!
+const SERVICE_KEY              = Deno.env.get('PROJECT_SECRET_KEY')!
+
+const KNOWN_EVENTS = new Set([
+  'auth-signup', 'profile-created', 'match-created', 'typing-request', 'feedback-created',
+])
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -46,6 +52,11 @@ Deno.serve(async (req) => {
   }
 
   const event = req.headers.get('x-webhook-event') ?? 'profile-created'
+
+  if (!KNOWN_EVENTS.has(event)) {
+    return new Response(`Unrecognized event: ${event}`, { status: 400, headers: corsHeaders })
+  }
+
   const body = await req.json()
   const record = body.record
 
@@ -101,6 +112,27 @@ Deno.serve(async (req) => {
     await postToDiscord(
       `🧠 **New typing request** — ${name} · \`${type}\`${discord}${notes}`,
       DISCORD_TYPING_WEBHOOK
+    )
+
+  } else if (event === 'feedback-created') {
+    // record: { user_id, type: 'feedback'|'bug', message, page_url, user_type }
+    const { data: user } = record.user_id
+      ? await supabase
+          .from('users')
+          .select('profile_data')
+          .eq('id', record.user_id)
+          .maybeSingle()
+      : { data: null }
+
+    const name  = user?.profile_data?.name ?? 'Anonymous'
+    const kind  = record.type === 'bug' ? '🐛 Bug report' : '💬 Feedback'
+    const type  = record.user_type ?? '?'
+    const page  = record.page_url ? `\n📍 ${record.page_url}` : ''
+    const msg   = record.message ? `\n📝 "${record.message}"` : ''
+
+    await postToDiscord(
+      `${kind} — ${name} · \`${type}\`${page}${msg}`,
+      DISCORD_FEEDBACK_WEBHOOK
     )
 
   } else {
