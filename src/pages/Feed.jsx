@@ -110,7 +110,6 @@ export default function Feed() {
   const { session, profile, loading, refreshProfile, isPremium } = useAuth()
   const navigate = useNavigate()
 
-  const [announcement, setAnnouncement] = useState(null)
   const [memberCount, setMemberCount] = useState(null)
   const [shareState, setShareState] = useState('idle')
   const [webviewUrl, setWebviewUrl] = useState(null)
@@ -148,11 +147,10 @@ export default function Feed() {
   useEffect(() => {
     supabase
       .from('stats')
-      .select('announcement, announcement_active, users')
+      .select('users')
       .eq('id', 1)
       .single()
       .then(({ data }) => {
-        if (data?.announcement_active && data?.announcement) setAnnouncement(data.announcement)
         if (data?.users) setMemberCount(data.users)
       })
   }, [])
@@ -480,21 +478,6 @@ export default function Feed() {
             previewOpen={showCard}
             onTogglePreview={() => setShowCard(c => !c)}
           />
-
-          {announcement && (
-            <div style={{
-              marginTop: '1rem', background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)',
-              borderRadius: 6, padding: '0.75rem 0.9rem',
-            }}>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text)', lineHeight: 1.6 }}>
-                👋 {announcement.split(/(https?:\/\/[^\s]+|discord\.gg\/[^\s]+)/g).map((part, i) =>
-                  /^https?:\/\/|^discord\.gg\//.test(part)
-                    ? <a key={i} href={part.startsWith('http') ? part : `https://${part}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>{part}</a>
-                    : part
-                )}
-              </p>
-            </div>
-          )}
 
           <div style={{ marginTop: '1rem' }}>
             <SeekingYou

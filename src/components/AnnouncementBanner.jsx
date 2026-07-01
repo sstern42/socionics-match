@@ -1,17 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
-const BANNER_KEY = 'socion_site_banner_dismissed_'
-const DISMISS_DURATION_MS = 3 * 24 * 60 * 60 * 1000
-
-function dismissKey(text) {
-  try { return BANNER_KEY + btoa(encodeURIComponent(text)).slice(0, 8) }
-  catch { return BANNER_KEY + text.length }
-}
-
 export default function AnnouncementBanner() {
   const [banner, setBanner] = useState(null)
-  const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     supabase
@@ -20,25 +11,11 @@ export default function AnnouncementBanner() {
       .eq('id', 1)
       .single()
       .then(({ data }) => {
-        if (data?.site_banner_active && data?.site_banner) {
-          const dismissedAt = Number(localStorage.getItem(dismissKey(data.site_banner)))
-          const dismissed = dismissedAt && Date.now() - dismissedAt < DISMISS_DURATION_MS
-          if (!dismissed) {
-            setBanner(data.site_banner)
-            setVisible(true)
-          }
-        }
+        if (data?.site_banner_active && data?.site_banner) setBanner(data.site_banner)
       })
   }, [])
 
-  function dismiss() {
-    if (!banner) return
-    localStorage.setItem(dismissKey(banner), String(Date.now()))
-    setVisible(false)
-    window.umami?.track('site-banner-dismissed')
-  }
-
-  if (!visible || !banner) return null
+  if (!banner) return null
 
   return (
     <div
@@ -50,15 +27,14 @@ export default function AnnouncementBanner() {
         justifyContent: 'center',
         gap: '0.75rem',
         padding: '0.5rem 1rem',
-        background: '#1a1612',
-        borderBottom: '1px solid rgba(212,175,90,0.25)',
+        background: 'var(--surface)',
+        borderBottom: '1px solid var(--border)',
         fontSize: '0.8125rem',
         lineHeight: 1.4,
-        position: 'relative',
         flexWrap: 'wrap',
       }}
     >
-      <span style={{ color: 'rgba(255,255,255,0.65)', textAlign: 'center' }}>
+      <span style={{ color: 'var(--muted)', textAlign: 'center' }}>
         {banner}
       </span>
 
@@ -69,50 +45,18 @@ export default function AnnouncementBanner() {
           display: 'inline-flex',
           alignItems: 'center',
           padding: '0.25rem 0.75rem',
-          border: '1px solid rgba(212,175,90,0.55)',
+          border: '1px solid var(--accent)',
           borderRadius: '3px',
-          color: '#d4af5a',
+          color: 'var(--accent)',
           fontSize: '0.75rem',
           fontWeight: 500,
           textDecoration: 'none',
           whiteSpace: 'nowrap',
           letterSpacing: '0.02em',
         }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = 'rgba(212,175,90,0.12)'
-          e.currentTarget.style.borderColor = 'rgba(212,175,90,0.85)'
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = 'transparent'
-          e.currentTarget.style.borderColor = 'rgba(212,175,90,0.55)'
-        }}
       >
         Support Socion ♥
       </a>
-
-      <button
-        onClick={dismiss}
-        aria-label="Dismiss announcement"
-        style={{
-          position: 'absolute',
-          right: '0.75rem',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          color: 'rgba(255,255,255,0.35)',
-          fontSize: '1rem',
-          lineHeight: 1,
-          padding: '0.25rem',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,0.75)'}
-        onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
-      >
-        ✕
-      </button>
     </div>
   )
 }
