@@ -98,7 +98,7 @@ export default function FeedbackButton() {
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              background: 'var(--color-surface, #fff)',
+              background: 'var(--card-bg)',
               borderRadius: '12px',
               padding: '24px',
               width: '100%',
@@ -115,7 +115,7 @@ export default function FeedbackButton() {
               <>
                 {/* Header */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--color-text, #111)' }}>
+                  <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
                     {type === 'bug' ? 'report a bug' : 'share feedback'}
                   </h2>
                   <button
@@ -126,7 +126,7 @@ export default function FeedbackButton() {
                       cursor: 'pointer',
                       fontSize: '20px',
                       lineHeight: 1,
-                      color: 'var(--color-text-muted, #888)',
+                      color: 'var(--muted)',
                       padding: '2px 6px',
                     }}
                     aria-label="Close"
@@ -144,10 +144,10 @@ export default function FeedbackButton() {
                       style={{
                         flex: 1,
                         padding: '8px',
-                        border: `2px solid ${type === t ? 'var(--color-primary, #2E8FBE)' : 'var(--color-border, #ddd)'}`,
+                        border: `2px solid ${type === t ? 'var(--color-primary, #2E8FBE)' : 'var(--border)'}`,
                         borderRadius: '8px',
-                        background: type === t ? 'var(--color-primary-light, #e8f4fb)' : 'transparent',
-                        color: type === t ? 'var(--color-primary, #2E8FBE)' : 'var(--color-text-muted, #888)',
+                        background: type === t ? 'rgba(46,143,190,0.15)' : 'transparent',
+                        color: type === t ? 'var(--color-primary, #2E8FBE)' : 'var(--muted)',
                         fontWeight: type === t ? 700 : 500,
                         fontSize: '13px',
                         cursor: 'pointer',
@@ -174,9 +174,9 @@ export default function FeedbackButton() {
                       width: '100%',
                       padding: '12px',
                       borderRadius: '8px',
-                      border: '1.5px solid var(--color-border, #ddd)',
-                      background: 'var(--color-input-bg, #fafafa)',
-                      color: 'var(--color-text, #111)',
+                      border: '1.5px solid var(--border)',
+                      background: 'var(--surface)',
+                      color: 'var(--text)',
                       fontSize: '14px',
                       resize: 'vertical',
                       fontFamily: 'inherit',
@@ -184,7 +184,7 @@ export default function FeedbackButton() {
                       outline: 'none',
                     }}
                     onFocus={e => (e.currentTarget.style.borderColor = 'var(--color-primary, #2E8FBE)')}
-                    onBlur={e => (e.currentTarget.style.borderColor = 'var(--color-border, #ddd)')}
+                    onBlur={e => (e.currentTarget.style.borderColor = 'var(--border)')}
                     disabled={status === 'submitting'}
                   />
                   <span
@@ -193,7 +193,7 @@ export default function FeedbackButton() {
                       bottom: '8px',
                       right: '10px',
                       fontSize: '11px',
-                      color: remaining < 100 ? 'var(--color-warning, #e09000)' : 'var(--color-text-muted, #aaa)',
+                      color: remaining < 100 ? 'var(--color-warning, #e09000)' : 'var(--muted)',
                     }}
                   >
                     {remaining}
@@ -214,10 +214,10 @@ export default function FeedbackButton() {
                     disabled={status === 'submitting'}
                     style={{
                       padding: '9px 18px',
-                      border: '1.5px solid var(--color-border, #ddd)',
+                      border: '1.5px solid var(--border)',
                       borderRadius: '8px',
                       background: 'transparent',
-                      color: 'var(--color-text-muted, #888)',
+                      color: 'var(--muted)',
                       fontSize: '13px',
                       cursor: 'pointer',
                     }}
@@ -232,9 +232,9 @@ export default function FeedbackButton() {
                       border: 'none',
                       borderRadius: '8px',
                       background: !message.trim() || status === 'submitting'
-                        ? 'var(--color-border, #ddd)'
+                        ? 'var(--border)'
                         : 'var(--color-primary, #2E8FBE)',
-                      color: !message.trim() || status === 'submitting' ? 'var(--color-text-muted, #888)' : '#fff',
+                      color: !message.trim() || status === 'submitting' ? 'var(--muted)' : '#fff',
                       fontSize: '13px',
                       fontWeight: 600,
                       cursor: !message.trim() || status === 'submitting' ? 'not-allowed' : 'pointer',
@@ -258,10 +258,10 @@ function SuccessState({ onClose, type }) {
   return (
     <div style={{ textAlign: 'center', padding: '16px 0', display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
       <div style={{ fontSize: '36px' }}>{type === 'bug' ? '🐛' : '✦'}</div>
-      <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--color-text, #111)' }}>
+      <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text)' }}>
         {type === 'bug' ? 'bug reported' : 'thanks for the feedback'}
       </h2>
-      <p style={{ margin: 0, fontSize: '14px', color: 'var(--color-text-muted, #888)', maxWidth: '280px' }}>
+      <p style={{ margin: 0, fontSize: '14px', color: 'var(--muted)', maxWidth: '280px' }}>
         {type === 'bug'
           ? "we'll look into it."
           : "every note helps build a better socion."}
