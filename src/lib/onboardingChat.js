@@ -49,6 +49,17 @@ export function requestConfirm({ type, confidence }) {
   return authedPost('onboarding-typing-confirm', { type, confidence })
 }
 
+// Skip-to-self-select path. Unlike requestConfirm/apply_onboarding_type,
+// this is a direct RPC (not an edge function) since it's a simple,
+// unconditional write to the caller's own row -- matching how
+// ProfileEdit.jsx's type dropdown already works, just also transitioning
+// type_source to 'self_reported' so a stale 'onboarding_chat' value from an
+// earlier chat completion doesn't linger (see migration 20260703120000).
+export async function setSelfReportedType(type) {
+  const { error } = await supabase.rpc('set_self_reported_type', { p_type: type })
+  if (error) throw error
+}
+
 // Plain-text export of the transcript — no signed tokens, no Tally prefill
 // (Section 9C). Triggers a browser download directly, no server round trip.
 export function downloadTranscript(transcript) {

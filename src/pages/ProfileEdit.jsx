@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { updateProfileData, uploadAvatar, uploadPhoto, deletePhoto, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
+import { setSelfReportedType } from '../lib/onboardingChat'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { TYPES } from '../data/relations'
 import { COUNTRIES } from '../data/countries'
@@ -94,11 +95,17 @@ export default function ProfileEdit() {
           discord_handle: discordHandle.trim() || null,
           email_notifications: profile.profile_data?.email_notifications ?? true,
         },
-        // don't allow type change if verified
-        type: isVerified ? profile.type : type.toUpperCase(),
+        // Type itself is handled separately below (don't allow type change
+        // if verified) -- omitting it here leaves the column untouched.
         avatarUrl,
         photos,
       })
+      // Only touch type_source when the type actually changed -- otherwise
+      // a plain bio/photo edit would incorrectly downgrade an existing
+      // 'onboarding_chat'/'paid_verified' type_source to 'self_reported'.
+      if (!isVerified && type.toUpperCase() !== profile.type) {
+        await setSelfReportedType(type.toUpperCase())
+      }
       await refreshProfile()
       navigate('/feed')
     } catch (err) {
