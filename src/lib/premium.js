@@ -38,3 +38,14 @@ export function hasLapsedReferralPremium(profile) {
   const daysSinceLapsed = (now - until) / (1000 * 60 * 60 * 24)
   return daysSinceLapsed <= 14
 }
+
+// Issue #866 Section 13: the onboarding-typing-chat premium discount is
+// scoped to type_source === 'onboarding_chat' specifically (never
+// self_reported/unset, even for someone who happens to be free-tier) AND
+// is_premium() false. The discount stays scoped this way regardless of
+// founding-member status or signup/retake source — see the migration
+// header (20260702170000) for why type_source can't be self-granted.
+export function isOnboardingChatCouponEligible(profile) {
+  if (!profile) return false
+  return profile.type_source === 'onboarding_chat' && !computeIsPremium(profile)
+}

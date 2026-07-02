@@ -7,6 +7,8 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { updateProfileData } from '../lib/profile'
 import ReferralPanel from '../components/profile/ReferralPanel'
 
+const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
+
 // Lightweight settings page. Exists primarily as the return target for the
 // Stripe customer portal (create-portal-session return_url = /settings) and as
 // a home for subscription management. Refreshes the profile on mount so a
@@ -165,6 +167,24 @@ export default function Settings() {
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b' }}>{error}</p>}
         </div>
+
+        {profile?.type && (
+          <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div>
+              <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.3rem' }}>Type</p>
+              <p style={{ fontSize: '1.05rem', fontWeight: 500, color: 'var(--text)' }}>{profile.type}</p>
+            </div>
+            {!VERIFIED_TYPE_SOURCES.has(profile.type_source) && (
+              <a
+                href="/typing"
+                title="Not yet confirmed by a specialist — get a written report to verify it"
+                style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', border: '1px solid var(--accent-lt)', padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0, textDecoration: 'none' }}
+              >
+                Preliminary
+              </a>
+            )}
+          </div>
+        )}
 
         <ReferralPanel profile={profile} isPremium={isPremium} />
 

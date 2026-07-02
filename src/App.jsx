@@ -58,6 +58,7 @@ const Boards = lazy(() => import('./pages/Boards'))
 const BoardDetail = lazy(() => import('./pages/BoardDetail'))
 const BoardPost = lazy(() => import('./pages/BoardPost'))
 const Typing = lazy(() => import('./pages/Typing'))
+const TypingChat = lazy(() => import('./pages/TypingChat'))
 const TypistProfile = lazy(() => import('./pages/TypistProfile'))
 const Premium = lazy(() => import('./pages/Premium'))
 const PremiumWelcome = lazy(() => import('./pages/PremiumWelcome'))
@@ -100,6 +101,7 @@ function AppRoutes() {
         <Route path="/boards/:slug" element={<BoardDetail />} />
         <Route path="/boards/:slug/:postId" element={<BoardPost />} />
         <Route path="/typing" element={<Typing />} />
+        <Route path="/typing/chat" element={<TypingChat />} />
         <Route path="/typing/:slug" element={<TypistProfile />} />
         <Route path="/premium" element={<Premium />} />
         <Route path="/premium/welcome" element={<PremiumWelcome />} />
