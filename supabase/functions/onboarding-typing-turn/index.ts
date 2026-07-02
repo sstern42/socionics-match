@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 300,
+        max_tokens: 1024,
         system: [
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
           { type: 'text', text: topicContext },
@@ -237,11 +237,14 @@ Deno.serve(async (req) => {
     const parsed = parseTurnResponse(rawText)
 
     if (!parsed) {
-      if (data.stop_reason === 'max_tokens') {
-        console.error('onboarding-typing-turn: response truncated at max_tokens', JSON.stringify(rawText))
-      } else if (!rawText.trim()) {
-        console.error('onboarding-typing-turn: empty/unparseable model response', JSON.stringify(data.content))
-      }
+      // Log the full response (content block types + usage), not just the
+      // extracted text -- an empty rawText with stop_reason 'max_tokens'
+      // means tokens were consumed by something other than visible text,
+      // which the text-only log line can't explain on its own.
+      console.error(
+        'onboarding-typing-turn: unparseable response',
+        JSON.stringify({ stop_reason: data.stop_reason, usage: data.usage, content: data.content })
+      )
     }
 
     // Malformed model output: keep the conversation moving forward rather
