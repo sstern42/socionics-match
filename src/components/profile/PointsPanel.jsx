@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { getPointsTotal } from '../../lib/points'
 
 // v1/MVP (issue #861): just a running total. No badges, levels, leaderboard,
@@ -20,7 +21,8 @@ export default function PointsPanel({ profile }) {
         {total.toLocaleString()} {total === 1 ? 'point' : 'points'}
       </p>
       <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-        Earned by completing your profile, matching, messaging, and joining Boards and Quadra Rooms.
+        Earned by completing your profile, matching, messaging, and joining Boards and Quadra Rooms.{' '}
+        <Link to="/help#points" style={{ color: 'var(--accent)', textDecoration: 'none' }}>How points work</Link>
       </p>
     </div>
   )

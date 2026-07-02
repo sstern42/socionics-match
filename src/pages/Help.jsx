@@ -140,6 +140,27 @@ const FAQS = [
     ],
   },
   {
+    section: 'Points',
+    items: [
+      {
+        q: 'How do I earn points?',
+        a: "You earn points for completing your profile, logging in each day, making a match, sending a message, posting or reacting in Boards, posting in Quadra Rooms, and having a referral qualify. Your total is shown on your Settings page and your Dashboard, next to the referral panel.",
+      },
+      {
+        q: "Why didn't I get points for that message/post/reaction?",
+        a: "Repeatable actions — messages, board posts and reactions, and room posts — have a daily cap per action type, so points build up steadily rather than all at once. One-time actions like completing your profile or your first login of the day don't have a cap.",
+      },
+      {
+        q: 'Can I spend my points on anything?',
+        a: "Not yet. Points are currently just a running total that reflects how active you've been on Socion. Badges, levels, a leaderboard, and ways to spend points are planned for a future update.",
+      },
+      {
+        q: 'Do points expire?',
+        a: "No — your total only ever goes up. There's no decay or expiry.",
+      },
+    ],
+  },
+  {
     section: 'Safety',
     items: [
       {
@@ -304,7 +325,11 @@ export default function Help() {
         </p>
 
         {FAQS.map(({ section, items }) => (
-          <div key={section} id={section === 'The app' ? 'notifications' : undefined} style={{ marginBottom: '2.5rem' }}>
+          <div
+            key={section}
+            id={section === 'The app' ? 'notifications' : section === 'Points' ? 'points' : undefined}
+            style={{ marginBottom: '2.5rem' }}
+          >
             <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.25rem' }}>
               {section}
             </p>

@@ -11,6 +11,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
   - `point_transactions` — append-only ledger, source of truth for the total.
   - `award_points()` — mirrors the existing `grant_referral_reward()` pattern: `SECURITY DEFINER`, enforces the daily caps, and no-ops silently on unknown actions or a reached cap so a rewards hiccup never blocks the action that earned it.
   - No badges, levels, leaderboard, or spending mechanics yet — deferred to a future iteration.
+  - New "Points" section on the Help page explains how points are earned and the daily caps; `PointsPanel` links to it.
 
 ## 2 July 2026
 
