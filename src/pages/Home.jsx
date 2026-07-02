@@ -263,7 +263,7 @@ export default function Home() {
   const { session, profile } = useAuth()
   useEffect(() => {
     if (session && profile) return // dashboard branch sets its own title
-    setBaseTitle('Socion™ — Match by Socionics type, not algorithm')
+    setBaseTitle('Match by Socionics Type, Not Algorithm | Socion™')
     return () => setBaseTitle('Socion™')
   }, [session, profile])
   const [webviewUrl, setWebviewUrl] = useState(null)
