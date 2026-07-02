@@ -157,7 +157,7 @@ async function callClaude(apiKey: string, transcriptText: string, retryNote?: st
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
+      model: 'claude-sonnet-5',
       max_tokens: 800,
       system: systemBlocks,
       messages: [{ role: 'user', content: `Full interview transcript:\n\n${transcriptText}` }],
