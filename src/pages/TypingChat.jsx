@@ -367,10 +367,18 @@ export default function TypingChat() {
                 >
                   <div style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', color: 'var(--accent)' }}>{c.type}</div>
                   <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.25rem' }}>{TYPE_NAMES[c.type]}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.5rem', letterSpacing: '0.04em' }}>{Math.round(c.confidence * 100)}% confidence</div>
                 </button>
               ))}
             </div>
             <ErrorNotice message={error} />
+            <button
+              type="button"
+              onClick={() => setScreen('self-select')}
+              style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Neither feels right — let me pick my type
+            </button>
           </div>
         )}
 
