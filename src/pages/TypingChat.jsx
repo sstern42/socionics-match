@@ -233,7 +233,7 @@ export default function TypingChat() {
 
   return (
     <Layout noScroll hideFooter>
-      <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 1.5rem 4rem', minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column' }}>
+      <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 1.5rem 4rem', height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' }}>
 
         {screen === 'intro' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.75rem', textAlign: 'center', margin: 'auto 0' }}>
