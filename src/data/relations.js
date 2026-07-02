@@ -93,6 +93,8 @@ export const QUADRAS = {
   Delta: ['LSE', 'EII', 'IEE', 'SLI'],
 }
 
+export const QUADRA_COLOURS = { Alpha: '#BA7517', Beta: '#791F1F', Gamma: '#0F6E56', Delta: '#185FA5' }
+
 export const TYPE_QUADRA = Object.fromEntries(
   Object.entries(QUADRAS).flatMap(([quadra, types]) => types.map(t => [t, quadra]))
 )

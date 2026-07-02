@@ -25,6 +25,10 @@ All notable changes to [socion.app](https://socion.app). Newest first.
   - Condensed the "How it works" step copy, merged the stats row and testimonial carousel into one section, and trimmed the feature-card grid from 8 cards to the 4 most decision-relevant (dropped the standalone Discord and dedicated AI-chat sections, and the four-purposes/real-data/anonymous-browsing/boards cards).
   - Removed the clickable relation-type pills from the hero.
 
+### Added
+- **Feed — quadra activity widget**: The left sidebar now shows who from your quadra is online now or active today, with an avatar list linking to their profile (respecting anonymous/hide-activity settings) and a shortcut into your quadra's room.
+- **Feed — founder post preview for Premium**: The right rail now shows a preview of the latest founder update for Premium subscribers, who previously saw a shorter sidebar than free members once the "Upgrade" card was hidden.
+
 ### Fixed
 - **Feed — sidebar scrollbar on desktop**: The persistent left sidebar (own-profile card) capped its height with a `100vh - 260px` guess that didn't track the real header/banner/footer height, so it grew an unnecessary internal scrollbar on common desktop sizes (e.g. 1920×1080) even though the card fit. It now sizes itself off the actual available height of its scroll container, so it only scrolls when content genuinely doesn't fit.
 
