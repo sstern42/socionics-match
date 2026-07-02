@@ -69,8 +69,10 @@ EII: Fi, Ne, Ti, Se, Te, Si, Fe, Ni
 IEE: Ne, Fi, Se, Ti, Si, Te, Ni, Fe
 SLI: Si, Te, Ni, Fe, Ne, Fi, Se, Ti
 
-## Known separation pairs — check explicitly before finalising
-These pairs share the same top two functions in swapped order (Mirror relation) and are the most commonly confused: ILE/LII, ESE/SEI, LSE/SLI, EIE/IEI, LIE/ILI, SEE/ESI. If your read lands on one of these, explicitly weigh the other member of the pair as the top alternative before deciding.
+## Mirror-relation check — required before finalising, for every type
+Every type has exactly one Mirror-relation partner: the same top two functions (Leading, Creative) as your leading candidate, but in swapped order. This makes the Mirror partner the single most commonly confused type for whatever you're leaning toward — not just for a handful of well-known pairs. Before finalising, look up your leading candidate's Mirror partner in the table below and explicitly weigh it as a required alternative, even if it wasn't your initial second guess.
+
+Mirror pairs (either direction): ILE↔LII, SEI↔ESE, EIE↔IEI, LSI↔SLE, SEE↔ESI, ILI↔LIE, LSE↔SLI, EII↔IEE
 
 ## Confidence bands
 - 85%+ — strong, function-stack evidence is clear and consistent
