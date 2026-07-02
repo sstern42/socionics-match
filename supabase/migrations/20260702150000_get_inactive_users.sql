@@ -26,14 +26,18 @@ begin
     raise exception 'Forbidden';
   end if;
 
+  -- Explicit casts: RETURN QUERY requires exact type-OID matches against the
+  -- declared columns above. auth.users.email is varchar(255), not text, so
+  -- without the cast every call fails with "structure of query does not
+  -- match function result type".
   return query
     select
       u.id,
-      au.email,
-      u.profile_data->>'name' as name,
-      u.type,
-      u.created_at,
-      u.last_active
+      au.email::text as email,
+      (u.profile_data->>'name')::text as name,
+      u.type::text as type,
+      u.created_at::timestamptz as created_at,
+      u.last_active::timestamptz as last_active
     from users u
     join auth.users au on au.id = u.auth_id
     where u.last_active < now() - (days_threshold || ' days')::interval
