@@ -17,6 +17,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
   - Feed — the sidebar's mini profile card now shows your points total, right under Connections, linking through to the Help page.
   - **Phase 2 — tiers and leaderboard**: Added `points_tier()` (Regular 100+, Active 500+, Core Member 1,500+, Legend 5,000+ — mirrors `referral_tier()`'s threshold pattern) and `get_points_leaderboard()` (top 10 by total, Active tier and above, excluding anonymous-mode users — mirrors `get_referral_leaderboard()`). Both surface in `PointsPanel` next to the running total. Badges/achievements UI and spending mechanics remain deferred.
 - **Feed — quadra activity widget shows 5 members instead of 2**: The sidebar's quadra online/active-today list was capped at 2 rows; raised to 5 so it's more useful at a glance without needing to open the quadra room.
+- **Points breakdown**: `PointsPanel` now has a "See breakdown" toggle showing a per-category summary — points and count for profile completion, daily logins, matches, messages, board posts/reactions, room posts, and referrals. `get_points_breakdown()` aggregates `point_transactions` server-side (grouped by `action_type`) rather than downloading the full per-row ledger, since repeatable actions can rack up hundreds of rows over time.
 
 ## 2 July 2026
 

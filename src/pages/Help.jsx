@@ -159,6 +159,10 @@ const FAQS = [
         a: "Yes — the top 10 members by points (Active tier and above) are shown on your points panel, next to the referral panel on Settings and your Dashboard. Members in anonymous mode are excluded, same as the referral leaderboard.",
       },
       {
+        q: 'Can I see how I earned my points?',
+        a: "Yes — click \"See breakdown\" under your points total (Settings or your Dashboard) for a summary by category: profile completion, daily logins, matches, messages, board activity, Quadra Room posts, and referrals, each with a count and the points earned from it.",
+      },
+      {
         q: 'Can I spend my points on anything?',
         a: "Not yet. Points are currently a running total plus tiers and a leaderboard. Badges/achievements and ways to spend points are planned for a future update.",
       },

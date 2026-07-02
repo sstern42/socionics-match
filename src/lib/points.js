@@ -22,3 +22,12 @@ export async function getPointsTotal(userId) {
   if (error) throw error
   return data ?? 0
 }
+
+// Per-action-type summary (points + count for each way the user has earned
+// points), not a raw per-transaction list — repeatable actions can rack up
+// hundreds of rows over time.
+export async function getPointsBreakdown(userId) {
+  const { data, error } = await supabase.rpc('get_points_breakdown', { p_user_id: userId })
+  if (error) throw error
+  return data ?? []
+}
