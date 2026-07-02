@@ -31,7 +31,7 @@ export default function QuadraOnlineCard({ profile }) {
   const onlineNow = visible.filter(isOnlineNow)
   const activeToday = visible.filter(m => isActiveToday(m) && !isOnlineNow(m))
   const ranked = [...onlineNow, ...activeToday]
-  const shown = ranked.slice(0, 2)
+  const shown = ranked.slice(0, 5)
   const moreCount = ranked.length - shown.length
 
   return (

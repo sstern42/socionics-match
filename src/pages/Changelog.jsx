@@ -11,6 +11,7 @@ export const ENTRIES = [
          'Points — backfilled for everyone already active: existing profiles with a bio and photo, past matches, and qualified referrals all counted retroactively',
          'Feed — your points total now shows on your sidebar profile card, right under Connections',
          'Points — added tiers (Regular, Active, Core Member, Legend) and a top-10 leaderboard, shown alongside your points total',
+         'Feed — the quadra activity widget now shows 5 members instead of 2',
        ],
      },
      {
