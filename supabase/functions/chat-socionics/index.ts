@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
         'anthropic-beta': 'prompt-caching-2024-07-31',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
+        model: 'claude-sonnet-5',
         max_tokens: 4096,
         stream: true,
         system: systemBlocks,
