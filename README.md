@@ -17,7 +17,7 @@ Not a black box. The matching logic is in [src/data/relations.js](src/data/relat
 
 ## How it works
 
-1. Enter your Socionics type (or complete the onboarding questionnaire)
+1. Enter your Socionics type (or find it with a free, adaptive typing chat)
 2. Choose which intertype dynamics you want to match on
 3. Browse profiles whose type produces your chosen relation with yours
 4. Connect and message
@@ -108,7 +108,7 @@ src/
       Conversation.jsx, MatchList.jsx
       PushModal.jsx, NotificationPrompt.jsx
     onboarding/
-      EntryChoice.jsx, QuestionScreen.jsx, ResultScreen.jsx, TypeSelector.jsx
+      EntryChoice.jsx, TypeSelector.jsx
     profile/
       PurposePicker.jsx, RelationPicker.jsx, DynamicsTab.jsx, ProfileNav.jsx
     AnnouncementBanner.jsx
@@ -121,8 +121,6 @@ src/
     SocionicsChat.jsx               AI Socionics chat widget
   data/
     relations.js    Intertype relations matrix (16×16, fully validated)
-    questions.js    Type questionnaire
-    scoring.js      Type distribution computation
     compatibility.js
     books.js
     countries.js
@@ -196,7 +194,7 @@ supabase/
 | Path | Description |
 |---|---|
 | `/` | Landing page |
-| `/onboarding` | Type questionnaire |
+| `/onboarding` | Signup flow — purpose, then self-select a type or a starting guess |
 | `/auth` | Sign in — Google One Tap + magic link |
 | `/profile/setup` | Profile creation (post-auth) |
 | `/profile/edit` | Edit profile and purpose |
@@ -209,6 +207,7 @@ supabase/
 | `/feedback/:matchId` | Post-match relation rating |
 | `/network` | Type network visualisation |
 | `/typing` | Typing directory |
+| `/typing/chat` | Free adaptive typing chat — signup and retake |
 | `/typing/:slug` | Individual typist profile |
 | `/saved` | Saved / bookmarked profiles |
 | `/premium` | Premium subscription |

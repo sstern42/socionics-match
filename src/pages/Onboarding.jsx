@@ -3,11 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import EntryChoice from '../components/onboarding/EntryChoice'
 import TypeSelector from '../components/onboarding/TypeSelector'
-import QuestionScreen from '../components/onboarding/QuestionScreen'
-import ResultScreen from '../components/onboarding/ResultScreen'
 import PurposePicker from '../components/profile/PurposePicker'
-import { QUESTIONS } from '../data/questions'
-import { computeTypeDistribution } from '../data/scoring'
 import { useAuth } from '../lib/AuthContext'
 
 export default function Onboarding() {
@@ -18,6 +14,11 @@ export default function Onboarding() {
   const knowsType = searchParams.get('know') === '1'
   const [step, setStep] = useState('purpose')
   const [purposes, setPurposes] = useState([])
+  // 'know' = user's own confirmed type, used as-is.
+  // 'find' = a starting guess only — flags a follow-up chat right after
+  // signup (via the socion_wants_chat flag) that can overwrite it, per
+  // issue #866's "placeholder-then-promote" onboarding flow.
+  const [entryMode, setEntryMode] = useState(knowsType ? 'know' : null)
 
   // If user returns via magic link with session + saved onboarding data, skip to profile setup
   useEffect(() => {
@@ -25,9 +26,6 @@ export default function Onboarding() {
       navigate('/profile/setup', { replace: true })
     }
   }, [session])
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState({})
-  const [result, setResult] = useState(null)
 
   function handlePurposeNext() {
     localStorage.setItem('socion_purpose', JSON.stringify(purposes))
@@ -35,26 +33,21 @@ export default function Onboarding() {
     setStep(knowsType ? 'selector' : 'entry')
   }
 
-  function handleAnswer(questionId, choice) {
-    const newAnswers = { ...answers, [questionId]: choice }
-    setAnswers(newAnswers)
-    if (questionIndex < QUESTIONS.length - 1) {
-      setQuestionIndex(questionIndex + 1)
-    } else {
-      const computed = computeTypeDistribution(newAnswers)
-      setResult(computed)
-      window.umami?.track('assessment-completed', { topType: Object.entries(computed).sort((a,b) => b[1]-a[1])[0]?.[0] ?? '' })
-      setStep('result')
-    }
-  }
-
-  function handleConfirm(type, distribution, rawAnswers) {
+  function handleConfirm(type, distribution) {
     sessionStorage.setItem('socion_type', type)
     sessionStorage.setItem('socion_confidence', JSON.stringify(distribution))
-    sessionStorage.setItem('socion_answers', JSON.stringify(rawAnswers ?? {}))
     localStorage.setItem('socion_type', type)
     localStorage.setItem('socion_confidence', JSON.stringify(distribution))
-    localStorage.setItem('socion_answers', JSON.stringify(rawAnswers ?? {}))
+    // Explicitly set/clear rather than only setting — otherwise a stale '1'
+    // from an earlier abandoned "I don't know yet" attempt in this browser
+    // could wrongly force a later "I know my type" confirm into the chat.
+    if (entryMode === 'find') {
+      sessionStorage.setItem('socion_wants_chat', '1')
+      localStorage.setItem('socion_wants_chat', '1')
+    } else {
+      sessionStorage.removeItem('socion_wants_chat')
+      localStorage.removeItem('socion_wants_chat')
+    }
     if (session) {
       navigate('/profile/setup')
     } else {
@@ -101,27 +94,21 @@ export default function Onboarding() {
 
         {step === 'entry' && (
           <EntryChoice
-            onKnowType={() => setStep('selector')}
-            onFindType={() => setStep('questionnaire')}
+            onKnowType={() => { setEntryMode('know'); setStep('selector') }}
+            onFindType={() => { setEntryMode('find'); setStep('selector') }}
           />
         )}
-        {step === 'questionnaire' && (
-          <QuestionScreen
-            questionIndex={questionIndex}
-            answers={answers}
-            onAnswer={handleAnswer}
+        {step === 'selector' && entryMode === 'find' && (
+          <TypeSelector
+            onConfirm={handleConfirm}
+            eyebrow="Starting guess"
+            title={<>Take your best <em>guess</em></>}
+            description="You don't need to get this right — it's just a starting point. Right after you sign up, a short typing chat will give you a real preliminary read and can update it."
+            confirmLabel="Continue"
           />
         )}
-        {step === 'result' && result && (
-          <ResultScreen
-            distribution={result.distribution}
-            primaryType={result.primaryType}
-            onConfirm={(type, distribution) => handleConfirm(type, distribution, answers)}
-            onOverride={() => setStep('selector')}
-          />
-        )}
-        {step === 'selector' && (
-          <TypeSelector onConfirm={(type, distribution) => handleConfirm(type, distribution, {})} />
+        {step === 'selector' && entryMode !== 'find' && (
+          <TypeSelector onConfirm={handleConfirm} />
         )}
       </section>
     </Layout>

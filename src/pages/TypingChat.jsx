@@ -233,7 +233,11 @@ export default function TypingChat() {
   }
 
   function handleDone() {
-    navigate(source === 'signup' ? '/profile/setup' : '/profile/edit')
+    // source=signup always runs after ProfileSetup has already created the
+    // account (see ProfileSetup.jsx's wantsChat redirect, issue #866) — the
+    // profile is already complete, so land on the feed rather than bouncing
+    // back through /profile/setup's "already has a profile" guard.
+    navigate(source === 'signup' ? '/feed' : '/profile/edit')
   }
 
   const couponWithinWindow = !ONBOARDING_COUPON_EXPIRES || new Date() <= ONBOARDING_COUPON_EXPIRES

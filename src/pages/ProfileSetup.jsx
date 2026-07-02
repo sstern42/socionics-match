@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
-import { createProfile, updateRelationPreferences, createTypeAssessment, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
+import { createProfile, updateRelationPreferences, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
 import { attributeAndRewardReferral, getStoredReferralCode, getStoredReferrerName } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
 
@@ -24,8 +24,12 @@ export default function ProfileSetup() {
 
   const savedType = sessionStorage.getItem('socion_type') || localStorage.getItem('socion_type') || ''
   const savedConfidence = JSON.parse(sessionStorage.getItem('socion_confidence') || localStorage.getItem('socion_confidence') || 'null')
-  const savedAnswers = JSON.parse(sessionStorage.getItem('socion_answers') || localStorage.getItem('socion_answers') || '{}')
   const savedPurpose = JSON.parse(sessionStorage.getItem('socion_purpose') || localStorage.getItem('socion_purpose') || '["dating"]')
+  // Set when the user picked "I don't know yet" during onboarding (a
+  // placeholder guess via TypeSelector, not a real read) — routes them into
+  // the real typing chat right after account creation so it can promote/
+  // overwrite the guess via apply_onboarding_type(). See issue #866.
+  const wantsChat = sessionStorage.getItem('socion_wants_chat') === '1' || localStorage.getItem('socion_wants_chat') === '1'
 
   const [step, setStep] = useState('details')
   const [name, setName] = useState('')
@@ -67,36 +71,33 @@ export default function ProfileSetup() {
         await updateRelationPreferences(newProfile.id, relations)
       }
 
-      // Save raw assessment data for research — only if user took the questionnaire
-      if (Object.keys(savedAnswers).length > 0) {
-        await createTypeAssessment({
-          userId: newProfile.id,
-          responses: savedAnswers,
-          typeDistribution: savedConfidence ?? { [type]: 1.0 },
-        })
-      }
-
       sessionStorage.removeItem('socion_type')
       sessionStorage.removeItem('socion_confidence')
-      sessionStorage.removeItem('socion_answers')
       sessionStorage.removeItem('socion_purpose')
+      sessionStorage.removeItem('socion_wants_chat')
       localStorage.removeItem('socion_type')
       localStorage.removeItem('socion_confidence')
-      localStorage.removeItem('socion_answers')
       localStorage.removeItem('socion_purpose')
+      localStorage.removeItem('socion_wants_chat')
 
       await refreshProfile()
+
+      // "I don't know yet" at onboarding means `type` above is only a
+      // placeholder guess (Locked decision-adjacent flow, issue #866) — send
+      // them straight into the real typing chat so it can promote/overwrite
+      // it via apply_onboarding_type(). Otherwise land on the feed as usual.
+      const destination = wantsChat ? '/typing/chat?source=signup' : '/feed'
 
       // Track signup — retry until Umami is ready (defer loading means it may not be available immediately)
       const trackSignup = (attempts = 0) => {
         if (window.umami) {
           window.umami.track('signup-completed', { type, purpose: savedPurpose?.join(',') ?? '' })
-          navigate('/feed')
+          navigate(destination)
         } else if (attempts < 10) {
           setTimeout(() => trackSignup(attempts + 1), 500)
         } else {
           // Umami never loaded — navigate anyway
-          navigate('/feed')
+          navigate(destination)
         }
       }
       trackSignup()
