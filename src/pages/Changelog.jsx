@@ -7,7 +7,8 @@ export const ENTRIES = [
        date: '3 July 2026',
        label: 'New',
        items: [
-         'Points — you now earn points for completing your profile, logging in each day, matching, messaging, and posting or reacting in Boards and Quadra Rooms. See your total on your Settings page and Dashboard, next to the referral panel. Nothing to spend them on yet — that\'s coming later',
+         'Points — you now earn points for completing your profile (adding a bio and a photo), logging in each day, matching, messaging, and posting or reacting in Boards and Quadra Rooms. See your total on your Settings page and Dashboard, next to the referral panel, and check the Help page for how it all works. Nothing to spend them on yet — that\'s coming later',
+         'Points — backfilled for everyone already active: existing profiles with a bio and photo, past matches, and qualified referrals all counted retroactively',
        ],
      },
      {
