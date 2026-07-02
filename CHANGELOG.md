@@ -4,6 +4,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 2 July 2026
+
+### Added
+- **Admin — Inactive users panel**: New panel listing users inactive past a configurable threshold (14/30/60 days), with the same Copy emails / Export CSV actions as the existing Incomplete sign-ups and Member emails panels. Export only — sending a re-engagement campaign is out of scope until a marketing-consent/opt-in field exists.
+
 ## 1 July 2026
 
 ### Added
