@@ -97,6 +97,20 @@ function parseTurnResponse(text: string): { message: string; advance_topic: bool
   }
 }
 
+// Best-effort salvage when the response is truncated mid-string (hit
+// max_tokens before the JSON closed) and parseTurnResponse can't produce
+// valid JSON at all -- pulls out just the message text so the user sees
+// (possibly cut-off) conversational text instead of raw JSON syntax.
+function extractPartialMessage(text: string): string | null {
+  const match = text.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)/)
+  if (!match) return null
+  try {
+    return JSON.parse(`"${match[1]}"`)
+  } catch {
+    return match[1]
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -200,7 +214,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-5',
-        max_tokens: 150,
+        max_tokens: 300,
         system: [
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
           { type: 'text', text: topicContext },
@@ -222,13 +236,17 @@ Deno.serve(async (req) => {
     const rawText = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? ''
     const parsed = parseTurnResponse(rawText)
 
-    if (!parsed && !rawText.trim()) {
-      console.error('onboarding-typing-turn: empty/unparseable model response', JSON.stringify(data.content))
+    if (!parsed) {
+      if (data.stop_reason === 'max_tokens') {
+        console.error('onboarding-typing-turn: response truncated at max_tokens', JSON.stringify(rawText))
+      } else if (!rawText.trim()) {
+        console.error('onboarding-typing-turn: empty/unparseable model response', JSON.stringify(data.content))
+      }
     }
 
     // Malformed model output: keep the conversation moving forward rather
     // than getting stuck repeating the same topic indefinitely.
-    const assistantMessage = parsed?.message ?? (rawText.trim() || "Let's move on.")
+    const assistantMessage = parsed?.message ?? extractPartialMessage(rawText) ?? (rawText.trim() || "Let's move on.")
     let advanceTopic = parsed?.advance_topic ?? true
 
     // Server enforces the follow-up cap regardless of model output.
