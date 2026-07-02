@@ -931,7 +931,7 @@ export default function Admin() {
           ) : inactiveUsers.length === 0 ? (
             <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '1rem' }}>None inactive {inactiveThreshold}d+.</p>
           ) : (
-            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div style={{ marginTop: '1rem', maxHeight: 320, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
               {inactiveUsers.map((u, i) => (
                 <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0', borderBottom: i < inactiveUsers.length - 1 ? '1px solid var(--border)' : 'none' }}>
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
