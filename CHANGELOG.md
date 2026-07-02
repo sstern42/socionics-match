@@ -30,7 +30,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Feed — founder post preview for Premium**: The right rail now shows a preview of the latest founder update for Premium subscribers, who previously saw a shorter sidebar than free members once the "Upgrade" card was hidden.
 
 ### Fixed
-- **Feed — sidebar scrollbar on desktop**: The persistent left/right sidebars capped their height (originally `100vh - 260px`, later a flex-relative equivalent) and scrolled internally past that point, which meant they could grow their own scrollbar independent of the page's — including on common sizes like 1920×1080 where the content didn't even need it. Sidebars are no longer height-capped: they stay sticky while you scroll the (much taller) feed column, and if a sidebar's content is ever taller than the viewport, it un-sticks and scrolls into view along with the rest of the page instead of gaining a separate scroll region.
+- **Feed — sidebar scrollbar on desktop**: The persistent left/right sidebars capped their height and scrolled internally past that point, which meant they could grow their own scrollbar independent of the page's — including on common sizes like 1920×1080 where the content didn't even need it. Sidebars are no longer capped, and no longer sticky either (a sticky sidebar taller than the viewport just stays pinned, in effect making the rest of it unreachable): they now scroll in plain lockstep with the rest of the page, so every part of them comes into view exactly when you scroll to it.
 
 ## 1 July 2026
 
