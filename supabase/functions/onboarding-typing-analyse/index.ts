@@ -158,7 +158,14 @@ async function callClaude(apiKey: string, transcriptText: string, retryNote?: st
     },
     body: JSON.stringify({
       model: 'claude-sonnet-5',
-      max_tokens: 800,
+      max_tokens: 1200,
+      // See onboarding-typing-turn for why this is needed: Sonnet 5 runs
+      // adaptive thinking by default when `thinking` is omitted, which can
+      // consume most of max_tokens on invisible reasoning before the
+      // visible JSON is written. Bumped max_tokens up slightly too, since
+      // this response is a larger structured object than a single
+      // question/follow-up.
+      thinking: { type: 'disabled' },
       system: systemBlocks,
       messages: [{ role: 'user', content: `Full interview transcript:\n\n${transcriptText}` }],
     }),

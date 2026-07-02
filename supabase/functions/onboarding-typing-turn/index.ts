@@ -215,6 +215,14 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 1024,
+        // Sonnet 5 runs adaptive thinking by default (unlike 4.6) when this
+        // is omitted, which competes with max_tokens and can consume nearly
+        // the whole budget on invisible reasoning before any visible text
+        // is written -- confirmed via a real repro (988 of 1024 output
+        // tokens went to thinking, truncating the reply to ~36 tokens of
+        // text). Not needed here: the turn call just picks the next
+        // question/follow-up from a fixed topic list, no deep reasoning.
+        thinking: { type: 'disabled' },
         system: [
           { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
           { type: 'text', text: topicContext },

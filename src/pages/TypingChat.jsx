@@ -4,10 +4,14 @@ import Layout from '../components/Layout'
 import TypeSelector from '../components/onboarding/TypeSelector'
 import { useAuth } from '../lib/AuthContext'
 import { usePageMeta } from '../hooks/usePageMeta'
-import { requestTurn, requestAnalysis, requestConfirm, setSelfReportedType, downloadTranscript } from '../lib/onboardingChat'
+import { requestTurn, requestAnalysis, requestConfirm, setSelfReportedType, downloadTranscript, getTodaysSessionCount } from '../lib/onboardingChat'
 import { isOnboardingChatCouponEligible } from '../lib/premium'
 
 const TOTAL_TOPICS = 12
+// Matches SESSIONS_PER_DAY_LIMIT in supabase/functions/onboarding-typing-turn
+// -- duplicated here for display purposes, same convention as
+// FREE_DAILY_LIMIT in SocionicsChat.jsx/chat-socionics.
+const SESSIONS_PER_DAY_LIMIT = 3
 const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 const ONBOARDING_COUPON_CODE = import.meta.env.VITE_ONBOARDING_COUPON_CODE
 // Optional YYYY-MM-DD matching the Stripe promotion code's own "Redeem by"
@@ -103,12 +107,20 @@ export default function TypingChat() {
   const [finalType, setFinalType] = useState(null)
   const [finalConfidence, setFinalConfidence] = useState(null)
   const [wasApplied, setWasApplied] = useState(true)
+  const [sessionsUsedToday, setSessionsUsedToday] = useState(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
   }, [session, loading])
+
+  // Shown on the intro screen so the daily cap is known upfront rather than
+  // discovered via a 429 after already trying to start.
+  useEffect(() => {
+    if (!profile?.id) return
+    getTodaysSessionCount(profile.id).then(setSessionsUsedToday).catch(() => {})
+  }, [profile?.id])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -227,6 +239,8 @@ export default function TypingChat() {
   const couponWithinWindow = !ONBOARDING_COUPON_EXPIRES || new Date() <= ONBOARDING_COUPON_EXPIRES
   const couponEligible = isOnboardingChatCouponEligible(profile) && !!ONBOARDING_COUPON_CODE && couponWithinWindow
   const alreadyVerified = !!profile && VERIFIED_TYPE_SOURCES.has(profile.type_source)
+  const sessionsRemaining = sessionsUsedToday == null ? null : Math.max(0, SESSIONS_PER_DAY_LIMIT - sessionsUsedToday)
+  const outOfSessions = sessionsRemaining === 0
   const couponDaysLeft = ONBOARDING_COUPON_EXPIRES
     ? Math.max(1, Math.ceil((ONBOARDING_COUPON_EXPIRES - new Date()) / (1000 * 60 * 60 * 24)))
     : null
@@ -252,10 +266,20 @@ export default function TypingChat() {
                   Your type ({profile.type}) is already confirmed, so this won't change your profile — feel free to try it out of curiosity.
                 </p>
               )}
+              {sessionsRemaining != null && (
+                <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: '1rem', lineHeight: 1.6 }}>
+                  {outOfSessions
+                    ? "You've used all your free chats for today — come back tomorrow, or pick your type below."
+                    : `${sessionsRemaining} of ${SESSIONS_PER_DAY_LIMIT} free chats left today`}
+                  {!outOfSessions && ' — kept fair so everyone gets a turn.'}
+                </p>
+              )}
             </div>
-            <button type="button" className="btn-primary" onClick={start} disabled={sending}>
-              {sending ? 'Starting…' : 'Start the chat'}
-            </button>
+            {!outOfSessions && (
+              <button type="button" className="btn-primary" onClick={start} disabled={sending}>
+                {sending ? 'Starting…' : 'Start the chat'}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setScreen('self-select')}
@@ -322,10 +346,13 @@ export default function TypingChat() {
                 fontSize: 16, flexShrink: 0,
               }} aria-label="Send">↑</button>
             </div>
+            <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', opacity: 0.7, margin: '0.6rem 0 0', lineHeight: 1.5 }}>
+              AI can make mistakes — longer, more detailed answers help it read you more accurately.
+            </p>
             <button
               type="button"
               onClick={() => setScreen('self-select')}
-              style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline', margin: '0.6rem auto 0' }}
+              style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', textDecoration: 'underline', margin: '0.4rem auto 0' }}
             >
               I'd rather just pick my type
             </button>
