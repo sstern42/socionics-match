@@ -112,6 +112,12 @@ export default function TypingChat() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [history, screen])
 
+  // Keep focus on the input after each round-trip (initial question or a
+  // reply), on both the chat screen and the mount that follows start().
+  useEffect(() => {
+    if (screen === 'chat' && !sending) inputRef.current?.focus()
+  }, [screen, sending])
+
   if (loading || !session) return null
 
   async function start() {
