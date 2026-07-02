@@ -253,14 +253,17 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 .feed-sidebar-right { display: none; }
 
 @media (min-width: 1240px) {
-  .feed-layout { display: flex; align-items: flex-start; gap: 2rem; }
+  .feed-layout { display: flex; align-items: flex-start; gap: 2rem; height: 100%; }
   .feed-sidebar {
     display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem;
     position: sticky; top: 0;
-    /* Cap it and let it scroll internally if content ever grows taller than the
-       viewport, instead of being silently clipped by the sticky container with
-       no way to reach the rest. */
-    max-height: calc(100vh - 260px); overflow-y: auto;
+    /* Cap it to the actual height of the scrolling viewport (.feed-layout is set
+       to 100% of that via the flex chain) and let it scroll internally if content
+       ever grows taller, instead of being silently clipped by the sticky
+       container with no way to reach the rest. A vh-based guess doesn't track
+       the real header/banner/footer heights, so it either clips or scrolls
+       unnecessarily depending on viewport. */
+    max-height: 100%; overflow-y: auto;
   }
   .feed-main { flex: 1; min-width: 0; }
   .feed-card-toggle { display: none; }
@@ -271,7 +274,7 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 @media (min-width: 1650px) {
   .feed-sidebar-right {
     display: block; width: 340px; flex-shrink: 0; padding: 3rem 1.5rem 3rem 0;
-    position: sticky; top: 0; max-height: calc(100vh - 260px); overflow-y: auto;
+    position: sticky; top: 0; max-height: 100%; overflow-y: auto;
   }
 }
 
