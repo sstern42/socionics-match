@@ -4,6 +4,14 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 3 July 2026
+
+### Added
+- **Points system (#861)**: New engagement points, tracked and totaled but not yet spendable on anything — v1 is just the ledger and a running total shown on your profile (Settings and Dashboard, next to the referral panel). Points are earned for completing your profile, logging in for the first time each day, making a match, sending a message, posting or reacting in Boards, posting in Quadra Rooms, and qualifying a referral (on top of the existing Premium-day reward). Repeatable actions (messages, board posts/reactions, room posts) have daily caps per action type so points can't be farmed by spamming.
+  - `point_transactions` — append-only ledger, source of truth for the total.
+  - `award_points()` — mirrors the existing `grant_referral_reward()` pattern: `SECURITY DEFINER`, enforces the daily caps, and no-ops silently on unknown actions or a reached cap so a rewards hiccup never blocks the action that earned it.
+  - No badges, levels, leaderboard, or spending mechanics yet — deferred to a future iteration.
+
 ## 2 July 2026
 
 ### Added

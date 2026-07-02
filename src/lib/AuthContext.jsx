@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useRef } from 'react'
 import { supabase } from './supabase'
 import { getProfile } from './profile'
 import { computeIsPremium } from './premium'
+import { awardPoints } from './points'
 
 const AuthContext = createContext(null)
 
@@ -58,6 +59,12 @@ export function AuthProvider({ children }) {
       // Update last_active silently — fire and forget (skip if hide_activity is on)
       if (p?.id && !p.profile_data?.hide_activity) {
         supabase.from('users').update({ last_active: new Date().toISOString() }).eq('id', p.id).then(() => {})
+      }
+      // First activity of the day earns points — award_points()'s ref_id
+      // uniqueness (keyed on today's date) makes this a no-op on later
+      // loadProfile() calls the same day, so it's safe to fire on every load.
+      if (p?.id) {
+        awardPoints(p.id, 'daily_login', new Date().toISOString().slice(0, 10))
       }
     } catch {
       setProfile(null)

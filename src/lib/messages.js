@@ -1,6 +1,7 @@
 import { supabase } from './supabase'
 import { getRelation } from '../data/relations'
 import { getActiveBlocks } from './blocks'
+import { awardPoints } from './points'
 
 // Past (unmatched) connections — kept as soft-deleted rows so a disconnected
 // profile can still be found and viewed (#822). Message history is
@@ -124,6 +125,7 @@ export async function sendMessage({ matchId, senderId, content, replyToId = null
     .single()
   if (error) throw error
   window.umami?.track('message-sent')
+  awardPoints(senderId, 'message_sent', data.id)
   return data
 }
 
