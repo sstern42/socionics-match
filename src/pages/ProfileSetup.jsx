@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Layout from '../components/Layout'
 import RelationPicker from '../components/profile/RelationPicker'
@@ -13,12 +13,6 @@ export default function ProfileSetup() {
   usePageTitle('Profile Setup')
   const { session, profile, refreshProfile } = useAuth()
   const navigate = useNavigate()
-
-  // Guard: if the user already has a profile (e.g. navigated back here, or
-  // refreshed mid-onboarding), send them straight to the feed.
-  useEffect(() => {
-    if (profile) navigate('/feed', { replace: true })
-  }, [profile])
 
   const referredByCode = getStoredReferralCode()
   const referrerName = getStoredReferrerName()
@@ -49,6 +43,19 @@ export default function ProfileSetup() {
   const [relations, setRelations] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+
+  // Guard: if the user already has a profile (e.g. navigated back here, or
+  // refreshed mid-onboarding), send them straight to the feed. Gated on
+  // justSavedRef so this doesn't also fire off the back of handleSave()'s
+  // own refreshProfile() call below -- that would race handleSave()'s
+  // explicit navigate(destination) and could win (trackSignup() isn't
+  // awaited, so loading flipping back to false via the finally block is not
+  // a safe enough signal), always landing on /feed regardless of
+  // wantsChat/chatOptIn.
+  const justSavedRef = useRef(false)
+  useEffect(() => {
+    if (profile && !justSavedRef.current) navigate('/feed', { replace: true })
+  }, [profile])
 
   async function handleSave() {
     if (!session) return
@@ -85,6 +92,7 @@ export default function ProfileSetup() {
       localStorage.removeItem('socion_purpose')
       localStorage.removeItem('socion_wants_chat')
 
+      justSavedRef.current = true
       await refreshProfile()
 
       // "I don't know yet" at onboarding (wantsChat) or the equivalent
