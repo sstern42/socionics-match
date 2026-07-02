@@ -16,6 +16,7 @@ export const ENTRIES = [
          'Dashboard and Ask AI — fixed the browser tab title not showing the page name (it would get overwritten as soon as your unread count changed)',
          'Signup — the "Next" button on the profile step now tells you exactly what\'s missing (name, date of birth, or type) instead of just staying greyed out',
          'Signup — if your type wasn\'t already picked earlier in onboarding, you now choose it from a dropdown of all 16 types instead of typing it in from memory, with a "not sure at all" option to take the free typing chat right after signing up',
+         'Signup — fixed "I don\'t know yet" not actually taking you into the free typing chat after finishing signup; it was landing on the feed instead every time',
        ],
      },
      {
