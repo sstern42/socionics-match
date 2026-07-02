@@ -10,6 +10,13 @@ import { isOnboardingChatCouponEligible } from '../lib/premium'
 
 const TOTAL_TOPICS = 12
 const ONBOARDING_COUPON_CODE = import.meta.env.VITE_ONBOARDING_COUPON_CODE
+// Optional YYYY-MM-DD matching the Stripe promotion code's own "Redeem by"
+// date — keeps the banner from advertising a code Stripe will already be
+// rejecting at checkout. Undefined/unparseable means "no cutoff" (banner
+// only gated on ONBOARDING_COUPON_CODE being set at all).
+const ONBOARDING_COUPON_EXPIRES = import.meta.env.VITE_ONBOARDING_COUPON_EXPIRES
+  ? new Date(`${import.meta.env.VITE_ONBOARDING_COUPON_EXPIRES}T23:59:59`)
+  : null
 
 const TYPE_NAMES = {
   ILE: 'Intuitive Logical Extravert', LII: 'Logical Intuitive Introvert',
@@ -205,7 +212,11 @@ export default function TypingChat() {
     navigate(source === 'signup' ? '/profile/setup' : '/profile/edit')
   }
 
-  const couponEligible = isOnboardingChatCouponEligible(profile) && !!ONBOARDING_COUPON_CODE
+  const couponWithinWindow = !ONBOARDING_COUPON_EXPIRES || new Date() <= ONBOARDING_COUPON_EXPIRES
+  const couponEligible = isOnboardingChatCouponEligible(profile) && !!ONBOARDING_COUPON_CODE && couponWithinWindow
+  const couponDaysLeft = ONBOARDING_COUPON_EXPIRES
+    ? Math.max(1, Math.ceil((ONBOARDING_COUPON_EXPIRES - new Date()) / (1000 * 60 * 60 * 24)))
+    : null
 
   return (
     <Layout noScroll hideFooter>
@@ -399,7 +410,8 @@ export default function TypingChat() {
             {couponEligible && (
               <div style={{ padding: '1rem 1.25rem', border: '1px solid var(--accent-lt)', borderRadius: 8, background: 'rgba(154,111,56,0.06)', maxWidth: 440 }}>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text)', margin: 0, lineHeight: 1.6 }}>
-                  Thanks for completing the chat — use code <strong style={{ color: 'var(--accent)' }}>{ONBOARDING_COUPON_CODE}</strong> for 25% off your first year of Premium (expires in 14 days).
+                  Thanks for completing the chat — use code <strong style={{ color: 'var(--accent)' }}>{ONBOARDING_COUPON_CODE}</strong> for 25% off your first year of Premium
+                  {couponDaysLeft ? ` (expires in ${couponDaysLeft} day${couponDaysLeft === 1 ? '' : 's'}).` : '.'}
                 </p>
               </div>
             )}
