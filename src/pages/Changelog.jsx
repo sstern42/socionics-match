@@ -14,6 +14,7 @@ export const ENTRIES = [
          'Feed — the quadra activity widget now shows 5 members instead of 2',
          'Points — added a "See breakdown" toggle showing exactly how you earned them, by category',
          'Dashboard and Ask AI — fixed the browser tab title not showing the page name (it would get overwritten as soon as your unread count changed)',
+         'Signup — the "Next" button on the profile step now tells you exactly what\'s missing (name, date of birth, or type) instead of just staying greyed out',
        ],
      },
      {

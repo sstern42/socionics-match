@@ -239,6 +239,15 @@ export default function ProfileSetup() {
 
             {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
 
+            {(() => {
+              const missing = [!name && 'your name or alias', !dob && 'your date of birth', !type && 'your Socionics type'].filter(Boolean)
+              return missing.length > 0 && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center' }}>
+                  {missing.join(' and ')} {missing.length > 1 ? 'are' : 'is'} still needed to continue.
+                </p>
+              )
+            })()}
+
             <button
               type="button"
               className="btn-primary"

@@ -24,6 +24,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Meta titles standardised to `{Page} | Socion™`**: `index.html`, `Home`, `Premium`, `Auth`, `Support`, and `TypistProfile` each used a different title shape (brand-first, mid-title brand, or a doubled `— … |` separator) while every other public page already used the `{Page} | Socion™` pattern. Also fixed the homepage `<title>` and its `og:title`/`twitter:title` disagreeing on wording ("Socionics type" vs "personality type") — all three now read identically.
 - **SEO description over Google's ~155-160 character display budget**: the Spencer typist profile's meta description was 167 characters and would've been truncated mid-sentence in search results; trimmed to 153.
 - **`robots.txt` was missing two auth-gated routes**: `/boards` (and its `/boards/:slug` and `/boards/:slug/:postId` children) and `/typing/chat` all redirect anonymous visitors straight to `/auth`, but neither was disallowed — crawlers were wasting budget hitting pages they'd immediately get bounced from. Added both to the disallow list.
+- **Profile setup — no feedback when "Next" stayed disabled**: The details step's "Next — choose your dynamics" button requires a name, date of birth, and type before it enables, but gave no indication of what was missing — a user who filled in the privacy toggles (anonymous mode, hide activity) without noticing the name/DOB fields above could reasonably think the page was broken. Added an inline hint naming exactly which field(s) are still needed.
 
 ## 2 July 2026
 
