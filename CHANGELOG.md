@@ -14,6 +14,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
   - New "Points" section on the Help page explains how points are earned and the daily caps; `PointsPanel` links to it.
   - "Completing your profile" specifically means having both a bio and a photo (`avatar_url` set — the same definition the Feed's "With photos" filter already uses), checked on both signup and later profile edits since photos are typically added after signup, not during it.
   - Backfilled points for existing users covering the one-time actions that are safe to reconstruct exactly: profile completion for anyone who already has a bio and a photo, both sides of every historical match, and every already-qualified referral. Deliberately not backfilled: daily logins (no historical per-day record to draw from) and the daily-capped repeatable actions (messages, board posts/reactions, room posts), since reconstructing capped historical totals would risk an uneven windfall for long-tenured active users.
+  - Feed — the sidebar's mini profile card now shows your points total, right under Connections, linking through to the Help page.
 
 ## 2 July 2026
 
