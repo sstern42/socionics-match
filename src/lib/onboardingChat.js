@@ -60,6 +60,22 @@ export async function setSelfReportedType(type) {
   if (error) throw error
 }
 
+// Today's session count so the intro screen can show "X of 3 free chats
+// left today" before the user starts, rather than them only discovering
+// the daily limit via a 429 after already trying. Read-only -- doesn't
+// increment anything (see 20260703130000 for the RLS policy this relies on).
+export async function getTodaysSessionCount(userId) {
+  const today = new Date().toISOString().slice(0, 10)
+  const { data, error } = await supabase
+    .from('onboarding_chat_sessions')
+    .select('count')
+    .eq('user_id', userId)
+    .eq('date', today)
+    .maybeSingle()
+  if (error) throw error
+  return data?.count ?? 0
+}
+
 // Plain-text export of the transcript — no signed tokens, no Tally prefill
 // (Section 9C). Triggers a browser download directly, no server round trip.
 export function downloadTranscript(transcript) {
