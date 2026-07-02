@@ -6,6 +6,7 @@ import { getProfileViewCount } from '../../lib/profileViews'
 import FlagImage from '../FlagImage'
 
 const QUADRA_COLOURS = { Alpha: '#BA7517', Beta: '#791F1F', Gamma: '#0F6E56', Delta: '#185FA5' }
+const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 
 function quadraColours(type) {
   const quadra = getQuadra(type)
@@ -50,7 +51,8 @@ function QuickLink({ icon, label, onClick }) {
 
 export default function MiniProfileCard({ profile, isPremium, connectionCount, savedCount, previewOpen, onTogglePreview }) {
   const navigate = useNavigate()
-  const { profile_data, type, verified_by, is_founding_member, plan_status } = profile
+  const { profile_data, type, verified_by, is_founding_member, plan_status, type_source } = profile
+  const isTypeVerified = VERIFIED_TYPE_SOURCES.has(type_source)
   const name = profile_data?.name ?? 'Unknown'
   const role = profile_data?.role
   const bio = profile_data?.bio
@@ -155,6 +157,7 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
         <QuickLink icon="💬" label="Your matches" onClick={() => navigate('/messages')} />
         <QuickLink icon="🏠" label="Rooms" onClick={() => navigate('/rooms')} />
         <QuickLink icon="📋" label="Boards" onClick={() => navigate('/boards')} />
+        <QuickLink icon="🧭" label={isTypeVerified ? 'Free typing chat (just for fun)' : 'Free typing chat — preliminary read'} onClick={() => navigate('/typing/chat')} />
         <QuickLink icon="👁" label={previewOpen ? 'Hide card preview' : 'Preview your card'} onClick={onTogglePreview} />
       </div>
 
