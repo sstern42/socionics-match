@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { createProfile, updateRelationPreferences, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
 import { attributeAndRewardReferral, getStoredReferralCode, getStoredReferrerName } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
+import { TYPES } from '../data/relations'
 
 export default function ProfileSetup() {
   usePageTitle('Profile Setup')
@@ -41,6 +42,10 @@ export default function ProfileSetup() {
   const [anonymous, setAnonymous] = useState(false)
   const [hideActivity, setHideActivity] = useState(false)
   const [type, setType] = useState(savedType)
+  // Inline equivalent of the socion_wants_chat flag for anyone who reaches
+  // this page without savedType (see the fallback dropdown below) -- lets
+  // them opt into the post-signup typing chat without restarting onboarding.
+  const [chatOptIn, setChatOptIn] = useState(false)
   const [relations, setRelations] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -82,11 +87,12 @@ export default function ProfileSetup() {
 
       await refreshProfile()
 
-      // "I don't know yet" at onboarding means `type` above is only a
-      // placeholder guess (Locked decision-adjacent flow, issue #866) — send
-      // them straight into the real typing chat so it can promote/overwrite
-      // it via apply_onboarding_type(). Otherwise land on the feed as usual.
-      const destination = wantsChat ? '/typing/chat?source=signup' : '/feed'
+      // "I don't know yet" at onboarding (wantsChat) or the equivalent
+      // inline opt-in on this page's fallback dropdown (chatOptIn) both mean
+      // `type` above is only a placeholder guess (issue #866) — send them
+      // straight into the real typing chat so it can promote/overwrite it
+      // via apply_onboarding_type(). Otherwise land on the feed as usual.
+      const destination = (wantsChat || chatOptIn) ? '/typing/chat?source=signup' : '/feed'
 
       // Track signup — retry until Umami is ready (defer loading means it may not be available immediately)
       const trackSignup = (attempts = 0) => {
@@ -228,16 +234,44 @@ export default function ProfileSetup() {
                 </div>
               </label>
               {!savedType && (
-                <input
-                  className="input-standalone"
-                  placeholder="Your Socionics type (e.g. LII)"
-                  value={type}
-                  onChange={e => setType(e.target.value.toUpperCase())}
-                />
+                <div>
+                  <select
+                    className="input-standalone"
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    style={{ fontFamily: 'var(--sans)' }}
+                  >
+                    <option value="">Select your Socionics type…</option>
+                    {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                    Just your best guess for now — it's only a placeholder until you're typed properly.
+                  </p>
+                  <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginTop: '0.6rem', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={chatOptIn}
+                      onChange={e => setChatOptIn(e.target.checked)}
+                      style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                    />
+                    <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                      Not sure at all? Check this and we'll take you straight into the free typing chat for a real read as soon as your account is created.
+                    </span>
+                  </label>
+                </div>
               )}
             </div>
 
             {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
+
+            {(() => {
+              const missing = [!name && 'your name or alias', !dob && 'your date of birth', !type && 'your Socionics type'].filter(Boolean)
+              return missing.length > 0 && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center' }}>
+                  {missing.join(' and ')} {missing.length > 1 ? 'are' : 'is'} still needed to continue.
+                </p>
+              )
+            })()}
 
             <button
               type="button"
