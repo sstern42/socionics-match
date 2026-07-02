@@ -15,6 +15,7 @@ export const ENTRIES = [
          'Points — added a "See breakdown" toggle showing exactly how you earned them, by category',
          'Dashboard and Ask AI — fixed the browser tab title not showing the page name (it would get overwritten as soon as your unread count changed)',
          'Signup — the "Next" button on the profile step now tells you exactly what\'s missing (name, date of birth, or type) instead of just staying greyed out',
+         'Signup — if your type wasn\'t already picked earlier in onboarding, you now choose it from a dropdown of all 16 types instead of typing it in from memory',
        ],
      },
      {

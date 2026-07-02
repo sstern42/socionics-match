@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { createProfile, updateRelationPreferences, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
 import { attributeAndRewardReferral, getStoredReferralCode, getStoredReferrerName } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
+import { TYPES } from '../data/relations'
 
 export default function ProfileSetup() {
   usePageTitle('Profile Setup')
@@ -228,12 +229,24 @@ export default function ProfileSetup() {
                 </div>
               </label>
               {!savedType && (
-                <input
-                  className="input-standalone"
-                  placeholder="Your Socionics type (e.g. LII)"
-                  value={type}
-                  onChange={e => setType(e.target.value.toUpperCase())}
-                />
+                <div>
+                  <select
+                    className="input-standalone"
+                    value={type}
+                    onChange={e => setType(e.target.value)}
+                    style={{ fontFamily: 'var(--sans)' }}
+                  >
+                    <option value="">Select your Socionics type…</option>
+                    {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                    Not sure? Pick your best guess for now — you can{' '}
+                    <a href="/onboarding" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                      restart onboarding
+                    </a>{' '}
+                    and choose "I don't know yet" to get a real read from the free typing chat once you finish signing up.
+                  </p>
+                </div>
               )}
             </div>
 
