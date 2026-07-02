@@ -4,8 +4,7 @@ import Layout from '../components/Layout'
 import TypeSelector from '../components/onboarding/TypeSelector'
 import { useAuth } from '../lib/AuthContext'
 import { usePageMeta } from '../hooks/usePageMeta'
-import { updateProfileData } from '../lib/profile'
-import { requestTurn, requestAnalysis, requestConfirm, downloadTranscript } from '../lib/onboardingChat'
+import { requestTurn, requestAnalysis, requestConfirm, setSelfReportedType, downloadTranscript } from '../lib/onboardingChat'
 import { isOnboardingChatCouponEligible } from '../lib/premium'
 
 const TOTAL_TOPICS = 12
@@ -201,7 +200,7 @@ export default function TypingChat() {
   async function handleSelfSelect(type) {
     setError(null)
     try {
-      await updateProfileData(profile.id, { profileData: profile.profile_data, type })
+      await setSelfReportedType(type)
       window.umami?.track('type-confirmed', { type, method: 'manual', context: 'typing-chat-skip' })
       await refreshProfile()
       setFinalType(type)
