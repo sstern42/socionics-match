@@ -14,5 +14,7 @@ Disallow: /updates
 Disallow: /ask
 Disallow: /r/
 Disallow: /premium/welcome
+Disallow: /boards
+Disallow: /typing/chat
 
 Sitemap: https://socion.app/sitemap.xml

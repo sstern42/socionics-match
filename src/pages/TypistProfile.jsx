@@ -29,7 +29,7 @@ function viewerRelation(typistBaseType, viewerType) {
 
 // Per-typist meta descriptions
 const META_DESCRIPTIONS = {
-  spencer:     'Get your Socionics type confirmed by Spencer, founder of Socion and Socionics Insight. Async written report, 3,500–5,000 words, delivered within your chosen timeframe.',
+  spencer:     'Get your Socionics type confirmed by Spencer, founder of Socion and Socionics Insight. Async written report, 3,500–5,000 words, on your chosen timeframe.',
   'uncle-sam': 'Get your Socionics type confirmed by Uncle Sam. Voice session with personalised written report. 422+ clients typed. Choose from three session tiers.',
 }
 
@@ -40,7 +40,7 @@ export default function TypistProfile() {
   const typist = TYPISTS[slug]
 
   usePageMeta(
-    typist ? `Get Typed by ${typist.displayName} — Socionics Typing | Socion™` : 'Get Your Socionics Type Confirmed | Socion™',
+    typist ? `Get Typed by ${typist.displayName} | Socion™` : 'Get Your Socionics Type Confirmed | Socion™',
     typist ? (META_DESCRIPTIONS[slug] ?? `Get your Socionics type confirmed by ${typist.displayName} on Socion.`) : undefined
   )
 

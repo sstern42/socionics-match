@@ -8,6 +8,7 @@ import { useNotifications } from '../hooks/useNotifications'
 import { getRoomLastVisited } from './Rooms'
 import ReferralPanel from '../components/profile/ReferralPanel'
 import PointsPanel from '../components/profile/PointsPanel'
+import { usePageTitle } from '../hooks/usePageTitle'
 
 const FREE_DAILY_AI_LIMIT = 10
 const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
@@ -46,6 +47,8 @@ export default function HomeDashboard() {
   const { session, profile, isPremium } = useAuth()
   const unread = useUnreadCount(profile?.id)
   const { notifications } = useNotifications(profile?.id)
+
+  usePageTitle('Dashboard')
 
   const [roomActivity, setRoomActivity] = useState(0)
   const [boardActivity, setBoardActivity] = useState(0)

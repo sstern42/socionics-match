@@ -5,11 +5,14 @@ import EntryChoice from '../components/onboarding/EntryChoice'
 import TypeSelector from '../components/onboarding/TypeSelector'
 import PurposePicker from '../components/profile/PurposePicker'
 import { useAuth } from '../lib/AuthContext'
+import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Onboarding() {
   const { session } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+
+  usePageMeta('Get Started | Socion™', "Tell us what you're looking for, find your Socionics type, and create your free profile — takes about two minutes.")
 
   const knowsType = searchParams.get('know') === '1'
   const [step, setStep] = useState('purpose')

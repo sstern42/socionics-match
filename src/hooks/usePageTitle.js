@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
+import { setBaseTitle } from '../lib/pageTitle'
 
 export function usePageTitle(title) {
   useEffect(() => {
-    document.title = title ? `Socion™ — ${title}` : 'Socion™'
-    return () => { document.title = 'Socion™' }
+    setBaseTitle(title ? `Socion™ — ${title}` : 'Socion™')
+    return () => setBaseTitle('Socion™')
   }, [title])
 }

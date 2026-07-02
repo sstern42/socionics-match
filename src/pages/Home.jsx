@@ -7,6 +7,7 @@ import { RELATIONS, TYPES, getRelation } from '../data/relations'
 import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
 import HomeDashboard from './HomeDashboard'
+import { setBaseTitle } from '../lib/pageTitle'
 
 const TESTIMONIALS = [
   {
@@ -261,9 +262,9 @@ function HomeSwipeDemo({ loggedIn }) {
 export default function Home() {
   const { session, profile } = useAuth()
   useEffect(() => {
-    if (session && profile) return // dashboard branch sets its own title via Layout
-    document.title = 'Socion™ — Match by Socionics type, not algorithm'
-    return () => { document.title = 'Socion™' }
+    if (session && profile) return // dashboard branch sets its own title
+    setBaseTitle('Match by Socionics Type, Not Algorithm | Socion™')
+    return () => setBaseTitle('Socion™')
   }, [session, profile])
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [stats, setStats] = useState(null)
