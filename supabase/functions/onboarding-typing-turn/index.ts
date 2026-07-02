@@ -216,8 +216,15 @@ Deno.serve(async (req) => {
     }
 
     const data = await res.json()
-    const rawText = data.content?.[0]?.text ?? ''
+    // Find the text block rather than assuming content[0] is always it --
+    // a non-text block (e.g. thinking) in that position would otherwise
+    // silently produce an empty string here.
+    const rawText = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? ''
     const parsed = parseTurnResponse(rawText)
+
+    if (!parsed && !rawText.trim()) {
+      console.error('onboarding-typing-turn: empty/unparseable model response', JSON.stringify(data.content))
+    }
 
     // Malformed model output: keep the conversation moving forward rather
     // than getting stuck repeating the same topic indefinitely.
