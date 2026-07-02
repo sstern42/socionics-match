@@ -10,13 +10,18 @@
 // In:  { transcript: {role, content}[] }
 //      user_id is deliberately NOT read from the request body — it's
 //      resolved from the caller's own JWT, the same way chat-socionics and
-//      create-checkout-session do it. Trusting a client-supplied user_id
-//      here would let any authenticated caller overwrite a different
-//      user's type via apply_onboarding_type().
+//      create-checkout-session do it.
 // Out: { primary_type, primary_confidence, alternatives, subtype,
-//        requires_lean_choice, summary, key_signals, applied }
+//        requires_lean_choice, summary, key_signals }
 //      or, on unrecoverable malformed model output:
 //      { fallback: true, message: string }
+//
+// This function only analyses and persists — it never writes users.type
+// itself. The frontend calls onboarding-typing-confirm with whichever type
+// the user ends up with (the primary read, or their lean-choice pick) to
+// actually apply it via apply_onboarding_type(). Keeping "decide" and
+// "write" as separate calls means a lean-choice pick never has to undo an
+// automatic write of the other candidate.
 //
 // One retry on invalid/malformed JSON, then falls back to `unset` +
 // self-select — never silently assigns a type from a bad response
@@ -259,16 +264,6 @@ Deno.serve(async (req) => {
       console.error('Failed to persist type_assessment:', insertError)
     }
 
-    const { data: applied, error: applyError } = await supabase.rpc('apply_onboarding_type', {
-      p_user_id: userRow.id,
-      p_type: result.primary_type,
-      p_confidence: result.primary_confidence,
-    })
-
-    if (applyError) {
-      console.error('apply_onboarding_type error:', applyError)
-    }
-
     return json({
       primary_type: result.primary_type,
       primary_confidence: result.primary_confidence,
@@ -277,7 +272,6 @@ Deno.serve(async (req) => {
       requires_lean_choice: result.requires_lean_choice,
       summary: result.summary,
       key_signals: result.key_signals,
-      applied: applyError ? false : !!applied,
     })
   } catch (err) {
     console.error('onboarding-typing-analyse error:', err)
