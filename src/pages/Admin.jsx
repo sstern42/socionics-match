@@ -56,6 +56,9 @@ export default function Admin() {
   const [unblockingId, setUnblockingId] = useState(null)
   const [resolvingReportId, setResolvingReportId] = useState(null)
   const [resolvingUserReportId, setResolvingUserReportId] = useState(null)
+  const [inactiveUsers, setInactiveUsers] = useState([])
+  const [inactiveThreshold, setInactiveThreshold] = useState(30)
+  const [inactiveLoading, setInactiveLoading] = useState(false)
 
   useEffect(() => {
     if (loading) return
@@ -67,6 +70,24 @@ export default function Admin() {
     }
     loadData()
   }, [loading, profile])
+
+  useEffect(() => {
+    if (loading || !profile || profile.profile_data?.role !== ADMIN_ROLE) return
+    loadInactiveUsers(inactiveThreshold)
+  }, [loading, profile, inactiveThreshold])
+
+  async function loadInactiveUsers(threshold) {
+    setInactiveLoading(true)
+    try {
+      const { data: rows, error: rpcError } = await supabase.rpc('get_inactive_users', { days_threshold: threshold })
+      if (rpcError) throw rpcError
+      setInactiveUsers(rows ?? [])
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setInactiveLoading(false)
+    }
+  }
 
   async function loadData() {
     setFetching(true)
@@ -866,6 +887,64 @@ export default function Admin() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Inactive users */}
+        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+            <div>
+              <p style={cardTitleStyle}>Inactive users <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {inactiveUsers.length} inactive {inactiveThreshold}d+</span></p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
+                Export only — there's no marketing-consent field yet, so confirm opt-in policy before emailing this list.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, alignItems: 'center' }}>
+              <select
+                value={inactiveThreshold}
+                onChange={e => setInactiveThreshold(Number(e.target.value))}
+                style={{ fontSize: '0.78rem', padding: '0.35rem 0.5rem', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg)', color: 'var(--text)' }}
+              >
+                <option value={14}>14 days</option>
+                <option value={30}>30 days</option>
+                <option value={60}>60 days</option>
+              </select>
+              {inactiveUsers.length > 0 && (
+                <>
+                  <button type="button" className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                    onClick={() => navigator.clipboard.writeText(inactiveUsers.map(u => u.email).join('\n'))}>
+                    Copy emails
+                  </button>
+                  <button type="button" className="btn-ghost" style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                    onClick={() => {
+                      const csv = 'email,name,type,signed_up,last_active\n' + inactiveUsers.map(u => `${u.email},${u.name ?? ''},${u.type},${new Date(u.created_at).toISOString().split('T')[0]},${new Date(u.last_active).toISOString().split('T')[0]}`).join('\n')
+                      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }))
+                      a.download = `socion-inactive-users-${new Date().toISOString().split('T')[0]}.csv`; a.click()
+                    }}>
+                    Export CSV
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+          {inactiveLoading ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '1rem' }}>Loading…</p>
+          ) : inactiveUsers.length === 0 ? (
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '1rem' }}>None inactive {inactiveThreshold}d+.</p>
+          ) : (
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
+              {inactiveUsers.map((u, i) => (
+                <div key={u.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.55rem 0', borderBottom: i < inactiveUsers.length - 1 ? '1px solid var(--border)' : 'none' }}>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)' }}>{u.type}</span>
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{u.name ?? u.email}</span>
+                  </div>
+                  <span style={{ fontSize: '0.72rem', color: 'var(--muted)', flexShrink: 0, marginLeft: '1rem' }}>
+                    joined {new Date(u.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} · last active {new Date(u.last_active).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Recent signups */}
