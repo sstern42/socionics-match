@@ -7,6 +7,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ## 2 July 2026
 
 ### Added
+- **Onboarding typing chat — backend (#866)**: First phase of the Claude-driven conversational typing flow that will replace the algorithmic onboarding questionnaire. Not yet user-facing.
+  - `onboarding-typing-turn` and `onboarding-typing-analyse` edge functions: a conversational interviewer (12 chat-adaptive topics, capped at 2 follow-ups/topic and 20 total assistant turns) and a separate analysis pass that returns a preliminary type + confidence distribution from the full transcript, with defensive JSON parsing (one retry, then a clean fallback to self-select — never a silently-assigned type).
+  - `apply_onboarding_type()`: server-side-only function that writes a chat-derived type, refusing to ever overwrite an existing `paid_verified` or `community_verified` type.
+  - Reconciled the new columns against the existing `type_assessments`/`users` schema instead of the spec's proposed fresh tables (see issue #866 Section 2): added `transcript`/`primary_type`/`primary_confidence`/`requires_lean_choice` to `type_assessments`, and a new `users.type_source` column (backfilled for existing members: `paid_verified` where already verified, else `self_reported`), pinned against direct client writes.
+  - Added a 3-sessions/account/day rate limit on the chat, row-locked the same way as the existing AI-chat and connection-cap limits to avoid a check-then-increment race.
 - **Admin — Inactive users panel**: New panel listing users inactive past a configurable threshold (14/30/60 days), with the same Copy emails / Export CSV actions as the existing Incomplete sign-ups and Member emails panels. Export only — sending a re-engagement campaign is out of scope until a marketing-consent/opt-in field exists.
 
 ### Changed
