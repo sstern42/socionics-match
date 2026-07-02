@@ -10,6 +10,7 @@ export const ENTRIES = [
          'Points — you now earn points for completing your profile (adding a bio and a photo), logging in each day, matching, messaging, and posting or reacting in Boards and Quadra Rooms. See your total on your Settings page and Dashboard, next to the referral panel, and check the Help page for how it all works. Nothing to spend them on yet — that\'s coming later',
          'Points — backfilled for everyone already active: existing profiles with a bio and photo, past matches, and qualified referrals all counted retroactively',
          'Feed — your points total now shows on your sidebar profile card, right under Connections',
+         'Points — added tiers (Regular, Active, Core Member, Legend) and a top-10 leaderboard, shown alongside your points total',
        ],
      },
      {
