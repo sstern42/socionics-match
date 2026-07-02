@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { awardPoints } from './points'
 
 const PAGE_SIZE = 50
 
@@ -59,6 +60,7 @@ export async function sendRoomMessage({ roomId, senderId, content, imageUrl = nu
 
   if (error) throw error
   window.umami?.track('room-message-sent')
+  awardPoints(senderId, 'room_post', data.id)
   return data
 }
 

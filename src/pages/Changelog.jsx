@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '3 July 2026',
+       label: 'New',
+       items: [
+         'Points — you now earn points for completing your profile, logging in each day, matching, messaging, and posting or reacting in Boards and Quadra Rooms. See your total on your Settings page and Dashboard, next to the referral panel. Nothing to spend them on yet — that\'s coming later',
+       ],
+     },
+     {
        date: '2 July 2026',
        label: 'Update',
        items: [

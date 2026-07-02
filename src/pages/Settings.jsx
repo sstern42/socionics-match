@@ -6,6 +6,7 @@ import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { updateProfileData } from '../lib/profile'
 import ReferralPanel from '../components/profile/ReferralPanel'
+import PointsPanel from '../components/profile/PointsPanel'
 
 const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 
@@ -187,6 +188,8 @@ export default function Settings() {
         )}
 
         <ReferralPanel profile={profile} isPremium={isPremium} />
+
+        <PointsPanel profile={profile} />
 
         <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginTop: '1.5rem' }}>
           <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.75rem' }}>Display</p>

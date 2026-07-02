@@ -7,6 +7,7 @@ import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import { useNotifications } from '../hooks/useNotifications'
 import { getRoomLastVisited } from './Rooms'
 import ReferralPanel from '../components/profile/ReferralPanel'
+import PointsPanel from '../components/profile/PointsPanel'
 
 const FREE_DAILY_AI_LIMIT = 10
 const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
@@ -244,6 +245,7 @@ export default function HomeDashboard() {
 
         <div style={{ marginTop: '1.25rem' }}>
           <ReferralPanel profile={profile} isPremium={isPremium} />
+          <PointsPanel profile={profile} />
         </div>
       </section>
     </Layout>

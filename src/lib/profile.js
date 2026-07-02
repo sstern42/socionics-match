@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { awardPoints } from './points'
 
 // True when `err` is the display-name collision raised by
 // enforce_unique_display_name() (supabase/migrations/20260701120000_display_name_uniqueness.sql).
@@ -24,6 +25,7 @@ export async function createProfile({ authId, type, typeConfidence, profileData,
     .select()
     .maybeSingle()
   if (error) throw error
+  if (data) awardPoints(data.id, 'profile_complete', data.id)
   return data
 }
 
