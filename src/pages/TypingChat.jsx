@@ -101,6 +101,7 @@ export default function TypingChat() {
   const [error, setError] = useState(null)
   const [analysis, setAnalysis] = useState(null)
   const [finalType, setFinalType] = useState(null)
+  const [finalConfidence, setFinalConfidence] = useState(null)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -188,6 +189,7 @@ export default function TypingChat() {
     try {
       await requestConfirm({ type, confidence })
       setFinalType(type)
+      setFinalConfidence(confidence)
       window.umami?.track('typing-chat-completed', { type, source })
       await refreshProfile()
       setScreen('results')
@@ -203,6 +205,7 @@ export default function TypingChat() {
       window.umami?.track('type-confirmed', { type, method: 'manual', context: 'typing-chat-skip' })
       await refreshProfile()
       setFinalType(type)
+      setFinalConfidence(null)
       setAnalysis(null)
       setScreen('results')
     } catch (err) {
@@ -399,6 +402,11 @@ export default function TypingChat() {
               <p style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
                 {TYPE_NAMES[finalType]}
               </p>
+              {finalConfidence != null && (
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', letterSpacing: '0.04em' }}>
+                  {Math.round(finalConfidence * 100)}% confidence
+                </p>
+              )}
             </div>
 
             {analysis?.summary && (
