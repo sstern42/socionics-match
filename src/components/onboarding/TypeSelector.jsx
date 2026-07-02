@@ -12,22 +12,32 @@ const TYPE_DESCRIPTIONS = {
   SEI: 'Sensory Ethical Introvert',  ESI: 'Ethical Sensory Introvert',
 }
 
-export default function TypeSelector({ onConfirm }) {
+export default function TypeSelector({
+  onConfirm,
+  eyebrow = 'Fast track',
+  title = <>Select your <em>type</em></>,
+  description = (
+    <>
+      Your best guess based on community input or your own study. You can change this any time, and{' '}
+      <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+        get a written typing report
+      </a>
+      {' '}when you want certainty.
+    </>
+  ),
+  confirmLabel,
+}) {
   const [selected, setSelected] = useState(null)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', textAlign: 'center', padding: '2rem', maxWidth: 640, margin: '0 auto' }}>
       <div>
-        <p className="eyebrow">Fast track</p>
+        <p className="eyebrow">{eyebrow}</p>
         <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.75rem,4vw,3rem)', marginTop: '0.5rem' }}>
-          Select your <em>type</em>
+          {title}
         </h2>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.75rem' }}>
-          Your best guess based on community input or your own study. You can change this any time, and{' '}
-          <a href="/typing" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
-            get a written typing report
-          </a>
-          {' '}when you want certainty.
+          {description}
         </p>
       </div>
 
@@ -73,7 +83,7 @@ export default function TypeSelector({ onConfirm }) {
                 onConfirm(selected, { [selected]: 1.0 })
               }}
             >
-              Continue as {selected}
+              {confirmLabel ?? `Continue as ${selected}`}
             </button>
           </>
         ) : (
