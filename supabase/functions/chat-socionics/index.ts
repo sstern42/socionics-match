@@ -322,6 +322,12 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'claude-sonnet-5',
         max_tokens: 4096,
+        // Sonnet 5 runs adaptive thinking by default when this is omitted,
+        // competing with max_tokens for budget and adding latency before
+        // the first visible token streams. Not wanted here either -- the
+        // system prompt already tells the model to use the lookup tables
+        // as authoritative rather than reason/infer from first principles.
+        thinking: { type: 'disabled' },
         stream: true,
         system: systemBlocks,
         messages,
