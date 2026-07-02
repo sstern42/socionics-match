@@ -12,6 +12,7 @@ export const ENTRIES = [
          'Feed — fixed the sidebar profile card showing an unnecessary scrollbar on common desktop screen sizes',
          'Feed — the sidebar now shows who from your quadra is online now or active today, with a shortcut into your quadra\'s room',
          'Feed — Premium subscribers now see a preview of the latest founder update in the sidebar',
+         'Dashboard and Boards — the header and footer now stay put on screen while you scroll, instead of the footer only showing up once you\'d scrolled all the way down',
        ],
      },
      {

@@ -31,6 +31,7 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ### Fixed
 - **Feed — sidebar scrollbar on desktop**: The persistent left/right sidebars capped their height and scrolled internally past that point, which meant they could grow their own scrollbar independent of the page's — including on common sizes like 1920×1080 where the content didn't even need it. Sidebars are no longer capped, and no longer sticky either (a sticky sidebar taller than the viewport just stays pinned, in effect making the rest of it unreachable): they now scroll in plain lockstep with the rest of the page, so every part of them comes into view exactly when you scroll to it.
+- **Dashboard, Boards — header/footer not fixed**: These pages used the plain scrolling page layout instead of the fixed-header/footer shell used by the rest of the logged-in app (Feed, Messages, Rooms, Network, etc.), so the footer only appeared once you'd scrolled all the way to the bottom of the page instead of staying pinned in view, and the header relied on scroll-based sticky positioning instead of the same simple fixed placement as everywhere else. Switched both to the same fixed shell, with the page content scrolling underneath.
 
 ## 1 July 2026
 

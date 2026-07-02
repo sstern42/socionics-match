@@ -104,7 +104,7 @@ export default function BoardDetail() {
   }
 
   return (
-    <Layout hideFooter>
+    <Layout noScroll hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 1.5rem 6rem' }}>
         <p style={{ fontSize: '0.82rem', marginBottom: '0.75rem' }}>
           <Link to="/boards" style={{ color: 'var(--accent)', textDecoration: 'none' }}>← All boards</Link>
