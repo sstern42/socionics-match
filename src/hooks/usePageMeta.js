@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { setBaseTitle } from '../lib/pageTitle'
 
 function getMeta(selector) {
   return document.querySelector(selector)
@@ -11,14 +12,13 @@ function setMeta(selector, value) {
 
 export function usePageMeta(title, description) {
   useEffect(() => {
-    const prevTitle  = document.title
     const prevOgT    = getMeta('meta[property="og:title"]')?.getAttribute('content')
     const prevTwT    = getMeta('meta[name="twitter:title"]')?.getAttribute('content')
-    document.title = title ?? 'Socion™'
+    setBaseTitle(title ?? 'Socion™')
     setMeta('meta[property="og:title"]',  title ?? 'Socion™')
     setMeta('meta[name="twitter:title"]', title ?? 'Socion™')
     return () => {
-      document.title = prevTitle
+      setBaseTitle('Socion™')
       if (prevOgT !== undefined) setMeta('meta[property="og:title"]',  prevOgT)
       if (prevTwT !== undefined) setMeta('meta[name="twitter:title"]', prevTwT)
     }

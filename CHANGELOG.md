@@ -19,6 +19,9 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Feed — quadra activity widget shows 5 members instead of 2**: The sidebar's quadra online/active-today list was capped at 2 rows; raised to 5 so it's more useful at a glance without needing to open the quadra room.
 - **Points breakdown**: `PointsPanel` now has a "See breakdown" toggle showing a per-category summary — points and count for profile completion, daily logins, matches, messages, board posts/reactions, room posts, and referrals. `get_points_breakdown()` aggregates `point_transactions` server-side (grouped by `action_type`) rather than downloading the full per-row ledger, since repeatable actions can rack up hundreds of rows over time.
 
+### Fixed
+- **Dashboard and Ask AI pages had no meta title**: root cause was `Layout`'s unread-badge effect writing `document.title` directly and unconditionally on every unread-count change (e.g. a new message arriving), which stomped whatever title the current page had set — since `Dashboard` had no page-title call at all, it was always left showing the bare `Socion™`/`(N) Socion™` badge title, and `Ask AI`'s title got silently reverted the moment unread counted changed after mount. Added `src/lib/pageTitle.js` as a single source of truth: page hooks (`usePageTitle`/`usePageMeta`) now set the "base" title and `Layout` only overlays the unread badge on top of it, so neither can clobber the other regardless of effect order. Also added a `usePageTitle('Dashboard')` call to `HomeDashboard` and a full `usePageMeta` title/description to `Onboarding`, which had no meta title or description at all.
+
 ## 2 July 2026
 
 ### Added

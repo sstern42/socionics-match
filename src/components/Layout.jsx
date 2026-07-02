@@ -5,6 +5,7 @@ import { useTheme } from '../lib/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { signOut } from '../lib/auth'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
+import { setUnreadBadge } from '../lib/pageTitle'
 import IOSInstallBanner from './IOSInstallBanner'
 import AnnouncementBanner from './AnnouncementBanner'
 import NotificationBell from './NotificationBell'
@@ -224,8 +225,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
   // ── Misc ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    document.title = unread > 0 ? `(${unread}) Socion™` : 'Socion™'
-    return () => { document.title = 'Socion™' }
+    setUnreadBadge(unread)
+    return () => setUnreadBadge(0)
   }, [unread])
 
   useEffect(() => {
