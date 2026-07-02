@@ -68,6 +68,37 @@ function StatsCard() {
   )
 }
 
+function FounderPreviewCard() {
+  const { data: post } = useQuery({
+    queryKey: ['founder-post-latest'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('founder_posts')
+        .select('id, content, created_at')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      if (error) throw error
+      return data
+    },
+    staleTime: 5 * 60_000,
+  })
+
+  if (!post) return null
+
+  const preview = post.content?.length > 140 ? post.content.slice(0, 140) + '…' : post.content
+
+  return (
+    <Card title="From the founder">
+      <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: '0.6rem' }}>
+        {new Date(post.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}
+      </p>
+      <p style={{ fontSize: '0.8rem', color: 'var(--text)', lineHeight: 1.5 }}>{preview}</p>
+      <CardLink to="/updates">Read more →</CardLink>
+    </Card>
+  )
+}
+
 function PremiumCard() {
   return (
     <Card title="Go further">
@@ -86,7 +117,7 @@ export default function FeedRightSidebar({ isPremium }) {
     <>
       <UpdatesCard />
       <StatsCard />
-      {!isPremium && <PremiumCard />}
+      {isPremium ? <FounderPreviewCard /> : <PremiumCard />}
     </>
   )
 }

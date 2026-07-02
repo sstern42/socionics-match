@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import ProfileCard from '../components/feed/ProfileCard'
 import MiniProfileCard from '../components/feed/MiniProfileCard'
+import QuadraOnlineCard from '../components/feed/QuadraOnlineCard'
 import FeedRightSidebar from '../components/feed/FeedRightSidebar'
 import FeedAd from '../components/feed/FeedAd'
 import SwipeDeck from '../components/feed/SwipeDeck'
@@ -478,7 +479,7 @@ export default function Feed() {
             previewOpen={showCard}
             onTogglePreview={() => setShowCard(c => !c)}
           />
-
+          <QuadraOnlineCard profile={profile} />
         </aside>
 
         {showCard && createPortal(

@@ -91,6 +91,33 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
   return { profiles, hasMore: rawCount === limit, total, allSwipedIds, relationCounts }
 }
 
+export async function getQuadraOnline({ userType, currentUserId, limit = 8 }) {
+  const quadraTypes = sameQuadraTypes(userType)
+  if (quadraTypes.length === 0) return []
+
+  const [usersResult, blocks] = await Promise.all([
+    supabase
+      .from('users')
+      .select('id, type, profile_data, avatar_url, last_active')
+      .neq('id', currentUserId)
+      .not('profile_data', 'is', null)
+      .in('type', quadraTypes)
+      .order('last_active', { ascending: false, nullsFirst: false })
+      .limit(limit),
+    getActiveBlocks(currentUserId),
+  ])
+
+  if (usersResult.error) throw usersResult.error
+
+  const blockedIds = new Set(blocks.map(b =>
+    b.blocker_id === currentUserId ? b.blocked_id : b.blocker_id
+  ))
+
+  return usersResult.data
+    .filter(u => !blockedIds.has(u.id))
+    .filter(u => !u.profile_data?.hidden)
+}
+
 export async function getExistingMatches(userId) {
   const { data, error } = await supabase
     .from('matches')

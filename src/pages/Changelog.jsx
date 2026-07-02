@@ -10,6 +10,8 @@ export const ENTRIES = [
          'Typing — new free typing chat: a short, adaptive conversation with Socion\'s AI gives you a preliminary type read in about 5 minutes, no forced-choice questions. Find it via the banner on the Get Typed page',
          'Homepage — redesigned to get you to the good part faster: one clear "Get started free" button instead of two, and the interactive swipe demo now sits right under the headline instead of buried further down the page',
          'Feed — fixed the sidebar profile card showing an unnecessary scrollbar on common desktop screen sizes',
+         'Feed — the sidebar now shows who from your quadra is online now or active today, with a shortcut into your quadra\'s room',
+         'Feed — Premium subscribers now see a preview of the latest founder update in the sidebar',
        ],
      },
      {
