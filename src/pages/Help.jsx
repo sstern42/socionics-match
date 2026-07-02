@@ -144,7 +144,7 @@ const FAQS = [
     items: [
       {
         q: 'How do I earn points?',
-        a: "You earn points for completing your profile, logging in each day, making a match, sending a message, posting or reacting in Boards, posting in Quadra Rooms, and having a referral qualify. Your total is shown on your Settings page and your Dashboard, next to the referral panel.",
+        a: "You earn points for completing your profile (adding a bio and a photo), logging in each day, making a match, sending a message, posting or reacting in Boards, posting in Quadra Rooms, and having a referral qualify. Your total is shown on your Settings page and your Dashboard, next to the referral panel.",
       },
       {
         q: "Why didn't I get points for that message/post/reaction?",

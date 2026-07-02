@@ -10,6 +10,14 @@ export function isDuplicateNameError(err) {
 
 export const DUPLICATE_NAME_MESSAGE = 'That display name is already taken — please choose another.'
 
+// "Complete" mirrors the Feed's existing "With photos" filter (avatar_url
+// presence) rather than inventing a separate notion of what counts as a
+// photo — plus a non-empty bio. Type is required at signup already, so
+// checking it here is just defensive.
+function isProfileComplete(user) {
+  return Boolean(user?.profile_data?.bio?.trim()) && Boolean(user?.avatar_url) && Boolean(user?.type)
+}
+
 export async function createProfile({ authId, type, typeConfidence, profileData, purpose = ['dating'] }) {
   const { data, error } = await supabase
     .from('users')
@@ -25,7 +33,7 @@ export async function createProfile({ authId, type, typeConfidence, profileData,
     .select()
     .maybeSingle()
   if (error) throw error
-  if (data) awardPoints(data.id, 'profile_complete', data.id)
+  if (data && isProfileComplete(data)) awardPoints(data.id, 'profile_complete', data.id)
   return data
 }
 
@@ -78,11 +86,19 @@ export async function updateProfileData(userId, { profileData, type, avatarUrl, 
   const updates = { profile_data: profileData, type }
   if (avatarUrl !== undefined) updates.avatar_url = avatarUrl
   if (photos !== undefined) updates.photos = photos
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('users')
     .update(updates)
     .eq('id', userId)
+    .select()
+    .maybeSingle()
   if (error) throw error
+  // Bio and photo can be added independently and in either order (bio at
+  // signup, photo later in ProfileEdit, or vice versa), so re-check
+  // completeness on every edit rather than only at signup. Idempotent via
+  // award_points()'s ref_id uniqueness — only the edit that completes the
+  // set actually awards anything.
+  if (data && isProfileComplete(data)) awardPoints(data.id, 'profile_complete', data.id)
 }
 
 export async function updatePurpose(userId, purpose) {
