@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getQuadra } from '../../data/relations'
 import { countryFlag } from '../../data/countries'
 import { getProfileViewCount } from '../../lib/profileViews'
+import { getPointsTotal } from '../../lib/points'
 import FlagImage from '../FlagImage'
 
 const QUADRA_COLOURS = { Alpha: '#BA7517', Beta: '#791F1F', Gamma: '#0F6E56', Delta: '#185FA5' }
@@ -63,6 +64,13 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
   const { data: viewCount } = useQuery({
     queryKey: ['profile-views-count', profile.id],
     queryFn: () => getProfileViewCount(profile.id),
+    staleTime: 5 * 60_000,
+    enabled: !!profile.id,
+  })
+
+  const { data: pointsTotal } = useQuery({
+    queryKey: ['points-total', profile.id],
+    queryFn: () => getPointsTotal(profile.id),
     staleTime: 5 * 60_000,
     enabled: !!profile.id,
   })
@@ -150,6 +158,7 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
       <div style={{ borderTop: '1px solid var(--border)', padding: '0.5rem 1rem' }}>
         <StatRow label="Profile viewers" value={viewCount ?? '—'} onClick={() => navigate(`/profile/${profile.id}?tab=views`)} />
         <StatRow label="Connections" value={isPremium ? connectionCount : `${connectionCount} of 3`} />
+        <StatRow label="Points" value={pointsTotal?.toLocaleString() ?? '—'} onClick={() => navigate('/help#points')} />
       </div>
 
       <div style={{ borderTop: '1px solid var(--border)', padding: '0.35rem 1rem' }}>

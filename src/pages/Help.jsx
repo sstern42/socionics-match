@@ -151,8 +151,16 @@ const FAQS = [
         a: "Repeatable actions — messages, board posts and reactions, and room posts — have a daily cap per action type, so points build up steadily rather than all at once. One-time actions like completing your profile or your first login of the day don't have a cap.",
       },
       {
+        q: 'What are tiers?',
+        a: "As your total grows you move through tiers — Regular (100+), Active (500+), Core Member (1,500+), and Legend (5,000+) — shown as a badge next to your points total. They're recognition only for now, with no extra features attached.",
+      },
+      {
+        q: 'Is there a points leaderboard?',
+        a: "Yes — the top 10 members by points (Active tier and above) are shown on your points panel, next to the referral panel on Settings and your Dashboard. Members in anonymous mode are excluded, same as the referral leaderboard.",
+      },
+      {
         q: 'Can I spend my points on anything?',
-        a: "Not yet. Points are currently just a running total that reflects how active you've been on Socion. Badges, levels, a leaderboard, and ways to spend points are planned for a future update.",
+        a: "Not yet. Points are currently a running total plus tiers and a leaderboard. Badges/achievements and ways to spend points are planned for a future update.",
       },
       {
         q: 'Do points expire?',
