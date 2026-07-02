@@ -171,7 +171,14 @@ async function callClaude(apiKey: string, transcriptText: string, retryNote?: st
   }
 
   const data = await res.json()
-  return data.content?.[0]?.text ?? ''
+  // Find the text block rather than assuming content[0] is always it -- a
+  // non-text block (e.g. thinking) in that position would otherwise
+  // silently produce an empty string here.
+  const text = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? ''
+  if (!text) {
+    console.error('onboarding-typing-analyse: empty model response', JSON.stringify(data.content))
+  }
+  return text
 }
 
 Deno.serve(async (req) => {
