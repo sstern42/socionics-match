@@ -256,12 +256,11 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
   .feed-layout { display: flex; align-items: flex-start; gap: 2rem; }
   .feed-sidebar {
     display: block; width: 340px; flex-shrink: 0; padding: 3rem 0 3rem 1.5rem;
-    /* Sticky, not capped: if a sidebar's content ever grows taller than the
-       viewport, it un-sticks and scrolls into view along with the rest of the
-       (much taller) feed column instead of gaining its own internal scrollbar.
-       .feed-main is always far taller than either sidebar in practice, so the
-       full sidebar remains reachable well before the page runs out of scroll. */
-    position: sticky; top: 0;
+    /* Not sticky/capped: .feed-main is usually far taller than the sidebar, so a
+       sticky sidebar stays pinned for the entire scroll and its own content
+       past one screenful is effectively unreachable in practice. Plain normal
+       flow means it scrolls at the same rate as everything else, so every part
+       of it comes into view exactly when you scroll to it. */
   }
   .feed-main { flex: 1; min-width: 0; }
   .feed-card-toggle { display: none; }
@@ -272,7 +271,6 @@ body.swipe-mode-active .feed-preamble { display: none !important; }
 @media (min-width: 1650px) {
   .feed-sidebar-right {
     display: block; width: 340px; flex-shrink: 0; padding: 3rem 1.5rem 3rem 0;
-    position: sticky; top: 0;
   }
 }
 
