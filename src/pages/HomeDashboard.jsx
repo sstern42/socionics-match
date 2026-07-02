@@ -9,6 +9,7 @@ import { getRoomLastVisited } from './Rooms'
 import ReferralPanel from '../components/profile/ReferralPanel'
 
 const FREE_DAILY_AI_LIMIT = 10
+const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 const BOARD_ACTIVITY_WINDOW_DAYS = 7
 const UPDATES_LAST_VISITED_KEY = 'socion_updates_last_visited'
 
@@ -119,6 +120,7 @@ export default function HomeDashboard() {
   const confidence = profile?.type_confidence
   const peakConfidence = confidence ? Math.max(...Object.values(confidence)) : 1
   const uncertainType = peakConfidence > 0 && peakConfidence < 0.6
+  const isTypeVerified = !!profile && VERIFIED_TYPE_SOURCES.has(profile.type_source)
 
   const rawName = profile?.profile_data?.anonymous ? null : profile?.profile_data?.name
   const firstName = rawName ? rawName.split(',')[0].trim().split(' ')[0] : null
@@ -151,6 +153,9 @@ export default function HomeDashboard() {
             {uncertainType
               ? "Your self-typing result wasn't highly confident. Ask the AI or book a professional typist to confirm it."
               : 'Explore your type further — ask the AI about your relations, dynamics, and compatibility.'}
+            <Link to="/typing/chat" style={{ display: 'block', marginTop: '0.6rem', color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}>
+              {isTypeVerified ? 'Try our free typing chat — just for fun →' : 'Try our free typing chat for a preliminary read →'}
+            </Link>
           </DashboardCard>
         </div>
 

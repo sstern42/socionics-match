@@ -8,6 +8,7 @@ import { requestTurn, requestAnalysis, requestConfirm, setSelfReportedType, down
 import { isOnboardingChatCouponEligible } from '../lib/premium'
 
 const TOTAL_TOPICS = 12
+const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 const ONBOARDING_COUPON_CODE = import.meta.env.VITE_ONBOARDING_COUPON_CODE
 // Optional YYYY-MM-DD matching the Stripe promotion code's own "Redeem by"
 // date — keeps the banner from advertising a code Stripe will already be
@@ -101,6 +102,7 @@ export default function TypingChat() {
   const [analysis, setAnalysis] = useState(null)
   const [finalType, setFinalType] = useState(null)
   const [finalConfidence, setFinalConfidence] = useState(null)
+  const [wasApplied, setWasApplied] = useState(true)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -186,10 +188,11 @@ export default function TypingChat() {
   async function confirmType(type, confidence) {
     setError(null)
     try {
-      await requestConfirm({ type, confidence })
+      const { applied } = await requestConfirm({ type, confidence })
       setFinalType(type)
       setFinalConfidence(confidence)
-      window.umami?.track('typing-chat-completed', { type, source })
+      setWasApplied(applied)
+      window.umami?.track('typing-chat-completed', { type, source, applied })
       await refreshProfile()
       setScreen('results')
     } catch (err) {
@@ -205,6 +208,7 @@ export default function TypingChat() {
       await refreshProfile()
       setFinalType(type)
       setFinalConfidence(null)
+      setWasApplied(true)
       setAnalysis(null)
       setScreen('results')
     } catch (err) {
@@ -222,6 +226,7 @@ export default function TypingChat() {
 
   const couponWithinWindow = !ONBOARDING_COUPON_EXPIRES || new Date() <= ONBOARDING_COUPON_EXPIRES
   const couponEligible = isOnboardingChatCouponEligible(profile) && !!ONBOARDING_COUPON_CODE && couponWithinWindow
+  const alreadyVerified = !!profile && VERIFIED_TYPE_SOURCES.has(profile.type_source)
   const couponDaysLeft = ONBOARDING_COUPON_EXPIRES
     ? Math.max(1, Math.ceil((ONBOARDING_COUPON_EXPIRES - new Date()) / (1000 * 60 * 60 * 24)))
     : null
@@ -242,6 +247,11 @@ export default function TypingChat() {
                 <a href="/typing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>paid, human-reviewed report</a>{' '}
                 confirms it.
               </p>
+              {alreadyVerified && (
+                <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '1rem', lineHeight: 1.6, maxWidth: 440, fontStyle: 'italic' }}>
+                  Your type ({profile.type}) is already confirmed, so this won't change your profile — feel free to try it out of curiosity.
+                </p>
+              )}
             </div>
             <button type="button" className="btn-primary" onClick={start} disabled={sending}>
               {sending ? 'Starting…' : 'Start the chat'}
@@ -394,7 +404,7 @@ export default function TypingChat() {
         {screen === 'results' && (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem', textAlign: 'center', margin: 'auto 0', width: '100%' }}>
             <div>
-              <p className="eyebrow">Preliminary result</p>
+              <p className="eyebrow">{wasApplied ? 'Preliminary result' : 'Just for fun'}</p>
               <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,6vw,3.5rem)', marginTop: '0.5rem' }}>
                 <em>{finalType}</em>
               </h1>
@@ -425,7 +435,9 @@ export default function TypingChat() {
             )}
 
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, maxWidth: 440 }}>
-              This is a preliminary read, not a full report — it stays visibly preliminary until a paid typist confirms it.
+              {wasApplied
+                ? 'This is a preliminary read, not a full report — it stays visibly preliminary until a paid typist confirms it.'
+                : `Your confirmed type (${profile?.type}) hasn't changed — this was just a test run, and a chat read can never overwrite a type that's already been confirmed.`}
             </p>
 
             {couponEligible && (
@@ -439,13 +451,15 @@ export default function TypingChat() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', width: '100%', maxWidth: 360 }}>
               <button type="button" className="btn-primary" onClick={handleDone}>Continue</button>
-              <a
-                href="/typing"
-                style={{ fontSize: '0.85rem', color: 'var(--accent)', textDecoration: 'none' }}
-                onClick={() => window.umami?.track('verify-type-clicked', { from: 'typing-chat-results' })}
-              >
-                Verify your type with a specialist →
-              </a>
+              {wasApplied && (
+                <a
+                  href="/typing"
+                  style={{ fontSize: '0.85rem', color: 'var(--accent)', textDecoration: 'none' }}
+                  onClick={() => window.umami?.track('verify-type-clicked', { from: 'typing-chat-results' })}
+                >
+                  Verify your type with a specialist →
+                </a>
+              )}
               {history.length > 0 && (
                 <button
                   type="button"
