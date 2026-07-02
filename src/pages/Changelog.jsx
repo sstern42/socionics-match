@@ -12,6 +12,7 @@ export const ENTRIES = [
          'Feed — your points total now shows on your sidebar profile card, right under Connections',
          'Points — added tiers (Regular, Active, Core Member, Legend) and a top-10 leaderboard, shown alongside your points total',
          'Feed — the quadra activity widget now shows 5 members instead of 2',
+         'Points — added a "See breakdown" toggle showing exactly how you earned them, by category',
        ],
      },
      {

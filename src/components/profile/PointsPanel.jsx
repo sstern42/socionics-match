@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
-import { getPointsTotal } from '../../lib/points'
+import { getPointsTotal, getPointsBreakdown } from '../../lib/points'
 
 const TIER_LABELS = {
   regular: 'Regular',
@@ -10,12 +10,26 @@ const TIER_LABELS = {
   legend: 'Legend',
 }
 
-// v1 (issue #861) + phase 2 (tiers/leaderboard). No badges/achievements UI
-// or spending mechanics yet — see the issue for the remaining deferred list.
+const ACTION_LABELS = {
+  profile_complete: 'Completing your profile',
+  daily_login: 'Daily logins',
+  mutual_match: 'Matches made',
+  message_sent: 'Messages sent',
+  board_post: 'Board posts',
+  board_reaction: 'Board reactions',
+  room_post: 'Quadra Room posts',
+  referral_qualified: 'Referrals qualified',
+}
+
+// v1 (issue #861) + phase 2 (tiers/leaderboard/breakdown). No badges/
+// achievements UI or spending mechanics yet — see the issue for the
+// remaining deferred list.
 export default function PointsPanel({ profile }) {
   const [total, setTotal] = useState(null)
   const [tier, setTier] = useState(null)
   const [leaderboard, setLeaderboard] = useState([])
+  const [breakdown, setBreakdown] = useState(null)
+  const [showBreakdown, setShowBreakdown] = useState(false)
 
   useEffect(() => {
     if (!profile?.id) return
@@ -23,6 +37,14 @@ export default function PointsPanel({ profile }) {
     supabase.rpc('points_tier', { p_user_id: profile.id }).then(({ data }) => setTier(data))
     supabase.rpc('get_points_leaderboard').then(({ data }) => setLeaderboard(data ?? []))
   }, [profile?.id])
+
+  function toggleBreakdown() {
+    const opening = !showBreakdown
+    setShowBreakdown(opening)
+    if (opening && breakdown === null && profile?.id) {
+      getPointsBreakdown(profile.id).then(setBreakdown).catch(() => setBreakdown([]))
+    }
+  }
 
   if (total === null) return null
 
@@ -46,6 +68,38 @@ export default function PointsPanel({ profile }) {
         Earned by completing your profile, matching, messaging, and joining Boards and Quadra Rooms.{' '}
         <Link to="/help#points" style={{ color: 'var(--accent)', textDecoration: 'none' }}>How points work</Link>
       </p>
+
+      {total > 0 && (
+        <div>
+          <button
+            type="button"
+            onClick={toggleBreakdown}
+            style={{ fontSize: '0.78rem', color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            {showBreakdown ? 'Hide breakdown' : 'See breakdown'}
+          </button>
+
+          {showBreakdown && (
+            breakdown === null ? (
+              <p style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.6rem' }}>Loading…</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.6rem' }}>
+                {breakdown.map(row => (
+                  <div key={row.action_type} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+                    <span style={{ color: 'var(--text)' }}>
+                      {ACTION_LABELS[row.action_type] ?? row.action_type}
+                      <span style={{ color: 'var(--muted)' }}> ({row.action_count.toLocaleString()})</span>
+                    </span>
+                    <span style={{ color: 'var(--accent)', fontWeight: 600, flexShrink: 0, marginLeft: '0.75rem' }}>
+                      +{row.total_points.toLocaleString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+        </div>
+      )}
 
       {leaderboard.length > 0 && (
         <div style={{ marginTop: '0.5rem' }}>
