@@ -8,19 +8,6 @@ import SIWebview from '../components/SIWebview'
 import SwipeCard from '../components/feed/SwipeCard'
 import HomeDashboard from './HomeDashboard'
 
-const FOUNDING_CUTOFF = new Date('2026-06-17T05:00:00Z')
-
-const RELATION_PILLS = [
-  { label: 'Dual',           key: 'DUAL' },
-  { label: 'Activity',       key: 'ACTIVITY' },
-  { label: 'Mirror',         key: 'MIRROR' },
-  { label: 'Semi-Dual',      key: 'SEMI_DUAL' },
-  { label: 'Kindred',        key: 'KINDRED' },
-  { label: 'Quasi-Identity', key: 'QUASI_IDENTITY' },
-  { label: 'Contrary',       key: 'CONTRARY' },
-  { label: 'Conflict',       key: 'CONFLICT' },
-]
-
 const TESTIMONIALS = [
   {
     name: 'Intrion', type: 'ILE', relation: null, gender: 'male', avatar: null,
@@ -109,7 +96,7 @@ const DEMO_STACK = [
   { zIndex: 10, transform: 'scale(0.92) translateY(28px)' },
 ]
 
-function HomeSwipeDemo({ foundingActive, loggedIn }) {
+function HomeSwipeDemo({ loggedIn }) {
   const [chosenType, setChosenType] = useState(null)
   const [queue, setQueue]   = useState([])
   const [matched, setMatched] = useState(null)
@@ -209,7 +196,7 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
             </Link>
           ) : (
             <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'match' })}>
-              {foundingActive ? 'Claim founding access →' : 'Sign up free to message →'}
+              Sign up free to message →
             </Link>
           )}
           <button type="button" className="btn-ghost" onClick={continueAfterMatch}>Keep swiping</button>
@@ -229,7 +216,7 @@ function HomeSwipeDemo({ foundingActive, loggedIn }) {
           <Link to="/feed" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-to-feed', { from: 'end' })}>View your matches →</Link>
         ) : (
           <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none' }} onClick={() => window.umami?.track('home-swipe-demo-signup', { from: 'end' })}>
-            {foundingActive ? 'Claim founding access →' : 'Sign up free →'}
+            Sign up free →
           </Link>
         )}
         <button type="button" onClick={() => start(chosenType)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.78rem', color: 'var(--accent)', textDecoration: 'underline' }}>
@@ -280,21 +267,6 @@ export default function Home() {
   }, [session, profile])
   const [webviewUrl, setWebviewUrl] = useState(null)
   const [stats, setStats] = useState(null)
-  const [selectedPill, setSelectedPill] = useState(null)
-
-  const [now, setNow] = useState(Date.now())
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60000)
-    return () => clearInterval(id)
-  }, [])
-  const foundingActive = now < FOUNDING_CUTOFF.getTime()
-  const msLeft    = Math.max(0, FOUNDING_CUTOFF.getTime() - now)
-  const daysLeft  = Math.floor(msLeft / 86400000)
-  const hoursLeft = Math.floor((msLeft % 86400000) / 3600000)
-  const foundingDay = '16th June (EST)'
-
-  const [liveFoundingCount, setLiveFoundingCount] = useState(null)
-  const foundingCount = liveFoundingCount ?? stats?.users ?? null
 
   useEffect(() => {
     supabase
@@ -318,34 +290,14 @@ export default function Home() {
       })
   }, [])
 
-  useEffect(() => {
-    if (!foundingActive || session) return
-    let cancelled = false
-    async function fetchCount() {
-      const { data, error } = await supabase.rpc('founding_member_count')
-      if (!cancelled && !error && typeof data === 'number' && data > 0) setLiveFoundingCount(data)
-    }
-    fetchCount()
-    const id = setInterval(fetchCount, 60000)
-    return () => { cancelled = true; clearInterval(id) }
-  }, [foundingActive, session])
-
   if (session && profile) return <HomeDashboard />
 
   return (
     <>
     <Layout hideFooter>
-      <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(3rem,8vw,6rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
+      <section style={{ minHeight: 'calc(100vh - 72px)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 'clamp(2rem,6vw,4rem) 1.5rem clamp(2.5rem,6vw,4rem)', gap: 'clamp(1rem,2.5vw,1.5rem)' }}>
 
-        {foundingActive && !session ? (
-          <p className="eyebrow fade-up-1" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--accent)' }}>
-            <span>✦ Founding member offer</span>
-            <span style={{ width: 3, height: 3, borderRadius: '50%', background: 'var(--accent-lt)' }} />
-            <span>Ends {foundingDay}</span>
-          </p>
-        ) : (
-          <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
-        )}
+        <p className="eyebrow fade-up-1">{stats ? `${stats.users} members · ${stats.countries} countries` : ''}</p>
 
         <h1 className="fade-up-2">
           Match by <em>personality,</em><br />not algorithm.
@@ -355,47 +307,11 @@ export default function Home() {
           Socionics maps 16 named dynamics between every type pair. You choose the dynamic — the app shows you who fits.
         </p>
 
-        {foundingActive && !session && (
-          <div className="fade-up-4" style={{ maxWidth: 520, width: '100%', background: 'rgba(154,111,56,0.08)', border: '1px solid var(--accent)', borderRadius: 10, padding: 'clamp(1.25rem,3vw,1.75rem)', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.15rem,3vw,1.45rem)', color: 'var(--text)', lineHeight: 1.4 }}>
-              Join now, keep <em>Premium free — forever.</em>
-            </p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.65 }}>
-              Every account created before midnight on {foundingDay} becomes a founding member: unlimited connections, all 16 relation filters, and full compatibility breakdowns — permanently free, no card needed.
-            </p>
-
-            {foundingCount != null && foundingCount > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.15rem' }}>
-                <span style={{ position: 'relative', display: 'inline-flex', width: 7, height: 7, flexShrink: 0 }}>
-                  <span style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'var(--accent)', opacity: 0.4, animation: 'foundingPulse 2s ease-in-out infinite' }} />
-                  <span style={{ position: 'relative', width: 7, height: 7, borderRadius: '50%', background: 'var(--accent)', display: 'inline-block' }} />
-                </span>
-                <p style={{ fontSize: '0.82rem', color: 'var(--text)', letterSpacing: '0.01em' }}>
-                  <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>{foundingCount.toLocaleString()}</strong>
-                  {' '}founding {foundingCount === 1 ? 'member has' : 'members have'} claimed their spot
-                </p>
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginTop: '0.15rem' }}>
-              {[{ n: daysLeft, l: daysLeft === 1 ? 'day' : 'days' }, { n: hoursLeft, l: hoursLeft === 1 ? 'hour' : 'hours' }].map(({ n, l }) => (
-                <div key={l} style={{ minWidth: 72, background: 'var(--card-bg)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.5rem 0.75rem' }}>
-                  <div style={{ fontFamily: 'var(--serif)', fontSize: '1.75rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{n}</div>
-                  <div style={{ fontSize: '0.62rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '0.3rem' }}>{l} left</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         <div className="fade-up-4" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
           {session && profile ? (
             <Link to="/feed" className="btn-primary">View your matches</Link>
           ) : (
-            <>
-              <Link to="/onboarding?know=1" className="btn-primary">{foundingActive ? 'Claim founding access →' : 'I know my type →'}</Link>
-              <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
-            </>
+            <Link to="/onboarding" className="btn-primary">Get started free →</Link>
           )}
         </div>
 
@@ -420,35 +336,69 @@ export default function Home() {
           </p>
         )}
 
-        <p className="fade-up-4" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginTop: '-0.5rem' }}>
+        <p className="fade-up-4" style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
           Free &nbsp;·&nbsp; No app store &nbsp;·&nbsp; Works on any device
         </p>
+      </section>
 
-        <div className="fade-up-5" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', maxWidth: 560 }}>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {RELATION_PILLS.map(({ label, key }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setSelectedPill(selectedPill === key ? null : key)}
-                className={`rel-pill clickable${selectedPill === key ? ' active' : ''}`}
-              >{label}</button>
-            ))}
-          </div>
-          {selectedPill && RELATIONS[selectedPill] && (
-            <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '0.65rem 1rem', maxWidth: 420, textAlign: 'center' }}>
-              <p style={{ fontSize: '0.78rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.3rem' }}>
-                {RELATIONS[selectedPill].name}
-              </p>
-              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                {RELATIONS[selectedPill].description}
-              </p>
+      {/* THE FEED — moved directly under the hero so the strongest proof isn't buried below the fold */}
+      <section style={{ padding: '0 2rem 6rem' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>The feed</p>
+          <h2 style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+            Every profile shows <em>your dynamic</em>
+          </h2>
+          <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto 3rem', lineHeight: 1.7 }}>
+            Not just a profile — a named relationship dynamic, computed from your type and theirs. Try it below.
+          </p>
+
+          <HomeSwipeDemo loggedIn={!!(session && profile)} />
+
+          <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+            <p style={{ fontSize: '0.95rem', color: 'var(--muted)', maxWidth: 420, lineHeight: 1.7 }}>
+              Your feed shows real members whose type produces your selected dynamics.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+              {session && profile ? (
+                <Link to="/feed" className="btn-primary">View your matches →</Link>
+              ) : (
+                <Link to="/onboarding" className="btn-primary">Get started free →</Link>
+              )}
             </div>
-          )}
+          </div>
         </div>
+      </section>
 
+      <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', background: 'var(--card-bg)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+          <p className="section-label">How it works</p>
+          <h2 style={{ marginBottom: '3rem' }}>
+            You choose the dynamic.<br />Not a black-box algorithm.
+          </h2>
+          <div className="steps">
+            <div className="step">
+              <div className="step-num">01</div>
+              <h3>Find your type</h3>
+              <p>A short questionnaire, or bring a type you already know from the community.</p>
+            </div>
+            <div className="step">
+              <div className="step-num">02</div>
+              <h3>Choose your dynamic</h3>
+              <p>Select which relations you&rsquo;re open to. Duals for complementarity, Mirrors for sparring &mdash; you set the terms.</p>
+            </div>
+            <div className="step">
+              <div className="step-num">03</div>
+              <h3>Match with purpose</h3>
+              <p>Dating, friendship, networking, and team building &mdash; same theory, your call.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats and testimonial share one strip instead of two full-width sections */}
+      <section style={{ padding: '5rem 2rem', background: 'var(--surface, #f7f4ef)' }}>
         {stats && (
-          <div className="fade-up-5" style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1rem' }}>
+          <div style={{ display: 'flex', gap: '2.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3rem' }}>
             {[
               { value: stats.users, label: 'members' },
               { value: stats.connections, label: 'connections' },
@@ -462,128 +412,28 @@ export default function Home() {
             ))}
           </div>
         )}
-      </section>
-
-      <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
-        <p className="section-label">How it works</p>
-        <h2 style={{ marginBottom: '3.5rem' }}>
-          You choose the dynamic.<br />Not a black-box algorithm.
-        </h2>
-        <div className="steps">
-          <div className="step">
-            <div className="step-num">01</div>
-            <h3>Determine your type</h3>
-            <p>Work through a structured onboarding questionnaire. Bring an existing type from the community &mdash; confidence scoring handles uncertainty honestly.</p>
-          </div>
-          <div className="step">
-            <div className="step-num">02</div>
-            <h3>Choose your dynamic</h3>
-            <p>Select which intertype relations you&rsquo;re open to. Duals for deep complementarity. Mirrors for intellectual sparring. You set the terms &mdash; the app surfaces who fits.</p>
-          </div>
-          <div className="step">
-            <div className="step-num">03</div>
-            <h3>Match with purpose</h3>
-            <p>Dating, friendship, networking, and team building. A Dual is a Dual whether you&rsquo;re dating or building a team.</p>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ borderTop: '1px solid var(--border)', padding: '4rem 2rem', textAlign: 'center', background: 'var(--surface, #f7f4ef)' }}>
-        <div style={{ maxWidth: 600, margin: '0 auto' }}>
-          <blockquote style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', fontStyle: 'italic', fontWeight: 400, lineHeight: 1.6, color: 'var(--text)', marginBottom: '1rem' }}>
-            &ldquo;Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations. The unit of analysis is the dyad, not the person.&rdquo;
-          </blockquote>
-          <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-            Developed in the 1970s on Jungian foundations, Socionics maps 16 specific dynamics between every type pair.{' '}
-            <button onClick={() => { window.umami?.track('si-link-home'); setWebviewUrl('https://socionicsinsight.com') }} style={{ color: 'var(--accent)', textDecoration: 'none', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 'inherit' }}>New to Socionics? Start here →</button>
-          </p>
-        </div>
-      </section>
-
-      {/* THE FEED section — was background: 'var(--card-bg)', now 'var(--card-bg)' */}
-      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--card-bg)' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto' }}>
-          <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>The feed</p>
-          <h2 style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
-            Every profile shows <em>your dynamic</em>
-          </h2>
-          <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto 3rem', lineHeight: 1.7 }}>
-            Not just a profile — a named relationship dynamic, computed from your type and theirs. Try it below.
-          </p>
-
-          <HomeSwipeDemo foundingActive={foundingActive} loggedIn={!!(session && profile)} />
-
-          <div style={{ textAlign: 'center', marginTop: '2.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-            <p style={{ fontSize: '0.95rem', color: 'var(--muted)', maxWidth: 420, lineHeight: 1.7 }}>
-              Your feed shows real members whose type produces your selected dynamics.
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {!session && (
-                <>
-                  <Link to="/onboarding?know=1" className="btn-primary">{foundingActive ? 'Claim founding access →' : 'I know my type →'}</Link>
-                  <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
-                </>
-              )}
-              {session && profile && <Link to="/feed" className="btn-primary">View your matches →</Link>}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section style={{ padding: '5rem 2rem', background: 'var(--surface, #f7f4ef)' }}>
         <TestimonialsCarousel />
       </section>
 
-     {/* DISCORD COMMUNITY */}
-      <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', background: 'var(--card-bg)', textAlign: 'center' }}>
-        <div style={{ maxWidth: 560, margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem' }}>
-          <p className="eyebrow">Community</p>
-          <h2>Join the <em>conversation</em></h2>
-          <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75 }}>
-            The Socion Discord is where members discuss dynamics, debate typings, and go deeper than a profile card allows. Active, free, and worth joining.
-          </p>
-          <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-block', marginTop: '0.5rem' }} onClick={() => window.umami?.track('home-discord-join-clicked')}>
-            Join Discord →
-          </a>
-        </div>
-      </section>
-
-      {/* AI CHATBOT FEATURE */}
-      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--surface, #f7f4ef)' }}>
-        <div style={{ maxWidth: 860, margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '3rem', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-            <p className="eyebrow">Socionics AI</p>
-            <h2 style={{ margin: 0 }}>Have a question?<br /><em>Just ask.</em></h2>
-            <p style={{ color: 'var(--muted)', fontSize: '0.95rem', lineHeight: 1.75, margin: 0 }}>
-              Our AI assistant knows Socionics deeply — types, functions, intertype relations, and theory. Ask it anything, and it personalizes answers to your type.
-            </p>
-            <p style={{ fontSize: '0.82rem', color: 'var(--muted)', margin: 0 }}>Free for all members &mdash; 10 questions/day, unlimited with Premium.</p>
-            {session ? (
-              <Link to="/ask" className="btn-primary" style={{ textDecoration: 'none', alignSelf: 'flex-start', marginTop: '0.25rem' }} onClick={() => window.umami?.track('home-ask-section-cta')}>
-                Ask the AI →
-              </Link>
-            ) : (
-              <Link to="/onboarding?know=1" className="btn-primary" style={{ textDecoration: 'none', alignSelf: 'flex-start', marginTop: '0.25rem' }} onClick={() => window.umami?.track('home-ask-section-signup')}>
-                {foundingActive ? 'Claim founding access →' : 'Sign up to try it →'}
-              </Link>
-            )}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            <p style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.25rem' }}>Example questions</p>
+      {/* FEATURE CARDS — trimmed to the four most decision-relevant */}
+      <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--card-bg)' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
+          <h2 style={{ textAlign: 'center', marginBottom: '3.5rem' }}>Built differently<br />from the ground up</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '2rem' }}>
             {[
-              'What is my Dual relation and why does it work?',
-              'How is Socionics different from MBTI?',
-              'What should I know before dating a Dual?',
-              'Explain the Conflict relation to me.',
-            ].map(q => (
-              <div key={q} style={{ padding: '0.75rem 1rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', fontSize: '0.88rem', color: 'var(--text)', lineHeight: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
-                <span>{q}</span>
-                {session && (
-                  <Link
-                    to={`/ask?q=${encodeURIComponent(q)}`}
-                    style={{ fontSize: '0.75rem', color: 'var(--accent)', textDecoration: 'none', flexShrink: 0, opacity: 0.8 }}
-                    onClick={() => window.umami?.track('home-ask-example-question', { q })}
-                  >Ask →</Link>
+              { title: '🔍 Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
+              { title: '🎯 You choose the dynamic', body: "Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm's." },
+              { title: '🤖 Socionics AI', body: "Ask anything about types, relations, or your own dynamics. An AI assistant answers in seconds — and personalizes responses to your type.", link: '/ask' },
+              { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
+            ].map(({ title, body, link }) => (
+              <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{title}</h3>
+                <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300, margin: 0 }}>{body}</p>
+                {link && session && (
+                  <Link to={link} style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', marginTop: 'auto' }} onClick={() => window.umami?.track('home-feature-card-ask')}>
+                    Try it →
+                  </Link>
                 )}
               </div>
             ))}
@@ -591,47 +441,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURE CARDS */}
-      <section style={{ padding: '6rem 2rem', maxWidth: 900, margin: '0 auto' }}>
-        <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
-        <h2 style={{ textAlign: 'center', marginBottom: '3.5rem' }}>Built differently<br />from the ground up</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '2rem' }}>
-          {[
-            { title: '🔍 Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
-            { title: '🎯 You choose the dynamic', body: "Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm's." },
-            { title: '🤝 Four purposes', body: "Dating, friendship, networking, and team building. The same theory applies to all — a Dual is a Dual whether you're dating or building a product team." },
-            { title: '📊 Real data', body: "Every connection and rating tests the theory at scale. You're part of the first large-scale empirical test of Socionics in the English-speaking world." },
-            { title: '🕵️ Browse anonymously', body: "Not ready to put yourself out there? Enable anonymous mode and explore the feed by type only. Your name, age, photo, and location stay hidden until you choose to reveal them." },
-            { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
-            { title: '🤖 Socionics AI', body: "Ask anything about types, relations, or your own dynamics. An AI assistant answers in seconds — and personalizes responses to your type.", link: '/ask' },
-            { title: '💬 Boards', body: "Discussion topics open to everyone — introductions, type discussions, theory, relationship advice, and more. Post, comment, and react.", link: '/boards' },
-          ].map(({ title, body, link }) => (
-            <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{title}</h3>
-              <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, fontWeight: 300, margin: 0 }}>{body}</p>
-              {link && session && (
-                <Link to={link} style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', marginTop: 'auto' }} onClick={() => window.umami?.track('home-feature-card-ask')}>
-                  Try it →
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
       <section style={{ borderTop: '1px solid var(--border)', padding: '5rem 2rem', textAlign: 'center' }}>
         <div style={{ maxWidth: 600, margin: '0 auto' }}>
           <p style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.2rem,2.5vw,1.6rem)', color: 'var(--text)', marginBottom: '1.5rem' }}>
-            {foundingActive && !session ? <>Become a founding member before {foundingDay}.</> : <>Ready to find your dynamic?</>}
+            Ready to find your dynamic?
           </p>
           <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            {!session && (
-              <>
-                <Link to="/onboarding?know=1" className="btn-primary">{foundingActive ? 'Claim founding access →' : 'I know my type →'}</Link>
-                <Link to="/onboarding" className="btn-ghost">Help me find my type</Link>
-              </>
+            {session && profile ? (
+              <Link to="/feed" className="btn-primary">View your matches →</Link>
+            ) : (
+              <Link to="/onboarding" className="btn-primary">Get started free →</Link>
             )}
-            {session && profile && <Link to="/feed" className="btn-primary">View your matches →</Link>}
           </div>
         </div>
       </section>

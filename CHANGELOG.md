@@ -9,6 +9,14 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 ### Added
 - **Admin — Inactive users panel**: New panel listing users inactive past a configurable threshold (14/30/60 days), with the same Copy emails / Export CSV actions as the existing Incomplete sign-ups and Member emails panels. Export only — sending a re-engagement campaign is out of scope until a marketing-consent/opt-in field exists.
 
+### Changed
+- **Homepage redesign**: Restructured the logged-out homepage to reduce bounce and decision friction ahead of #866's onboarding overhaul.
+  - Collapsed the hero's "I know my type" / "Help me find my type" dual CTA into a single "Get started free" link into `/onboarding`, which already asks the same question one step in (`EntryChoice`) — the homepage no longer duplicates that fork.
+  - Moved the interactive swipe-demo section directly under the hero (previously section 4, past the founding-member block, a 3-step explainer, and a pull-quote).
+  - Removed all founding-member offer UI and countdown logic (`FOUNDING_CUTOFF`, `foundingActive`, live founding-member count) — the offer ended 17 June and the code was dead weight.
+  - Condensed the "How it works" step copy, merged the stats row and testimonial carousel into one section, and trimmed the feature-card grid from 8 cards to the 4 most decision-relevant (dropped the standalone Discord and dedicated AI-chat sections, and the four-purposes/real-data/anonymous-browsing/boards cards).
+  - Removed the clickable relation-type pills from the hero.
+
 ## 1 July 2026
 
 ### Added

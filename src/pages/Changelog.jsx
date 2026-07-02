@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '2 July 2026',
+       label: 'Update',
+       items: [
+         'Homepage — redesigned to get you to the good part faster: one clear "Get started free" button instead of two, and the interactive swipe demo now sits right under the headline instead of buried further down the page',
+       ],
+     },
+     {
        date: '1 July 2026',
        label: 'Update',
        items: [
