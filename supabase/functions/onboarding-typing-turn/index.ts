@@ -208,7 +208,7 @@ Deno.serve(async (req) => {
 
     // Malformed model output: keep the conversation moving forward rather
     // than getting stuck repeating the same topic indefinitely.
-    const assistantMessage = parsed?.message ?? rawText.trim() || "Let's move on."
+    const assistantMessage = parsed?.message ?? (rawText.trim() || "Let's move on.")
     let advanceTopic = parsed?.advance_topic ?? true
 
     // Server enforces the follow-up cap regardless of model output.
