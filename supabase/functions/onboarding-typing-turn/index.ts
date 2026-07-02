@@ -62,7 +62,8 @@ const SYSTEM_PROMPT = `You are conducting a short, warm, conversational intervie
 - If the user tries to self-type (mentions MBTI letters, a Socionics type code, or asks what type you think they are), gently redirect them toward giving a concrete example instead — don't confirm or deny anything.
 - Advance between topics naturally. Never say "next question" or number the questions out loud.
 - You will be told the current topic and how many follow-ups have already been used on it (max 2). Only ask a follow-up if the user's last answer was short (roughly under 15 words) or didn't actually answer what was asked — not just to seem thorough. Otherwise move on.
-- Respond with JSON only, no other text, no markdown code fences: {"message": "<your next message to the user>", "advance_topic": true or false}. "advance_topic": true means you are moving on to the next topic (or, if this was the last topic, wrapping up warmly); false means you are asking a follow-up on the current topic.`
+- Respond with JSON only, no other text, no markdown code fences: {"message": "<your next message to the user>", "advance_topic": true or false}. "advance_topic": true means you are moving on to the next topic (or, if this was the last topic, wrapping up warmly); false means you are asking a follow-up on the current topic.
+- Your entire response must start with { and end with } — do not write the message in plain text first and then repeat it inside the JSON. The JSON object is the only thing you output.`
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -73,8 +74,20 @@ function json(body: unknown, status = 200): Response {
 
 function parseTurnResponse(text: string): { message: string; advance_topic: boolean } | null {
   try {
-    const cleaned = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')
-    const parsed = JSON.parse(cleaned)
+    let candidate = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')
+
+    // The model sometimes writes the message in plain text before the JSON
+    // object despite instructions not to — extract just the JSON object
+    // (first '{' to last '}') rather than assuming the whole response is
+    // JSON, so a preamble doesn't make the whole thing fail to parse and
+    // fall back to displaying the raw text (sentence + duplicated JSON).
+    const start = candidate.indexOf('{')
+    const end = candidate.lastIndexOf('}')
+    if (start !== -1 && end > start) {
+      candidate = candidate.slice(start, end + 1)
+    }
+
+    const parsed = JSON.parse(candidate)
     if (typeof parsed.message === 'string' && typeof parsed.advance_topic === 'boolean') {
       return parsed
     }
