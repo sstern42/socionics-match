@@ -19,11 +19,11 @@ This skill covers production of **Socion for Teams pairing reports**: combining 
 | Input | Two confirmed types (from /socion-typing-report or equivalent manual typing) | A 12Q questionnaire submission |
 | New analysis | Relation lookup + working-relationship framing | Functional analysis from scratch |
 | Length | Longer than a single report — two profiles plus relation analysis | ~1,500–2,500 words |
-| Billing | Stern Consulting Stripe account (GBP), one-off, pilot pricing | Socion Stripe account (USD) |
+| Billing | Socion Stripe account (USD), one-off, pilot pricing | Socion Stripe account (USD) |
 | Delivery | PDF to both participants, informal pilot tracking | PDF + email + Socion profile update |
 | Supabase | No write — pilot tracking is a spreadsheet | Profile row updated |
 
-These are commercially separate products. Never describe a pairing report as a Socion Premium feature or bundle it with a subscription — it is billed per-report through Stern Consulting.
+Teams billing runs through the same Socion Stripe account as the consumer product (it's part of the Socion.app site), but it must still be charged as a one-off per-report fee, never bundled into or described as a Socion Premium subscription feature.
 
 ---
 
@@ -199,4 +199,4 @@ For the two asymmetric relations, always state in the report header which person
 
 ## Positioning Note
 
-Socion for Teams is a **pilot-phase, no-infrastructure offering**. Billed through the **Stern Consulting** Stripe account (GBP), one-off per report, no subscription — kept deliberately separate from Socion's consumer Stripe account (USD). Do not mention Socion Premium, bundling, or subscription pricing anywhere in a pairing report or delivery email. Pilot pairs are known contacts selected for feedback, not cold outreach, and pilot pricing (free or nominal) must be explicitly framed to participants as a pilot, not as the eventual commercial rate. No public landing page exists yet — the early-access concept stays a concept until pilot feedback justifies building it.
+Socion for Teams is a **pilot-phase, no-infrastructure offering**. Billed through the **Socion.app** Stripe account (USD) — it's part of the Socion product line, not the Stern Consulting typing-services business — one-off per report, no subscription. Do not mention Socion Premium, bundling, or subscription pricing anywhere in a pairing report or delivery email: even though it shares an account with the consumer product, it must always be charged and described as a standalone one-off fee, never as a Premium feature or add-on. Pilot pairs are known contacts selected for feedback, not cold outreach, and pilot pricing (free or nominal) must be explicitly framed to participants as a pilot, not as the eventual commercial rate. No public landing page exists yet — the early-access concept stays a concept until pilot feedback justifies building it.
