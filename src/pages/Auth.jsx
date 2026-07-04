@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
@@ -7,14 +7,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { getSignupDevice } from '../lib/device'
 
 const IS_PROD = window.location.hostname === 'socion.app'
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const PENDING_EMAIL_KEY = 'socion_pending_email'
 
-// OAuth providers (besides Google, which uses Google Identity Services below)
-// are only offered in production: their redirect URLs have to be allow-listed
-// in the Supabase dashboard, which the ephemeral Deploy Preview origins aren't.
-// On a preview the email magic code is the one flow that works, so it's shown
-// expanded there instead of collapsed behind a link.
+// OAuth providers (Google, Discord) are only offered in production: their
+// redirect URLs have to be allow-listed in the Supabase dashboard, which the
+// ephemeral Deploy Preview origins aren't. On a preview the email magic code is
+// the one flow that works, so it's shown expanded there instead of collapsed
+// behind a link.
 const OAUTH_ENABLED = IS_PROD
 
 export default function Auth() {
@@ -35,7 +34,6 @@ export default function Auth() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const incomingType = searchParams.get('type')
-  const googleButtonRef = useRef(null)
 
   useEffect(() => {
     if (authLoading) return
@@ -52,79 +50,6 @@ export default function Auth() {
       if (savedEmail) setEmail(savedEmail)
     }
   }, [])
-
-  useEffect(() => {
-    if (!IS_PROD || !GOOGLE_CLIENT_ID) return
-
-    let cancelled = false
-    let interval
-
-    // Google Identity Services renders its own button and its styling can't be
-    // freely overridden (brand rules), but it does ship a dark theme. Pick the
-    // theme from the site's own light/dark state (html.dark) so the button
-    // isn't a stark white box on the dark UI, and re-render if the theme is
-    // toggled while the page is open. logo_alignment:'center' groups the logo
-    // and label so it matches the Discord button beside it.
-    function renderGoogleButton() {
-      if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return
-      const isDark = document.documentElement.classList.contains('dark')
-      googleButtonRef.current.innerHTML = ''
-      window.google.accounts.id.renderButton(googleButtonRef.current, {
-        theme: isDark ? 'filled_black' : 'outline',
-        size: 'large',
-        width: googleButtonRef.current.offsetWidth || 400,
-        text: 'continue_with',
-        shape: 'rectangular',
-        logo_alignment: 'center',
-      })
-    }
-
-    function initGoogle() {
-      if (!window.google?.accounts?.id) return
-      window.google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleCredential,
-        auto_select: false,
-      })
-      renderGoogleButton()
-    }
-
-    if (window.google?.accounts?.id) {
-      initGoogle()
-    } else {
-      interval = setInterval(() => {
-        if (window.google?.accounts?.id) {
-          clearInterval(interval)
-          initGoogle()
-        }
-      }, 100)
-    }
-
-    const themeObserver = new MutationObserver(renderGoogleButton)
-    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-
-    return () => {
-      cancelled = true
-      if (interval) clearInterval(interval)
-      themeObserver.disconnect()
-    }
-  }, [authLoading])
-
-  async function handleGoogleCredential(response) {
-    setError(null)
-    setLoading(true)
-    try {
-      const { error } = await supabase.auth.signInWithIdToken({
-        provider: 'google',
-        token: response.credential,
-      })
-      if (error) throw error
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function handleOAuth(provider) {
     setError(null)
@@ -248,9 +173,15 @@ export default function Auth() {
 
           {hasOAuth && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {GOOGLE_CLIENT_ID && (
-                <div ref={googleButtonRef} className="google-btn-slot" style={{ width: '100%', minHeight: 44 }} />
-              )}
+              <button
+                type="button"
+                onClick={() => handleOAuth('google')}
+                disabled={loading}
+                style={{ ...oauthButtonStyle, opacity: loading ? 0.6 : 1 }}
+              >
+                <GoogleIcon />
+                Continue with Google
+              </button>
               <button
                 type="button"
                 onClick={() => handleOAuth('discord')}
@@ -345,6 +276,17 @@ export default function Auth() {
         </div>
       </section>
     </Layout>
+  )
+}
+
+function GoogleIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z" />
+      <path fill="#FBBC05" d="M5.84 14.09a6.6 6.6 0 010-4.18V7.07H2.18a11 11 0 000 9.86l3.66-2.84z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1a11 11 0 00-9.82 6.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    </svg>
   )
 }
 
