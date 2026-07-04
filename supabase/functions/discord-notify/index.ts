@@ -44,6 +44,21 @@ function deviceLabel(record: Record<string, unknown>): string | null {
   return DEVICE_LABELS[key] ?? `🖥️ ${key}`
 }
 
+// The auth provider lives on auth.users.raw_app_meta_data.provider — 'email'
+// for the magic-code (OTP) flow, 'google' for Google sign-in — so no client
+// change is needed to surface it.
+const PROVIDER_LABELS: Record<string, string> = {
+  email:  '✉️ Magic code',
+  google: '🔵 Google',
+}
+
+function authMethod(record: Record<string, unknown>): string | null {
+  const meta = record.raw_app_meta_data as Record<string, unknown> | undefined
+  const provider = typeof meta?.provider === 'string' ? meta.provider : null
+  if (!provider) return null
+  return PROVIDER_LABELS[provider] ?? `🔑 ${provider}`
+}
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split('@')
   const maskedLocal = local.slice(0, 2) + '***'
@@ -100,12 +115,11 @@ Deno.serve(async (req) => {
   const members = count ?? 0
 
   if (event === 'auth-signup') {
-    const email  = record.email ? `\`${maskEmail(record.email)}\`` : 'unknown'
-    const device = deviceLabel(record)
+    const email = record.email ? `\`${maskEmail(record.email)}\`` : 'unknown'
+    const parts = [authMethod(record), deviceLabel(record), `📊 ${members} members`].filter(Boolean)
     await postToDiscord(
       `🔔 **New sign-up** — ${email}\n` +
-      (device ? `${device} · ` : '') +
-      `📊 ${members} members`
+      parts.join(' · ')
     )
 
   } else if (event === 'match-created') {
