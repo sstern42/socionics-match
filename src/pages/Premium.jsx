@@ -23,7 +23,7 @@ const FEATURES = [
 
 export default function Premium() {
   usePageMeta('Premium — Unlimited Matching, $14.99/yr | Socion™', 'Unlimited connections, all 16 relation filters, read receipts, viewer history, compatibility breakdowns, and Socionics AI — $14.99/year.')
-  const { session, profile, isPremium, loading } = useAuth()
+  const { session, profile, loading } = useAuth()
   const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)

@@ -182,7 +182,6 @@ export default function UserProfile() {
   const isAnon      = !isSelf && (other.profile_data?.anonymous ?? false)
   const name        = isAnon ? 'Anonymous' : (other.profile_data?.name ?? other.type)
   const flag        = isAnon ? null : countryFlag(other.profile_data?.country)
-  const dob         = other.profile_data?.dob
   const gender      = isAnon ? null : other.profile_data?.gender
   const genderEmoji = { Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[gender]
   const discordHandle = isAnon ? null : other.profile_data?.discord_handle

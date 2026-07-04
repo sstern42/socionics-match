@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
@@ -683,7 +683,7 @@ export default function Rooms() {
 
   async function handleGifSelect(gifUrl) {
     setShowGifPicker(false)
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('room_messages')
       .insert({ room_id: roomId, sender_id: profile.id, content: null, image_url: gifUrl, reply_to_id: null })
     if (error) {

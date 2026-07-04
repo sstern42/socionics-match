@@ -30,7 +30,7 @@ function buildDefaultChips(userType) {
 // ── Inline markdown renderer ──────────────────────────────────────────────────
 function renderInline(text) {
   const parts = []
-  const re = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|\[([^\]]+)\]\((https?:\/\/[^\)]+)\))/g
+  const re = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`|\[([^\]]+)\]\((https?:\/\/[^)]+)\))/g
   let last = 0, match, key = 0
   while ((match = re.exec(text)) !== null) {
     if (match.index > last) parts.push(text.slice(last, match.index))
@@ -136,10 +136,10 @@ function MarkdownContent({ content }) {
     }
 
     // Bullet list
-    if (/^[\-\*\+]\s/.test(line)) {
+    if (/^[-*+]\s/.test(line)) {
       const items = []
-      while (i < lines.length && /^[\-\*\+]\s/.test(lines[i])) {
-        items.push(<li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{renderInline(lines[i].replace(/^[\-\*\+]\s/, ''))}</li>)
+      while (i < lines.length && /^[-*+]\s/.test(lines[i])) {
+        items.push(<li key={i} style={{ marginBottom: '0.25rem', lineHeight: 1.6 }}>{renderInline(lines[i].replace(/^[-*+]\s/, ''))}</li>)
         i++
       }
       elements.push(<ul key={key++} style={{ margin: '0.35rem 0 0.5rem', paddingLeft: '1.25rem', display: 'flex', flexDirection: 'column' }}>{items}</ul>)
@@ -172,7 +172,7 @@ function MarkdownContent({ content }) {
     while (
       i < lines.length &&
       lines[i].trim() !== '' &&
-      !/^(#{1,3}\s|[\-\*\+]\s|\d+\.\s|>\s|[-*_]{3,}$)/.test(lines[i]) &&
+      !/^(#{1,3}\s|[-*+]\s|\d+\.\s|>\s|[-*_]{3,}$)/.test(lines[i]) &&
       !(isTableRow(lines[i]) && i + 1 < lines.length && isSeparatorRow(lines[i + 1]))
     ) {
       paraLines.push(lines[i])
@@ -309,7 +309,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
     try {
       const saved = JSON.parse(localStorage.getItem(`chat_history_${authUserId}`) ?? 'null')
       if (Array.isArray(saved) && saved.length) setMessages(saved)
-    } catch {}
+    } catch { /* ignore */ }
   }, [authUserId])
 
   // Persist conversation as it evolves
@@ -442,7 +442,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
           const data = await res.json()
           errorMsg = data.error ?? errorMsg
           if (data.upgrade) { setShowUpgrade(true); return }
-        } catch {}
+        } catch { /* ignore */ }
         throw new Error(errorMsg)
       }
       const reader = res.body.getReader()

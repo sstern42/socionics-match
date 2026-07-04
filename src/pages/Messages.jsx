@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import MatchList from '../components/messages/MatchList'
 import PastConnectionsList from '../components/messages/PastConnectionsList'
@@ -26,7 +26,6 @@ export default function Messages() {
   const [mobileShowConvo, setMobileShowConvo] = useState(false)
   const [showArchived, setShowArchived] = useState(false)
   const [showPastConnections, setShowPastConnections] = useState(false)
-  const queryClient = useQueryClient()
   const matchesQueryKey = ['matches', profile?.id]
 
   const selectedRef = useRef(null)
