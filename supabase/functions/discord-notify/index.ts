@@ -25,6 +25,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, content-type, x-webhook-event, x-webhook-secret',
 }
 
+// signup_device is a stable key set client-side (src/lib/device.js) and
+// carried into auth.users.raw_user_meta_data. Map it to a friendly label.
+// Google sign-in and other flows that don't set it fall back to null.
+const DEVICE_LABELS: Record<string, string> = {
+  ios:     '📱 Mobile (iOS)',
+  android: '📱 Mobile (Android)',
+  mac:     '💻 Desktop (macOS)',
+  windows: '💻 Desktop (Windows)',
+  linux:   '💻 Desktop (Linux)',
+  other:   '🖥️ Other device',
+}
+
+function deviceLabel(record: Record<string, unknown>): string | null {
+  const meta = record.raw_user_meta_data as Record<string, unknown> | undefined
+  const key = typeof meta?.signup_device === 'string' ? meta.signup_device : null
+  if (!key) return null
+  return DEVICE_LABELS[key] ?? `🖥️ ${key}`
+}
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split('@')
   const maskedLocal = local.slice(0, 2) + '***'
@@ -81,9 +100,11 @@ Deno.serve(async (req) => {
   const members = count ?? 0
 
   if (event === 'auth-signup') {
-    const email = record.email ? `\`${maskEmail(record.email)}\`` : 'unknown'
+    const email  = record.email ? `\`${maskEmail(record.email)}\`` : 'unknown'
+    const device = deviceLabel(record)
     await postToDiscord(
       `🔔 **New sign-up** — ${email}\n` +
+      (device ? `${device} · ` : '') +
       `📊 ${members} members`
     )
 

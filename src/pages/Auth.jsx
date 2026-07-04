@@ -4,6 +4,7 @@ import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { getSignupDevice } from '../lib/device'
 
 const IS_PROD = window.location.hostname === 'socion.app'
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -97,7 +98,11 @@ export default function Auth() {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.trim(),
-        options: { shouldCreateUser: true },
+        // signup_device tags the eventual auth.users row (via
+        // raw_user_meta_data) so the Discord #signups notification can show
+        // what kind of device a new member joined from. Only applied when the
+        // user is created; ignored for existing users signing back in.
+        options: { shouldCreateUser: true, data: { signup_device: getSignupDevice() } },
       })
       if (error) throw error
       localStorage.setItem(PENDING_EMAIL_KEY, email.trim())
