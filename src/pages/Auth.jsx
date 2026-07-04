@@ -249,7 +249,7 @@ export default function Auth() {
           {hasOAuth && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {GOOGLE_CLIENT_ID && (
-                <div ref={googleButtonRef} style={{ width: '100%', minHeight: 44 }} />
+                <div ref={googleButtonRef} className="google-btn-slot" style={{ width: '100%', minHeight: 44 }} />
               )}
               <button
                 type="button"
