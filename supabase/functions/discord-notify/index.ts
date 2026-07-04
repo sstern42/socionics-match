@@ -25,6 +25,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, content-type, x-webhook-event, x-webhook-secret',
 }
 
+// signup_device is a stable key set client-side (src/lib/device.js) and
+// carried into auth.users.raw_user_meta_data. Map it to a friendly label.
+// Google sign-in and other flows that don't set it fall back to null.
+const DEVICE_LABELS: Record<string, string> = {
+  ios:     '📱 Mobile (iOS)',
+  android: '📱 Mobile (Android)',
+  mac:     '💻 Desktop (macOS)',
+  windows: '💻 Desktop (Windows)',
+  linux:   '💻 Desktop (Linux)',
+  other:   '🖥️ Other device',
+}
+
+function deviceLabel(record: Record<string, unknown>): string | null {
+  const meta = record.raw_user_meta_data as Record<string, unknown> | undefined
+  const key = typeof meta?.signup_device === 'string' ? meta.signup_device : null
+  if (!key) return null
+  return DEVICE_LABELS[key] ?? `🖥️ ${key}`
+}
+
+// The auth provider lives on auth.users.raw_app_meta_data.provider — 'email'
+// for the magic-code (OTP) flow, 'google' for Google sign-in — so no client
+// change is needed to surface it.
+const PROVIDER_LABELS: Record<string, string> = {
+  email:  '✉️ Magic code',
+  google: '🔵 Google',
+}
+
+function authMethod(record: Record<string, unknown>): string | null {
+  const meta = record.raw_app_meta_data as Record<string, unknown> | undefined
+  const provider = typeof meta?.provider === 'string' ? meta.provider : null
+  if (!provider) return null
+  return PROVIDER_LABELS[provider] ?? `🔑 ${provider}`
+}
+
 function maskEmail(email: string): string {
   const [local, domain] = email.split('@')
   const maskedLocal = local.slice(0, 2) + '***'
@@ -82,9 +116,12 @@ Deno.serve(async (req) => {
 
   if (event === 'auth-signup') {
     const email = record.email ? `\`${maskEmail(record.email)}\`` : 'unknown'
+    // members counts completed profiles (public.users), which this brand-new
+    // auth.users signup isn't yet — so frame it as one more on the way.
+    const parts = [authMethod(record), deviceLabel(record), `📊 ${members} members +1`].filter(Boolean)
     await postToDiscord(
       `🔔 **New sign-up** — ${email}\n` +
-      `📊 ${members} members`
+      parts.join(' · ')
     )
 
   } else if (event === 'match-created') {
@@ -162,14 +199,19 @@ Deno.serve(async (req) => {
 
   } else {
     // profile-created
+    // Respect anonymous mode (profile_data.anonymous) the same way
+    // notify-new-dual and send-room-push do — don't leak a name/country the
+    // user chose to hide. The 🕶️ marker distinguishes a deliberate anon user
+    // from one who simply never set a name.
     const type    = record.type ?? '?'
     const purpose = (record.purpose ?? []).join(', ') || 'not set'
-    const name    = record.profile_data?.name ?? 'Anonymous'
-    const country = record.profile_data?.country ? ` · ${record.profile_data.country}` : ''
+    const isAnon  = record.profile_data?.anonymous === true
+    const name    = isAnon ? '🕶️ Anonymous' : (record.profile_data?.name ?? 'Anonymous')
+    const country = (!isAnon && record.profile_data?.country) ? ` · ${record.profile_data.country}` : ''
 
     await postToDiscord(
       `✅ **Profile complete** — ${name} · \`${type}\`${country}\n` +
-      `Purpose: ${purpose} · 📊 ${members} members`
+      `Purpose: ${purpose} · 📊 We now have ${members} members`
     )
   }
 
