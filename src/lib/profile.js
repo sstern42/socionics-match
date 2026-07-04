@@ -101,6 +101,20 @@ export async function updateProfileData(userId, { profileData, type, avatarUrl, 
   if (data && isProfileComplete(data)) awardPoints(data.id, 'profile_complete', data.id)
 }
 
+// Flip the anonymous / hide_activity privacy toggles without disturbing the
+// rest of profile_data — used by the feed's VisibilityReminder banner's
+// one-click "make me visible" action. Merges the new flags onto the caller's
+// current profile_data so a partial write can't wipe unrelated fields (name,
+// bio, etc.). profile_data.role is preserved server-side by the
+// protect_sensitive_user_columns trigger regardless.
+export async function updateVisibilityFlags(userId, currentProfileData, flags) {
+  const { error } = await supabase
+    .from('users')
+    .update({ profile_data: { ...(currentProfileData ?? {}), ...flags } })
+    .eq('id', userId)
+  if (error) throw error
+}
+
 export async function updatePurpose(userId, purpose) {
   const { error } = await supabase
     .from('users')
