@@ -344,6 +344,12 @@ export default function ProfileSetup() {
 const centreStyle = {
   minHeight: 'calc(100vh - 72px)',
   display: 'flex', flexDirection: 'column',
-  alignItems: 'center', justifyContent: 'center',
+  // `safe center` keeps the content vertically centred when it fits, but falls
+  // back to top-alignment when the form is taller than the viewport (common on
+  // mobile). Plain `center` let flexbox shrink this section — which has an
+  // explicit min-height, overriding the default min-content floor — below the
+  // form's height, centring the overflow so the top fields (incl. the "First
+  // name or alias" input) were clipped above the scroll area and unreachable.
+  alignItems: 'center', justifyContent: 'safe center',
   padding: '4rem 1.5rem', gap: '2rem',
 }

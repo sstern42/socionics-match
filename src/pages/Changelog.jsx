@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '4 July 2026',
+       label: 'Fixed',
+       items: [
+         'Signup — fixed the profile step on mobile where the "First name or alias" box was pushed off the top of the screen and out of reach: you\'d see the "still needed to continue" note but no box to type your name in. Everything now stays scrollable and reachable',
+       ],
+     },
+     {
        date: '3 July 2026',
        label: 'New',
        items: [
