@@ -74,10 +74,7 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
       relation:        getRelation(userType, profile.type),
       displayRelation: getRelation(profile.type, userType),
     }))
-    .filter(profile =>
-      !profile.profile_data?.hidden &&
-      profile.relation && relationPreferences.includes(profile.relation)
-    )
+    .filter(profile => !profile.profile_data?.hidden)
 
   const total = countResult.count ?? null
   const allSwipedIds = new Set((allSwipedResult.data ?? []).map(r => r.target_id))
