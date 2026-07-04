@@ -301,7 +301,11 @@ Deno.serve(async (req) => {
       {
         type: 'text',
         text: SYSTEM_PROMPT,
-        cache_control: { type: 'ephemeral' },
+        // 1h TTL (not the 5m default): the system prompt is byte-identical
+        // across every user and request, so at this traffic level a 1h entry
+        // is far more likely to be read before it expires. The 2x write premium
+        // is repaid after ~3 reads, which a globally shared prefix easily meets.
+        cache_control: { type: 'ephemeral', ttl: '1h' },
       },
       ...(userType
         ? [{ type: 'text', text: `The user's Socionics type is: ${userType}` }]
@@ -310,6 +314,23 @@ Deno.serve(async (req) => {
         ? [{ type: 'text', text: `The user currently has the following active connection relation types: ${connectionRelations.join(', ')}. Where relevant, tailor relation-specific answers to these dynamics.` }]
         : []),
     ]
+
+    // Cache the conversation history: put a breakpoint on the last message so
+    // each new turn reads the prior turns from cache (~0.1x) instead of
+    // re-sending the whole transcript as full-price input on every request.
+    // Only string content is wrapped; multimodal/array content is left as-is.
+    const cachedMessages = Array.isArray(messages) && messages.length
+      ? messages.map((m, i) =>
+          i === messages.length - 1 && typeof m?.content === 'string'
+            ? {
+                ...m,
+                content: [
+                  { type: 'text', text: m.content, cache_control: { type: 'ephemeral', ttl: '1h' } },
+                ],
+              }
+            : m
+        )
+      : messages
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -330,7 +351,7 @@ Deno.serve(async (req) => {
         thinking: { type: 'disabled' },
         stream: true,
         system: systemBlocks,
-        messages,
+        messages: cachedMessages,
       }),
     })
 
