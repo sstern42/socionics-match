@@ -197,10 +197,15 @@ Deno.serve(async (req) => {
 
   } else {
     // profile-created
+    // Respect anonymous mode (profile_data.anonymous) the same way
+    // notify-new-dual and send-room-push do — don't leak a name/country the
+    // user chose to hide. The 🕶️ marker distinguishes a deliberate anon user
+    // from one who simply never set a name.
     const type    = record.type ?? '?'
     const purpose = (record.purpose ?? []).join(', ') || 'not set'
-    const name    = record.profile_data?.name ?? 'Anonymous'
-    const country = record.profile_data?.country ? ` · ${record.profile_data.country}` : ''
+    const isAnon  = record.profile_data?.anonymous === true
+    const name    = isAnon ? '🕶️ Anonymous' : (record.profile_data?.name ?? 'Anonymous')
+    const country = (!isAnon && record.profile_data?.country) ? ` · ${record.profile_data.country}` : ''
 
     await postToDiscord(
       `✅ **Profile complete** — ${name} · \`${type}\`${country}\n` +
