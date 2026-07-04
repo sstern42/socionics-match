@@ -45,11 +45,12 @@ function deviceLabel(record: Record<string, unknown>): string | null {
 }
 
 // The auth provider lives on auth.users.raw_app_meta_data.provider — 'email'
-// for the magic-code (OTP) flow, 'google' for Google sign-in — so no client
-// change is needed to surface it.
+// for the magic-code (OTP) flow, 'google' for Google sign-in, 'discord' for
+// Discord OAuth — so no client change is needed to surface it.
 const PROVIDER_LABELS: Record<string, string> = {
-  email:  '✉️ Magic code',
-  google: '🔵 Google',
+  email:   '✉️ Magic code',
+  google:  '🔵 Google',
+  discord: '🟣 Discord',
 }
 
 function authMethod(record: Record<string, unknown>): string | null {
