@@ -61,6 +61,9 @@ async function notifyLiveStats(record: Record<string, unknown>): Promise<void> {
         'x-webhook-secret': secret,
       },
       body: JSON.stringify({ record }),
+      // Bound the ping so a hung Discord (or a slow member-count query inside
+      // discord-notify) can't keep this request alive indefinitely.
+      signal: AbortSignal.timeout(5000),
     })
     if (!res.ok) {
       console.error(`discord-notify ping failed: ${res.status} ${await res.text()}`)
@@ -131,8 +134,14 @@ Deno.serve(async (req) => {
       return json({ error: 'Something went wrong — please try again.' }, 500)
     }
 
-    // Fire-and-forget: the confirm succeeds regardless of the ping's fate.
-    await notifyLiveStats({
+    // Genuinely fire-and-forget: the live-stats ping must never delay or fail
+    // the user's confirm. Awaiting it (as this once did) puts a full Discord
+    // round-trip — a whole-table member-count query plus the webhook POST — on
+    // the critical path of every confirm; a slow ping then leaves the client
+    // stuck on the "analysing" spinner waiting for the applied result. Hand it
+    // to the runtime to finish after the response is sent where that API
+    // exists; otherwise just don't await (errors are already swallowed inside).
+    const notifyPromise = notifyLiveStats({
       user_id: userRow.id,
       source: notifySource,
       applied: !!applied,
@@ -141,6 +150,10 @@ Deno.serve(async (req) => {
       confidence,
       requires_lean_choice: leanChoice,
     })
+    const edgeRuntime = (globalThis as {
+      EdgeRuntime?: { waitUntil?: (p: Promise<unknown>) => void }
+    }).EdgeRuntime
+    if (edgeRuntime?.waitUntil) edgeRuntime.waitUntil(notifyPromise)
 
     return json({ applied: !!applied })
   } catch (err) {

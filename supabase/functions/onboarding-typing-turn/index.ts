@@ -119,6 +119,12 @@ Deno.serve(async (req) => {
     return json({ error: 'Method not allowed' }, 405)
   }
 
+  // Set once this request charges a session (the opening turn). Lets the
+  // failure paths below hand the "try" back if we charged but never delivered
+  // a question. Hoisted above the try so the outer catch can see it. Best-effort
+  // by construction (see where it's assigned) — a failed refund never surfaces.
+  let refundSession: (() => Promise<void>) | null = null
+
   try {
     const { conversation_history, topic_index, followups_used_on_topic } = await req.json()
 
@@ -175,6 +181,25 @@ Deno.serve(async (req) => {
         return json({
           error: `You've reached today's limit of ${SESSIONS_PER_DAY_LIMIT} typing chat sessions. Please try again tomorrow, or self-select your type for now.`,
         }, 429)
+      }
+
+      // Charged. If this opening turn fails to produce the first question, the
+      // member got nothing for their try — arm a refund so the failure paths
+      // below can give it back. Scoped to the opening turn only: once the
+      // conversation is underway the member has been served, so a refund past
+      // this point would just be an infinite-retry hole. The refund itself is
+      // best-effort — a failed refund must never become a second error, worst
+      // case leaving them charged for a failed start exactly as before.
+      refundSession = async () => {
+        try {
+          const { error: refundError } = await supabase.rpc(
+            'refund_onboarding_chat_session_count',
+            { p_user_id: userRow.id, p_date: today }
+          )
+          if (refundError) console.error('refund_onboarding_chat_session_count error:', refundError)
+        } catch (refundErr) {
+          console.error('refund_onboarding_chat_session_count threw:', refundErr)
+        }
       }
     }
 
@@ -234,6 +259,7 @@ Deno.serve(async (req) => {
     if (!res.ok) {
       const err = await res.text()
       console.error('Anthropic API error (onboarding-typing-turn):', err)
+      if (refundSession) await refundSession()
       return json({ error: 'Something went wrong — please try again.' }, 500)
     }
 
@@ -277,6 +303,9 @@ Deno.serve(async (req) => {
     })
   } catch (err) {
     console.error('onboarding-typing-turn error:', err)
+    // A throw after the opening turn charged (e.g. the model response failed to
+    // parse as JSON) also means a try spent for nothing — give it back.
+    if (refundSession) await refundSession()
     return json({ error: (err as Error).message ?? 'Something went wrong.' }, 500)
   }
 })

@@ -44,7 +44,11 @@ export default function Typing() {
 
   if (loading) return null
 
-  const showChatBanner = !profile || !VERIFIED_TYPE_SOURCES.has(profile.type_source)
+  // A verified member's type can't be overwritten by the chat (apply_onboarding_type
+  // refuses), so the "preliminary read" pitch doesn't fit — but the chat still runs
+  // for them as a logged "test run", so the entry point is shown with test-run copy
+  // rather than hidden. Everyone else gets the standard preliminary-read framing.
+  const isVerified = !!profile && VERIFIED_TYPE_SOURCES.has(profile.type_source)
 
   return (
     <Layout noScroll hideFooter>
@@ -53,27 +57,31 @@ export default function Typing() {
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3rem)', marginTop: '0.5rem', marginBottom: '0.75rem' }}>
           Get <em>typed</em>
         </h1>
-        <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: showChatBanner ? '1.5rem' : '3rem' }}>
+        <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '1.5rem' }}>
           Most people mistype themselves, especially early on. A typing report from a specialist gives you a considered, reasoned answer — so every match you make rests on the right type.
         </p>
 
-        {showChatBanner && (
-          <a
-            href={`/typing/chat${session ? '?source=retake' : ''}`}
-            onClick={() => window.umami?.track('typing-chat-banner-clicked')}
-            style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
-              marginBottom: '3rem', padding: '1rem 1.25rem', borderRadius: 8,
-              border: '1px solid var(--accent-lt)', background: 'rgba(154,111,56,0.06)',
-              textDecoration: 'none', flexWrap: 'wrap',
-            }}
-          >
-            <span style={{ fontSize: '0.88rem', color: 'var(--text)' }}>
-              Not sure of your type? <strong style={{ fontWeight: 500 }}>Try our free typing chat</strong> for a preliminary read.
-            </span>
-            <span style={{ fontSize: '0.78rem', color: 'var(--accent)', whiteSpace: 'nowrap' }}>Start free chat →</span>
-          </a>
-        )}
+        <a
+          href={`/typing/chat${session ? '?source=retake' : ''}`}
+          onClick={() => window.umami?.track('typing-chat-banner-clicked', { verified: isVerified })}
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+            marginBottom: '3rem', padding: '1rem 1.25rem', borderRadius: 8,
+            border: '1px solid var(--accent-lt)', background: 'rgba(154,111,56,0.06)',
+            textDecoration: 'none', flexWrap: 'wrap',
+          }}
+        >
+          <span style={{ fontSize: '0.88rem', color: 'var(--text)' }}>
+            {isVerified ? (
+              <>Already typed <strong style={{ fontWeight: 500 }}>{profile.type}</strong>? See how the free chat reads you — it's just a test run, your confirmed type won't change.</>
+            ) : (
+              <>Not sure of your type? <strong style={{ fontWeight: 500 }}>Try our free typing chat</strong> for a preliminary read.</>
+            )}
+          </span>
+          <span style={{ fontSize: '0.78rem', color: 'var(--accent)', whiteSpace: 'nowrap' }}>
+            {isVerified ? 'Try a test run →' : 'Start free chat →'}
+          </span>
+        </a>
 
         <style>{`@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }`}</style>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>

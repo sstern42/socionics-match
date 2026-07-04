@@ -209,6 +209,13 @@ export default function TypingChat() {
       setScreen('results')
     } catch (err) {
       setError(err.message)
+      // The non-lean path auto-confirms while screen === 'analysing', which
+      // renders only a spinner and no error surface — so a failed confirm
+      // there would strand the user on "Working through what you've shared…"
+      // forever (their session/"try" already spent) with no way to retry or
+      // self-select. Drop to the recoverable analysis-error screen. The
+      // lean-choice screen renders its own ErrorNotice, so it stays put.
+      if (!leanChoice) setScreen('analysis-error')
     }
   }
 
