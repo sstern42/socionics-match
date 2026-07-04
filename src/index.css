@@ -552,3 +552,19 @@ html.dark .rel-pill.clickable:hover {
   border-color: var(--accent-lt);
   color: var(--accent);
 }
+
+/* ── Google sign-in button (Auth page) ──────────────────────────────
+   Google Identity Services injects a wrapper around its rendered button
+   that can carry a light background, so on the dark UI the dark
+   (filled_black) button ends up sitting inside a white box. Strip the
+   wrapper's/iframe's background — the button element itself is nested
+   deeper (a [role="button"] a couple of levels down), so its own styling
+   is left untouched. If Google changes their markup this may need a
+   revisit. */
+.google-btn-slot > div,
+.google-btn-slot > iframe,
+.google-btn-slot iframe {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
