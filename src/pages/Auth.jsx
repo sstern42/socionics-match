@@ -56,6 +56,29 @@ export default function Auth() {
   useEffect(() => {
     if (!IS_PROD || !GOOGLE_CLIENT_ID) return
 
+    let cancelled = false
+    let interval
+
+    // Google Identity Services renders its own button and its styling can't be
+    // freely overridden (brand rules), but it does ship a dark theme. Pick the
+    // theme from the site's own light/dark state (html.dark) so the button
+    // isn't a stark white box on the dark UI, and re-render if the theme is
+    // toggled while the page is open. logo_alignment:'center' groups the logo
+    // and label so it matches the Discord button beside it.
+    function renderGoogleButton() {
+      if (cancelled || !window.google?.accounts?.id || !googleButtonRef.current) return
+      const isDark = document.documentElement.classList.contains('dark')
+      googleButtonRef.current.innerHTML = ''
+      window.google.accounts.id.renderButton(googleButtonRef.current, {
+        theme: isDark ? 'filled_black' : 'outline',
+        size: 'large',
+        width: googleButtonRef.current.offsetWidth || 400,
+        text: 'continue_with',
+        shape: 'rectangular',
+        logo_alignment: 'center',
+      })
+    }
+
     function initGoogle() {
       if (!window.google?.accounts?.id) return
       window.google.accounts.id.initialize({
@@ -63,27 +86,27 @@ export default function Auth() {
         callback: handleGoogleCredential,
         auto_select: false,
       })
-      if (googleButtonRef.current) {
-        window.google.accounts.id.renderButton(googleButtonRef.current, {
-          theme: 'outline',
-          size: 'large',
-          width: googleButtonRef.current.offsetWidth || 400,
-          text: 'continue_with',
-          shape: 'rectangular',
-        })
-      }
+      renderGoogleButton()
     }
 
     if (window.google?.accounts?.id) {
       initGoogle()
     } else {
-      const interval = setInterval(() => {
+      interval = setInterval(() => {
         if (window.google?.accounts?.id) {
           clearInterval(interval)
           initGoogle()
         }
       }, 100)
-      return () => clearInterval(interval)
+    }
+
+    const themeObserver = new MutationObserver(renderGoogleButton)
+    themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
+    return () => {
+      cancelled = true
+      if (interval) clearInterval(interval)
+      themeObserver.disconnect()
     }
   }, [authLoading])
 
