@@ -51,10 +51,9 @@ export async function getMatches(userId) {
     supabase
       .from('matches')
       .select(`
-        id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b, unmatched_at,
+        id, relation_type, created_at, user_a_id, user_b_id, feedback_a, feedback_b, unmatched_at, last_message,
         user_a:user_a_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status, last_active ),
-        user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status, last_active ),
-        messages ( content, created_at, sender_id )
+        user_b:user_b_id ( id, type, profile_data, avatar_url, verified_by, created_at, is_founding_member, plan_status, last_active )
       `)
       .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
       .is('unmatched_at', null)
@@ -71,15 +70,13 @@ export async function getMatches(userId) {
       return !blockedIds.has(otherId)
     })
     .map(m => {
-    const msgs = m.messages ?? []
-    const lastMsg = msgs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0] ?? null
     const other = m.user_a.id === userId ? m.user_b : m.user_a
     const me = m.user_a.id === userId ? m.user_a : m.user_b
     return {
       ...m,
       other,
       displayRelationType: getRelation(other.type, me.type),
-      lastMessage: lastMsg,
+      lastMessage: m.last_message ?? null,
     }
   }).sort((a, b) => {
     const aTime = a.lastMessage?.created_at ?? a.created_at
