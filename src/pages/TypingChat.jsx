@@ -197,10 +197,10 @@ export default function TypingChat() {
     }
   }
 
-  async function confirmType(type, confidence) {
+  async function confirmType(type, confidence, leanChoice = false) {
     setError(null)
     try {
-      const { applied } = await requestConfirm({ type, confidence })
+      const { applied } = await requestConfirm({ type, confidence, source, leanChoice })
       setFinalType(type)
       setFinalConfidence(confidence)
       setWasApplied(applied)
@@ -402,7 +402,7 @@ export default function TypingChat() {
                 <button
                   key={c.type}
                   type="button"
-                  onClick={() => confirmType(c.type, c.confidence)}
+                  onClick={() => confirmType(c.type, c.confidence, true)}
                   style={{
                     padding: '1.25rem 1.75rem', border: '1px solid var(--border)', borderRadius: 8,
                     background: 'var(--card-bg)', cursor: 'pointer', minWidth: 160,

@@ -1,11 +1,17 @@
 // supabase/functions/discord-notify/index.ts
-// Six webhook events via X-Webhook-Event header:
+// Seven webhook events via X-Webhook-Event header:
 //   auth-signup             auth.users INSERT             → 🔔 New sign-up
 //   profile-created         public.users INSERT           → ✅ Profile complete
 //   match-created           matches INSERT                → 🤝 New connection with type pair
 //   typing-request          typing_requests INSERT        → 🧠 New typing request (private channel, unused)
 //   feedback-created        feedback INSERT                → 📮 New feedback/bug report (private channel)
 //   typing-checkout-clicked typing_checkout_clicks INSERT  → 💳 Typing tier "Book" clicked (private channel)
+//   typing-chat-completed   onboarding-typing-confirm ping → 🌱/🔁/🔀/🎲 Free typing chat result
+//
+// Unlike the others, typing-chat-completed is not a Supabase database webhook —
+// it's an explicit fetch from the onboarding-typing-confirm edge function once
+// a chat result is written, carrying a synthetic `record` (see that function's
+// notifyLiveStats). It posts to the main live-stats channel.
 
 import { createClient } from 'npm:@supabase/supabase-js'
 
@@ -17,7 +23,7 @@ const SERVICE_KEY              = Deno.env.get('PROJECT_SECRET_KEY')!
 
 const KNOWN_EVENTS = new Set([
   'auth-signup', 'profile-created', 'match-created', 'typing-request', 'feedback-created',
-  'typing-checkout-clicked',
+  'typing-checkout-clicked', 'typing-chat-completed',
 ])
 
 const corsHeaders = {
@@ -197,6 +203,45 @@ Deno.serve(async (req) => {
       `💳 **Typing checkout clicked** — ${name} · \`${type}\` → ${record.typist_slug} (${record.tier_key})${price}`,
       DISCORD_TYPING_WEBHOOK
     )
+
+  } else if (event === 'typing-chat-completed') {
+    // record (synthetic, from onboarding-typing-confirm):
+    //   { user_id, source: 'signup'|'retake', applied, new_type,
+    //     previous_type, confidence, requires_lean_choice }
+    const { data: user } = await supabase
+      .from('users')
+      .select('profile_data')
+      .eq('id', record.user_id)
+      .maybeSingle()
+
+    // Anonymous-mode aware, same as 'profile-created' — never leak a name a
+    // member chose to hide.
+    const isAnon = user?.profile_data?.anonymous === true
+    const name   = isAnon ? '🕶️ Anonymous' : (user?.profile_data?.name ?? 'Anonymous')
+
+    const newType = record.new_type ?? '?'
+    const prev    = record.previous_type ?? null
+    const applied = record.applied === true
+    const pct     = Number.isFinite(record.confidence) ? `${Math.round(record.confidence * 100)}%` : '?'
+    const lean    = record.requires_lean_choice === true ? ' ⚖️' : ''
+
+    let line1: string
+    if (!applied) {
+      // Verified members' types are never overwritten — this was a test run.
+      line1 = `🎲 **Test run** — ${name} (verified \`${prev ?? '?'}\`) got \`${newType}\` · ${pct}${lean} — type unchanged`
+    } else if (record.source === 'signup') {
+      line1 = `🌱 **New member typed** — ${name} · \`${newType}\` · ${pct}${lean}`
+    } else if (prev && prev !== newType) {
+      line1 = `🔀 **Retype, changed** — ${name} · \`${prev} → ${newType}\` · ${pct}${lean}`
+    } else {
+      line1 = `🔁 **Retype, no change** — ${name} reconfirmed \`${newType}\` · ${pct}${lean}`
+    }
+
+    // Country shown only on the new-member line, to keep retake/test lines tight.
+    const country = (record.source === 'signup' && !isAnon && user?.profile_data?.country)
+      ? ` · ${user.profile_data.country}` : ''
+
+    await postToDiscord(`${line1}\n🧠 Typing chat${country} · 📊 ${members} members`)
 
   } else {
     // profile-created
