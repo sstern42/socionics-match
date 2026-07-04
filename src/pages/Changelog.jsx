@@ -21,6 +21,7 @@ export const ENTRIES = [
          'Get Typed — if your type is already verified, the Get Typed page now still offers the free typing chat as a "test run" you can try out of curiosity, instead of hiding it; your confirmed type never changes',
          'Signup — fixed the profile step on mobile where the "First name or alias" box was pushed off the top of the screen and out of reach: you\'d see the "still needed to continue" note but no box to type your name in. Everything now stays scrollable and reachable',
          'Feed — the "matches available" numbers are now accurate, and scrolling no longer hits stretches of near-empty pages. Both used to count profiles you\'d already passed, blocked, or that were hidden; the feed now leaves those out from the start',
+         'Messages — the conversations list now loads faster, especially if you have long-running chats; it no longer pulls in every message from every conversation just to show the previews',
        ],
      },
      {
