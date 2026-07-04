@@ -11,82 +11,51 @@ export async function getFeedProfiles({ userType, relationPreferences, userPurpo
     compatibleTypes = compatibleTypes.filter(t => quadraTypes.has(t))
   }
 
-  const typeFilter = compatibleTypes.length > 0 ? compatibleTypes : ['__none__']
+  // Blocked / swiped / hidden exclusion now happens server-side (see migration
+  // 20260704140000_get_feed_profiles_rpc.sql) so `total` and `hasMore` agree
+  // with the returned page by construction. An empty p_types simply returns no
+  // rows. Relation logic stays here: p_types is already narrowed by relation
+  // preference (and premium quadra scope) via getMatchingTypes above.
+  const purposeArg = userPurpose.length > 0 ? userPurpose : null
 
-  let query = supabase
-    .from('users')
-    .select('id, type, type_confidence, profile_data, location, relation_preferences, avatar_url, purpose, last_active, verified_by, is_founding_member, plan_status')
-    .neq('id', currentUserId)
-    .not('profile_data', 'is', null)
-    .in('type', typeFilter)
-    .order('last_active', { ascending: false, nullsFirst: false })
-    .range(offset, offset + limit - 1)
-
-  let countQuery = supabase
-    .from('users')
-    .select('id', { count: 'exact', head: true })
-    .neq('id', currentUserId)
-    .not('profile_data', 'is', null)
-    .in('type', typeFilter)
-
-  if (userPurpose.length > 0) {
-    query = query.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
-    countQuery = countQuery.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
-  }
-
-  let allTypesQuery = supabase
-    .from('users')
-    .select('id, type')
-    .neq('id', currentUserId)
-    .not('profile_data', 'is', null)
-    .in('type', typeFilter)
-
-  if (userPurpose.length > 0) {
-    allTypesQuery = allTypesQuery.filter('purpose', 'ov', `{${userPurpose.join(',')}}`)
-  }
-
-  const [feedResult, blocks, swipedResult, allSwipedResult, countResult, allTypesResult] = await Promise.all([
-    query,
-    getActiveBlocks(currentUserId),
-    supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId).eq('direction', 'left'),
+  const [pageResult, typeCountsResult, allSwipedResult] = await Promise.all([
+    supabase.rpc('get_feed_profiles', {
+      p_types: compatibleTypes,
+      p_purpose: purposeArg,
+      p_limit: limit,
+      p_offset: offset,
+    }),
+    supabase.rpc('get_feed_type_counts', {
+      p_types: compatibleTypes,
+      p_purpose: purposeArg,
+    }),
+    // Still fetched so the client can seed swipedIdsRef for immediate in-session
+    // dedup after a swipe (before the next refetch). The server page already
+    // excludes these rows, so this is belt-and-braces, not the primary filter.
     supabase.from('swipes').select('target_id').eq('swiper_id', currentUserId),
-    countQuery,
-    allTypesQuery,
   ])
 
-  if (feedResult.error) throw feedResult.error
+  if (pageResult.error) throw pageResult.error
 
-  const rawCount = feedResult.data.length
+  const rows = pageResult.data ?? []
+  // count(*) over() rides on every page row; an empty page means zero visible.
+  const total = rows.length > 0 ? Number(rows[0].total_count) : 0
 
-  const blockedIds = new Set(blocks.map(b =>
-    b.blocker_id === currentUserId ? b.blocked_id : b.blocker_id
-  ))
+  const profiles = rows.map(({ profile }) => ({
+    ...profile,
+    relation:        getRelation(userType, profile.type),
+    displayRelation: getRelation(profile.type, userType),
+  }))
 
-  const swipedIds = new Set(
-    (swipedResult.data ?? []).map(r => r.target_id)
-  )
-
-  const profiles = feedResult.data
-    .filter(profile => !blockedIds.has(profile.id))
-    .filter(profile => !swipedIds.has(profile.id))
-    .map(profile => ({
-      ...profile,
-      relation:        getRelation(userType, profile.type),
-      displayRelation: getRelation(profile.type, userType),
-    }))
-    .filter(profile => !profile.profile_data?.hidden)
-
-  const total = countResult.count ?? null
   const allSwipedIds = new Set((allSwipedResult.data ?? []).map(r => r.target_id))
 
   const relationCounts = {}
-  for (const p of (allTypesResult.data ?? [])) {
-    if (blockedIds.has(p.id) || allSwipedIds.has(p.id)) continue
-    const rel = getRelation(p.type, userType)
-    if (rel) relationCounts[rel] = (relationCounts[rel] || 0) + 1
+  for (const row of (typeCountsResult.data ?? [])) {
+    const rel = getRelation(row.type, userType)
+    if (rel) relationCounts[rel] = (relationCounts[rel] || 0) + Number(row.cnt)
   }
 
-  return { profiles, hasMore: rawCount === limit, total, allSwipedIds, relationCounts }
+  return { profiles, hasMore: offset + profiles.length < total, total, allSwipedIds, relationCounts }
 }
 
 export async function getQuadraOnline({ userType, currentUserId, limit = 8 }) {
