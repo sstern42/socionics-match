@@ -45,8 +45,16 @@ export function requestAnalysis({ transcript }) {
 }
 
 // Out: { applied: boolean }
-export function requestConfirm({ type, confidence }) {
-  return authedPost('onboarding-typing-confirm', { type, confidence })
+// source ('signup' | 'retake') and leanChoice are passed through only so the
+// confirm function can post an accurate live-stats notification to Discord —
+// they don't affect which type is written.
+export function requestConfirm({ type, confidence, source, leanChoice }) {
+  return authedPost('onboarding-typing-confirm', {
+    type,
+    confidence,
+    source,
+    lean_choice: !!leanChoice,
+  })
 }
 
 // Skip-to-self-select path. Unlike requestConfirm/apply_onboarding_type,
