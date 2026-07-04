@@ -12,6 +12,7 @@ import SwipeDeck from '../components/feed/SwipeDeck'
 import MatchModal from '../components/feed/MatchModal'
 import SeekingYou from '../components/feed/SeekingYou'
 import SIWebview from '../components/SIWebview'
+import VisibilityReminder from '../components/VisibilityReminder'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { getFeedProfiles, getExistingMatches, createMatch } from '../lib/feed'
@@ -514,6 +515,8 @@ export default function Feed() {
         )}
 
       <section className="feed-main" style={{ maxWidth: 860, margin: '0 auto', padding: '3rem 1.5rem', width: '100%' }}>
+
+        <VisibilityReminder />
 
         {/* Header */}
         {/* Browse / Swipe toggle — always visible */}

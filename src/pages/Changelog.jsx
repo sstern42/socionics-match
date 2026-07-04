@@ -5,6 +5,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 export const ENTRIES = [
      {
        date: '4 July 2026',
+       label: 'New',
+       items: [
+         'Feed — a friendly reminder now appears at the top of your feed if you\'ve left anonymous mode or "hide activity" on, since both quietly lower how often other members see you. One tap makes you visible again — no trip to Settings — or you can snooze it. It\'s deliberately light-touch: anonymous mode (which hides you from the feed entirely) nudges you again after a few days, then a week, then a month, while hiding just your activity is mentioned once and then left alone',
+       ],
+     },
+     {
+       date: '4 July 2026',
        label: 'Fixed',
        items: [
          'Signup — fixed the profile step on mobile where the "First name or alias" box was pushed off the top of the screen and out of reach: you\'d see the "still needed to continue" note but no box to type your name in. Everything now stays scrollable and reachable',
