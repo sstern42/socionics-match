@@ -10,6 +10,13 @@ const IS_PROD = window.location.hostname === 'socion.app'
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 const PENDING_EMAIL_KEY = 'socion_pending_email'
 
+// OAuth providers (besides Google, which uses Google Identity Services below)
+// are only offered in production: their redirect URLs have to be allow-listed
+// in the Supabase dashboard, which the ephemeral Deploy Preview origins aren't.
+// On a preview the email magic code is the one flow that works, so it's shown
+// expanded there instead of collapsed behind a link.
+const OAUTH_ENABLED = IS_PROD
+
 export default function Auth() {
   usePageMeta('Sign In or Create a Free Account | Socion™', 'Sign in or create a free Socion account. Match by Socionics personality type — choose your dynamic and connect with people who fit you by design.')
   const [email, setEmail] = useState('')
@@ -20,6 +27,10 @@ export default function Auth() {
   const [otpCode, setOtpCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [linkError, setLinkError] = useState(null)
+  // The email magic code is de-emphasised: on prod it starts collapsed behind a
+  // link (OAuth is the primary path); on a Deploy Preview, where OAuth isn't
+  // available, it's expanded from the start.
+  const [showEmail, setShowEmail] = useState(!OAUTH_ENABLED)
   const { session, profile, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -35,6 +46,7 @@ export default function Auth() {
     const hash = window.location.hash
     if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
       setLinkError('otp_expired')
+      setShowEmail(true)
       window.history.replaceState(null, '', window.location.pathname)
       const savedEmail = localStorage.getItem(PENDING_EMAIL_KEY)
       if (savedEmail) setEmail(savedEmail)
@@ -87,6 +99,26 @@ export default function Auth() {
     } catch (err) {
       setError(err.message)
     } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleOAuth(provider) {
+    setError(null)
+    setLoading(true)
+    try {
+      // Redirects away to the provider, then back to the current origin; on
+      // success onAuthStateChange (AuthContext) picks up the session. Unlike the
+      // magic-link call there's no place to pass signup_device, so provider
+      // signups just omit the device segment in the Discord notification —
+      // consistent with how Google already behaves.
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo: window.location.origin },
+      })
+      if (error) throw error
+    } catch (err) {
+      setError(err.message)
       setLoading(false)
     }
   }
@@ -178,6 +210,8 @@ export default function Auth() {
     )
   }
 
+  const hasOAuth = OAUTH_ENABLED
+
   return (
     <Layout>
       <section style={centreStyle}>
@@ -189,19 +223,35 @@ export default function Auth() {
             </h1>
           </div>
 
-          <>
-            {IS_PROD && GOOGLE_CLIENT_ID && (
-              <>
+          {hasOAuth && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {GOOGLE_CLIENT_ID && (
                 <div ref={googleButtonRef} style={{ width: '100%', minHeight: 44 }} />
+              )}
+              <button
+                type="button"
+                onClick={() => handleOAuth('discord')}
+                disabled={loading}
+                style={{ ...oauthButtonStyle, opacity: loading ? 0.6 : 1 }}
+              >
+                <DiscordIcon />
+                Continue with Discord
+              </button>
+              {error && !showEmail && (
+                <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>
+              )}
+            </div>
+          )}
+
+          {showEmail ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {hasOAuth && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>or</span>
+                  <span style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>or with email</span>
                   <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
                 </div>
-              </>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              )}
               <input
                 className="input-standalone"
                 type="email"
@@ -209,7 +259,7 @@ export default function Auth() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleMagicLink()}
-                autoFocus
+                autoFocus={!hasOAuth}
               />
               {linkError === 'otp_expired' && (
                 <div style={{ background: 'rgba(154,111,56,0.07)', border: '1px solid var(--accent-lt)', borderRadius: 6, padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -242,7 +292,19 @@ export default function Auth() {
                 {loading ? 'Please wait…' : 'Send code'}
               </button>
             </div>
-          </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setShowEmail(true)}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                fontSize: '0.82rem', color: 'var(--muted)', textDecoration: 'underline',
+                textUnderlineOffset: '3px', alignSelf: 'center',
+              }}
+            >
+              Sign in with email instead
+            </button>
+          )}
 
           <p style={{ textAlign: 'center', fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6 }}>
             New users will be prompted to set up a profile after signing in. By continuing you agree to our{' '}
@@ -263,9 +325,25 @@ export default function Auth() {
   )
 }
 
+function DiscordIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="#5865F2" aria-hidden="true">
+      <path d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z" />
+    </svg>
+  )
+}
+
 const centreStyle = {
   minHeight: 'calc(100vh - 72px)',
   display: 'flex', flexDirection: 'column',
   alignItems: 'center', justifyContent: 'center',
   padding: '4rem 1.5rem', gap: '2rem',
+}
+
+const oauthButtonStyle = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem',
+  width: '100%', minHeight: 44, padding: '0 1rem',
+  border: '1px solid var(--border)', borderRadius: 8,
+  background: 'var(--surface)', color: 'var(--text)',
+  fontSize: '0.9rem', fontWeight: 500, cursor: 'pointer',
 }
