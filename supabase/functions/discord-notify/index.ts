@@ -116,7 +116,9 @@ Deno.serve(async (req) => {
 
   if (event === 'auth-signup') {
     const email = record.email ? `\`${maskEmail(record.email)}\`` : 'unknown'
-    const parts = [authMethod(record), deviceLabel(record), `📊 ${members} members`].filter(Boolean)
+    // members counts completed profiles (public.users), which this brand-new
+    // auth.users signup isn't yet — so frame it as one more on the way.
+    const parts = [authMethod(record), deviceLabel(record), `📊 ${members} members +1`].filter(Boolean)
     await postToDiscord(
       `🔔 **New sign-up** — ${email}\n` +
       parts.join(' · ')
@@ -209,7 +211,7 @@ Deno.serve(async (req) => {
 
     await postToDiscord(
       `✅ **Profile complete** — ${name} · \`${type}\`${country}\n` +
-      `Purpose: ${purpose} · 📊 ${members} members`
+      `Purpose: ${purpose} · 📊 We now have ${members} members`
     )
   }
 
