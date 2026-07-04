@@ -60,7 +60,7 @@ export function useUnreadCount(userId) {
 
     // Subscribe to new messages and increment count if not sent by current user
     channelRef.current = supabase
-      .channel('unread-messages')
+      .channel(`unread-messages:${userId}`)
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',

@@ -33,11 +33,19 @@ export function AuthProvider({ children }) {
     // onAuthStateChange fires immediately with INITIAL_SESSION, giving us the
     // current session — so getSession() is redundant and creates a second
     // concurrent loadProfile() call that can race against the first.
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       settledRef.current = true
       setSession(session)
       if (session) {
-        loadProfile(session.user.id)
+        // loadProfile() does a profile re-fetch plus a last_active write and a
+        // daily_login points award. Only run it on events that represent a
+        // genuine (re-)authentication — INITIAL_SESSION on boot and SIGNED_IN.
+        // Skip TOKEN_REFRESHED (fires periodically) and USER_UPDATED so a
+        // background token refresh doesn't trigger redundant DB writes and an
+        // avoidable profile re-render on every refresh.
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+          loadProfile(session.user.id)
+        }
       } else {
         setProfile(null)
       }
