@@ -15,7 +15,7 @@ export default function Auth() {
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
-  const [otpMode, setOtpMode] = useState(false)
+  const [, setOtpMode] = useState(false)
   const [otpCode, setOtpCode] = useState('')
   const [verifying, setVerifying] = useState(false)
   const [linkError, setLinkError] = useState(null)

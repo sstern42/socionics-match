@@ -133,7 +133,7 @@ export default function ProfileEdit() {
       const url = await uploadPhoto(profile.auth_id, file)
       setPhotos(prev => [...prev, url])
       window.umami?.track('profile-photo-added')
-    } catch (err) {
+    } catch {
       setPhotoError('Could not upload that photo. Try again.')
     } finally {
       setPhotoUploading(false)

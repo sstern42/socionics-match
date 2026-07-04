@@ -298,12 +298,10 @@ export default function Admin() {
     feedbackCount, relAvgRatings, comments, growthData, topReferrers, referralRewarded,
     active7d, inactive, messagingActive, anonCount, knownCount,
     typingRequests, boardReports, userReports,
-    totalSwipes, rightSwipes, leftSwipes, swipeMatches,
+    totalSwipes, rightSwipes, swipeMatches,
   } = data
 
   const recentUsers    = users.slice(0, 10)
-  const sortedTypes    = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])
-  const sortedRels     = Object.entries(relCounts).sort((a, b) => b[1] - a[1])
   const sortedPurposes = Object.entries(purposeCounts).sort((a, b) => b[1] - a[1])
   const sortedCountries = Object.entries(countryCounts).sort((a, b) => b[1] - a[1])
 

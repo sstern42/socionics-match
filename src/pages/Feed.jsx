@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate, Link } from 'react-router-dom'
@@ -132,17 +132,10 @@ export default function Feed() {
     return () => document.body.classList.remove('swipe-mode-active')
   }, [swipeMode])
 
-  function toggleFeedMode() {
-    const next = !swipeMode
-    setSwipeMode(next)
-    localStorage.setItem(FEED_MODE_KEY, next ? 'swipe' : 'browse')
-    window.umami?.track('feed-mode-toggled', { mode: next ? 'swipe' : 'browse' })
-  }
-
   function dismissAd(adId) {
     const next = { ...dismissedAds, [adId]: true }
     setDismissedAds(next)
-    try { localStorage.setItem(AD_DISMISSED_KEY, JSON.stringify(next)) } catch {}
+    try { localStorage.setItem(AD_DISMISSED_KEY, JSON.stringify(next)) } catch { /* ignore */ }
   }
 
   useEffect(() => {
@@ -208,7 +201,7 @@ export default function Feed() {
 
   const feedQueryKey = ['feed', profile?.id, JSON.stringify(profile?.relation_preferences), JSON.stringify(profile?.purpose), isPremium]
 
-  const { isFetching: fetching, error: feedError, dataUpdatedAt, refetch: refetchFeed } = useQuery({
+  const { isFetching: fetching, error: feedError, dataUpdatedAt } = useQuery({
     queryKey: feedQueryKey,
     queryFn: async () => {
       offsetRef.current = 0
