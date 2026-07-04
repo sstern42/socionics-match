@@ -342,26 +342,34 @@ serve(async (req) => {
     return new Response(`Signature error: ${(err as Error).message}`, { status: 400 })
   }
 
-  // Idempotency: skip if we've already processed this event
+  // Idempotency: skip only if a PRIOR delivery's handler ran to completion.
+  // processed_at is stamped after the handler succeeds (see below), so a row
+  // whose processed_at is still null means a previous attempt failed — that
+  // event must be retried, not short-circuited.
   const { data: existing } = await supabase
     .from('stripe_webhook_events')
-    .select('stripe_event_id')
+    .select('processed_at')
     .eq('stripe_event_id', event.id)
     .maybeSingle()
 
-  if (existing) {
+  if (existing?.processed_at) {
     console.log(`Event ${event.id} already processed`)
     return new Response('Already processed', { status: 200 })
   }
 
-  // Log event before processing
+  // Record receipt with processed_at = null. Upsert-ignore so a retry of a
+  // previously-failed event reuses its row instead of erroring on the PK.
   const { error: logError } = await supabase
     .from('stripe_webhook_events')
-    .insert({
-      stripe_event_id: event.id,
-      event_type: event.type,
-      payload: event as unknown as Record<string, unknown>,
-    })
+    .upsert(
+      {
+        stripe_event_id: event.id,
+        event_type: event.type,
+        payload: event as unknown as Record<string, unknown>,
+        processed_at: null,
+      },
+      { onConflict: 'stripe_event_id', ignoreDuplicates: true },
+    )
 
   if (logError) {
     console.error('Failed to log event:', logError.message)
@@ -388,6 +396,19 @@ serve(async (req) => {
         break
       default:
         console.log(`Unhandled event type: ${event.type}`)
+    }
+
+    // Mark processed only now that the handler has succeeded. A retry before
+    // this point re-runs the (idempotent) handler; a retry after is skipped.
+    const { error: markError } = await supabase
+      .from('stripe_webhook_events')
+      .update({ processed_at: new Date().toISOString() })
+      .eq('stripe_event_id', event.id)
+
+    if (markError) {
+      // Handler already succeeded, so state is correct; worst case a future
+      // duplicate delivery re-runs the idempotent handler. Don't fail the request.
+      console.error('Failed to mark event processed:', markError.message)
     }
 
     return new Response('OK', { status: 200 })
