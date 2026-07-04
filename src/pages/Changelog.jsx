@@ -16,6 +16,7 @@ export const ENTRIES = [
        date: '4 July 2026',
        label: 'Fixed',
        items: [
+         'Typing chat — fixed the free typing chat getting stuck forever on "Working through what you\'ve shared…" at the end, which also used up one of your daily chats each time you reloaded to try again. Your result now appears reliably, and if something does go wrong at the last step you get a "Try again" option instead of a frozen screen',
          'Signup — fixed the profile step on mobile where the "First name or alias" box was pushed off the top of the screen and out of reach: you\'d see the "still needed to continue" note but no box to type your name in. Everything now stays scrollable and reachable',
        ],
      },
