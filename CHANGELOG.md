@@ -4,6 +4,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 4 July 2026
+
+### Fixed
+- **Stripe webhook could permanently drop a failed event, leaving a paid user without Premium (#926)**: The `stripe-webhook` edge function logged every event to `stripe_webhook_events` on receipt (`processed_at` defaulted to `NOW()`) *before* routing it to a handler. When a handler threw, the function returned 500 so Stripe would retry — but the retry hit the idempotency check, found the already-logged row, and short-circuited with "already processed", so the handler never re-ran. A transient failure (e.g. a Supabase write hiccup during `checkout.session.completed`) could leave someone who had just paid stuck without `plan_status='active'`, invisibly. Fixed by making `processed_at` mean "the handler completed successfully" rather than "the event was received": the row is now inserted with `processed_at = null`, the handler runs, and `processed_at` is stamped only on success. The idempotency check skips an event only when `processed_at IS NOT NULL`, so a previously-failed event is retried on Stripe's next delivery. Receipt logging uses an upsert-ignore so a retry reuses the existing row. Existing rows (all processed successfully under the old logic) keep their non-null `processed_at`, so no backfill is needed.
+
 ## 3 July 2026
 
 ### Added
