@@ -35,8 +35,12 @@ Before writing, pin down:
 - **The items to include** — for a "what's new" roundup these are often lifted
   from `CHANGELOG.md` / `src/pages/Changelog.jsx`, but rewritten into
   member-facing, benefit-led copy, not the engineering changelog voice.
-- **The subject line and preview** — short, lowercase, em dashes fine
-  (e.g. "boards, AI upgrades, referrals — here's what's new on Socion").
+- **The subject line and the preheader** — the subject is short, lowercase, em
+  dashes fine (e.g. "boards, AI upgrades, referrals — here's what's new on
+  Socion"). The **preheader** is the inbox preview text that renders *after* the
+  subject; write it as a distinct ~85–100-character line that *extends* the
+  subject rather than repeating it (a repeated subject wastes the slot). Together
+  they're the whole open-rate pitch, so draft both deliberately.
 - **The campaign slug** for UTM tracking (e.g. `june-whats-new`).
 
 If Spencer hasn't said which items to feature, propose a shortlist from the
@@ -75,7 +79,13 @@ uppercase with wide letter-spacing (0.1–0.12em).
 
 ## Step 3 — Structure
 
-The email is a stack of table sections inside the `520px` card, in this order:
+The email opens with a hidden **preheader** (inbox preview text) immediately
+after `<body>`, before the visible card — a hidden `<div>` holding the preview
+line, followed by a zero-width-space spacer block that stops the header/body copy
+from bleeding into the preview. Fill in the preheader; leave the spacer as-is.
+
+The visible email is then a stack of table sections inside the `520px` card, in
+this order:
 
 1. **Header** — dark `#1a1814` bar: `Socion™` wordmark + an uppercase kicker
    with the `{$name}` merge tag (e.g. `Member update · {$name}`).
@@ -172,6 +182,8 @@ Match the register of the example campaign:
 2. **Checklist before it's ready to paste into MailerLite:**
    - `{$unsubscribe}` present in the footer, and the address line intact.
    - `{$name}` (or a safe fallback) in the header kicker.
+   - Preheader filled in (not left as placeholder, not a copy of the subject),
+     and the zero-width spacer block left intact after it.
    - Every CTA/link has the campaign's UTM params.
    - All emoji and special chars are HTML entities, not raw Unicode.
    - No `builder-link-id` attributes hand-added.

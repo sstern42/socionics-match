@@ -49,6 +49,18 @@
 </head>
 
 <body>
+    <!-- ============ PREHEADER (inbox preview text) ============
+         Shows in the inbox after the subject line; hidden in the open email.
+         Keep it ~85-100 chars, lowercase, and DON'T just repeat the subject —
+         extend it. The zero-width spacer block after it stops the header/body
+         copy from bleeding into the preview. -->
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #f7f4ef; opacity: 0;">
+        PREHEADER TEXT GOES HERE &mdash; extends the subject line, doesn't repeat it.
+    </div>
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
+        &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+    </div>
+
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f7f4ef; padding: 40px 20px;">
         <tr>
             <td align="center">
