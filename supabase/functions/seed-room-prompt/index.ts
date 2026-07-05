@@ -38,7 +38,10 @@ const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? ''
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type, x-cron-secret',
+  // Includes x-client-info + apikey so the browser SDK (supabase.functions.invoke,
+  // used by the Admin "post host prompt" button) passes CORS preflight, plus
+  // x-cron-secret for the pg_cron caller.
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 }
 
 // A room counts as "quiet" once its last message is older than this.
