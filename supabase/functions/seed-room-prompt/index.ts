@@ -161,10 +161,32 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // Only this project's own pg_cron job should trigger this. Same custom-header
-  // pattern as daily-digest (the dashboard keeps reverting the Authorization
-  // header to the legacy service_role JWT, which doesn't match PROJECT_SECRET_KEY).
-  if (req.headers.get('x-cron-secret') !== SERVICE_KEY) {
+  const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+
+  // Auth — two accepted callers:
+  //   1. The pg_cron job, via the x-cron-secret header (same custom-header
+  //      pattern as daily-digest — the dashboard keeps reverting the standard
+  //      Authorization header to the legacy service_role JWT).
+  //   2. A founder, via their session JWT (the Admin "Post host prompt"
+  //      button calls this through supabase.functions.invoke). We never hand
+  //      the service key to the browser, so the founder path is how the UI
+  //      triggers a manual run.
+  let authorized = req.headers.get('x-cron-secret') === SERVICE_KEY
+  if (!authorized) {
+    const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '')
+    if (token) {
+      const { data: { user: authUser } } = await supabase.auth.getUser(token)
+      if (authUser) {
+        const { data: caller } = await supabase
+          .from('users')
+          .select('profile_data')
+          .eq('auth_id', authUser.id)
+          .maybeSingle()
+        if (caller?.profile_data?.role === 'founder') authorized = true
+      }
+    }
+  }
+  if (!authorized) {
     return new Response('Unauthorized', { status: 401, headers: corsHeaders })
   }
 
@@ -180,8 +202,6 @@ Deno.serve(async (req) => {
   } catch {
     // No body / not JSON — default to all rooms, gated.
   }
-
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
 
   try {
     // 1. Resolve the host bot user.

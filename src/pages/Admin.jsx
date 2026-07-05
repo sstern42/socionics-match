@@ -59,6 +59,9 @@ export default function Admin() {
   const [inactiveUsers, setInactiveUsers] = useState([])
   const [inactiveThreshold, setInactiveThreshold] = useState(30)
   const [inactiveLoading, setInactiveLoading] = useState(false)
+  const [seedRooms, setSeedRooms] = useState([])
+  const [seeding, setSeeding] = useState(false)
+  const [seedResult, setSeedResult] = useState(null)
 
   useEffect(() => {
     if (loading) return
@@ -267,6 +270,31 @@ export default function Admin() {
     if (saveErr) { setError(saveErr.message); return }
     setSiteBannerSaved(true)
     setTimeout(() => setSiteBannerSaved(false), 2500)
+  }
+
+  function toggleSeedRoom(value) {
+    setSeedResult(null)
+    setSeedRooms(prev => prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value])
+  }
+
+  async function handleSeedRooms() {
+    if (!seedRooms.length || seeding) return
+    setSeeding(true)
+    setSeedResult(null)
+    try {
+      // force:true so the host posts immediately even in an active room —
+      // this is an explicit manual trigger. The function keeps the member
+      // check, so a room with no members comes back under `skipped`.
+      const { data: result, error: fnError } = await supabase.functions.invoke('seed-room-prompt', {
+        body: { rooms: seedRooms, force: true },
+      })
+      if (fnError) throw fnError
+      setSeedResult(result)
+    } catch (err) {
+      setSeedResult({ error: err.message ?? 'Failed to post host prompt.' })
+    } finally {
+      setSeeding(false)
+    }
   }
 
 
@@ -768,6 +796,68 @@ export default function Admin() {
         </div>
 
         <FounderFeedToggle />
+
+        {/* Quadra Rooms — host prompt */}
+        <div style={{ ...founderCardStyle, marginBottom: '1.5rem' }}>
+          <p style={cardTitleStyle}>Quadra Rooms — post a host prompt</p>
+          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+            Drops an AI-generated conversation-starter into the selected rooms as “Socion Host”, right now. Members with room notifications on get pinged. A room with no members is skipped. (The scheduler already does this automatically for rooms that have gone quiet.)
+          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+            {[
+              { label: 'Alpha', value: 'alpha', colour: '#BA7517' },
+              { label: 'Beta',  value: 'beta',  colour: '#791F1F' },
+              { label: 'Gamma', value: 'gamma', colour: '#0F6E56' },
+              { label: 'Delta', value: 'delta', colour: '#185FA5' },
+              { label: 'Socion', value: 'socion', colour: '#6B4C9A' },
+            ].map(({ label, value, colour }) => {
+              const on = seedRooms.includes(value)
+              return (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => toggleSeedRoom(value)}
+                  disabled={seeding}
+                  style={{
+                    fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
+                    padding: '0.3rem 0.75rem', borderRadius: 3, cursor: seeding ? 'default' : 'pointer',
+                    border: `1px solid ${on ? colour : 'var(--border)'}`,
+                    background: on ? colour : 'none',
+                    color: on ? '#fff' : colour,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {label}
+                </button>
+              )
+            })}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={handleSeedRooms}
+              disabled={seeding || seedRooms.length === 0}
+              style={{ padding: '0.45rem 1.1rem', fontSize: '0.8rem', opacity: (seeding || seedRooms.length === 0) ? 0.5 : 1 }}
+            >
+              {seeding ? 'Posting…' : `Post host prompt${seedRooms.length ? ` (${seedRooms.length})` : ''}`}
+            </button>
+            {seedResult && (
+              seedResult.error ? (
+                <span style={{ fontSize: '0.78rem', color: '#c0392b' }}>{seedResult.error}</span>
+              ) : (
+                <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                  {seedResult.seeded?.length
+                    ? <>Posted to <strong style={{ color: 'var(--accent)', textTransform: 'capitalize' }}>{seedResult.seeded.join(', ')}</strong>. </>
+                    : 'Nothing posted. '}
+                  {seedResult.skipped && Object.keys(seedResult.skipped).length > 0 && (
+                    <>Skipped: {Object.entries(seedResult.skipped).map(([room, reason]) => `${room} (${reason})`).join(', ')}.</>
+                  )}
+                </span>
+              )
+            )}
+          </div>
+        </div>
 
         {/* Analytics exclusion */}
         <div style={{ ...cardStyle, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
