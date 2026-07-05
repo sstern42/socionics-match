@@ -100,7 +100,7 @@ export default function Stats() {
 
   return (
     <Layout noScroll hideFooter>
-      <section style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem', boxSizing: 'border-box', width: '100%', overflowX: 'hidden' }}>
+      <section style={{ maxWidth: 720, margin: '0 auto', padding: '4rem 1.5rem', boxSizing: 'border-box', width: '100%' }}>
 
         {/* Header */}
         <p className="eyebrow">Socion</p>
