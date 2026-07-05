@@ -16,7 +16,7 @@ export default function Boards() {
 
   useEffect(() => {
     if (!authLoading && !session) navigate('/auth', { replace: true })
-  }, [session, authLoading])
+  }, [session, authLoading, navigate])
 
   useEffect(() => {
     getBoards()

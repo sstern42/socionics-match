@@ -124,6 +124,9 @@ function useForceSimulation(nodes, edges, width, height) {
 
     frameRef.current = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frameRef.current)
+    // Re-seed the physics simulation only when the graph's size or canvas
+    // dimensions change, not on every nodes/edges array identity change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes.length, edges.length, width, height])
 
   const dragNode = useCallback((id, x, y) => {

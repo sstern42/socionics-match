@@ -25,7 +25,7 @@ export default function Settings() {
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+  }, [session, loading, navigate])
 
   useEffect(() => {
     if (session) refreshProfile()

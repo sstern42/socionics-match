@@ -380,7 +380,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
   useEffect(() => {
     getBlockBetween(currentUserId, otherUserId).then(setActiveBlock).catch(() => {})
-  }, [match.id])
+  }, [match.id, currentUserId, otherUserId])
 
 // Initial load
   useEffect(() => {
@@ -440,6 +440,10 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
       reactionsChannel.unsubscribe()
       presenceChannel.current?.unsubscribe()
     }
+    // Subscriptions are intentionally torn down/re-created only when the
+    // conversation changes. currentUserId is stable and syncMatchPreview is a
+    // parent callback whose identity must not re-subscribe the realtime channels.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match.id])
 
   useEffect(() => {
@@ -448,6 +452,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     setReactionPickerMsgId(null)
     if (pendingImage?.previewUrl) URL.revokeObjectURL(pendingImage.previewUrl)
     setPendingImage(null)
+    // Runs only on conversation switch to clear the composer; pendingImage's own
+    // lifecycle (revoke on change/unmount) is handled by the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [match.id])
 
   useEffect(() => {
@@ -461,6 +468,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     if (!el) return
     const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120
     if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: 'auto' })
+    // Fires on new messages only; loading/loadingMore are read as guards but
+    // must not themselves trigger a scroll (e.g. after prepending older messages).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length])
 
   // Re-check scroll position once late-loading media (e.g. an image attachment) resizes the list

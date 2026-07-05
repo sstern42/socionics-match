@@ -28,7 +28,7 @@ export default function Onboarding() {
     if (session && localStorage.getItem('socion_type')) {
       navigate('/profile/setup', { replace: true })
     }
-  }, [session])
+  }, [session, navigate])
 
   function handlePurposeNext() {
     localStorage.setItem('socion_purpose', JSON.stringify(purposes))

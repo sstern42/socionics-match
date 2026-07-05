@@ -48,7 +48,7 @@ export function useNotifications(userId) {
   useEffect(() => {
     if (!userId) return
     fetchAll()
-  }, [fetchAll])
+  }, [fetchAll, userId])
 
   // Realtime — picks up rows inserted by createNotification in Layout
   useEffect(() => {

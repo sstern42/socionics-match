@@ -18,7 +18,7 @@ export default function ReferralLink() {
       lookupReferrerName(code).then(name => { if (name) storeReferrerName(name) })
     }
     navigate('/', { replace: true })
-  }, [code])
+  }, [code, navigate])
 
   return null
 }

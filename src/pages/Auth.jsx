@@ -38,7 +38,7 @@ export default function Auth() {
   useEffect(() => {
     if (authLoading) return
     if (session) navigate(profile ? '/' : '/onboarding')
-  }, [session, profile, authLoading])
+  }, [session, profile, authLoading, navigate])
 
   useEffect(() => {
     const hash = window.location.hash

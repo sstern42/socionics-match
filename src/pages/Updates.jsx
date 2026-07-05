@@ -46,7 +46,7 @@ export default function Updates() {
 
   useEffect(() => {
     if (!authLoading && !session) navigate('/auth', { replace: true })
-  }, [session, authLoading])
+  }, [session, authLoading, navigate])
 
   const [posts, setPosts]               = useState([])
   const [loading, setLoading]           = useState(true)

@@ -113,7 +113,7 @@ export default function TypingChat() {
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+  }, [session, loading, navigate])
 
   // Shown on the intro screen so the daily cap is known upfront rather than
   // discovered via a 429 after already trying to start.
