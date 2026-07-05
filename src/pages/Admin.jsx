@@ -71,6 +71,7 @@ export default function Admin() {
   const [seedRooms, setSeedRooms] = useState([])
   const [seeding, setSeeding] = useState(false)
   const [seedResult, setSeedResult] = useState(null)
+  const [statsRange, setStatsRange] = useState(30)
 
   useEffect(() => {
     if (loading) return
@@ -303,6 +304,89 @@ export default function Admin() {
     }
   }
 
+  // Export the headline performance figures as a CSV — a KPI snapshot plus a
+  // daily new-members timeseries, filtered to the selected range. The snapshot
+  // metrics are current all-time totals (the get_admin_stats RPC only returns
+  // aggregates, not per-day history), so they're labelled as such; the range
+  // only narrows the daily series and the "new members in range" figure. Handy
+  // for uploading to Claude for analysis.
+  function downloadStatsCsv() {
+    if (!data) return
+    const d = data
+    const now = new Date()
+    const todayStr = now.toDateString()
+    const signupsToday = d.users.filter(u => new Date(u.created_at).toDateString() === todayStr).length
+
+    const rangeDays = statsRange === 'all' ? null : statsRange
+    const rangeLabel = rangeDays ? `Last ${rangeDays} days` : 'All time'
+    const cutoff = rangeDays ? new Date(now.getTime() - rangeDays * 86400000) : null
+    const newMembersInRange = d.users.filter(u => !cutoff || new Date(u.created_at) >= cutoff).length
+
+    const esc = v => {
+      const s = String(v ?? '')
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s
+    }
+    const line = (...cells) => cells.map(esc).join(',')
+
+    const lines = ['Socion stats export', line('Generated', now.toISOString()), line('Range', rangeLabel), '']
+
+    lines.push('Metric,Value')
+    const metrics = [
+      ['Sign-ups (auth, all-time)', d.authUsers],
+      ['Sign-ups today', signupsToday],
+      ['Members (completed, all-time)', d.users.length],
+      [`New members (${rangeLabel.toLowerCase()})`, newMembersInRange],
+      ['Connections (all-time)', d.totalConnections],
+      ['Connections today', d.connectionsToday],
+      ['Messages (all-time)', d.messagesEver || d.totalMessages],
+      ['Messages today', d.messagesToday],
+      ['Types represented', Object.keys(d.typeCounts).length],
+      ['Assessments', d.totalAssessments],
+      ['Avg rating (/5)', d.avgRating ?? ''],
+      ['Ratings count', d.ratingsCount],
+      ['Connections rated', d.feedbackCount],
+      ['Active 7d', d.active7d],
+      ['Inactive 7d+', d.inactive],
+      ['Messaging active 7d', d.messagingActive],
+      ['Swipes', d.totalSwipes],
+      ['Likes (right swipes)', d.rightSwipes],
+      ['Left swipes', d.leftSwipes],
+      ['Swipe matches', d.swipeMatches],
+      ['Like rate %', d.totalSwipes > 0 ? Math.round((d.rightSwipes / d.totalSwipes) * 100) : ''],
+      ['Match rate %', d.rightSwipes > 0 ? Math.round((d.swipeMatches / d.rightSwipes) * 100) : ''],
+      ['Cool-offs', d.totalCooloffs],
+      ['Reports', d.totalReports],
+      ['Anonymous members', d.anonCount],
+      ['Known members', d.knownCount],
+    ]
+    for (const [k, v] of metrics) lines.push(line(k, v))
+
+    // Type distribution — descriptive, but useful context for analysis.
+    lines.push('', 'Type,Members')
+    for (const [t, c] of Object.entries(d.typeCounts).sort((a, b) => b[1] - a[1])) lines.push(line(t, c))
+
+    // Daily new members. Cumulative is computed across all members so the
+    // running total stays accurate even when the rows are clipped to the range.
+    const dayCounts = {}
+    for (const u of d.users) {
+      const key = new Date(u.created_at).toISOString().split('T')[0]
+      dayCounts[key] = (dayCounts[key] ?? 0) + 1
+    }
+    let cumulative = 0
+    const series = Object.keys(dayCounts).sort().map(day => {
+      cumulative += dayCounts[day]
+      return { day, count: dayCounts[day], total: cumulative }
+    }).filter(r => !cutoff || new Date(r.day) >= cutoff)
+
+    lines.push('', 'Date,New members,Cumulative members')
+    for (const r of series) lines.push(line(r.day, r.count, r.total))
+
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(new Blob([lines.join('\n')], { type: 'text/csv' }))
+    a.download = `socion-stats-${rangeDays ? `${rangeDays}d` : 'all-time'}-${now.toISOString().split('T')[0]}.csv`
+    a.click()
+  }
+
 
   if (loading || fetching) {
     return (
@@ -347,7 +431,20 @@ export default function Admin() {
             <p className="eyebrow">Admin</p>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,4vw,3rem)', marginTop: '0.4rem' }}>Dashboard</h1>
           </div>
-          <button type="button" className="btn-ghost" onClick={loadData} style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }}>Refresh</button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
+            <select
+              value={statsRange}
+              onChange={e => setStatsRange(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+              aria-label="Stats export range"
+              style={{ fontSize: '0.78rem', padding: '0.5rem 0.5rem', border: '1px solid var(--border)', borderRadius: 4, background: 'var(--bg)', color: 'var(--text)' }}
+            >
+              <option value={30}>Last 30 days</option>
+              <option value={90}>Last 90 days</option>
+              <option value="all">All time</option>
+            </select>
+            <button type="button" className="btn-ghost" onClick={downloadStatsCsv} style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }}>Download stats</button>
+            <button type="button" className="btn-ghost" onClick={loadData} style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }}>Refresh</button>
+          </div>
         </div>
 
         {/* ── Overview: read-only stats ─────────────────────────── */}
