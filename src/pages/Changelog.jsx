@@ -11,6 +11,13 @@ export const ENTRIES = [
        ],
      },
      {
+       date: '5 July 2026',
+       label: 'Fixed',
+       items: [
+         'Stats — the page now scrolls with the normal window scrollbar instead of a stray one that appeared floating in the middle of the page',
+       ],
+     },
+     {
        date: '4 July 2026',
        label: 'New',
        items: [
