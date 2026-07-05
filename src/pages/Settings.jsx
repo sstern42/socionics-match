@@ -10,6 +10,15 @@ import PointsPanel from '../components/profile/PointsPanel'
 
 const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 
+// Labels for the sign-in methods panel. Keys are Supabase provider slugs
+// (auth.identities[].provider). Badges mirror the convention used in the
+// discord-notify #signups notification so the two stay recognisably consistent.
+const PROVIDER_META = {
+  email:   { label: 'Email (magic code)', badge: '✉️' },
+  google:  { label: 'Google',             badge: '🔵' },
+  discord: { label: 'Discord',            badge: '🟣' },
+}
+
 // Lightweight settings page. Exists primarily as the return target for the
 // Stripe customer portal (create-portal-session return_url = /settings) and as
 // a home for subscription management. Refreshes the profile on mount so a
@@ -101,6 +110,15 @@ export default function Settings() {
     </Layout>
   )
 
+  // Which sign-in method(s) are linked to this account. Prefer the identities
+  // array (one entry per linked provider); fall back to app_metadata.providers
+  // for any older session shape. De-duped and order-stable.
+  const rawProviders = session.user?.identities?.length
+    ? session.user.identities.map(i => i.provider)
+    : (session.user?.app_metadata?.providers ?? [session.user?.app_metadata?.provider])
+  const signInMethods = [...new Set((rawProviders ?? []).filter(Boolean))]
+  const accountEmail = session.user?.email
+
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 520, margin: '0 auto', padding: '4rem 1.5rem 6rem' }}>
@@ -184,6 +202,29 @@ export default function Settings() {
                 Preliminary
               </a>
             )}
+          </div>
+        )}
+
+        {signInMethods.length > 0 && (
+          <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginTop: '1.5rem' }}>
+            <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.9rem' }}>Sign-in</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+              {signInMethods.map(p => {
+                const meta = PROVIDER_META[p] ?? { label: p, badge: '🔑' }
+                return (
+                  <div key={p} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <span style={{ fontSize: '1rem', lineHeight: 1 }} aria-hidden="true">{meta.badge}</span>
+                    <span style={{ fontSize: '0.9rem', fontWeight: 500, color: 'var(--text)' }}>{meta.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.9rem', lineHeight: 1.6 }}>
+              {signInMethods.length > 1
+                ? 'Any of these signs you in to this same account.'
+                : 'This is how you sign in to Socion.'}
+              {accountEmail && <> Your account email is <strong>{accountEmail}</strong>.</>}
+            </p>
           </div>
         )}
 
