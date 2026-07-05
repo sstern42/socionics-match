@@ -82,6 +82,7 @@ function RoomMessage({
   const senderName  = getSenderName(msg)
   const senderType  = msg.sender?.type ?? '?'
   const isAnon      = msg.sender?.profile_data?.anonymous ?? false
+  const isBot       = msg.sender?.profile_data?.is_bot === true
   const senderId    = msg.sender?.id
   const quadra      = getQuadra(senderType)
   const badgeColour = QUADRA_COLOURS[quadra] ?? 'var(--accent)'
@@ -113,14 +114,16 @@ function RoomMessage({
     >
       {/* Sender row */}
       <div style={{ display:'flex', alignItems:'center', gap:'0.5rem' }}>
-        <div style={{ width:20, height:20, borderRadius:'50%', flexShrink:0, overflow:'hidden', background:'var(--surface)', border:'1px solid var(--border)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.55rem', fontWeight:600, color:'var(--accent)', userSelect:'none' }}>
-          {msg.sender?.avatar_url && !isAnon
-            ? <img src={msg.sender.avatar_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
-            : <span>{senderName ? senderName[0].toUpperCase() : '?'}</span>
+        <div style={{ width:20, height:20, borderRadius:'50%', flexShrink:0, overflow:'hidden', background:isBot?'var(--accent)':'var(--surface)', border:`1px solid ${isBot?'var(--accent)':'var(--border)'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.55rem', fontWeight:600, color:isBot?'#fff':'var(--accent)', userSelect:'none' }}>
+          {isBot
+            ? <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"><path d="M8 1.5l1.4 3.6L13 6.5l-3.6 1.4L8 11.5 6.6 7.9 3 6.5l3.6-1.4z"/></svg>
+            : msg.sender?.avatar_url && !isAnon
+              ? <img src={msg.sender.avatar_url} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              : <span>{senderName ? senderName[0].toUpperCase() : '?'}</span>
           }
         </div>
 
-        {senderId && !isAnon ? (
+        {senderId && !isAnon && !isBot ? (
           <Link to={`/profile/${senderId}`} style={{ fontSize:'0.82rem', fontWeight:500, color:'var(--text)', textDecoration:'none' }} onMouseEnter={e=>e.currentTarget.style.color='var(--accent)'} onMouseLeave={e=>e.currentTarget.style.color='var(--text)'}>
             {senderName}
           </Link>
@@ -128,9 +131,15 @@ function RoomMessage({
           <span style={{ fontSize:'0.82rem', fontWeight:500, color:'var(--text)' }}>{senderName}</span>
         )}
 
-        <button type="button" onClick={() => onTypeClick(`https://socionicsinsight.com/types/${senderType.toLowerCase()}/`)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, color:badgeColour, border:`1px solid ${badgeColour}44`, padding:'0.1rem 0.4rem', borderRadius:2, background:'none', cursor:'pointer' }}>
-          {senderType}
-        </button>
+        {isBot ? (
+          <span title="Socion Host — an AI conversation starter" style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, color:'var(--accent)', border:'1px solid var(--accent-lt)', padding:'0.1rem 0.4rem', borderRadius:2, background:'rgba(154,111,56,0.06)' }}>
+            Host
+          </span>
+        ) : (
+          <button type="button" onClick={() => onTypeClick(`https://socionicsinsight.com/types/${senderType.toLowerCase()}/`)} style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, color:badgeColour, border:`1px solid ${badgeColour}44`, padding:'0.1rem 0.4rem', borderRadius:2, background:'none', cursor:'pointer' }}>
+            {senderType}
+          </button>
+        )}
 
         {msg.sender?.verified_by && (
           <span title={`Verified by ${msg.sender.verified_by}`} style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:11, height:11, borderRadius:'50%', background:badgeColour, color:'#fff', fontSize:'0.4rem', fontWeight:700, lineHeight:1 }}>✓</span>
@@ -156,9 +165,9 @@ function RoomMessage({
         <div
           onTouchStart={startLongPress} onTouchEnd={cancelLongPress} onTouchMove={cancelLongPress}
           style={{
-            background: isMine ? 'var(--accent)' : 'var(--card-bg)',
+            background: isMine ? 'var(--accent)' : isBot ? 'rgba(154,111,56,0.06)' : 'var(--card-bg)',
             color: isMine ? '#fff' : isDeleted ? 'var(--muted)' : 'var(--text)',
-            border: `1px solid ${isMine ? 'var(--accent)' : 'var(--border)'}`,
+            border: `1px solid ${isMine ? 'var(--accent)' : isBot ? 'var(--accent-lt)' : 'var(--border)'}`,
             borderRadius: isMine ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
             padding: hasImage && !hasText && !replyMsg ? '0.4rem' : '0.6rem 0.9rem',
             fontSize:'0.9rem', lineHeight:1.6, fontWeight:300,
@@ -242,7 +251,7 @@ function RoomMessage({
                 <button type="button" onClick={() => setDeleteConfirmId(msg.id)} aria-label="Delete" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="2,3 12,3"/><path d="M5,3V2h4v1"/><rect x="3" y="3" width="8" height="10" rx="1"/><line x1="6" y1="6" x2="6" y2="10"/><line x1="8" y1="6" x2="8" y2="10"/></svg></button>
               )
             )}
-            {!isMine && <button type="button" onClick={() => onReport(msg.id)} aria-label="Report" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2h10l-2 5 2 5H2V2z"/></svg></button>}
+            {!isMine && !isBot && <button type="button" onClick={() => onReport(msg.id)} aria-label="Report" style={iconBtnStyle}><svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M2 2h10l-2 5 2 5H2V2z"/></svg></button>}
           </div>
         )}
       </div>

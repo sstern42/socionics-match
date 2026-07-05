@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '5 July 2026',
+       label: 'New',
+       items: [
+         'Quadra Rooms — when a room has gone quiet for a while, a friendly "Socion Host" now drops in a short conversation-starter to get things going again. It only chimes in when a room has been silent and never posts twice in a row, so it nudges the conversation along rather than talking over it — and you can reply and react to its prompts just like any other message',
+       ],
+     },
+     {
        date: '4 July 2026',
        label: 'New',
        items: [
