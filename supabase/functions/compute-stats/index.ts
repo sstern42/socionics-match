@@ -3,6 +3,13 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('PROJECT_SECRET_KEY')!
 
+// The 16 canonical socionics types. Anything outside this list (e.g. a
+// custom "type" created by an admin) should not be counted in stats.
+const VALID_TYPES = new Set([
+  'ILE', 'LII', 'ESE', 'SEI', 'EIE', 'LSI', 'SLE', 'IEI',
+  'SEE', 'ESI', 'LIE', 'ILI', 'IEE', 'EII', 'LSE', 'SLI',
+])
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
@@ -44,7 +51,11 @@ Deno.serve(async (req) => {
     .from('users')
     .select('type')
 
-  const types = new Set((typeData ?? []).map(u => u.type).filter(Boolean))
+  const types = new Set(
+    (typeData ?? [])
+      .map(u => u.type)
+      .filter(t => VALID_TYPES.has(t))
+  )
 
   // Upsert into stats table
   const { error } = await supabase
