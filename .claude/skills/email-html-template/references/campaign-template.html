@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- Preview / subject-line-style summary. Keep it short and lowercase, em dashes ok. -->
+    <title>SUBJECT LINE GOES HERE</title>
+    <style>
+        body, table, td, a {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        table, td {
+            mso-table-lspace: 0pt;
+            mso-table-rspace: 0pt;
+        }
+        img {
+            -ms-interpolation-mode: bicubic;
+            border: 0;
+            outline: none;
+            text-decoration: none;
+            display: block;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f7f4ef;
+            font-family: Georgia, serif;
+        }
+        a {
+            color: #9a6f38;
+        }
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+            .content {
+                padding: 32px 24px !important;
+            }
+            .feature-row td {
+                display: block !important;
+                width: 100% !important;
+                padding: 10px 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ============ PREHEADER (inbox preview text) ============
+         Shows in the inbox after the subject line; hidden in the open email.
+         Keep it ~85-100 chars, lowercase, and DON'T just repeat the subject —
+         extend it. The zero-width spacer block after it stops the header/body
+         copy from bleeding into the preview. -->
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all; font-size: 1px; line-height: 1px; color: #f7f4ef; opacity: 0;">
+        PREHEADER TEXT GOES HERE &mdash; extends the subject line, doesn't repeat it.
+    </div>
+    <div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">
+        &#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f7f4ef; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table class="container" width="520" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border: 1px solid #ddd8ce; border-radius: 6px; overflow: hidden;">
+
+                    <!-- ============ HEADER ============ -->
+                    <tr>
+                        <td style="background-color: #1a1814; padding: 28px 40px;">
+                            <p style="margin: 0; font-family: Georgia, serif; font-size: 22px; color: #ffffff; letter-spacing: 0.02em;">
+                                Socion&#8482;
+                            </p>
+                            <p style="margin: 5px 0 0; font-family: Arial, sans-serif; font-size: 11px; color: #9a8a6a; letter-spacing: 0.1em; text-transform: uppercase;">
+                                Member update &middot; {$name}
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- ============ BODY ============ -->
+                    <tr>
+                        <td class="content" style="padding: 44px 40px 12px;">
+
+                            <!-- Eyebrow + headline + intro -->
+                            <p style="margin: 0 0 8px; font-family: Arial, sans-serif; font-size: 11px; color: #9a8a6a; letter-spacing: 0.1em; text-transform: uppercase;">
+                                From Spencer
+                            </p>
+                            <p style="margin: 0 0 28px; font-family: Georgia, serif; font-size: 22px; color: #1a1814; line-height: 1.4;">
+                                HEADLINE GOES HERE.
+                            </p>
+                            <p style="margin: 0 0 18px; font-family: Arial, sans-serif; font-size: 15px; color: #3a3530; line-height: 1.75;">
+                                Opening paragraph. Lowercase, warm, direct.
+                            </p>
+                            <p style="margin: 0 0 32px; font-family: Arial, sans-serif; font-size: 15px; color: #3a3530; line-height: 1.75;">
+                                Optional second paragraph setting up what follows.
+                            </p>
+
+                            <!-- Divider -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 32px;">
+                                <tr>
+                                    <td style="border-top: 1px solid #ede8df; font-size: 0; line-height: 0;">&nbsp;</td>
+                                </tr>
+                            </table>
+
+                            <!-- Section label -->
+                            <p style="margin: 0 0 24px; font-family: Arial, sans-serif; font-size: 12px; color: #9a8a6a; letter-spacing: 0.12em; text-transform: uppercase;">
+                                What's new
+                            </p>
+
+                            <!-- ===== FEATURE ROW (duplicate this block per item) =====
+                                 - Swap the &#XXXXX; emoji entity (see references/emoji-entities.md)
+                                 - Last feature row before a divider/CTA uses margin-bottom: 32px -->
+                            <table class="feature-row" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 22px;">
+                                <tr>
+                                    <td width="32" valign="top" style="padding-top: 1px;">
+                                        <p style="margin: 0; font-size: 18px; line-height: 1;">
+                                            &#128172;
+                                        </p>
+                                    </td>
+                                    <td style="padding-left: 12px;">
+                                        <p style="margin: 0 0 4px; font-family: Arial, sans-serif; font-size: 13px; font-weight: bold; color: #1a1814; letter-spacing: 0.04em; text-transform: uppercase;">
+                                            FEATURE TITLE
+                                        </p>
+                                        <p style="margin: 0; font-family: Arial, sans-serif; font-size: 14px; color: #3a3530; line-height: 1.65;">
+                                            One or two sentences describing the feature.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- ===== /FEATURE ROW ===== -->
+
+                            <!-- Divider -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 32px;">
+                                <tr>
+                                    <td style="border-top: 1px solid #ede8df; font-size: 0; line-height: 0;">&nbsp;</td>
+                                </tr>
+                            </table>
+
+                            <!-- ===== CTA BOX (optional) ===== -->
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f7f4ef; border: 1px solid #ddd8ce; border-radius: 4px; margin-bottom: 32px;">
+                                <tr>
+                                    <td style="padding: 24px 28px;">
+                                        <p style="margin: 0 0 10px; font-family: Arial, sans-serif; font-size: 12px; color: #9a8a6a; letter-spacing: 0.12em; text-transform: uppercase;">
+                                            CTA EYEBROW
+                                        </p>
+                                        <p style="margin: 0 0 16px; font-family: Georgia, serif; font-size: 17px; color: #1a1814; line-height: 1.5;">
+                                            CTA headline?
+                                        </p>
+                                        <p style="margin: 0 0 20px; font-family: Arial, sans-serif; font-size: 14px; color: #3a3530; line-height: 1.7;">
+                                            One-line pitch for the action.
+                                        </p>
+                                        <!-- Button. Add ?utm_source=mailerlite&utm_medium=email&utm_campaign=CAMPAIGN-SLUG to the href. -->
+                                        <table cellpadding="0" cellspacing="0" border="0">
+                                            <tr>
+                                                <td style="background-color: #9a6f38; border-radius: 3px;">
+                                                    <a href="https://socion.app/PATH?utm_source=mailerlite&utm_medium=email&utm_campaign=CAMPAIGN-SLUG" style="display: inline-block; padding: 12px 28px; font-family: Arial, sans-serif; font-size: 12px; font-weight: bold; color: #ffffff; text-decoration: none; letter-spacing: 0.1em; text-transform: uppercase;">BUTTON LABEL &rarr;</a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- ===== /CTA BOX ===== -->
+
+                            <!-- Sign-off -->
+                            <p style="margin: 0 0 40px; font-family: Arial, sans-serif; font-size: 14px; color: #3a3530; line-height: 1.75;">
+                                As always, feedback welcome in <a href="https://discord.gg/328KxsDKdr" style="color: #9a6f38; text-decoration: none;">discord</a> or just hit reply.<br /><br />
+                                Spencer<br />
+                                <a href="https://socion.app" style="color: #9a6f38; text-decoration: none;">Socion.app</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- ============ WHY YOU'RE RECEIVING THIS ============ -->
+                    <tr>
+                        <td style="padding: 0 40px 32px;">
+                            <p style="margin: 0; font-family: Arial, sans-serif; font-size: 12px; color: #b0a898; line-height: 1.6;">
+                                You're receiving this because you're a member of socion.app. we send occasional updates about new features and community news &mdash; never more than a few times a month.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- ============ FOOTER (required: address + {$unsubscribe}) ============ -->
+                    <tr>
+                        <td style="background-color: #f7f4ef; border-top: 1px solid #ede8df; padding: 24px 40px;">
+                            <p style="margin: 0 0 8px; font-family: Arial, sans-serif; font-size: 11px; color: #9a8a6a; line-height: 1.6; text-align: center;">
+                                <a href="https://socion.app/privacy" style="color: #9a8a6a; text-decoration: none;">Privacy</a>
+                                &nbsp;&middot;&nbsp;
+                                <a href="https://socion.app/terms" style="color: #9a8a6a; text-decoration: none;">Terms</a>
+                                &nbsp;&middot;&nbsp;
+                                <a href="https://discord.gg/328KxsDKdr" style="color: #9a8a6a; text-decoration: none;">Discord</a>
+                            </p>
+                            <p style="margin: 0; font-family: Arial, sans-serif; font-size: 11px; color: #b0a898; text-align: center;">
+                                Socion &middot; Stern Consulting &middot; London, UK<br /><br />
+                                <a href="{$unsubscribe}">Unsubscribe</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>
