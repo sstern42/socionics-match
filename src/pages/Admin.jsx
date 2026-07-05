@@ -24,7 +24,7 @@ function FounderFeedToggle() {
     setEnabled(next)
   }
   return (
-    <div style={{ ...founderCardStyle, marginBottom: '1.5rem' }}>
+    <div style={founderCardStyle}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
         <div>
           <p style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }}>Founder feed override</p>
@@ -37,6 +37,15 @@ function FounderFeedToggle() {
           <span style={{ fontSize: '0.82rem', color: 'var(--text)', fontWeight: enabled ? 500 : 400 }}>{enabled ? 'On' : 'Off'}</span>
         </label>
       </div>
+    </div>
+  )
+}
+
+function SectionHeading({ title, note, first }) {
+  return (
+    <div style={{ ...sectionHeadingStyle, marginTop: first ? 0 : '2rem' }}>
+      <h2 style={sectionTitleStyle}>{title}</h2>
+      {note && <span style={sectionNoteStyle}>{note}</span>}
     </div>
   )
 }
@@ -102,14 +111,12 @@ export default function Admin() {
         { data: statsRow },
         { data: incompleteData },
         { data: memberEmailsData },
-        { data: typingRequestsData },
       ] = await Promise.all([
         supabase.from('users').select('id, type, purpose, profile_data, created_at, verified_by').order('created_at', { ascending: false }),
         supabase.rpc('get_admin_stats'),
         supabase.from('stats').select('site_banner, site_banner_active').eq('id', 1).single(),
         supabase.rpc('get_incomplete_signups'),
         supabase.rpc('get_member_emails'),
-        supabase.from('typing_requests').select('id, user_id, notes, discord_handle, status, created_at').order('created_at', { ascending: false }),
       ])
 
       setSiteBanner(statsRow?.site_banner ?? '')
@@ -208,7 +215,6 @@ export default function Admin() {
         growthData,
         topReferrers,
         referralRewarded,
-        typingRequests: typingRequestsData ?? [],
         boardReports: adminStats?.board_reports ?? [],
         userReports: adminStats?.user_reports ?? [],
         // Swipe stats
@@ -325,7 +331,7 @@ export default function Admin() {
     messagesEver, totalAssessments, totalCooloffs, totalReports,
     feedbackCount, relAvgRatings, comments, growthData, topReferrers, referralRewarded,
     active7d, inactive, messagingActive, anonCount, knownCount,
-    typingRequests, boardReports, userReports,
+    boardReports, userReports,
     totalSwipes, rightSwipes, swipeMatches,
   } = data
 
@@ -335,7 +341,7 @@ export default function Admin() {
 
   return (
     <Layout noScroll hideFooter>
-      <section style={{ width: '100%', maxWidth: 960, margin: '0 auto', padding: 'clamp(1.25rem, 4vw, 3rem) clamp(0.75rem, 3vw, 1.5rem)', boxSizing: 'border-box' }}>
+      <section style={{ width: '100%', maxWidth: 1680, margin: '0 auto', padding: 'clamp(1.25rem, 4vw, 3rem) clamp(0.75rem, 3vw, 1.5rem)', boxSizing: 'border-box' }}>
         <div style={{ marginBottom: '2.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
           <div>
             <p className="eyebrow">Admin</p>
@@ -343,6 +349,9 @@ export default function Admin() {
           </div>
           <button type="button" className="btn-ghost" onClick={loadData} style={{ padding: '0.5rem 1rem', fontSize: '0.78rem' }}>Refresh</button>
         </div>
+
+        {/* ── Overview: read-only stats ─────────────────────────── */}
+        <SectionHeading title="Overview" note="Read-only stats" first />
 
         {/* Headline stats */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(140px, 100%), 1fr))', gap: '0.75rem', marginBottom: '2.5rem' }}>
@@ -615,132 +624,6 @@ export default function Admin() {
             )}
           </div>
 
-          {/* Reports */}
-          <div style={cardStyle}>
-            <p style={cardTitleStyle}>Reports {reports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none</span>}</p>
-            {reports.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
-                {reports.map(r => (
-                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: `2px solid ${r.lifted_at ? 'var(--border)' : '#c0392b'}`, paddingLeft: '0.75rem' }}>
-                    <p style={{ color: r.lifted_at ? 'var(--muted)' : '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
-                      {r.reason}{r.lifted_at && ' — unblocked'}
-                    </p>
-                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
-                      <strong>{r.blocked_name ?? r.blocked_id}</strong> blocked by <strong>{r.blocker_name ?? r.blocker_id}</strong>
-                    </p>
-                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
-                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                    {!r.lifted_at && (
-                      <button
-                        type="button"
-                        onClick={() => handleUnblock(r.id)}
-                        disabled={unblockingId === r.id}
-                        style={{
-                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
-                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
-                          color: 'var(--accent)', cursor: unblockingId === r.id ? 'default' : 'pointer',
-                          opacity: unblockingId === r.id ? 0.6 : 1,
-                        }}
-                      >
-                        {unblockingId === r.id ? 'Unblocking…' : 'Unblock'}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Board reports */}
-          <div style={cardStyle}>
-            <p style={cardTitleStyle}>Board reports {boardReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
-            {boardReports.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
-                {boardReports.map(r => (
-                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
-                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
-                      {r.reason ?? 'No reason given'} {r.post_id ? '— post' : '— comment'}
-                    </p>
-                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
-                      Reported by <strong>{r.reporter_name ?? 'Unknown'}</strong>
-                      {r.author_name && <> · by <strong>{r.author_name}</strong></>}
-                      {r.board_slug && <> · in <strong>{r.board_slug}</strong></>}
-                    </p>
-                    {r.content && (
-                      <p style={{ color: 'var(--muted)', marginTop: '0.25rem', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                        {r.post_title ? `${r.post_title}: ` : ''}{r.content}
-                      </p>
-                    )}
-                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
-                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                    {r.board_slug && (r.post_id || r.comment_id) && (
-                      <a href={`/boards/${r.board_slug}`} style={{ fontSize: '0.72rem', color: 'var(--accent)' }}>View board →</a>
-                    )}
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => handleResolveReport(r.id)}
-                        disabled={resolvingReportId === r.id}
-                        style={{
-                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
-                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
-                          color: 'var(--accent)', cursor: resolvingReportId === r.id ? 'default' : 'pointer',
-                          opacity: resolvingReportId === r.id ? 0.6 : 1,
-                        }}
-                      >
-                        {resolvingReportId === r.id ? 'Resolving…' : 'Mark resolved'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* User reports */}
-          <div style={cardStyle}>
-            <p style={cardTitleStyle}>User reports {userReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
-            {userReports.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
-                {userReports.map(r => (
-                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
-                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
-                      {r.reason ?? 'No reason given'}
-                    </p>
-                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
-                      <strong>{r.reported_name ?? r.reported_user_id}</strong> reported by <strong>{r.reporter_name ?? r.reporter_id}</strong>
-                    </p>
-                    {r.notes && (
-                      <p style={{ color: 'var(--muted)', marginTop: '0.25rem', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                        {r.notes}
-                      </p>
-                    )}
-                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
-                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </p>
-                    <a href={`/profile/${r.reported_user_id}`} style={{ fontSize: '0.72rem', color: 'var(--accent)' }}>View profile →</a>
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => handleResolveUserReport(r.id)}
-                        disabled={resolvingUserReportId === r.id}
-                        style={{
-                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
-                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
-                          color: 'var(--accent)', cursor: resolvingUserReportId === r.id ? 'default' : 'pointer',
-                          opacity: resolvingUserReportId === r.id ? 0.6 : 1,
-                        }}
-                      >
-                        {resolvingUserReportId === r.id ? 'Resolving…' : 'Mark resolved'}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Feedback analysis */}
@@ -792,122 +675,6 @@ export default function Admin() {
                 ))}
               </div>
             )}
-          </div>
-        </div>
-
-        <FounderFeedToggle />
-
-        {/* Quadra Rooms — host prompt */}
-        <div style={{ ...founderCardStyle, marginBottom: '1.5rem' }}>
-          <p style={cardTitleStyle}>Quadra Rooms — post a host prompt</p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem', lineHeight: 1.5 }}>
-            Drops an AI-generated conversation-starter into the selected rooms as “Socion Host”, right now. Members with room notifications on get pinged. A room with no members is skipped. (The scheduler already does this automatically for rooms that have gone quiet.)
-          </p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-            {[
-              { label: 'Alpha', value: 'alpha', colour: '#BA7517' },
-              { label: 'Beta',  value: 'beta',  colour: '#791F1F' },
-              { label: 'Gamma', value: 'gamma', colour: '#0F6E56' },
-              { label: 'Delta', value: 'delta', colour: '#185FA5' },
-              { label: 'Socion', value: 'socion', colour: '#6B4C9A' },
-            ].map(({ label, value, colour }) => {
-              const on = seedRooms.includes(value)
-              return (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => toggleSeedRoom(value)}
-                  disabled={seeding}
-                  style={{
-                    fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
-                    padding: '0.3rem 0.75rem', borderRadius: 3, cursor: seeding ? 'default' : 'pointer',
-                    border: `1px solid ${on ? colour : 'var(--border)'}`,
-                    background: on ? colour : 'none',
-                    color: on ? '#fff' : colour,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  {label}
-                </button>
-              )
-            })}
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className="btn-primary"
-              onClick={handleSeedRooms}
-              disabled={seeding || seedRooms.length === 0}
-              style={{ padding: '0.45rem 1.1rem', fontSize: '0.8rem', opacity: (seeding || seedRooms.length === 0) ? 0.5 : 1 }}
-            >
-              {seeding ? 'Posting…' : `Post host prompt${seedRooms.length ? ` (${seedRooms.length})` : ''}`}
-            </button>
-            {seedResult && (
-              seedResult.error ? (
-                <span style={{ fontSize: '0.78rem', color: '#c0392b' }}>{seedResult.error}</span>
-              ) : (
-                <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
-                  {seedResult.seeded?.length
-                    ? <>Posted to <strong style={{ color: 'var(--accent)', textTransform: 'capitalize' }}>{seedResult.seeded.join(', ')}</strong>. </>
-                    : 'Nothing posted. '}
-                  {seedResult.skipped && Object.keys(seedResult.skipped).length > 0 && (
-                    <>Skipped: {Object.entries(seedResult.skipped).map(([room, reason]) => `${room} (${reason})`).join(', ')}.</>
-                  )}
-                </span>
-              )
-            )}
-          </div>
-        </div>
-
-        {/* Analytics exclusion */}
-        <div style={{ ...cardStyle, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
-          <div>
-            <p style={cardTitleStyle}>Analytics exclusion</p>
-            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
-              {trackingExcluded ? 'This device is excluded from Umami analytics.' : 'Exclude this device from Umami analytics tracking.'}
-            </p>
-          </div>
-          <button type="button" className="btn-ghost" style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
-            onClick={() => {
-              if (trackingExcluded) { localStorage.removeItem('umami.disabled'); setTrackingExcluded(false) }
-              else { localStorage.setItem('umami.disabled', '1'); setTrackingExcluded(true) }
-            }}
-          >
-            {trackingExcluded ? '✓ Excluded — re-enable?' : 'Exclude this device'}
-          </button>
-        </div>
-
-        <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
-          <p style={cardTitleStyle}>Site-wide banner</p>
-          <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
-            Shown on every page above the nav. CTA always links to /support. Not dismissable, so keep it short and evergreen.
-          </p>
-          <textarea
-            value={siteBanner}
-            onChange={e => { setSiteBanner(e.target.value); setSiteBannerSaved(false) }}
-            rows={2}
-            style={{ width: '100%', fontFamily: 'var(--sans)', fontSize: '0.88rem', lineHeight: 1.6, padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: 4, resize: 'vertical', boxSizing: 'border-box', background: 'var(--bg)' }}
-            placeholder="e.g. Socion is independent and community-built. If it's been useful, consider supporting it."
-          />
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text)', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={siteBannerActive}
-                onChange={e => setSiteBannerActive(e.target.checked)}
-                style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
-              />
-              Active (visible site-wide)
-            </label>
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={saveSiteBanner}
-              disabled={savingSiteBanner}
-              style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingSiteBanner ? 0.5 : 1 }}
-            >
-              {savingSiteBanner ? 'Saving…' : siteBannerSaved ? '✓ Saved' : 'Save'}
-            </button>
           </div>
         </div>
 
@@ -1066,67 +833,264 @@ export default function Admin() {
           </div>
         </div>
 
-        <TypingRequestsPanel requests={typingRequests} users={users} onUpdate={loadData} use24hourClock={profile?.profile_data?.use_24hour_clock} />
+        {/* ── Controls: interactive settings & moderation ───────── */}
+        <SectionHeading title="Controls" note="Interactive — toggles, messaging & moderation" />
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(360px, 100%), 1fr))', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'start' }}>
+          {/* Site-wide banner */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Site-wide banner</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
+              Shown on every page above the nav. CTA always links to /support. Not dismissable, so keep it short and evergreen.
+            </p>
+            <textarea
+              value={siteBanner}
+              onChange={e => { setSiteBanner(e.target.value); setSiteBannerSaved(false) }}
+              rows={2}
+              style={{ width: '100%', fontFamily: 'var(--sans)', fontSize: '0.88rem', lineHeight: 1.6, padding: '0.6rem 0.75rem', border: '1px solid var(--border)', borderRadius: 4, resize: 'vertical', boxSizing: 'border-box', background: 'var(--bg)' }}
+              placeholder="e.g. Socion is independent and community-built. If it's been useful, consider supporting it."
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.75rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.82rem', color: 'var(--text)', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={siteBannerActive}
+                  onChange={e => setSiteBannerActive(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16 }}
+                />
+                Active (visible site-wide)
+              </label>
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={saveSiteBanner}
+                disabled={savingSiteBanner}
+                style={{ padding: '0.4rem 1rem', fontSize: '0.78rem', opacity: savingSiteBanner ? 0.5 : 1 }}
+              >
+                {savingSiteBanner ? 'Saving…' : siteBannerSaved ? '✓ Saved' : 'Save'}
+              </button>
+            </div>
+          </div>
+
+          {/* Quadra Rooms — host prompt */}
+          <div style={founderCardStyle}>
+            <p style={cardTitleStyle}>Quadra Rooms — post a host prompt</p>
+            <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem', lineHeight: 1.5 }}>
+              Drops an AI-generated conversation-starter into the selected rooms as “Socion Host”, right now. Members with room notifications on get pinged. A room with no members is skipped. (The scheduler already does this automatically for rooms that have gone quiet.)
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
+              {[
+                { label: 'Alpha', value: 'alpha', colour: '#BA7517' },
+                { label: 'Beta',  value: 'beta',  colour: '#791F1F' },
+                { label: 'Gamma', value: 'gamma', colour: '#0F6E56' },
+                { label: 'Delta', value: 'delta', colour: '#185FA5' },
+                { label: 'Socion', value: 'socion', colour: '#6B4C9A' },
+              ].map(({ label, value, colour }) => {
+                const on = seedRooms.includes(value)
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggleSeedRoom(value)}
+                    disabled={seeding}
+                    style={{
+                      fontSize: '0.72rem', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 600,
+                      padding: '0.3rem 0.75rem', borderRadius: 3, cursor: seeding ? 'default' : 'pointer',
+                      border: `1px solid ${on ? colour : 'var(--border)'}`,
+                      background: on ? colour : 'none',
+                      color: on ? '#fff' : colour,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {label}
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={handleSeedRooms}
+                disabled={seeding || seedRooms.length === 0}
+                style={{ padding: '0.45rem 1.1rem', fontSize: '0.8rem', opacity: (seeding || seedRooms.length === 0) ? 0.5 : 1 }}
+              >
+                {seeding ? 'Posting…' : `Post host prompt${seedRooms.length ? ` (${seedRooms.length})` : ''}`}
+              </button>
+              {seedResult && (
+                seedResult.error ? (
+                  <span style={{ fontSize: '0.78rem', color: '#c0392b' }}>{seedResult.error}</span>
+                ) : (
+                  <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+                    {seedResult.seeded?.length
+                      ? <>Posted to <strong style={{ color: 'var(--accent)', textTransform: 'capitalize' }}>{seedResult.seeded.join(', ')}</strong>. </>
+                      : 'Nothing posted. '}
+                    {seedResult.skipped && Object.keys(seedResult.skipped).length > 0 && (
+                      <>Skipped: {Object.entries(seedResult.skipped).map(([room, reason]) => `${room} (${reason})`).join(', ')}.</>
+                    )}
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+
+          <FounderFeedToggle />
+
+          {/* Analytics exclusion */}
+          <div style={{ ...cardStyle, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+            <div>
+              <p style={cardTitleStyle}>Analytics exclusion</p>
+              <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
+                {trackingExcluded ? 'This device is excluded from Umami analytics.' : 'Exclude this device from Umami analytics tracking.'}
+              </p>
+            </div>
+            <button type="button" className="btn-ghost" style={{ fontSize: '0.78rem', padding: '0.4rem 0.9rem', flexShrink: 0 }}
+              onClick={() => {
+                if (trackingExcluded) { localStorage.removeItem('umami.disabled'); setTrackingExcluded(false) }
+                else { localStorage.setItem('umami.disabled', '1'); setTrackingExcluded(true) }
+              }}
+            >
+              {trackingExcluded ? '✓ Excluded — re-enable?' : 'Exclude this device'}
+            </button>
+          </div>
+        </div>
+
+        {/* Moderation — reports */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'start' }}>
+          {/* Reports */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Reports {reports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none</span>}</p>
+            {reports.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
+                {reports.map(r => (
+                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: `2px solid ${r.lifted_at ? 'var(--border)' : '#c0392b'}`, paddingLeft: '0.75rem' }}>
+                    <p style={{ color: r.lifted_at ? 'var(--muted)' : '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+                      {r.reason}{r.lifted_at && ' — unblocked'}
+                    </p>
+                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
+                      <strong>{r.blocked_name ?? r.blocked_id}</strong> blocked by <strong>{r.blocker_name ?? r.blocker_id}</strong>
+                    </p>
+                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
+                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    {!r.lifted_at && (
+                      <button
+                        type="button"
+                        onClick={() => handleUnblock(r.id)}
+                        disabled={unblockingId === r.id}
+                        style={{
+                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
+                          color: 'var(--accent)', cursor: unblockingId === r.id ? 'default' : 'pointer',
+                          opacity: unblockingId === r.id ? 0.6 : 1,
+                        }}
+                      >
+                        {unblockingId === r.id ? 'Unblocking…' : 'Unblock'}
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Board reports */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>Board reports {boardReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
+            {boardReports.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
+                {boardReports.map(r => (
+                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
+                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+                      {r.reason ?? 'No reason given'} {r.post_id ? '— post' : '— comment'}
+                    </p>
+                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
+                      Reported by <strong>{r.reporter_name ?? 'Unknown'}</strong>
+                      {r.author_name && <> · by <strong>{r.author_name}</strong></>}
+                      {r.board_slug && <> · in <strong>{r.board_slug}</strong></>}
+                    </p>
+                    {r.content && (
+                      <p style={{ color: 'var(--muted)', marginTop: '0.25rem', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {r.post_title ? `${r.post_title}: ` : ''}{r.content}
+                      </p>
+                    )}
+                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
+                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    {r.board_slug && (r.post_id || r.comment_id) && (
+                      <a href={`/boards/${r.board_slug}`} style={{ fontSize: '0.72rem', color: 'var(--accent)' }}>View board →</a>
+                    )}
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleResolveReport(r.id)}
+                        disabled={resolvingReportId === r.id}
+                        style={{
+                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
+                          color: 'var(--accent)', cursor: resolvingReportId === r.id ? 'default' : 'pointer',
+                          opacity: resolvingReportId === r.id ? 0.6 : 1,
+                        }}
+                      >
+                        {resolvingReportId === r.id ? 'Resolving…' : 'Mark resolved'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* User reports */}
+          <div style={cardStyle}>
+            <p style={cardTitleStyle}>User reports {userReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
+            {userReports.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
+                {userReports.map(r => (
+                  <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
+                    <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
+                      {r.reason ?? 'No reason given'}
+                    </p>
+                    <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
+                      <strong>{r.reported_name ?? r.reported_user_id}</strong> reported by <strong>{r.reporter_name ?? r.reporter_id}</strong>
+                    </p>
+                    {r.notes && (
+                      <p style={{ color: 'var(--muted)', marginTop: '0.25rem', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {r.notes}
+                      </p>
+                    )}
+                    <p style={{ color: 'var(--muted)', marginTop: '0.15rem' }}>
+                      {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                    <a href={`/profile/${r.reported_user_id}`} style={{ fontSize: '0.72rem', color: 'var(--accent)' }}>View profile →</a>
+                    <div>
+                      <button
+                        type="button"
+                        onClick={() => handleResolveUserReport(r.id)}
+                        disabled={resolvingUserReportId === r.id}
+                        style={{
+                          marginTop: '0.4rem', background: 'none', border: '1px solid var(--border)',
+                          borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem',
+                          color: 'var(--accent)', cursor: resolvingUserReportId === r.id ? 'default' : 'pointer',
+                          opacity: resolvingUserReportId === r.id ? 0.6 : 1,
+                        }}
+                      >
+                        {resolvingUserReportId === r.id ? 'Resolving…' : 'Mark resolved'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         <VerificationPanel users={users} onUpdate={loadData} />
         <BannedEmailsPanel />
         <FeedbackPanel />
 
       </section>
     </Layout>
-  )
-}
-
-function TypingRequestsPanel({ requests, users, onUpdate, use24hourClock }) {
-  const [updating, setUpdating] = useState(null)
-  const [error, setError] = useState(null)
-  const userMap = Object.fromEntries(users.map(u => [u.id, u]))
-
-  async function updateStatus(id, status) {
-    setUpdating(id); setError(null)
-    try {
-      const { error } = await supabase.from('typing_requests').update({ status }).eq('id', id)
-      if (error) throw error
-      await onUpdate()
-    } catch (err) { setError(err.message) } finally { setUpdating(null) }
-  }
-
-  const statusColour = { pending: '#BA7517', scheduled: '#185FA5', completed: '#0F6E56', cancelled: 'var(--muted)' }
-
-  return (
-    <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
-      <p style={cardTitleStyle}>Typing requests <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {requests.length} total</span></p>
-      {error && <p style={{ fontSize: '0.78rem', color: '#c0392b', marginTop: '0.5rem' }}>{error}</p>}
-      {requests.length === 0 ? (
-        <p style={{ fontSize: '0.82rem', color: 'var(--muted)', marginTop: '1rem' }}>No requests yet.</p>
-      ) : (
-        <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: 0 }}>
-          {requests.map((r, i) => {
-            const user = userMap[r.user_id]
-            return (
-              <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '0.75rem 0', borderBottom: i < requests.length - 1 ? '1px solid var(--border)' : 'none', gap: '1rem', flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36, flexShrink: 0 }}>{user?.type ?? '?'}</span>
-                    <span style={{ fontSize: '0.85rem' }}>{user?.profile_data?.name ?? 'Anonymous'}</span>
-                    <span style={{ fontSize: '0.68rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: statusColour[r.status] ?? 'var(--muted)', fontWeight: 500 }}>{r.status}</span>
-                  </div>
-                  {r.discord_handle && <p style={{ fontSize: '0.78rem', color: 'var(--accent)', paddingLeft: '3rem' }}>Discord: {r.discord_handle}</p>}
-                  {r.notes && <p style={{ fontSize: '0.78rem', color: 'var(--muted)', paddingLeft: '3rem', lineHeight: 1.5 }}>{r.notes}</p>}
-                  <p style={{ fontSize: '0.68rem', color: 'var(--muted)', paddingLeft: '3rem' }}>
-                    {new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} {formatTime(r.created_at, use24hourClock)}
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: '0.4rem', flexShrink: 0, flexWrap: 'wrap' }}>
-                  {r.status === 'pending' && <button type="button" onClick={() => updateStatus(r.id, 'scheduled')} disabled={updating === r.id} style={{ background: '#185FA5', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>{updating === r.id ? '…' : 'Mark scheduled'}</button>}
-                  {r.status === 'scheduled' && <button type="button" onClick={() => updateStatus(r.id, 'completed')} disabled={updating === r.id} style={{ background: '#0F6E56', border: 'none', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: '#fff', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>{updating === r.id ? '…' : 'Mark completed'}</button>}
-                  {r.status !== 'cancelled' && r.status !== 'completed' && <button type="button" onClick={() => updateStatus(r.id, 'cancelled')} disabled={updating === r.id} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 3, padding: '0.25rem 0.6rem', fontSize: '0.72rem', color: 'var(--muted)', cursor: 'pointer', opacity: updating === r.id ? 0.5 : 1 }}>{updating === r.id ? '…' : 'Cancel'}</button>}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
   )
 }
 
@@ -1468,6 +1432,9 @@ const centreStyle    = { minHeight: 'calc(100vh - 72px)', display: 'flex', flexD
 const cardStyle      = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem' }
 const founderCardStyle = { background: 'rgba(154,111,56,0.04)', border: '1px solid var(--accent-lt)', borderRadius: 4, padding: '1.25rem' }
 const cardTitleStyle = { fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }
+const sectionHeadingStyle = { display: 'flex', alignItems: 'baseline', gap: '0.75rem', flexWrap: 'wrap', margin: '0 0 1.5rem', paddingBottom: '0.6rem', borderBottom: '1px solid var(--border)' }
+const sectionTitleStyle = { fontFamily: 'var(--serif)', fontSize: 'clamp(1.3rem, 2.2vw, 1.7rem)', fontWeight: 500, color: 'var(--text)', margin: 0 }
+const sectionNoteStyle = { fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }
 const statCardStyle  = { background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 4, padding: '1.25rem 1rem', textAlign: 'center' }
 const statValueStyle = { fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }
 const statDeltaStyle = { fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.2rem', fontWeight: 500 }
