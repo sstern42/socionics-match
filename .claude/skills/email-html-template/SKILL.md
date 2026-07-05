@@ -149,6 +149,13 @@ Follow the constraints the template already encodes:
   `Socion · Stern Consulting · London, UK` line in the footer.
 - **UTM params** go on every campaign link:
   `?utm_source=mailerlite&utm_medium=email&utm_campaign=<slug>`.
+- **Preheader is on you — MailerLite won't add one.** For a custom-HTML campaign
+  MailerLite does *not* auto-insert preview text; whatever's in the template's
+  hidden preheader block is exactly what shows in the inbox. So it must be filled
+  in — if you leave the placeholder or delete the block, the client falls back to
+  scraping the first visible text (the "Socion™ / Member update" header), which
+  wastes the slot. Don't also fill MailerLite's separate preview-text field: keep
+  the in-HTML preheader the single source of truth so the two can't conflict.
 - **Authoring flow:** paste the finished HTML into a MailerLite campaign's
   *custom HTML* block. Send a **test email to yourself first** and check it on
   desktop and mobile before scheduling — MailerLite's preview and a real inbox
