@@ -55,7 +55,7 @@ export default function ProfileSetup() {
   const justSavedRef = useRef(false)
   useEffect(() => {
     if (profile && !justSavedRef.current) navigate('/feed', { replace: true })
-  }, [profile])
+  }, [profile, navigate])
 
   async function handleSave() {
     if (!session) return

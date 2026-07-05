@@ -91,7 +91,7 @@ export default function BoardPost() {
 
   useEffect(() => {
     if (!authLoading && !session) navigate('/auth', { replace: true })
-  }, [session, authLoading])
+  }, [session, authLoading, navigate])
 
   useEffect(() => {
     let cancelled = false

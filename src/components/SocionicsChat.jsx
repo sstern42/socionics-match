@@ -310,7 +310,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       const saved = JSON.parse(localStorage.getItem(`chat_history_${authUserId}`) ?? 'null')
       if (Array.isArray(saved) && saved.length) setMessages(saved)
     } catch { /* ignore */ }
-  }, [authUserId])
+  }, [authUserId, initialQuestion])
 
   // Persist conversation as it evolves
   useEffect(() => {
@@ -385,6 +385,10 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       }
     }
     fetchCount()
+    // Keyed on isPremium (the count source depends on it). initialQuestion/send
+    // are used only in the initialFired one-shot; send is an unstable callback,
+    // so including it would re-run this fetch on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPremium])
 
   useEffect(() => {

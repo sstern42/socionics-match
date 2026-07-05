@@ -14,7 +14,7 @@ export default function AskPage() {
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth', { replace: true })
-  }, [session, loading])
+  }, [session, loading, navigate])
   const [userType, setUserType] = useState(null)
   const [userId, setUserId] = useState(null)
   const [typeLoading, setTypeLoading] = useState(true)

@@ -16,7 +16,7 @@ export default function Feedback() {
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+  }, [session, loading, navigate])
   const [rating, setRating] = useState(0)
   const [hovered, setHovered] = useState(0)
   const [comment, setComment] = useState('')

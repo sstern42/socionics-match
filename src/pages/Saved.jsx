@@ -18,7 +18,7 @@ export default function Saved() {
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+  }, [session, loading, navigate])
 
   const { data: savedData, isFetching, dataUpdatedAt, error: queryError, refetch } = useQuery({
     queryKey: ['saved', profile?.id],

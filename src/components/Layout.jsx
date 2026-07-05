@@ -410,6 +410,10 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         pushToastRef.current({ id: nextToastId(), wide: true, ...group })
       })
     })
+    // Intentionally keyed on the user (profile?.id) not the whole profile object;
+    // markCatchupShown makes it a one-shot per login, so profile mutations
+    // shouldn't re-run it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, profile?.id, previousLastActive])
 
   const isActive = (to) => location.pathname === to

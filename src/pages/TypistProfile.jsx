@@ -45,7 +45,7 @@ export default function TypistProfile() {
 
   useEffect(() => {
     if (!loading && !typist) navigate('/typing', { replace: true })
-  }, [loading, typist])
+  }, [loading, typist, navigate])
 
   if (loading || !typist) return null
 

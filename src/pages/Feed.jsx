@@ -241,7 +241,7 @@ export default function Feed() {
 
   useEffect(() => {
     if (!loading && !session) navigate('/auth')
-  }, [session, loading])
+  }, [session, loading, navigate])
 
   useEffect(() => {
     if (!loading && session && !profile && !retried && !retrying) {
@@ -249,6 +249,9 @@ export default function Feed() {
       setRetried(true)
       refreshProfile().finally(() => setRetrying(false))
     }
+    // refreshProfile is an unstable AuthContext callback; the retried/retrying
+    // flags already make this a one-shot, so including it would only add churn.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loading, session, profile, retried, retrying])
 
   useEffect(() => {
@@ -256,7 +259,7 @@ export default function Feed() {
     if (hash.includes('error=access_denied') || hash.includes('error_code=otp_expired')) {
       navigate('/auth' + hash, { replace: true })
     }
-  }, [])
+  }, [navigate])
 
   useEffect(() => {
     function handleNewMember() { setNewMembersAvailable(true) }
@@ -293,6 +296,10 @@ export default function Feed() {
       })
       .subscribe()
     return () => channel.unsubscribe()
+    // Channel is intentionally keyed only on the user; matchedMap is read as a
+    // best-effort de-dupe inside the callback, and adding it would re-subscribe
+    // the realtime channel on every new match.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profile?.id])
 
   const { data: feedData } = useQuery({ queryKey: feedQueryKey, enabled: false })

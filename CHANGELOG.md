@@ -4,6 +4,15 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 5 July 2026
+
+### Changed
+- **Cleared the 35 `react-hooks/exhaustive-deps` lint warnings (#935)**: The lint run reported 35 of these across the app; individually minor but they added noise to every run and could mask a genuine stale-closure bug. Swept them with a fix chosen per case rather than blanket-suppressing:
+  - **Added the missing dependency where it's safe / correct** — the large `navigate` group (react-router v7's `navigate` is a stable reference, and these are idempotent redirect guards anyway), plus `userId` in `useNotifications`, `isSocion` in the Rooms member-count effect, `searchParams` in the Messages initial-select (guarded one-shot), `currentUserId`/`otherUserId` in the Conversation block lookup, and `initialQuestion` in the SocionicsChat restore effect.
+  - **Captured a ref in a local** for the Rooms typing-channel cleanup (`tabId.current` copied to a local so the cleanup doesn't read a possibly-changed ref — it's a constant tab id, so behaviour is unchanged).
+  - **Scoped `// eslint-disable-next-line` with an explaining comment** only where adding the dep would cause real churn or break intent: realtime subscriptions keyed on a single id (Conversation, Feed incoming-match), animation/scroll effects that intentionally key on a length or a loading flag (Network physics, Conversation/Rooms scroll), one-shot guarded effects using unstable callbacks (Feed retry, SocionicsChat count, `useUnreadCount`), and the catch-up summary keyed on the user rather than the whole profile object.
+  - No runtime behaviour changed. The remaining lint warnings are the React-Compiler rules (`set-state-in-effect`, `immutability`, `purity`, `react-refresh/only-export-components`) deliberately left at `warn` under #931, tracked separately.
+
 ## 4 July 2026
 
 ### Added

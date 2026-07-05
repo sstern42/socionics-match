@@ -119,6 +119,9 @@ export function useUnreadCount(userId) {
       window.removeEventListener('socion-messages-read', handleRead)
       window.removeEventListener('socion-subtract-unread', handleSubtract)
     }
+    // fetchCount/fetchMatchIds are helpers redefined each render; the effect
+    // should re-run only when the user changes, so they're intentionally omitted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId])
 
   return count

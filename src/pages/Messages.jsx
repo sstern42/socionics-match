@@ -33,7 +33,7 @@ export default function Messages() {
 
   useEffect(() => {
     if (!session && !loading) navigate('/auth')
-  }, [session, loading])
+  }, [session, loading, navigate])
 
   useEffect(() => {
     document.body.classList.add('messages-page')
@@ -85,7 +85,7 @@ export default function Messages() {
       const first = data.find(m => !archived.has(m.id))
       if (first) { markMatchRead(first.id); setSelectedMatchId(first.id) }
     }
-  }, [matchesData])
+  }, [matchesData, searchParams])
 
   useEffect(() => {
     if (!profile) return

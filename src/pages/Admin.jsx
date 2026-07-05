@@ -69,7 +69,7 @@ export default function Admin() {
       window.history.replaceState(null, '', '/admin')
     }
     loadData()
-  }, [loading, profile])
+  }, [loading, profile, navigate])
 
   useEffect(() => {
     if (loading || !profile || profile.profile_data?.role !== ADMIN_ROLE) return

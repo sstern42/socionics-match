@@ -567,7 +567,7 @@ export default function Rooms() {
   const isSocion   = quadra === 'Socion'
   const isReadOnly = !isFounder && !isSocion && !!viewingRoomId && viewingQuadra !== (profile?.type ? getQuadra(profile.type) : null)
 
-  useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading])
+  useEffect(() => { if(!loading&&!session) navigate('/auth') }, [session,loading,navigate])
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 700px)')
@@ -590,9 +590,10 @@ export default function Rooms() {
 
   useEffect(() => {
     if (!roomId || !profile?.id) return
+    const tab = tabId.current
     typingChannel.current = supabase.channel(`room_typing:${roomId}`)
       .on('broadcast', { event:'typing' }, ({ payload }) => {
-        if (payload.tab_id === tabId.current) return
+        if (payload.tab_id === tab) return
         const userId = payload.user_id
         if (payload.typing) {
           setTypingUsers(prev => ({ ...prev, [userId]: { name:payload.name, userType:payload.user_type } }))
@@ -607,7 +608,7 @@ export default function Rooms() {
       })
       .subscribe()
     return () => {
-      typingChannel.current?.send({ type:'broadcast', event:'typing', payload:{ tab_id:tabId.current, user_id:profile?.id, typing:false } })
+      typingChannel.current?.send({ type:'broadcast', event:'typing', payload:{ tab_id:tab, user_id:profile?.id, typing:false } })
       typingChannel.current?.unsubscribe()
       typingChannel.current = null
     }
@@ -623,7 +624,7 @@ export default function Rooms() {
     fetchActive()
     const id = setInterval(fetchActive, 60000)
     return () => clearInterval(id)
-  }, [roomId])
+  }, [roomId, isSocion])
 
   useEffect(() => {
     if (!listRef.current) return
@@ -641,6 +642,9 @@ export default function Rooms() {
 
   useEffect(() => {
     if(!roomLoading && messages.length>0) bottomRef.current?.scrollIntoView({ behavior:'auto' })
+    // Initial-load scroll: fires when the room finishes loading, not on every
+    // new message (that's handled by the scroll effects above).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomLoading])
 
   useEffect(() => {
