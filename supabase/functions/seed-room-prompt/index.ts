@@ -16,6 +16,15 @@
 // The insert fires the existing send-room-push webhook, so members with
 // room notifications on get pinged (the whole point — re-engagement).
 //
+// Manual invocation: POST a JSON body to target/force specific rooms —
+//   { "rooms": ["alpha","socion"], "force": true }
+//   - rooms: optional array of room labels ('alpha'|'beta'|'gamma'|'delta'
+//     |'socion') to restrict this run to. Omit for all rooms.
+//   - force: optional; when true, bypasses the quiet-time (b) and
+//     last-sender (c) gates so the host posts even to an active room. The
+//     member check (a) is always kept — no point posting to an empty room.
+// The scheduled cron posts an empty body ({}), i.e. all rooms, gated.
+//
 // Required env vars (auto-injected by Supabase):
 //   SUPABASE_URL, PROJECT_SECRET_KEY
 // Required secrets:
@@ -152,14 +161,47 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
-  // Only this project's own pg_cron job should trigger this. Same custom-header
-  // pattern as daily-digest (the dashboard keeps reverting the Authorization
-  // header to the legacy service_role JWT, which doesn't match PROJECT_SECRET_KEY).
-  if (req.headers.get('x-cron-secret') !== SERVICE_KEY) {
+  const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+
+  // Auth — two accepted callers:
+  //   1. The pg_cron job, via the x-cron-secret header (same custom-header
+  //      pattern as daily-digest — the dashboard keeps reverting the standard
+  //      Authorization header to the legacy service_role JWT).
+  //   2. A founder, via their session JWT (the Admin "Post host prompt"
+  //      button calls this through supabase.functions.invoke). We never hand
+  //      the service key to the browser, so the founder path is how the UI
+  //      triggers a manual run.
+  let authorized = req.headers.get('x-cron-secret') === SERVICE_KEY
+  if (!authorized) {
+    const token = (req.headers.get('Authorization') ?? '').replace('Bearer ', '')
+    if (token) {
+      const { data: { user: authUser } } = await supabase.auth.getUser(token)
+      if (authUser) {
+        const { data: caller } = await supabase
+          .from('users')
+          .select('profile_data')
+          .eq('auth_id', authUser.id)
+          .maybeSingle()
+        if (caller?.profile_data?.role === 'founder') authorized = true
+      }
+    }
+  }
+  if (!authorized) {
     return new Response('Unauthorized', { status: 401, headers: corsHeaders })
   }
 
-  const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
+  // Optional JSON body for manual/targeted invocation. The cron sends {}.
+  let targetRooms: string[] | null = null
+  let force = false
+  try {
+    const body = await req.json()
+    if (Array.isArray(body?.rooms)) {
+      targetRooms = body.rooms.map((r: unknown) => String(r).toLowerCase())
+    }
+    force = body?.force === true
+  } catch {
+    // No body / not JSON — default to all rooms, gated.
+  }
 
   try {
     // 1. Resolve the host bot user.
@@ -191,6 +233,9 @@ Deno.serve(async (req) => {
     for (const room of rooms) {
       const label = room.is_global ? 'socion' : (room.quadra ?? 'unknown')
 
+      // Restrict to the requested rooms, if a target list was given.
+      if (targetRooms && !targetRooms.includes(label)) continue
+
       // (a) Room must have active members — no point seeding an empty room.
       const memberQuery = room.is_global
         ? supabase.from('users').select('id', { count: 'exact', head: true }).not('room_id', 'is', null)
@@ -208,7 +253,8 @@ Deno.serve(async (req) => {
         .limit(1)
         .maybeSingle()
 
-      if (last) {
+      // Gates (b) + (c) — bypassed on a forced manual run.
+      if (last && !force) {
         if (last.sender_id === bot.id) { skipped[label] = 'last message was the host'; continue }
         const age = now - new Date(last.created_at).getTime()
         if (age < QUIET_MS) { skipped[label] = 'still active'; continue }
