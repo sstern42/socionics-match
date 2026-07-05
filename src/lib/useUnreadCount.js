@@ -42,32 +42,68 @@ export function isMatchUnread(match, currentUserId) {
 export function useUnreadCount(userId) {
   const [count, setCount] = useState(0)
   const channelRef = useRef(null)
+  // Set of the user's active match IDs. The unread count is scoped to these
+  // client-side rather than trusting realtime RLS to be the only guard — so a
+  // message from a conversation the user isn't part of can never inflate the
+  // badge, even if realtime RLS is misconfigured for the messages table.
+  const matchIdsRef = useRef(new Set())
 
-  async function fetchCount() {
+  async function fetchMatchIds() {
+    if (!userId) return []
+    const { data, error } = await supabase
+      .from('matches')
+      .select('id')
+      .or(`user_a_id.eq.${userId},user_b_id.eq.${userId}`)
+      .is('unmatched_at', null)
+    if (error) return [...matchIdsRef.current]
+    const ids = (data ?? []).map(m => m.id)
+    matchIdsRef.current = new Set(ids)
+    return ids
+  }
+
+  async function fetchCount(matchIds) {
     if (!userId) return
+    const ids = matchIds ?? [...matchIdsRef.current]
+    if (ids.length === 0) { setCount(0); return }
     const since = getLastVisited()
     const { count: n, error } = await supabase
       .from('messages')
       .select('*', { count: 'exact', head: true })
       .neq('sender_id', userId)
+      .in('match_id', ids)
       .gt('created_at', since)
     if (!error) setCount(n ?? 0)
   }
 
   useEffect(() => {
     if (!userId) return
-    fetchCount()
+    let cancelled = false
+    fetchMatchIds().then(ids => { if (!cancelled) fetchCount(ids) })
 
-    // Subscribe to new messages and increment count if not sent by current user
     channelRef.current = supabase
       .channel(`unread-messages:${userId}`)
+      // Increment only for messages in one of the user's own matches.
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
         table: 'messages',
       }, payload => {
-        if (payload.new.sender_id !== userId) {
+        if (payload.new.sender_id !== userId && matchIdsRef.current.has(payload.new.match_id)) {
           setCount(c => c + 1)
+        }
+      })
+      // Keep the match set current so a match created mid-session (the hook is
+      // long-lived in Layout and only re-runs on userId change) still counts.
+      // RLS scopes this to matches the user can see; the id check is a cheap
+      // confirm that the user is a participant.
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'matches',
+      }, payload => {
+        const m = payload.new
+        if (m.user_a_id === userId || m.user_b_id === userId) {
+          matchIdsRef.current.add(m.id)
         }
       })
       .subscribe()
@@ -78,6 +114,7 @@ export function useUnreadCount(userId) {
     window.addEventListener('socion-subtract-unread', handleSubtract)
 
     return () => {
+      cancelled = true
       channelRef.current?.unsubscribe()
       window.removeEventListener('socion-messages-read', handleRead)
       window.removeEventListener('socion-subtract-unread', handleSubtract)
