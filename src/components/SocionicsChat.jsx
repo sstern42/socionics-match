@@ -410,16 +410,25 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
   function retry() {
     const last = messages[messages.length - 1]
-    if (last?.role === 'user') send(last.content, { isRetry: true })
+    if (last?.role === 'user') send(last.content)
   }
 
-  async function send(text, { isRetry = false } = {}) {
+  async function send(text) {
     const userMessage = text ?? input.trim()
     if (!userMessage || streaming) return
     setInput('')
     setError(null)
     setShowUpgrade(false)
-    const newMessages = isRetry ? messages : [...messages, { role: 'user', content: userMessage }]
+    // A message list only ends in a user turn when the previous attempt failed
+    // (the empty assistant placeholder is removed on error). Drop any such
+    // trailing user turn(s) before appending this one, so retrying — or
+    // re-sending — a prompt replaces the failed attempt instead of stacking a
+    // duplicate. Also self-heals a list that already stacked duplicates.
+    let history = messages
+    while (history.length && history[history.length - 1].role === 'user') {
+      history = history.slice(0, -1)
+    }
+    const newMessages = [...history, { role: 'user', content: userMessage }]
     setMessages([...newMessages, { role: 'assistant', content: '' }])
     setStreaming(true)
     abortRef.current = new AbortController()
