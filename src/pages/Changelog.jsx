@@ -15,6 +15,7 @@ export const ENTRIES = [
        date: '6 July 2026',
        label: 'Fixed',
        items: [
+         'Quadra Rooms — tapping a "new room message" toast now opens the room the message was actually in, instead of always dropping you into your own quadra room',
          'Typing chat — the interviewer occasionally skipped ahead to the next topic early instead of following up on a short answer; its replies are now generated in a way that can\'t be malformed, so this shouldn\'t happen anymore',
        ],
      },
