@@ -302,6 +302,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [messageCount, setMessageCount] = useState(null)
   const [conversationCostUsd, setConversationCostUsd] = useState(0)
+  const [isNarrow, setIsNarrow] = useState(false)
   const [connectionRelations, setConnectionRelations] = useState([])
   const [copiedIndex, setCopiedIndex] = useState(null)
   const [authUserId, setAuthUserId] = useState(null)
@@ -409,6 +410,16 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   }, [messages])
 
   useEffect(() => { return () => abortRef.current?.abort() }, [])
+
+  // Cap follow-up chips to 2 on narrow (phone) viewports so they don't crowd
+  // the message area; 3 on wider screens.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 600px)')
+    const update = () => setIsNarrow(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
 
 
   function copyMessage(content, i) {
@@ -558,7 +569,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   const lastMessage = messages[messages.length - 1]
   const followupSuggestions =
     !streaming && !error && !showUpgrade && lastMessage?.role === 'assistant'
-      ? (lastMessage.followups ?? [])
+      ? (lastMessage.followups ?? []).slice(0, isNarrow ? 2 : 3)
       : []
 
   return (
@@ -670,6 +681,9 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
         {followupSuggestions.length > 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2, marginBottom: 12, maxWidth: '88%' }}>
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--muted)', opacity: 0.65, marginLeft: 2 }}>
+              Suggested
+            </span>
             {followupSuggestions.map(q => (
               <button key={q} onClick={() => send(q)} style={{
                 background: 'var(--card-bg)', border: '1px solid var(--border)',
