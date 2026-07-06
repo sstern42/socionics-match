@@ -285,6 +285,15 @@ function UpgradePrompt() {
 
 const FREE_DAILY_LIMIT = 10
 
+// The edge function appends trailing sentinels (__MAX_TOKENS__, __COST__,
+// __FOLLOWUPS__) after the visible answer, all prefixed with "\n\n__". While
+// streaming we display only the text before the first sentinel so none of them
+// ever flash on screen; the final parse (below) reads their values.
+function visiblePortion(text) {
+  const i = text.search(/\n\n__(?:COST|MAX_TOKENS|FOLLOWUPS)__/)
+  return i === -1 ? text : text.slice(0, i)
+}
+
 export default function SocionicsChat({ userType = null, userId = null, isPremium = false, initialQuestion = null }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -479,7 +488,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
         setMessages(prev => {
           const updated = [...prev]
-          updated[updated.length - 1] = { role: 'assistant', content: accumulated }
+          updated[updated.length - 1] = { role: 'assistant', content: visiblePortion(accumulated) }
           return updated
         })
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -492,7 +501,14 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
         return
       }
 
-      // Strip the edge function's trailing sentinels (cost is always last, max-tokens before it)
+      // Strip the edge function's trailing sentinels from the end inward:
+      // follow-ups (emitted last), then cost, then the max-tokens flag.
+      let followups = []
+      const followupsMatch = accumulated.match(/\n\n__FOLLOWUPS__:([\s\S]*)__$/)
+      if (followupsMatch) {
+        followups = followupsMatch[1].split('|||').map(s => s.trim()).filter(Boolean).slice(0, 3)
+        accumulated = accumulated.slice(0, followupsMatch.index)
+      }
       let costUsd = null
       const costMatch = accumulated.match(/\n\n__COST__:([\d.]+)__$/)
       if (costMatch) {
@@ -507,7 +523,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
       setMessages(prev => {
         const updated = [...prev]
-        updated[updated.length - 1] = { role: 'assistant', content: accumulated, costUsd }
+        updated[updated.length - 1] = { role: 'assistant', content: accumulated, costUsd, followups }
         return updated
       })
       if (costUsd != null) {
@@ -535,6 +551,15 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   }
 
   const isEmpty = messages.length === 0
+
+  // Follow-up suggestions from the most recent assistant turn — shown as
+  // clickable chips once it's finished streaming, and only when nothing else
+  // (error, upgrade prompt) is occupying that space.
+  const lastMessage = messages[messages.length - 1]
+  const followupSuggestions =
+    !streaming && !error && !showUpgrade && lastMessage?.role === 'assistant'
+      ? (lastMessage.followups ?? [])
+      : []
 
   return (
     <div style={{
@@ -640,6 +665,22 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 4px' }}>
               <TypingIndicator />
             </div>
+          </div>
+        )}
+
+        {followupSuggestions.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2, marginBottom: 12, maxWidth: '88%' }}>
+            {followupSuggestions.map(q => (
+              <button key={q} onClick={() => send(q)} style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 16, padding: '7px 13px', color: 'var(--muted)',
+                fontSize: 12.5, cursor: 'pointer', textAlign: 'left', lineHeight: 1.45,
+                transition: 'border-color 0.15s, background 0.15s, color 0.15s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.background='rgba(154,111,56,0.06)'; e.currentTarget.style.color='var(--text)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.background='var(--card-bg)'; e.currentTarget.style.color='var(--muted)' }}
+              >{q}</button>
+            ))}
           </div>
         )}
 

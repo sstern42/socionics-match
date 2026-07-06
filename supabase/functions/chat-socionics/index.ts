@@ -7,6 +7,23 @@ const corsHeaders = {
 
 const FREE_DAILY_LIMIT = 10
 
+// The model ends each response with this marker followed by up to 3 "|||"-
+// separated follow-up questions (see SYSTEM_PROMPT). The edge function strips
+// everything from the marker onward out of the visible stream and re-emits the
+// questions as a __FOLLOWUPS__ sentinel, so the marker never reaches the user.
+const FOLLOWUPS_MARKER = '[[SUGGESTED_FOLLOWUPS]]'
+
+// Length of the longest suffix of `text` that is a prefix of `marker`. Used to
+// withhold a possible partial marker at a chunk boundary, so we never stream out
+// the leading `[[SUGGESTED...` of the marker before we know it's the marker.
+function markerPrefixLen(text: string, marker: string): number {
+  const max = Math.min(text.length, marker.length - 1)
+  for (let k = max; k > 0; k--) {
+    if (text.endsWith(marker.slice(0, k))) return k
+  }
+  return 0
+}
+
 // Claude Sonnet 5 list pricing, per million tokens (platform.claude.com/docs/en/pricing).
 // Cache writes carry a premium over the base input rate; cache reads are discounted.
 // Not the introductory rate — using list price keeps this from silently going stale
@@ -45,6 +62,14 @@ const SYSTEM_PROMPT = `You are a knowledgeable Socionics assistant embedded in S
 - **Always look up the complete intertype relations matrix below before stating any relation between two types. Never guess or infer — the matrix is authoritative.**
 - **Always look up the Function Stacks table below before stating any type's functions or Model A positions. Never derive, reconstruct, or recall function stacks from memory — the table is authoritative.**
 - **Always use type names, function descriptions, and relation descriptions exactly as defined below — never use alternative school names or phrasings**
+
+## Follow-up suggestions
+End EVERY response with a suggestions line in exactly this format, on its own line, as the very last thing you output with nothing after it:
+[[SUGGESTED_FOLLOWUPS]] first question ||| second question ||| third question
+- Provide up to 3 natural follow-up questions the user is likely to want to ask next, based on where the conversation has got to.
+- Phrase each in the user's own first-person voice (e.g. "How does my Dual relation work day to day?", "Which of these should I focus on first?") — not as things you are offering to do.
+- Keep each under about 12 words, and separate them with " ||| " (space-pipe-pipe-pipe-space).
+- This line is stripped out before the user sees anything and rendered as clickable buttons. Never mention it in your prose, never use markdown inside it, and never write anything after it.
 
 ## What is Socionics?
 Socionics is a personality theory developed in the 1970s by Lithuanian researcher Aushra Augusta, built on Jungian cognitive functions. Unlike MBTI or the Big Five, Socionics is primarily a theory of intertype relations — the unit of analysis is the dyad, not the individual. It defines 16 personality types and maps a specific named relationship dynamic between every possible pair.
@@ -411,6 +436,21 @@ Deno.serve(async (req) => {
           cache_read_input_tokens: 0,
         }
 
+        // Full assistant text seen so far, how much of it we've forwarded to the
+        // client as visible text, and where the follow-ups marker starts (-1
+        // until seen). Everything from the marker onward is suppressed from the
+        // visible stream and re-emitted as a __FOLLOWUPS__ sentinel at the end.
+        let assistantText = ''
+        let flushed = 0
+        let markerAt = -1
+
+        const flushVisibleTo = (end: number) => {
+          if (end > flushed) {
+            controller.enqueue(encoder.encode(assistantText.slice(flushed, end)))
+            flushed = end
+          }
+        }
+
         try {
           while (true) {
             const { done, value } = await reader.read()
@@ -431,7 +471,17 @@ Deno.serve(async (req) => {
                   event.delta?.type === 'text_delta' &&
                   event.delta?.text
                 ) {
-                  controller.enqueue(encoder.encode(event.delta.text))
+                  assistantText += event.delta.text
+                  if (markerAt === -1) markerAt = assistantText.indexOf(FOLLOWUPS_MARKER)
+                  if (markerAt !== -1) {
+                    // Flush everything before the marker; suppress the rest.
+                    flushVisibleTo(markerAt)
+                  } else {
+                    // Hold back a possible partial marker at the tail so we never
+                    // stream out the start of the marker before recognising it.
+                    const hold = markerPrefixLen(assistantText, FOLLOWUPS_MARKER)
+                    flushVisibleTo(assistantText.length - hold)
+                  }
                 }
                 if (event.type === 'message_start' && event.message?.usage) {
                   Object.assign(usage, event.message.usage)
@@ -451,11 +501,28 @@ Deno.serve(async (req) => {
             }
           }
 
+          // No marker ever arrived — flush whatever tail we were holding back.
+          if (markerAt === -1) flushVisibleTo(assistantText.length)
+
+          const followups = markerAt === -1
+            ? []
+            : assistantText
+                .slice(markerAt + FOLLOWUPS_MARKER.length)
+                .split('|||')
+                .map(s => s.trim())
+                .filter(Boolean)
+                .slice(0, 3)
+
           if (hitMaxTokens) {
             controller.enqueue(encoder.encode('\n\n__MAX_TOKENS__'))
           }
           const costUsd = estimateCostUsd(usage)
           controller.enqueue(encoder.encode(`\n\n__COST__:${costUsd.toFixed(6)}__`))
+          // Emitted last so the client can strip it off the end first. Questions
+          // never contain "|||" or a trailing "__", so the delimiters are safe.
+          if (followups.length) {
+            controller.enqueue(encoder.encode(`\n\n__FOLLOWUPS__:${followups.join(' ||| ')}__`))
+          }
         } finally {
           controller.close()
         }
