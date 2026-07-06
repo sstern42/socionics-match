@@ -11,6 +11,13 @@ export const ENTRIES = [
        ],
      },
      {
+       date: '6 July 2026',
+       label: 'Fixed',
+       items: [
+         'Typing chat — the interviewer occasionally skipped ahead to the next topic early instead of following up on a short answer; its replies are now generated in a way that can\'t be malformed, so this shouldn\'t happen anymore',
+       ],
+     },
+     {
        date: '5 July 2026',
        label: 'New',
        items: [

@@ -62,8 +62,7 @@ const SYSTEM_PROMPT = `You are conducting a short, warm, conversational intervie
 - If the user tries to self-type (mentions MBTI letters, a Socionics type code, or asks what type you think they are), gently redirect them toward giving a concrete example instead — don't confirm or deny anything.
 - Advance between topics naturally. Never say "next question" or number the questions out loud.
 - You will be told the current topic and how many follow-ups have already been used on it (max 2). Only ask a follow-up if the user's last answer was short (roughly under 15 words) or didn't actually answer what was asked — not just to seem thorough. Otherwise move on.
-- Respond with JSON only, no other text, no markdown code fences: {"message": "<your next message to the user>", "advance_topic": true or false}. "advance_topic": true means you are moving on to the next topic (or, if this was the last topic, wrapping up warmly); false means you are asking a follow-up on the current topic.
-- Your entire response must start with { and end with } — do not write the message in plain text first and then repeat it inside the JSON. The JSON object is the only thing you output.`
+- Always respond by calling the provide_turn_response tool — never as plain text. "advance_topic": true means you are moving on to the next topic (or, if this was the last topic, wrapping up warmly); false means you are asking a follow-up on the current topic.`
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -72,43 +71,13 @@ function json(body: unknown, status = 200): Response {
   })
 }
 
-function parseTurnResponse(text: string): { message: string; advance_topic: boolean } | null {
-  try {
-    let candidate = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '')
-
-    // The model sometimes writes the message in plain text before the JSON
-    // object despite instructions not to — extract just the JSON object
-    // (first '{' to last '}') rather than assuming the whole response is
-    // JSON, so a preamble doesn't make the whole thing fail to parse and
-    // fall back to displaying the raw text (sentence + duplicated JSON).
-    const start = candidate.indexOf('{')
-    const end = candidate.lastIndexOf('}')
-    if (start !== -1 && end > start) {
-      candidate = candidate.slice(start, end + 1)
-    }
-
-    const parsed = JSON.parse(candidate)
-    if (typeof parsed.message === 'string' && typeof parsed.advance_topic === 'boolean') {
-      return parsed
-    }
-    return null
-  } catch {
-    return null
+function parseTurnResponse(input: unknown): { message: string; advance_topic: boolean } | null {
+  if (!input || typeof input !== 'object') return null
+  const { message, advance_topic } = input as { message?: unknown; advance_topic?: unknown }
+  if (typeof message === 'string' && typeof advance_topic === 'boolean') {
+    return { message, advance_topic }
   }
-}
-
-// Best-effort salvage when the response is truncated mid-string (hit
-// max_tokens before the JSON closed) and parseTurnResponse can't produce
-// valid JSON at all -- pulls out just the message text so the user sees
-// (possibly cut-off) conversational text instead of raw JSON syntax.
-function extractPartialMessage(text: string): string | null {
-  const match = text.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)/)
-  if (!match) return null
-  try {
-    return JSON.parse(`"${match[1]}"`)
-  } catch {
-    return match[1]
-  }
+  return null
 }
 
 Deno.serve(async (req) => {
@@ -253,6 +222,30 @@ Deno.serve(async (req) => {
           { type: 'text', text: topicContext },
         ],
         messages,
+        // Forcing a tool call (rather than prompting for hand-formatted JSON
+        // in plain text) makes the shape a server-side guarantee instead of
+        // an instruction the model can ignore -- it was occasionally
+        // answering in plain conversational text with no JSON at all, which
+        // silently forced advance_topic to true every time (see parsed?.
+        // advance_topic ?? true below) and skipped topics it shouldn't have.
+        tools: [
+          {
+            name: 'provide_turn_response',
+            description: "Provide your next message to the user and whether to advance to the next topic.",
+            input_schema: {
+              type: 'object',
+              properties: {
+                message: { type: 'string', description: 'Your next message to the user.' },
+                advance_topic: {
+                  type: 'boolean',
+                  description: 'true to move to the next topic (or wrap up warmly if this was the last topic); false to ask a follow-up on the current topic.',
+                },
+              },
+              required: ['message', 'advance_topic'],
+            },
+          },
+        ],
+        tool_choice: { type: 'tool', name: 'provide_turn_response' },
       }),
     })
 
@@ -264,17 +257,17 @@ Deno.serve(async (req) => {
     }
 
     const data = await res.json()
-    // Find the text block rather than assuming content[0] is always it --
-    // a non-text block (e.g. thinking) in that position would otherwise
-    // silently produce an empty string here.
-    const rawText = data.content?.find((b: { type: string }) => b.type === 'text')?.text ?? ''
-    const parsed = parseTurnResponse(rawText)
+    // Find the tool_use block rather than assuming content[0] is always it --
+    // the forced tool_choice means this should always be present, but a
+    // preceding block of another type shouldn't break the lookup.
+    const toolUse = data.content?.find((b: { type: string }) => b.type === 'tool_use')
+    const parsed = parseTurnResponse(toolUse?.input)
 
     if (!parsed) {
       // Log the full response (content block types + usage), not just the
-      // extracted text -- an empty rawText with stop_reason 'max_tokens'
-      // means tokens were consumed by something other than visible text,
-      // which the text-only log line can't explain on its own.
+      // extracted input -- an empty/missing tool_use with stop_reason
+      // 'max_tokens' means tokens ran out before the tool call completed,
+      // which the input-only log line can't explain on its own.
       console.error(
         'onboarding-typing-turn: unparseable response',
         JSON.stringify({ stop_reason: data.stop_reason, usage: data.usage, content: data.content })
@@ -283,7 +276,7 @@ Deno.serve(async (req) => {
 
     // Malformed model output: keep the conversation moving forward rather
     // than getting stuck repeating the same topic indefinitely.
-    const assistantMessage = parsed?.message ?? extractPartialMessage(rawText) ?? (rawText.trim() || "Let's move on.")
+    const assistantMessage = parsed?.message ?? "Let's move on."
     let advanceTopic = parsed?.advance_topic ?? true
 
     // Server enforces the follow-up cap regardless of model output.
