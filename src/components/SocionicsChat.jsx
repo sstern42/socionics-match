@@ -292,6 +292,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   const [error, setError] = useState(null)
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [messageCount, setMessageCount] = useState(null)
+  const [conversationCostUsd, setConversationCostUsd] = useState(0)
   const [connectionRelations, setConnectionRelations] = useState([])
   const [copiedIndex, setCopiedIndex] = useState(null)
   const [authUserId, setAuthUserId] = useState(null)
@@ -308,7 +309,10 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
     if (initialQuestion) return
     try {
       const saved = JSON.parse(localStorage.getItem(`chat_history_${authUserId}`) ?? 'null')
-      if (Array.isArray(saved) && saved.length) setMessages(saved)
+      if (Array.isArray(saved) && saved.length) {
+        setMessages(saved)
+        setConversationCostUsd(saved.reduce((sum, m) => sum + (m.costUsd ?? 0), 0))
+      }
     } catch { /* ignore */ }
   }, [authUserId, initialQuestion])
 
@@ -457,18 +461,6 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
         if (done) break
         accumulated += decoder.decode(value, { stream: true })
 
-        // Check for max_tokens sentinel from edge function
-        if (accumulated.endsWith('__MAX_TOKENS__')) {
-          accumulated = accumulated.slice(0, -'__MAX_TOKENS__'.length).trimEnd()
-          setMessages(prev => {
-            const updated = [...prev]
-            updated[updated.length - 1] = { role: 'assistant', content: accumulated }
-            return updated
-          })
-          setError('Response was cut off — ask me to continue or try a more specific question.')
-          return
-        }
-
         setMessages(prev => {
           const updated = [...prev]
           updated[updated.length - 1] = { role: 'assistant', content: accumulated }
@@ -481,6 +473,32 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       if (!accumulated.trim()) {
         setMessages(prev => prev.slice(0, -1))
         setError('No response received. Please try again.')
+        return
+      }
+
+      // Strip the edge function's trailing sentinels (cost is always last, max-tokens before it)
+      let costUsd = null
+      const costMatch = accumulated.match(/\n\n__COST__:([\d.]+)__$/)
+      if (costMatch) {
+        costUsd = parseFloat(costMatch[1])
+        accumulated = accumulated.slice(0, costMatch.index)
+      }
+      let hitMaxTokens = false
+      if (accumulated.endsWith('__MAX_TOKENS__')) {
+        hitMaxTokens = true
+        accumulated = accumulated.slice(0, -'__MAX_TOKENS__'.length).trimEnd()
+      }
+
+      setMessages(prev => {
+        const updated = [...prev]
+        updated[updated.length - 1] = { role: 'assistant', content: accumulated, costUsd }
+        return updated
+      })
+      if (costUsd != null) {
+        setConversationCostUsd(prev => prev + costUsd)
+      }
+      if (hitMaxTokens) {
+        setError('Response was cut off — ask me to continue or try a more specific question.')
         return
       }
     } catch (err) {
@@ -535,7 +553,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
           )}
           {messages.length > 0 && (
             <button
-              onClick={() => { setMessages([]); setError(null); setShowUpgrade(false) }}
+              onClick={() => { setMessages([]); setError(null); setShowUpgrade(false); setConversationCostUsd(0) }}
               style={{
                 background: 'none', border: 'none',
                 color: 'var(--muted)', fontSize: 12, cursor: 'pointer',
@@ -606,6 +624,15 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 4px' }}>
               <TypingIndicator />
             </div>
+          </div>
+        )}
+
+        {!streaming && conversationCostUsd > 0 && (
+          <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--muted)', padding: '4px 0 8px', opacity: 0.8 }}>
+            This conversation cost ~${conversationCostUsd < 0.01 ? conversationCostUsd.toFixed(4) : conversationCostUsd.toFixed(2)} in AI usage.{' '}
+            <a href="/support" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--muted)', textDecoration: 'underline' }}>
+              Help cover it
+            </a>
           </div>
         )}
 

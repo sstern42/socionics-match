@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '6 July 2026',
+       label: 'New',
+       items: [
+         'Ask the AI — once a conversation with the Socionics assistant has run up some cost, a small note appears showing roughly what it cost in AI usage, with a link to help cover it if you find it useful',
+       ],
+     },
+     {
        date: '5 July 2026',
        label: 'New',
        items: [
