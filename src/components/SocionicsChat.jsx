@@ -429,7 +429,14 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
       const res = await fetch(FUNCTION_URL, {
         method: 'POST', headers,
-        body: JSON.stringify({ messages: newMessages, userType, connectionRelations }),
+        // Only send role/content upstream. Messages we store locally also carry
+        // a costUsd field (for the cost display), and the Anthropic API rejects
+        // messages with any unexpected field with a 400 on the next turn.
+        body: JSON.stringify({
+          messages: newMessages.map(({ role, content }) => ({ role, content })),
+          userType,
+          connectionRelations,
+        }),
         signal: abortRef.current.signal,
       })
       if (res.ok) {
