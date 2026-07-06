@@ -6,6 +6,9 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ## 6 July 2026
 
+### Fixed
+- **Typing chat — interviewer turn occasionally ignored the reply format, spamming error logs and skipping topics**: `onboarding-typing-turn` asked Claude to hand-format its reply as JSON in plain text (`{"message": ..., "advance_topic": ...}`), which it would occasionally skip entirely and answer in plain conversational text instead — no braces at all, so the brace-extraction fallback had nothing to find and logged `onboarding-typing-turn: unparseable response`. Worse, on every one of these failures `advance_topic` silently defaulted to `true`, forcing the conversation to skip ahead a topic it shouldn't have. Switched to Anthropic's forced tool-use (`tool_choice: {type: 'tool', name: 'provide_turn_response'}`) so the reply shape is a server-side guarantee instead of a prompt instruction the model could ignore — the user-visible chat and response contract are unchanged.
+
 ### Added
 - **"Ask the AI" chat — shows what the conversation cost**: `chat-socionics` now tracks the Claude usage (`input_tokens`, `output_tokens`, cache write/read tokens) reported on the streamed response and estimates the cost in USD using Claude Sonnet 5's list pricing (cache writes/reads priced at their published multipliers of the base input rate). The estimate is appended to the stream as a trailing sentinel, which `SocionicsChat.jsx` strips out and accumulates into a running per-conversation total. Once the total is non-zero, a small note appears under the conversation — "This conversation cost ~$X in AI usage" — linking to the existing `/support` Ko-fi page, so members who find the assistant useful can see roughly what it costs to run and choose to help cover it. Real-time API account balance isn't exposed by Anthropic's API, so this shows actual per-conversation spend rather than a global "credit remaining" figure.
 
