@@ -7,6 +7,31 @@ const corsHeaders = {
 
 const FREE_DAILY_LIMIT = 10
 
+// Claude Sonnet 5 list pricing, per million tokens (platform.claude.com/docs/en/pricing).
+// Cache writes carry a premium over the base input rate; cache reads are discounted.
+// Not the introductory rate — using list price keeps this from silently going stale
+// once the intro window ends.
+const PRICE_PER_MTOK = {
+  input: 3,
+  output: 15,
+  cacheWrite1h: 3 * 2,
+  cacheRead: 3 * 0.1,
+}
+
+function estimateCostUsd(usage: {
+  input_tokens?: number
+  output_tokens?: number
+  cache_creation_input_tokens?: number
+  cache_read_input_tokens?: number
+}): number {
+  return (
+    ((usage.input_tokens ?? 0) / 1_000_000) * PRICE_PER_MTOK.input +
+    ((usage.output_tokens ?? 0) / 1_000_000) * PRICE_PER_MTOK.output +
+    ((usage.cache_creation_input_tokens ?? 0) / 1_000_000) * PRICE_PER_MTOK.cacheWrite1h +
+    ((usage.cache_read_input_tokens ?? 0) / 1_000_000) * PRICE_PER_MTOK.cacheRead
+  )
+}
+
 const SYSTEM_PROMPT = `You are a knowledgeable Socionics assistant embedded in Socion, a Socionics-based matching app at socion.app. You help users understand Socionics theory, types, intertype relations, Model A, quadras, and how they apply to real relationships and self-understanding.
 
 ## Guidelines
@@ -376,6 +401,15 @@ Deno.serve(async (req) => {
         const reader = res.body!.getReader()
         const decoder = new TextDecoder()
         let buffer = ''
+        let hitMaxTokens = false
+        // message_start carries the input-side usage; message_delta carries
+        // output_tokens as a running total, so the last one seen is final.
+        const usage = {
+          input_tokens: 0,
+          output_tokens: 0,
+          cache_creation_input_tokens: 0,
+          cache_read_input_tokens: 0,
+        }
 
         try {
           while (true) {
@@ -399,17 +433,29 @@ Deno.serve(async (req) => {
                 ) {
                   controller.enqueue(encoder.encode(event.delta.text))
                 }
+                if (event.type === 'message_start' && event.message?.usage) {
+                  Object.assign(usage, event.message.usage)
+                }
+                if (event.type === 'message_delta' && event.usage) {
+                  Object.assign(usage, event.usage)
+                }
                 if (
                   event.type === 'message_delta' &&
                   event.delta?.stop_reason === 'max_tokens'
                 ) {
-                  controller.enqueue(encoder.encode('\n\n__MAX_TOKENS__'))
+                  hitMaxTokens = true
                 }
               } catch {
                 // skip malformed lines
               }
             }
           }
+
+          if (hitMaxTokens) {
+            controller.enqueue(encoder.encode('\n\n__MAX_TOKENS__'))
+          }
+          const costUsd = estimateCostUsd(usage)
+          controller.enqueue(encoder.encode(`\n\n__COST__:${costUsd.toFixed(6)}__`))
         } finally {
           controller.close()
         }
