@@ -7,6 +7,7 @@ export const ENTRIES = [
        date: '6 July 2026',
        label: 'New',
        items: [
+         'Ask the AI — after each answer, the Socionics assistant now suggests a few natural follow-up questions as clickable chips (up to 3, or 2 on phones), so you can keep the conversation going with one tap',
          'Ask the AI — once a conversation with the Socionics assistant has run up some cost, a small note appears showing roughly what it cost in AI usage, with a link to help cover it if you find it useful',
        ],
      },

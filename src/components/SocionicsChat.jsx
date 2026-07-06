@@ -285,6 +285,15 @@ function UpgradePrompt() {
 
 const FREE_DAILY_LIMIT = 10
 
+// The edge function appends trailing sentinels (__MAX_TOKENS__, __COST__,
+// __FOLLOWUPS__) after the visible answer, all prefixed with "\n\n__". While
+// streaming we display only the text before the first sentinel so none of them
+// ever flash on screen; the final parse (below) reads their values.
+function visiblePortion(text) {
+  const i = text.search(/\n\n__(?:COST|MAX_TOKENS|FOLLOWUPS)__/)
+  return i === -1 ? text : text.slice(0, i)
+}
+
 export default function SocionicsChat({ userType = null, userId = null, isPremium = false, initialQuestion = null }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -293,6 +302,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   const [showUpgrade, setShowUpgrade] = useState(false)
   const [messageCount, setMessageCount] = useState(null)
   const [conversationCostUsd, setConversationCostUsd] = useState(0)
+  const [isNarrow, setIsNarrow] = useState(false)
   const [connectionRelations, setConnectionRelations] = useState([])
   const [copiedIndex, setCopiedIndex] = useState(null)
   const [authUserId, setAuthUserId] = useState(null)
@@ -401,6 +411,16 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
   useEffect(() => { return () => abortRef.current?.abort() }, [])
 
+  // Cap follow-up chips to 2 on narrow (phone) viewports so they don't crowd
+  // the message area; 3 on wider screens.
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 600px)')
+    const update = () => setIsNarrow(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
 
   function copyMessage(content, i) {
     navigator.clipboard?.writeText(content)
@@ -410,16 +430,25 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
   function retry() {
     const last = messages[messages.length - 1]
-    if (last?.role === 'user') send(last.content, { isRetry: true })
+    if (last?.role === 'user') send(last.content)
   }
 
-  async function send(text, { isRetry = false } = {}) {
+  async function send(text) {
     const userMessage = text ?? input.trim()
     if (!userMessage || streaming) return
     setInput('')
     setError(null)
     setShowUpgrade(false)
-    const newMessages = isRetry ? messages : [...messages, { role: 'user', content: userMessage }]
+    // A message list only ends in a user turn when the previous attempt failed
+    // (the empty assistant placeholder is removed on error). Drop any such
+    // trailing user turn(s) before appending this one, so retrying — or
+    // re-sending — a prompt replaces the failed attempt instead of stacking a
+    // duplicate. Also self-heals a list that already stacked duplicates.
+    let history = messages
+    while (history.length && history[history.length - 1].role === 'user') {
+      history = history.slice(0, -1)
+    }
+    const newMessages = [...history, { role: 'user', content: userMessage }]
     setMessages([...newMessages, { role: 'assistant', content: '' }])
     setStreaming(true)
     abortRef.current = new AbortController()
@@ -429,7 +458,14 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`
       const res = await fetch(FUNCTION_URL, {
         method: 'POST', headers,
-        body: JSON.stringify({ messages: newMessages, userType, connectionRelations }),
+        // Only send role/content upstream. Messages we store locally also carry
+        // a costUsd field (for the cost display), and the Anthropic API rejects
+        // messages with any unexpected field with a 400 on the next turn.
+        body: JSON.stringify({
+          messages: newMessages.map(({ role, content }) => ({ role, content })),
+          userType,
+          connectionRelations,
+        }),
         signal: abortRef.current.signal,
       })
       if (res.ok) {
@@ -463,7 +499,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
         setMessages(prev => {
           const updated = [...prev]
-          updated[updated.length - 1] = { role: 'assistant', content: accumulated }
+          updated[updated.length - 1] = { role: 'assistant', content: visiblePortion(accumulated) }
           return updated
         })
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -476,7 +512,14 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
         return
       }
 
-      // Strip the edge function's trailing sentinels (cost is always last, max-tokens before it)
+      // Strip the edge function's trailing sentinels from the end inward:
+      // follow-ups (emitted last), then cost, then the max-tokens flag.
+      let followups = []
+      const followupsMatch = accumulated.match(/\n\n__FOLLOWUPS__:([\s\S]*)__$/)
+      if (followupsMatch) {
+        followups = followupsMatch[1].split('|||').map(s => s.trim()).filter(Boolean).slice(0, 3)
+        accumulated = accumulated.slice(0, followupsMatch.index)
+      }
       let costUsd = null
       const costMatch = accumulated.match(/\n\n__COST__:([\d.]+)__$/)
       if (costMatch) {
@@ -491,7 +534,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
 
       setMessages(prev => {
         const updated = [...prev]
-        updated[updated.length - 1] = { role: 'assistant', content: accumulated, costUsd }
+        updated[updated.length - 1] = { role: 'assistant', content: accumulated, costUsd, followups }
         return updated
       })
       if (costUsd != null) {
@@ -519,6 +562,15 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
   }
 
   const isEmpty = messages.length === 0
+
+  // Follow-up suggestions from the most recent assistant turn — shown as
+  // clickable chips once it's finished streaming, and only when nothing else
+  // (error, upgrade prompt) is occupying that space.
+  const lastMessage = messages[messages.length - 1]
+  const followupSuggestions =
+    !streaming && !error && !showUpgrade && lastMessage?.role === 'assistant'
+      ? (lastMessage.followups ?? []).slice(0, isNarrow ? 2 : 3)
+      : []
 
   return (
     <div style={{
@@ -624,6 +676,25 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
             <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '18px 18px 18px 4px' }}>
               <TypingIndicator />
             </div>
+          </div>
+        )}
+
+        {followupSuggestions.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 2, marginBottom: 12, maxWidth: '88%' }}>
+            <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--muted)', opacity: 0.65, marginLeft: 2 }}>
+              Suggested
+            </span>
+            {followupSuggestions.map(q => (
+              <button key={q} onClick={() => send(q)} style={{
+                background: 'var(--card-bg)', border: '1px solid var(--border)',
+                borderRadius: 16, padding: '7px 13px', color: 'var(--muted)',
+                fontSize: 12.5, cursor: 'pointer', textAlign: 'left', lineHeight: 1.45,
+                transition: 'border-color 0.15s, background 0.15s, color 0.15s',
+              }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor='var(--accent)'; e.currentTarget.style.background='rgba(154,111,56,0.06)'; e.currentTarget.style.color='var(--text)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor='var(--border)'; e.currentTarget.style.background='var(--card-bg)'; e.currentTarget.style.color='var(--muted)' }}
+              >{q}</button>
+            ))}
           </div>
         )}
 
