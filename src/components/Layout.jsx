@@ -823,7 +823,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
         const onClick = isClickable ? () => {
           setToasts(prev => prev.filter(t => t.id !== toast.id))
           if (toast.kind === 'founder_post' || toast.kind === 'catchup_founder_post') navigate('/updates')
-          else if (toast.kind === 'room') navigate('/rooms')
+          else if (toast.kind === 'room') navigate(toast.label ? `/rooms?room=${toast.label}` : '/rooms')
           else if (toast.kind === 'catchup_message') navigate('/messages')
           else if (toast.kind === 'catchup_connection') navigate('/messages')
           else if (toast.kind === 'catchup_member') navigate('/feed')

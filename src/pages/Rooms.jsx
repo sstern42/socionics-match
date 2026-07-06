@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
@@ -517,6 +517,7 @@ export default function Rooms() {
   usePageTitle('Quadra Rooms')
   const { session, profile, loading, refreshProfile } = useAuth()
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [viewingRoomId, setViewingRoomId]     = useState(null)
   const [viewingQuadra, setViewingQuadra]     = useState(null)
@@ -673,6 +674,19 @@ export default function Rooms() {
       if (!error && data) { setViewingRoomId(data.id); setViewingQuadra(q) }
     } catch (err) { console.error('Could not switch room:', err) }
   }
+
+  // Deep link: a `?room=Beta` param (e.g. from a new-message toast) opens that
+  // room instead of defaulting to the viewer's own quadra room.
+  useEffect(() => {
+    const target = searchParams.get('room')
+    if (!target || !profile?.type) return
+    const normalized = ROOM_TABS.find(t => t.toLowerCase() === target.toLowerCase())
+    if (normalized) handleQuadraSwitcher(normalized)
+    // Clear the param so a later manual room switch isn't overridden.
+    const next = new URLSearchParams(searchParams)
+    next.delete('room')
+    setSearchParams(next, { replace: true })
+  }, [searchParams, profile?.type])
 
   function handleScrollToMessage(msgId) {
     const el = document.getElementById(`room-msg-${msgId}`)
