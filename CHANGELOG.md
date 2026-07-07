@@ -4,6 +4,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 7 July 2026
+
+### Added
+- **`CLAUDE.md` — reminder to flag Supabase preview-branch cost**: Supabase's GitHub integration (connected this session) creates a billed preview database for any open PR touching `supabase/` (migrations, functions, config) — $0.01344/hr on Micro compute, so a PR left open for weeks is the real cost driver, not the number of merges. Added an instruction so Claude calls this out on relevant PRs instead of it going unnoticed on the bill.
+
 ## 6 July 2026
 
 ### Added
