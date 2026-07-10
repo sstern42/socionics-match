@@ -4,7 +4,7 @@ import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { supabase } from '../lib/supabase'
-import { liftBlock } from '../lib/blocks'
+import { adminLiftBlock } from '../lib/blocks'
 import { resolveBoardReport } from '../lib/boards'
 import { resolveUserReport } from '../lib/userReports'
 import { COUNTRIES } from '../data/countries'
@@ -234,7 +234,7 @@ export default function Admin() {
   async function handleUnblock(reportId) {
     setUnblockingId(reportId)
     try {
-      await liftBlock(reportId)
+      await adminLiftBlock(reportId)
       await loadData()
     } catch (err) {
       setError(err.message)

@@ -59,11 +59,21 @@ export async function hardBlock(blockerId, blockedId, reason, notes) {
   if (error) throw error
 }
 
-// Lift a cooloff block early
+// Lift a cooloff block early. Used by a user lifting their own block
+// (the direct UPDATE is permitted by the blocker-owned RLS policy).
 export async function liftBlock(blockId) {
   const { error } = await supabase
     .from('blocks')
     .update({ lifted_at: new Date().toISOString() })
     .eq('id', blockId)
+  if (error) throw error
+}
+
+// Lift any block as an admin (founder). A founder is neither the blocker
+// nor the blocked party, so the direct UPDATE above is filtered out by
+// RLS. This goes through a SECURITY DEFINER RPC that does its own founder
+// check and bypasses RLS, so the lift actually persists.
+export async function adminLiftBlock(blockId) {
+  const { error } = await supabase.rpc('admin_lift_block', { p_block_id: blockId })
   if (error) throw error
 }
