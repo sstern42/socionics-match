@@ -4,6 +4,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 10 July 2026
+
+### Fixed
+- **Admin dashboard — "Unblock" now actually lifts the block**: Clicking Unblock on a report in the admin dashboard appeared to succeed but the block stayed in place after reload. Founders can *see* every block via the `get_admin_stats()` RPC, but the "Unblock" action performs a direct client update (`liftBlock`) that is still subject to row-level security. The `blocks` table only allowed the block's *creator* to update it, so a founder lifting someone else's block matched zero rows — no error, no change. Added a founder UPDATE policy on `blocks` (mirroring the ones already on `user_reports` and `board_reports`); the existing `protect_block_columns` trigger still restricts founders to changing only the `lifted_at` timestamp.
+
 ## 7 July 2026
 
 ### Added
