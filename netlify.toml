@@ -1,7 +1,21 @@
 [build]
   command = "npm run build"
   publish = "dist"
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':!supabase' ':!.github' ':!.claude' ':!*.md'"
+  # Skip the build when a commit touches only supabase/, .github/, .claude/ or
+  # markdown. Exit 0 means "ignore"; any non-zero exit means "build".
+  #
+  # Compares against the commit's own first parent, NOT $CACHED_COMMIT_REF.
+  # The cache is shared across deploy contexts, so a Deploy Preview building a
+  # PR head leaves CACHED_COMMIT_REF pointing at that head. The production build
+  # that follows the merge then compares the merge commit against the PR head it
+  # just built — an identical tree — which exits 0 and cancels production. Every
+  # production deploy from 2 July onward was cancelled that way, while previews
+  # succeeded, so socion.app silently stopped updating while PRs looked fine.
+  #
+  # $COMMIT_REF^ is context-independent: on a merge commit it's the previous
+  # main, on a branch push it's the previously built head. An initial commit
+  # with no parent makes git diff error non-zero, which builds.
+  ignore = "git diff --quiet \"$COMMIT_REF^\" \"$COMMIT_REF\" -- . ':!supabase' ':!.github' ':!.claude' ':!*.md'"
 
 [[redirects]]
   from = "https://socionics-match.netlify.app/*"
