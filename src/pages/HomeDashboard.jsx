@@ -44,7 +44,7 @@ function DashboardCard({ eyebrow, title, children, to, cta = 'Open →', onClick
 }
 
 export default function HomeDashboard() {
-  const { session, profile, isPremium } = useAuth()
+  const { profile, isPremium } = useAuth()
   const unread = useUnreadCount(profile?.id)
   const { notifications } = useNotifications(profile?.id)
 
@@ -105,13 +105,15 @@ export default function HomeDashboard() {
   }, [])
 
   useEffect(() => {
-    if (!session?.user?.id || isPremium) return
+    if (!profile?.id || isPremium) return
     function loadAiUsage() {
       const today = new Date().toISOString().slice(0, 10)
       supabase
         .from('ai_message_counts')
         .select('count')
-        .eq('user_id', session.user.id)
+        // users.id, not the auth id — the edge function writes this row keyed
+        // on userRow.id (see increment_ai_message_count)
+        .eq('user_id', profile.id)
         .eq('date', today)
         .maybeSingle()
         .then(({ data }) => setAiUsedToday(data?.count ?? 0))
@@ -119,7 +121,7 @@ export default function HomeDashboard() {
     loadAiUsage()
     window.addEventListener('focus', loadAiUsage)
     return () => window.removeEventListener('focus', loadAiUsage)
-  }, [session?.user?.id, isPremium])
+  }, [profile?.id, isPremium])
 
   const confidence = profile?.type_confidence
   const peakConfidence = confidence ? Math.max(...Object.values(confidence)) : 1
