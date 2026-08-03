@@ -10,6 +10,7 @@ export const ENTRIES = [
          'Profile viewers — the "Profile viewers" count on your sidebar was stuck at 0 for everyone, and the premium "who\'s viewed you" list always said "No views yet." Your visits were being recorded properly the whole time; a permissions gap meant the app just couldn\'t read them back. Both now show your real view history, including everything logged over the past couple of months',
          'Profile viewers — the number now counts people rather than visits, so one member checking your profile a few times in a week shows up as one viewer, not several',
          'Profile viewers — the count now covers everyone who has ever viewed you, rather than just the last 7 days. It used to disagree with the list it opens: the sidebar could say 0 while the "who\'s viewed you" list behind it showed everyone who\'d been by. Both now show the same thing',
+         'Ask the AI — if you\'re on the free tier, the "used today" figure on your dashboard was always showing 0 no matter how many questions you\'d asked. It now shows your real usage, so you can see where you are against the daily limit',
        ],
      },
      {

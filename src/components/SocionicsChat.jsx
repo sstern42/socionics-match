@@ -378,12 +378,15 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       const today = new Date().toISOString().slice(0, 10)
       const storageKey = `msg_count_${user.id}_${today}`
       const cached = parseInt(localStorage.getItem(storageKey) ?? '0', 10)
-      // For free users, prefer the server count (source of truth for enforcement)
-      if (!isPremium) {
+      // For free users, prefer the server count. The real cap is enforced
+      // server-side by increment_ai_message_count() in the chat-socionics edge
+      // function; this read only keeps the on-screen counter honest, and needs
+      // userId (users.id) rather than the auth id the row is not keyed on.
+      if (!isPremium && userId) {
         const { data } = await supabase
           .from('ai_message_counts')
           .select('count')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .eq('date', today)
           .maybeSingle()
         const serverCount = data?.count ?? 0
@@ -399,11 +402,13 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
       }
     }
     fetchCount()
-    // Keyed on isPremium (the count source depends on it). initialQuestion/send
-    // are used only in the initialFired one-shot; send is an unstable callback,
-    // so including it would re-run this fetch on every render.
+    // Keyed on isPremium (the count source depends on it) and userId, which
+    // arrives a tick late from AskPage — without it the server read would be
+    // skipped on the only run. Re-running is safe: the initialQuestion send is
+    // held to once by initialFired. initialQuestion/send are omitted because
+    // send is an unstable callback and would re-fetch on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPremium])
+  }, [isPremium, userId])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
