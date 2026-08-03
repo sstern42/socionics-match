@@ -72,7 +72,7 @@ export function AuthProvider({ children }) {
       // uniqueness (keyed on today's date) makes this a no-op on later
       // loadProfile() calls the same day, so it's safe to fire on every load.
       if (p?.id) {
-        awardPoints(p.id, 'daily_login', new Date().toISOString().slice(0, 10))
+        awardPoints('daily_login', new Date().toISOString().slice(0, 10))
       }
     } catch {
       setProfile(null)

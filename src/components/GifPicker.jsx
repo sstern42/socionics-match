@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { GIPHY_KEY, GIF_ENABLED } from '../lib/giphy'
 
-const GIPHY_KEY = import.meta.env.VITE_GIPHY_API_KEY
 const GIPHY_SEARCH = 'https://api.giphy.com/v1/gifs/search'
 const GIPHY_TRENDING = 'https://api.giphy.com/v1/gifs/trending'
 const LIMIT = 24
@@ -34,6 +34,13 @@ export default function GifPicker({ onSelect, onClose }) {
   }, [onClose])
 
   const fetchGifs = useCallback(async (q) => {
+    // Callers hide the GIF button when the key is missing, so this is a
+    // backstop — without it every request 401s and the grid just spins.
+    if (!GIF_ENABLED) {
+      setLoading(false)
+      setError('GIFs are not configured.')
+      return
+    }
     setLoading(true)
     setError(null)
     try {

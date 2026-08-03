@@ -122,7 +122,7 @@ export async function sendMessage({ matchId, senderId, content, replyToId = null
     .single()
   if (error) throw error
   window.umami?.track('message-sent')
-  awardPoints(senderId, 'message_sent', data.id)
+  awardPoints('message_sent', data.id)
   return data
 }
 

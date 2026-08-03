@@ -40,10 +40,12 @@ See the README for full setup instructions.
 
 You will need your own Supabase project — the schema is in `supabase/schema.sql`. Run `rls_reset.sql` after schema setup to apply Row Level Security policies. Do not commit credentials.
 
-Environment variables required (see `.env.example`):
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_GOOGLE_CLIENT_ID` — for Google One Tap sign-in
+Environment variables (see `.env.example` — the one canonical list):
+- `VITE_SUPABASE_URL` — required
+- `VITE_SUPABASE_ANON_KEY` — required
+- `VITE_GOOGLE_CLIENT_ID` — optional, for Google One Tap sign-in
+- `VITE_VAPID_PUBLIC_KEY` — optional, for web push notifications
+- `VITE_GIPHY_API_KEY` — optional, for the GIF picker in messages and rooms
 
 ## Code style
 
