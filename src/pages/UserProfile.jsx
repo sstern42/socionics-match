@@ -291,7 +291,7 @@ export default function UserProfile() {
           {viewCount ?? '—'}
         </div>
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-          {viewCount === 1 ? 'person viewed' : 'people viewed'} your profile in the last 7 days.
+          {viewCount === 1 ? 'person has viewed' : 'people have viewed'} your profile.
         </p>
         <div style={{ background: 'rgba(154,111,56,0.06)', border: '1px solid var(--accent-lt)', borderRadius: 8, padding: '1.25rem 1.5rem', maxWidth: 340, width: '100%', textAlign: 'left' }}>
           <p style={{ fontSize: '0.88rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', marginBottom: '0.5rem' }}>
