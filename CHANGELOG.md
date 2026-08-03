@@ -4,6 +4,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 3 August 2026
+
+### Fixed
+- **Homepage — "types represented" showed 17**: The homepage stats strip reads the pre-computed `stats` row rather than counting types itself, and that row still carries the pre-fix value of 17 — the Socion Host (`type = 'HOST'`) was counted as a 17th type before `compute-stats` was taught to filter against the 16 canonical types (5 July). Rather than wait on the stored value being recomputed, `Home.jsx` now caps the displayed figure with `Math.min(stats.types, 16)`. There are only ever 16 real types, so the clamp is correct whether the underlying row is the stale 17 or a freshly-computed 16 — unlike a flat `- 1`, which would under-count to 15 once the stats row refreshes. Note the same off-by-one still exists on the Admin dashboard, which derives its "Types represented" tile from `Object.keys(typeCounts).length` (`src/pages/Admin.jsx`) — left alone here as it's founder-only, not public.
+
 ## 10 July 2026
 
 ### Fixed
