@@ -404,7 +404,9 @@ export default function Home() {
               { value: stats.users, label: 'members' },
               { value: stats.connections, label: 'connections' },
               { value: stats.messages, label: 'messages sent' },
-              { value: stats.types, label: 'types represented' },
+              // The Socion Host bot carries type = 'HOST', which older stats rows
+              // counted as a 17th type. There are only ever 16 real types, so cap it.
+              { value: Math.min(stats.types, 16), label: 'types represented' },
             ].map(({ value, label }) => (
               <div key={label} style={{ textAlign: 'center' }}>
                 <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>{value}</div>
