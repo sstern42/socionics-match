@@ -61,33 +61,28 @@ secret.
 ## Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Run `supabase/schema.sql` in the SQL editor to create tables
-3. Run `supabase/rls_reset.sql` to configure Row Level Security policies
-4. Run `supabase/blocks.sql` to create the blocks table
-5. Run `supabase/stats.sql` to create the stats table and scheduled job
-6. Run `supabase/push_subscriptions.sql` to create the push notification subscriptions table
-7. Run `supabase/swipes_schema.sql` to create the swipes table
-8. Run `supabase/get_admin_stats.sql` to create the admin stats function
-9. Enable realtime on the `messages` table (handled by `rls_reset.sql`)
-10. Copy your project URL and anon key into `.env`
+2. Apply everything in `supabase/migrations/` in filename order — `supabase db push`, or paste each file into the SQL editor. The first three files carry the base schema (tables, RLS policies, swipe mode), so this replaces the old "run schema.sql, then rls_reset.sql, then …" sequence.
+3. Create the `avatars` storage bucket and its policies with `supabase/avatars.sql`
+4. Store the service role key in Vault and schedule the cron jobs with `supabase/stats.sql` (see the comments in that file)
+5. Copy your project URL and anon key into `.env`
+
+Realtime on `messages` is handled by `20260527130000_baseline_rls_policies.sql`.
+
+> **A database rebuilt this way is not yet a complete copy of production.** Several tables and RPCs were created by hand in the SQL editor and never captured in any file. See [`supabase/PRODUCTION_ONLY_OBJECTS.md`](supabase/PRODUCTION_ONLY_OBJECTS.md) for the inventory and how to close it.
 
 ### Migrations
 
-Incremental schema changes live in `supabase/migrations/`. Run these in order after the base schema if setting up from scratch, or apply selectively when upgrading an existing project:
+Schema changes live in `supabase/migrations/` and are applied in **lexical filename order**, so every file is named `YYYYMMDDHHMMSS_description.sql` — a full 14-digit timestamp, unique across the directory. See [CONTRIBUTING](CONTRIBUTING.md#database-migrations) before adding one.
+
+The base schema is the first three files:
 
 | File | Description |
 |---|---|
-| `20260527120000_add_premium_subscription_support.sql` | Premium subscription tables and flags |
-| `20260529_archive_settings.sql` | Archive/unmatch settings |
-| `20260602_quadra_rooms.sql` | Quadra group chat rooms |
-| `20260602_reactions.sql` | Message emoji reactions |
-| `20260602_room_messages_reply.sql` | Reply threading in rooms |
-| `20260602_room_push_debounce.sql` | Push notification debounce for rooms |
-| `add_room_message_image_url.sql` | Image attachments in room messages |
-| `add_room_message_reply_to.sql` | Reply-to field on room messages |
-| `20260606_users_realtime.sql` | Realtime presence on users table |
-| `20260606_profile_views.sql` | Profile view tracking |
-| `20260606_relation_stats.sql` | Per-relation connection statistics |
+| `20260501000000_initial_schema.sql` | Core tables (users, matches, messages, blocks, stats, …) |
+| `20260527130000_baseline_rls_policies.sql` | Row Level Security policies + realtime on `messages` |
+| `20260527140000_baseline_swipe_mode.sql` | Swipes table, mutual-match trigger, `already_swiped` view |
+
+The hand-run files still in `supabase/` (`schema.sql`, `rls_reset.sql`, `blocks.sql`, `swipes_schema.sql`, `push_subscriptions.sql`, `get_admin_stats.sql`) are kept for historical reference only — the migrations above supersede them. `avatars.sql` and `stats.sql` are still live, for the storage bucket and the cron jobs respectively.
 
 ## Deploy
 
