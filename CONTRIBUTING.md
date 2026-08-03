@@ -47,6 +47,32 @@ Environment variables (see `.env.example` — the one canonical list):
 - `VITE_VAPID_PUBLIC_KEY` — optional, for web push notifications
 - `VITE_GIPHY_API_KEY` — optional, for the GIF picker in messages and rooms
 
+## Database migrations
+
+Migrations live in `supabase/migrations/` and Supabase applies them in
+**lexical filename order**, so the filename is the ordering. Rules:
+
+- Name every file `YYYYMMDDHHMMSS_short_description.sql` — a full 14-digit
+  timestamp, then an underscore, then a `snake_case` description. Not
+  `20260602_thing.sql`, not `thing.sql`: `_` sorts after digits, so a
+  short-date file runs *after* every full-timestamp file from the same day,
+  and a prefixless one runs after everything.
+- Keep timestamps **unique**. Two files sharing a timestamp are ordered only
+  by their description, which is accidental rather than intentional. If you
+  need a second migration in the same minute, bump the seconds.
+- Write migrations to be **idempotent** — `CREATE TABLE IF NOT EXISTS`,
+  `ADD COLUMN IF NOT EXISTS`, `CREATE OR REPLACE FUNCTION`, and
+  `DROP POLICY IF EXISTS` before `CREATE POLICY`. They get re-run.
+- **Create everything in a migration**, including tables and functions you are
+  about to reference. Objects created ad hoc in the SQL editor are invisible to
+  every other environment and are why
+  [`supabase/PRODUCTION_ONLY_OBJECTS.md`](supabase/PRODUCTION_ONLY_OBJECTS.md)
+  exists. Note that Postgres does not check a `plpgsql` function's body at
+  creation time, so a migration referencing a table that does not exist still
+  applies cleanly — and fails later, at runtime.
+- A PR touching `supabase/` spins up a **billed** Supabase preview database
+  (~$0.01344/hr) for as long as it stays open. Merge or close it promptly.
+
 ## Code style
 
 No strict linter beyond the default ESLint config. A few principles:
