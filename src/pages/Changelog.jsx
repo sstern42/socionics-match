@@ -4,6 +4,14 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '3 August 2026',
+       label: 'Fixed',
+       items: [
+         'Profile viewers — the "Profile viewers" count on your sidebar was stuck at 0 for everyone, and the premium "who\'s viewed you" list always said "No views yet." Your visits were being recorded properly the whole time; a permissions gap meant the app just couldn\'t read them back. Both now show your real view history, including everything logged over the past couple of months',
+         'Profile viewers — the number now counts people rather than visits, so one member checking your profile a few times in a week shows up as one viewer, not several',
+       ],
+     },
+     {
        date: '6 July 2026',
        label: 'New',
        items: [
