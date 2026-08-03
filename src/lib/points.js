@@ -1,19 +1,33 @@
 import { supabase } from './supabase'
 
 // Fire-and-forget: called right after a primary action succeeds (message
-// sent, match made, etc.). Never throws — a rewards hiccup should never
-// surface to the user or block the action that earned it. award_points()
+// sent, board post created, etc.). Never throws — a rewards hiccup should
+// never surface to the user or block the action that earned it. award_points()
 // itself no-ops silently on unknown action types or a reached daily cap.
-export async function awardPoints(userId, actionType, refId) {
+//
+// There is deliberately no user id to pass: award_points() derives the user
+// from the session, so the caller can only ever award themselves (issue #970).
+export async function awardPoints(actionType, refId) {
   try {
     const { error } = await supabase.rpc('award_points', {
-      p_user_id: userId,
       p_action_type: actionType,
       p_ref_id: String(refId),
     })
     if (error) throw error
   } catch (err) {
     console.error('awardPoints failed:', err)
+  }
+}
+
+// A mutual match credits both participants, which caller-derivation alone
+// can't express — so the server takes the match id, checks the caller is one
+// of the two participants, and awards both from the match row.
+export async function awardMatchPoints(matchId) {
+  try {
+    const { error } = await supabase.rpc('award_match_points', { p_match_id: matchId })
+    if (error) throw error
+  } catch (err) {
+    console.error('awardMatchPoints failed:', err)
   }
 }
 

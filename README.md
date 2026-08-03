@@ -44,6 +44,20 @@ cp .env.example .env   # fill in Supabase credentials
 npm run dev
 ```
 
+### Environment variables
+
+`.env.example` is the canonical list. Every `VITE_*` var is inlined into the
+client bundle at build time and is therefore public — none of them may hold a
+secret.
+
+| Variable | Required | Used for |
+|---|---|---|
+| `VITE_SUPABASE_URL` | yes | Supabase project URL |
+| `VITE_SUPABASE_ANON_KEY` | yes | Supabase anon key |
+| `VITE_GOOGLE_CLIENT_ID` | no | Google One Tap sign-in (see below); without it, email OTP still works |
+| `VITE_VAPID_PUBLIC_KEY` | no | Web push subscriptions; without it, push can't be enabled |
+| `VITE_GIPHY_API_KEY` | no | GIF picker in messages and rooms; without it, the GIF button is hidden. Use a public, rate-limited key from [developers.giphy.com](https://developers.giphy.com) |
+
 ## Supabase setup
 
 1. Create a project at [supabase.com](https://supabase.com)
@@ -79,10 +93,8 @@ Incremental schema changes live in `supabase/migrations/`. Run these in order af
 
 Push to `main` — Netlify deploys automatically.
 
-Set environment variables in the Netlify dashboard:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `VITE_GOOGLE_CLIENT_ID` (for Google One Tap)
+Set the same environment variables in the Netlify dashboard — see the
+[table above](#environment-variables).
 
 ### Google One Tap setup
 

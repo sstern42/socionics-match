@@ -1,7 +1,7 @@
 import { supabase } from './supabase'
 import { getRelation, getMatchingTypes, sameQuadraTypes } from '../data/relations'
 import { getActiveBlocks } from './blocks'
-import { awardPoints } from './points'
+import { awardMatchPoints } from './points'
 
 export async function getFeedProfiles({ userType, relationPreferences, userPurpose = [], currentUserId, limit = 30, offset = 0, isPremium = true }) {
   let compatibleTypes = getMatchingTypes(userType, relationPreferences)
@@ -112,8 +112,7 @@ export async function createMatch({ userAId, userBId, relationType, purpose = 'd
       .single()
     if (error) throw error
     window.umami?.track('connection-revived', { relationType, purpose })
-    awardPoints(userAId, 'mutual_match', data.id)
-    awardPoints(userBId, 'mutual_match', data.id)
+    awardMatchPoints(data.id)
     return data
   }
 
@@ -124,7 +123,6 @@ export async function createMatch({ userAId, userBId, relationType, purpose = 'd
     .single()
   if (error) throw error
   window.umami?.track('connection-made', { relationType, purpose })
-  awardPoints(userAId, 'mutual_match', data.id)
-  awardPoints(userBId, 'mutual_match', data.id)
+  awardMatchPoints(data.id)
   return data
 }

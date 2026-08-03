@@ -110,7 +110,7 @@ export async function createBoardPost({ boardId, authorId, title, content, menti
 
   if (error) throw error
   window.umami?.track('board-post-created')
-  awardPoints(authorId, 'board_post', data.id)
+  awardPoints('board_post', data.id)
   return data
 }
 
@@ -206,7 +206,7 @@ export async function addPostReaction({ postId, userId, emoji }) {
     .from('board_post_reactions')
     .upsert({ post_id: postId, user_id: userId, emoji }, { onConflict: 'post_id,user_id,emoji', ignoreDuplicates: true })
   if (error) throw error
-  awardPoints(userId, 'board_reaction', `post:${postId}:${emoji}`)
+  awardPoints('board_reaction', `post:${postId}:${emoji}`)
 }
 
 export async function removePostReaction({ postId, userId, emoji }) {
@@ -224,7 +224,7 @@ export async function addCommentReaction({ commentId, userId, emoji }) {
     .from('board_comment_reactions')
     .upsert({ comment_id: commentId, user_id: userId, emoji }, { onConflict: 'comment_id,user_id,emoji', ignoreDuplicates: true })
   if (error) throw error
-  awardPoints(userId, 'board_reaction', `comment:${commentId}:${emoji}`)
+  awardPoints('board_reaction', `comment:${commentId}:${emoji}`)
 }
 
 export async function removeCommentReaction({ commentId, userId, emoji }) {

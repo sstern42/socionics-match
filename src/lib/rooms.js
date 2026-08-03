@@ -60,7 +60,7 @@ export async function sendRoomMessage({ roomId, senderId, content, imageUrl = nu
 
   if (error) throw error
   window.umami?.track('room-message-sent')
-  awardPoints(senderId, 'room_post', data.id)
+  awardPoints('room_post', data.id)
   return data
 }
 

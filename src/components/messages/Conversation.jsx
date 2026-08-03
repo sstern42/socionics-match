@@ -11,6 +11,7 @@ import { useAuth } from '../../lib/AuthContext'
 import { supabase } from '../../lib/supabase'
 import { formatTime } from '../../lib/dateUtils'
 import GifPicker from '../GifPicker'
+import { GIF_ENABLED } from '../../lib/giphy'
 
 const REACTION_EMOJIS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
@@ -116,7 +117,7 @@ const MessageInput = React.memo(function MessageInput({
         ) : (
           <>
             <div style={{ position:'relative' }}>
-              {showGifPicker && (
+              {GIF_ENABLED && showGifPicker && (
                 <GifPicker onSelect={onGifSelect} onClose={() => setShowGifPicker(false)} />
               )}
               <div
@@ -138,17 +139,19 @@ const MessageInput = React.memo(function MessageInput({
                       <polyline points="1,12 5,8 7.5,10.5 10,8 14,12"/>
                     </svg>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowGifPicker(p => !p)}
-                    disabled={uploadingImage || sending}
-                    title="Send GIF"
-                    style={{ background:'none',border:'none',cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:1,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em' }}
-                    onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
-                    onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}
-                  >
-                    GIF
-                  </button>
+                  {GIF_ENABLED && (
+                    <button
+                      type="button"
+                      onClick={() => setShowGifPicker(p => !p)}
+                      disabled={uploadingImage || sending}
+                      title="Send GIF"
+                      style={{ background:'none',border:'none',cursor:'pointer',color:showGifPicker?'var(--accent)':'var(--muted)',padding:'0.25rem 0.3rem',lineHeight:1,opacity:(uploadingImage||sending)?0.4:1,transition:'color 0.15s',fontSize:'0.68rem',fontWeight:700,letterSpacing:'0.04em' }}
+                      onMouseEnter={e=>{ if(!uploadingImage&&!sending) e.currentTarget.style.color='var(--accent)' }}
+                      onMouseLeave={e=>e.currentTarget.style.color=showGifPicker?'var(--accent)':'var(--muted)'}
+                    >
+                      GIF
+                    </button>
+                  )}
                   <input ref={fileInputRef} type="file" accept="image/*" style={{ display:'none' }} onChange={onImageSelect} />
                 </div>
 

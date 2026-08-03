@@ -33,7 +33,7 @@ export async function createProfile({ authId, type, typeConfidence, profileData,
     .select()
     .maybeSingle()
   if (error) throw error
-  if (data && isProfileComplete(data)) awardPoints(data.id, 'profile_complete', data.id)
+  if (data && isProfileComplete(data)) awardPoints('profile_complete', data.id)
   return data
 }
 
@@ -98,7 +98,7 @@ export async function updateProfileData(userId, { profileData, type, avatarUrl, 
   // completeness on every edit rather than only at signup. Idempotent via
   // award_points()'s ref_id uniqueness — only the edit that completes the
   // set actually awards anything.
-  if (data && isProfileComplete(data)) awardPoints(data.id, 'profile_complete', data.id)
+  if (data && isProfileComplete(data)) awardPoints('profile_complete', data.id)
 }
 
 // Flip the anonymous / hide_activity privacy toggles without disturbing the
