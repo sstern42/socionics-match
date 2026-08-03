@@ -12,19 +12,40 @@ export async function logProfileView(viewerId, viewedId) {
   }
 }
 
+// Most recent distinct viewers, newest first. Dedup is client-side — the row
+// per viewer we keep is their latest visit — so the two limits are different
+// things and both are needed:
+//
+//   ROW_BUDGET   view events fetched. Caps the query itself, which was
+//                previously unbounded: a heavily-viewed profile would pull
+//                every row it had ever accumulated, each one joined to a users
+//                row, just to collapse them down to a few dozen names.
+//   VIEWER_LIMIT distinct viewers returned, applied after dedup.
+//
+// The budget has to exceed the viewer limit because repeat visits are spent
+// out of it — log_profile_view() dedupes only within a 1-hour window, so a
+// regular visitor contributes many rows. Currently ~2.1 events per viewer
+// site-wide, so 10x leaves generous headroom; a profile whose viewers are
+// unusually loyal returns fewer than VIEWER_LIMIT names rather than wrong
+// ones, which is the safe direction to be off in.
+const ROW_BUDGET   = 500
+const VIEWER_LIMIT = 50
+
 export async function getProfileViews(viewedId) {
   const { data, error } = await supabase
     .from('profile_views')
     .select('viewer_id, viewed_at, viewer:viewer_id(id, type, profile_data, avatar_url, verified_by)')
     .eq('viewed_id', viewedId)
     .order('viewed_at', { ascending: false })
+    .limit(ROW_BUDGET)
   if (error) throw error
   const seen = new Set()
-  return (data ?? []).filter(row => {
+  const unique = (data ?? []).filter(row => {
     if (seen.has(row.viewer_id)) return false
     seen.add(row.viewer_id)
     return true
   })
+  return unique.slice(0, VIEWER_LIMIT)
 }
 
 // Distinct viewers, all time — deliberately unwindowed, to match
