@@ -32,25 +32,25 @@ old)
 | 4 | Posted (12 Jul 2026) | Not sure of your type? Our free typing chat is a ~5 minute adaptive conversation (not a fixed quiz) that gives you a preliminary read with an honest confidence score — including telling you straight when it's a genuine toss-up between two types. | 2 Jul — Free typing chat at /typing/chat |
 | 5 | Posted (14 Jul 2026) | Our "Ask the AI" chat shows what your conversation actually cost us in API usage, down to the cent. No hidden agenda — just an honest look at what it takes to run. | 6 Jul — "Ask the AI" cost transparency |
 | 6 | Posted (16 Jul 2026) | Beyond 1:1 matching, Socion has 5 group rooms — one for each quadra (Alpha/Beta/Gamma/Delta) plus a shared Socion room open to all 16 types. Different quadras really do talk differently. Come see for yourself. | 19 Jun — Socion room; 18 Jun — quadra rooms |
-| 7 | Queued (18 Jul 2026) | Boards: open discussion spaces on Socion for type theory, relationships, and general chat — no matching required. Come argue about whether you're really an LII. | 18 Jun — Boards launch |
-| 8 | Queued (20 Jul 2026) | Beyond the base 16 types, socionics has Reinin dichotomies — deeper trait splits like Static/Dynamic and Positivist/Negativist that cut across the type boundaries. Our AI chat has a full per-type lookup if you want to go down that rabbit hole. | 14 Jun — Reinin dichotomies in Socionics AI |
-| 9 | Queued (22 Jul 2026) | Curious how your connections map out? Socion has a network graph view of your matches and how they relate to each other — an actual social graph, not just a swipe history. | Network graph feature |
-| 10 | Queued (24 Jul 2026) | Socion isn't just for dating. Pick your purpose — Dating, Friendship, Networking, or Team building — and the matching logic adjusts what it's actually optimising for. | 25 Mar launch — purpose selector |
-| 11 | Queued (26 Jul 2026) | Most apps A/B test button colours to keep you swiping. We built Socion on a decades-old, falsifiable framework for why certain people click and others grate — socionics. You can disagree with the theory. You can't call it vibes. | Core positioning |
-| 12 | Queued (28 Jul 2026) | Socion started in March 2026 as a matching feed filtered by intertype relation. A few months later: group rooms, boards, a free AI typing chat, and a compatibility breakdown most apps would charge you to fake having. | 25 Mar launch retrospective |
-| 13 | Queued (30 Jul 2026) | Socionics isn't just romantic. We quietly run "Socion for Teams" pairing reports for co-founders — same relation math, reframed around working friction and complementary strengths instead of chemistry. | Socion for Teams pairing report skill |
-| 14 | Queued (1 Aug 2026) | You can browse Socion anonymously and hide your activity status. We'd rather you feel safe exploring than inflate our "active users" number. | Anonymous mode / hide-activity settings |
-| 15 | Queued (3 Aug 2026) | We don't gamify matching — but we do track points for things like completing your profile, chatting in Rooms, and referring people who stick around. A running total, not a growth-hacking treadmill. | 3 Jul — Points system |
+| 7 | Posted (18 Jul 2026) | Boards: open discussion spaces on Socion for type theory, relationships, and general chat — no matching required. Come argue about whether you're really an LII. | 18 Jun — Boards launch |
+| 8 | Posted (20 Jul 2026) | Beyond the base 16 types, socionics has Reinin dichotomies — deeper trait splits like Static/Dynamic and Positivist/Negativist that cut across the type boundaries. Our AI chat has a full per-type lookup if you want to go down that rabbit hole. | 14 Jun — Reinin dichotomies in Socionics AI |
+| 9 | Posted (22 Jul 2026) | Curious how your connections map out? Socion has a network graph view of your matches and how they relate to each other — an actual social graph, not just a swipe history. | Network graph feature |
+| 10 | Posted (24 Jul 2026) | Socion isn't just for dating. Pick your purpose — Dating, Friendship, Networking, or Team building — and the matching logic adjusts what it's actually optimising for. | 25 Mar launch — purpose selector |
+| 11 | Posted (26 Jul 2026) | Most apps A/B test button colours to keep you swiping. We built Socion on a decades-old, falsifiable framework for why certain people click and others grate — socionics. You can disagree with the theory. You can't call it vibes. | Core positioning |
+| 12 | Posted (28 Jul 2026) | Socion started in March 2026 as a matching feed filtered by intertype relation. A few months later: group rooms, boards, a free AI typing chat, and a compatibility breakdown most apps would charge you to fake having. | 25 Mar launch retrospective |
+| 13 | Posted (30 Jul 2026) | Socionics isn't just romantic. We quietly run "Socion for Teams" pairing reports for co-founders — same relation math, reframed around working friction and complementary strengths instead of chemistry. | Socion for Teams pairing report skill |
+| 14 | Posted (1 Aug 2026) | You can browse Socion anonymously and hide your activity status. We'd rather you feel safe exploring than inflate our "active users" number. | Anonymous mode / hide-activity settings |
+| 15 | Posted (3 Aug 2026) | We don't gamify matching — but we do track points for things like completing your profile, chatting in Rooms, and referring people who stick around. A running total, not a growth-hacking treadmill. | 3 Jul — Points system |
 | 16 | Queued (5 Aug 2026) | Socion has real dark mode — system-aware, not just an inverted colour filter bolted on top. Switch manually, or let your OS decide. | 5 Jun — Dark mode |
-| 17 | Draft | Socion installs like a native app on iOS and Android, no App Store required. Offline support means it keeps working — and looking normal — even without a connection. | 27 Mar — PWA support; 6 Jun — Offline support |
-| 18 | Draft | Every device you sign into gets its own independent push subscription. Message on your phone and your laptop won't double up on the notification — or miss it either. | 28 Mar — Multi-device push |
-| 19 | Draft | You can self-report your type on Socion, or get it professionally verified. Verified members show a checkmark on their badge — hover it to see who verified them. | 5 Apr — Verified type badges |
-| 20 | Draft | Prefer talking it through to filling out a form? Book a one-to-one Socionics typing session over a Discord voice call, right from the nav. | 8 Apr — Get Typed — Discord sessions |
-| 21 | Draft | socion.app/stats runs on live data: satisfaction ratings by relation type, which relations members actually connect in most, and the community's real type distribution. Not projections. | 11 Jun — Stats page |
-| 22 | Draft | After 5 messages, we ask you to rate the connection. That's not busywork — it's the actual data behind the satisfaction-by-relation numbers on our Stats page. | 29 Mar — Rate this connection; 11 Jun — Stats page |
-| 23 | Draft | Premium shows you exactly who viewed your profile — name, type, relation, timestamp. Free accounts get a 7-day view count. Either way, no more wondering. | 6 Jun — Who viewed |
-| 24 | Draft | Sometimes you just want a break, not a deletion. "Cool off" pauses your messaging and feed visibility for 7 days, then lifts automatically. | 26 Mar — Cool off |
-| 25 | Draft | Prefer swiping to browsing? Drag right to like, left to pass, full-screen on mobile. A mutual match creates the connection immediately — no separate "accept" step. | 26 May — Swipe mode; 14 Jun — full-screen mobile |
+| 17 | Queued (7 Aug 2026) | Socion installs like a native app on iOS and Android, no App Store required. Offline support means it keeps working — and looking normal — even without a connection. | 27 Mar — PWA support; 6 Jun — Offline support |
+| 18 | Queued (9 Aug 2026) | Every device you sign into gets its own independent push subscription. Message on your phone and your laptop won't double up on the notification — or miss it either. | 28 Mar — Multi-device push |
+| 19 | Queued (11 Aug 2026) | You can self-report your type on Socion, or get it professionally verified. Verified members show a checkmark on their badge — hover it to see who verified them. | 5 Apr — Verified type badges |
+| 20 | Queued (13 Aug 2026) | Prefer talking it through to filling out a form? Book a one-to-one Socionics typing session over a Discord voice call, right from the nav. | 8 Apr — Get Typed — Discord sessions |
+| 21 | Queued (15 Aug 2026) | socion.app/stats runs on live data: satisfaction ratings by relation type, which relations members actually connect in most, and the community's real type distribution. Not projections. | 11 Jun — Stats page |
+| 22 | Queued (17 Aug 2026) | After 5 messages, we ask you to rate the connection. That's not busywork — it's the actual data behind the satisfaction-by-relation numbers on our Stats page. | 29 Mar — Rate this connection; 11 Jun — Stats page |
+| 23 | Queued (19 Aug 2026) | Premium shows you exactly who viewed your profile — name, type, relation, timestamp. Free accounts get a 7-day view count. Either way, no more wondering. | 6 Jun — Who viewed |
+| 24 | Queued (21 Aug 2026) | Sometimes you just want a break, not a deletion. "Cool off" pauses your messaging and feed visibility for 7 days, then lifts automatically. | 26 Mar — Cool off |
+| 25 | Queued (23 Aug 2026) | Prefer swiping to browsing? Drag right to like, left to pass, full-screen on mobile. A mutual match creates the connection immediately — no separate "accept" step. | 26 May — Swipe mode; 14 Jun — full-screen mobile |
 | 26 | Draft | Anonymous mode hides your name, age, photo, and location. It never hides your type or relation — the whole point of Socion is knowing how you relate to someone, and that part has to stay visible to work. | 30 Mar — Anonymous mode |
 | 27 | Draft | Step away from Socion for 30+ minutes and we won't replay every notification one by one when you're back — just a small grouped summary of what you missed. | 20 Jun — Catch-up summary |
 | 28 | Draft | Your type on Socion is treated as a working hypothesis, not a life sentence. Self-report it, take the free chat, or get it professionally verified — and revisit it whenever you want. | 3 May — Type framing |
@@ -67,12 +67,12 @@ old)
 | 39 | Draft | Tap any type badge or relation label in Socion and the full Socionics reference opens right inside the app — no tab-switching to look up what "Beneficiary" means. | 4 Apr — In-app reference sheets |
 | 40 | Draft | Ask the AI isn't generic — its suggested questions are built from your own type's Dual/Activity/Mirror relations, and can reference your actual matches directly. | 18 Jun — Socionics AI personalised suggestion chips |
 
-_#17 onward stay Draft for now: the Buffer plan caps scheduled posts at 10,
-and #7-16 already fill that cap through 5 Aug 2026. The recurring "Buffer X
+_#26 onward stay Draft for now: the Buffer plan caps scheduled posts at 10,
+and #16-25 already fill that cap through 23 Aug 2026. The recurring "Buffer X
 queue top-up" routine promotes the next Draft rows into Queued as earlier
 posts clear (go from Queued to sent) and slots free up, and drafts fresh
 entries from new CHANGELOG.md entries when the backlog is running low
-(currently 24 Draft rows remain, #17-40)._
+(currently 15 Draft rows remain, #26-40)._
 
 ## Upcoming (new changelog entries not yet turned into posts)
 
