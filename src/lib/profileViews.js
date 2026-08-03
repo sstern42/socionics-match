@@ -27,14 +27,23 @@ export async function getProfileViews(viewedId) {
   })
 }
 
-// Avoid head:true — known issues with count + RLS on some Supabase client versions
+// Distinct viewers in the last 7 days — both callers label this "viewers" /
+// "people viewed your profile", and log_profile_view() only dedupes within a
+// 1-hour window, so counting rows would report one daily visitor as 7 people.
+//
+// Avoid head:true — known issues with count + RLS on some Supabase client versions.
+// Errors are thrown rather than swallowed: returning 0 on failure is
+// indistinguishable from a genuine zero, which is how a missing table grant
+// masqueraded as "Profile viewers 0" for every member until
+// 20260803130000_profile_views_grants.sql. Callers render '—' when the query
+// fails, so a broken read now looks broken.
 export async function getProfileViewCount(viewedId) {
   const since = new Date(Date.now() - 7 * 86400000).toISOString()
   const { data, error } = await supabase
     .from('profile_views')
-    .select('id')
+    .select('viewer_id')
     .eq('viewed_id', viewedId)
     .gt('viewed_at', since)
-  if (error) return 0
-  return (data ?? []).length
+  if (error) throw error
+  return new Set((data ?? []).map(row => row.viewer_id)).size
 }
