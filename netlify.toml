@@ -23,6 +23,15 @@
   status = 301
   force = true
 
+# Latest-articles widgets (src/lib/siArticles.js). Proxied rather than fetched
+# cross-origin so it works regardless of socionicsinsight.com's CORS headers.
+# Must sit above the SPA catch-all.
+[[redirects]]
+  from = "/si-feed.xml"
+  to = "https://www.socionicsinsight.com/feed.xml"
+  status = 200
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

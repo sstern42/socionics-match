@@ -20,6 +20,7 @@ import { sendMessage } from '../lib/messages'
 import { hasLapsedReferralPremium } from '../lib/premium'
 import { RELATIONS, MATRIX, QUADRAS, getQuadra } from '../data/relations'
 import { supabase } from '../lib/supabase'
+import { useSIArticles } from '../lib/siArticles'
 
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
@@ -120,6 +121,11 @@ export default function Feed() {
     catch { return {} }
   })
 
+  // Dismissal stores the newest article's link, so the card returns when a new one is published
+  const { data: siArticles } = useSIArticles(3)
+  const latestArticle = siArticles?.[0]
+  const showArticlesAd = !!latestArticle && dismissedAds['si-articles'] !== latestArticle.link
+
   const [swipeMode, setSwipeMode] = useState(() => localStorage.getItem(FEED_MODE_KEY) === 'swipe')
   const [matchData, setMatchData] = useState(null)
 
@@ -133,8 +139,8 @@ export default function Feed() {
     return () => document.body.classList.remove('swipe-mode-active')
   }, [swipeMode])
 
-  function dismissAd(adId) {
-    const next = { ...dismissedAds, [adId]: true }
+  function dismissAd(adId, value = true) {
+    const next = { ...dismissedAds, [adId]: value }
     setDismissedAds(next)
     try { localStorage.setItem(AD_DISMISSED_KEY, JSON.stringify(next)) } catch { /* ignore */ }
   }
@@ -927,6 +933,21 @@ export default function Feed() {
                       isSaved={savedIds.has(p.id)}
                       onToggleSave={handleToggleSave}
                     />
+                    {i === 2 && showArticlesAd && (
+                      <FeedAd id="si-articles" eyebrow="New on Socionics Insight" headline={latestArticle.title} body={latestArticle.summary} ctaLabel="Read article →" onClick={() => { window.umami?.track('si-article-click', { source: 'feed', title: latestArticle.title }); setWebviewUrl(latestArticle.link) }} onDismiss={() => dismissAd('si-articles', latestArticle.link)}>
+                        {siArticles.length > 1 && (
+                          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {siArticles.slice(1).map(a => (
+                              <li key={a.link}>
+                                <button type="button" onClick={() => { window.umami?.track('si-article-click', { source: 'feed', title: a.title }); setWebviewUrl(a.link) }} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', textAlign: 'left', fontSize: '0.8rem', color: 'var(--accent)', lineHeight: 1.45 }}>
+                                  {a.title} →
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </FeedAd>
+                    )}
                     {i === 4 && !dismissedAds.share && (
                       <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`Socion works better with more types in the pool — ${memberCount ? memberCount + ' members so far,' : 'growing every day,'} but the rarer types are harder to find. If you know someone who's into personality theory, send them the link.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
                     )}

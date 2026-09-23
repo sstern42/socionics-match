@@ -4,6 +4,11 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 23 September 2026
+
+### Added
+- **Latest Socionics Insight articles on the dashboard and in the feed**: `src/lib/siArticles.js` fetches `https://www.socionicsinsight.com/feed.xml` through a same-origin `/si-feed.xml` proxy (a status-200 rewrite in `netlify.toml`, mirrored by a Vite `server.proxy` for local dev), so it works regardless of that site's CORS headers. The parser handles RSS 2.0 and Atom, decodes HTML descriptions via `DOMParser`, and sorts newest first; the result is cached by React Query for an hour. `LatestArticles` shows the five newest articles on the logged-in dashboard, directly under the "Your type" card (above the card grid, which stacks into a long single column on mobile, where most traffic is). The feed gets a `FeedAd` at position 3 with the newest article plus the next two; dismissing it stores that article's link, so it comes back when a new article is published. `FeedAd` gains an optional `children` slot for this. Articles open in the existing `SIWebview` (with UTM tags), and clicks fire `si-article-click` with `source` = `dashboard` / `feed`. Both widgets render nothing if the feed fails, so an outage on the other site never leaves an empty box.
+
 ## 3 August 2026
 
 ### Fixed

@@ -8,6 +8,7 @@ import { useNotifications } from '../hooks/useNotifications'
 import { getRoomLastVisited } from './Rooms'
 import ReferralPanel from '../components/profile/ReferralPanel'
 import PointsPanel from '../components/profile/PointsPanel'
+import LatestArticles from '../components/LatestArticles'
 import { usePageTitle } from '../hooks/usePageTitle'
 
 const FREE_DAILY_AI_LIMIT = 10
@@ -163,6 +164,10 @@ export default function HomeDashboard() {
               {isTypeVerified ? 'Try our free typing chat — just for fun →' : 'Try our free typing chat for a preliminary read →'}
             </Link>
           </DashboardCard>
+        </div>
+
+        <div style={{ marginBottom: '1.25rem' }}>
+          <LatestArticles />
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.25rem' }}>
