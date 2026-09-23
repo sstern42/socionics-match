@@ -4,6 +4,16 @@ import react from '@vitejs/plugin-react'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    // Mirrors the /si-feed.xml proxy in netlify.toml
+    proxy: {
+      '/si-feed.xml': {
+        target: 'https://www.socionicsinsight.com',
+        changeOrigin: true,
+        rewrite: () => '/feed.xml',
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

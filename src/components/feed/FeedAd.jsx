@@ -5,6 +5,7 @@ import { useEffect } from 'react'
  * accent-bordered nudges but accepts content as props so each slot can
  * declare itself in one line. Fires a `feed-ad-impression` umami event
  * on mount and an optional `feed-ad-dismissed` event when × is clicked.
+ * Optional `children` render between the body and the CTA.
  */
 export default function FeedAd({
   id,
@@ -14,6 +15,7 @@ export default function FeedAd({
   ctaLabel,
   onClick,
   onDismiss,
+  children,
 }) {
   useEffect(() => {
     window.umami?.track('feed-ad-impression', { ad: id })
@@ -61,6 +63,7 @@ export default function FeedAd({
       <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
         {body}
       </p>
+      {children}
       <button
         type="button"
         className="btn-primary"

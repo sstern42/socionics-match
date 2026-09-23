@@ -4,6 +4,14 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '23 September 2026',
+       label: 'New',
+       items: [
+         'Dashboard — a new "Latest articles" section shows the five most recent articles from Socionics Insight. Tap any title to read it without leaving Socion',
+         'Feed — the newest Socionics Insight article now appears as a card in your feed. Dismiss it and it stays hidden until the next article comes out',
+       ],
+     },
+     {
        date: '3 August 2026',
        label: 'Fixed',
        items: [
