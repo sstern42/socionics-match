@@ -8,6 +8,7 @@ import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import { setUnreadBadge } from '../lib/pageTitle'
 import IOSInstallBanner from './IOSInstallBanner'
 import AnnouncementBanner from './AnnouncementBanner'
+import MarketingConsentPrompt from './MarketingConsentPrompt'
 import NotificationBell from './NotificationBell'
 import { useNotifications } from '../hooks/useNotifications'
 import { createNotification } from '../lib/notifications'
@@ -773,6 +774,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <IOSInstallBanner />
         <AnnouncementBanner />
+        <MarketingConsentPrompt />
 
         <main style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: noScroll ? 'auto' : undefined }}>
           {children}
