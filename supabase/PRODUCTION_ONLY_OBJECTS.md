@@ -28,6 +28,13 @@ only production has.
   from its usage, with the evidence recorded inline. **Production's copies are
   authoritative** — these were written to make a rebuild work, not to redefine
   what is live.
+- The `delete-account` edge function (called from `src/pages/ProfileEdit.jsx`)
+  was deployed but never committed. It is now in
+  `supabase/functions/delete-account/`, copied unchanged from the deployed
+  version in September 2026. It wasn't in the list below: the audit
+  cross-checked `.rpc()` / `.from()` calls, not `functions/v1/` URLs, so other
+  deployed-only functions could still exist. Compare the dashboard's Edge
+  Functions list with `supabase/functions/` to check.
 
 ## What is still missing
 
