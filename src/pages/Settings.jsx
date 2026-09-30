@@ -232,6 +232,20 @@ export default function Settings() {
 
         <PointsPanel profile={profile} />
 
+        {profile && (
+          <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+            <div>
+              <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.3rem' }}>Email</p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
+                Socion updates by email: <strong>{profile.marketing_opt_in === true ? 'on' : 'off'}</strong>
+              </p>
+            </div>
+            <Link to="/profile/notifications" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', flexShrink: 0 }}>
+              Change →
+            </Link>
+          </div>
+        )}
+
         <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginTop: '1.5rem' }}>
           <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.75rem' }}>Display</p>
           <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>

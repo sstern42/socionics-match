@@ -5,6 +5,7 @@ import RelationPicker from '../components/profile/RelationPicker'
 import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { createProfile, updateRelationPreferences, isDuplicateNameError, DUPLICATE_NAME_MESSAGE } from '../lib/profile'
+import { setMarketingPreference, MARKETING_SOURCES, SIGNUP_CONSENT_TEXT } from '../lib/emailPreferences'
 import { attributeAndRewardReferral, getStoredReferralCode, getStoredReferrerName } from '../lib/referral'
 import { COUNTRIES } from '../data/countries'
 import { TYPES } from '../data/relations'
@@ -40,6 +41,11 @@ export default function ProfileSetup() {
   // this page without savedType (see the fallback dropdown below) -- lets
   // them opt into the post-signup typing chat without restarting onboarding.
   const [chatOptIn, setChatOptIn] = useState(false)
+  // Marketing-email consent. Unticked by default, and an unticked box is
+  // recorded as an explicit FALSE (not left NULL) straight after the profile
+  // row is created -- that row doesn't exist before this page, so this is
+  // the earliest point consent can be stored against the account.
+  const [marketingOptIn, setMarketingOptIn] = useState(false)
   const [relations, setRelations] = useState([])
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -72,6 +78,16 @@ export default function ProfileSetup() {
 
       if (!newProfile) {
         throw new Error('Profile was not created — check Supabase RLS policies.')
+      }
+
+      // The insert above can't carry consent (protect_sensitive_user_columns
+      // nulls it), so it's written through the RPC, which timestamps it and
+      // logs a consent_events row. A failure here mustn't block sign-up: the
+      // preference stays NULL and the in-app prompt asks again later.
+      try {
+        await setMarketingPreference(marketingOptIn, MARKETING_SOURCES.signup)
+      } catch (err) {
+        console.error('Failed to record marketing preference:', err)
       }
 
       // Type + purpose (the qualifying action) are already set above, so
@@ -268,6 +284,17 @@ export default function ProfileSetup() {
                   </label>
                 </div>
               )}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', padding: '0 0.1rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={e => setMarketingOptIn(e.target.checked)}
+                  style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+                />
+                <span style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+                  {SIGNUP_CONSENT_TEXT}
+                </span>
+              </label>
             </div>
 
             {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}

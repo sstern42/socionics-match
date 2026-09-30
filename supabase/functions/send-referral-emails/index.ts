@@ -7,6 +7,16 @@
 //   - to the referrer: reward earned (days granted), or a tier-up
 //     acknowledgement if they're already premium and no days were granted
 //
+// Classification (see the email helpers block below):
+//   - referee welcome / trial active   transactional (their account just
+//                                      changed: a trial was switched on)
+//   - referrer "You earned N days"     transactional (days were added to
+//                                      their account)
+//   - referrer "Another successful     non-transactional: nothing about the
+//     referral" (tier-up)              account changed. Only sent when
+//                                      can_send_marketing() is TRUE, with the
+//                                      unsubscribe footer and headers.
+//
 // No-ops quietly if the referee has no 'qualified' referrals row — this lets
 // the client call it unconditionally after every signup, referred or not.
 //
@@ -15,6 +25,7 @@
 //
 // Required env vars (shared with other functions):
 //   RESEND_API_KEY
+//   UNSUBSCRIBE_SECRET  (tier-up email only; see the email helpers block below)
 // Auto-injected:
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY
@@ -25,6 +36,183 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0?target=denonext'
 import { Resend } from 'https://esm.sh/resend@4.0.0?target=denonext'
+
+// ---- BEGIN email helpers ----------------------------------------------------
+// Identical copy in each Resend sender and in email-unsubscribe, so every
+// function is a single file that can be pasted into the dashboard editor:
+//   email-unsubscribe, notify-abandoned-signup, send-referral-emails,
+//   stripe-webhook
+// Change all four together; `npm run check:email-helpers` (run in CI) fails if
+// the copies differ.
+//
+// Footer variants:
+//   transactional     — business identity + why you're receiving it. For
+//                       emails the member needs about their account (billing,
+//                       Premium, rewards they earned). No unsubscribe link.
+//   non-transactional — the same plus an unsubscribe link. Every send that
+//                       uses it must also pass listUnsubscribeHeaders()
+//                       (RFC 8058 one-click).
+//
+// Unsubscribe links carry the address plus an HMAC-SHA256 of it keyed with
+// UNSUBSCRIBE_SECRET, so a link can't be forged for someone else's address.
+// If UNSUBSCRIBE_SECRET is missing, building a non-transactional footer or
+// headers throws: callers treat that as "don't send" (fail closed).
+//
+// Env: UNSUBSCRIBE_SECRET (secret), SUPABASE_URL (auto-injected),
+//      SITE_URL (optional, defaults to https://socion.app)
+
+const BUSINESS_IDENTITY =
+  'Socion · Stern Consulting · Unit 110172, PO Box 6945, London, W1A 6US, UK'
+
+const ACCOUNT_REASON =
+  "You're receiving this because you have an account at socion.app."
+
+const EMAIL_SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://socion.app').replace(/\/$/, '')
+const EMAIL_SUPABASE_URL = (Deno.env.get('SUPABASE_URL') ?? '').replace(/\/$/, '')
+
+// Domain separation: the MAC covers a purpose prefix as well as the address,
+// so a token minted here can't be replayed as some other signed value if the
+// secret is ever reused.
+const TOKEN_PREFIX = 'socion-unsubscribe:v1:'
+
+function normaliseEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function toBase64Url(bytes: Uint8Array): string {
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function fromBase64Url(s: string): Uint8Array<ArrayBuffer> {
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)
+  const bin = atob(b64)
+  const out = new Uint8Array(new ArrayBuffer(bin.length))
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
+  return out
+}
+
+function encodeEmailParam(email: string): string {
+  return toBase64Url(new TextEncoder().encode(normaliseEmail(email)))
+}
+
+function decodeEmailParam(param: string): string | null {
+  try {
+    const email = normaliseEmail(new TextDecoder().decode(fromBase64Url(param)))
+    return email.includes('@') ? email : null
+  } catch {
+    return null
+  }
+}
+
+async function hmacKey(): Promise<CryptoKey> {
+  const secret = Deno.env.get('UNSUBSCRIBE_SECRET')
+  if (!secret) throw new Error('UNSUBSCRIBE_SECRET is not set')
+  return crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign', 'verify'],
+  )
+}
+
+async function unsubscribeToken(email: string): Promise<string> {
+  const sig = await crypto.subtle.sign(
+    'HMAC',
+    await hmacKey(),
+    new TextEncoder().encode(TOKEN_PREFIX + normaliseEmail(email)),
+  )
+  return toBase64Url(new Uint8Array(sig))
+}
+
+// crypto.subtle.verify compares in constant time.
+async function verifyUnsubscribeToken(email: string, token: string): Promise<boolean> {
+  try {
+    return await crypto.subtle.verify(
+      'HMAC',
+      await hmacKey(),
+      fromBase64Url(token),
+      new TextEncoder().encode(TOKEN_PREFIX + normaliseEmail(email)),
+    )
+  } catch {
+    return false
+  }
+}
+
+async function unsubscribeQuery(email: string): Promise<string> {
+  return `e=${encodeEmailParam(email)}&t=${await unsubscribeToken(email)}`
+}
+
+// The link people click in the footer: a confirmation page on the site, which
+// then POSTs to the email-unsubscribe function.
+async function unsubscribePageUrl(email: string): Promise<string> {
+  return `${EMAIL_SITE_URL}/unsubscribe?${await unsubscribeQuery(email)}`
+}
+
+// The URL mail clients POST to for one-click unsubscribe (RFC 8058).
+async function oneClickUnsubscribeUrl(email: string): Promise<string> {
+  if (!EMAIL_SUPABASE_URL) throw new Error('SUPABASE_URL is not set')
+  return `${EMAIL_SUPABASE_URL}/functions/v1/email-unsubscribe?${await unsubscribeQuery(email)}`
+}
+
+// Headers for every non-transactional send. https only: nothing processes
+// replies to noreply@, so a mailto: target would silently go nowhere.
+async function listUnsubscribeHeaders(email: string): Promise<Record<string, string>> {
+  return {
+    'List-Unsubscribe': `<${await oneClickUnsubscribeUrl(email)}>`,
+    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  }
+}
+
+type FooterStyle = {
+  color?: string
+  fontFamily?: string
+  fontSize?: string
+  align?: 'left' | 'center'
+}
+
+function footerParagraph(inner: string, style: FooterStyle): string {
+  const color = style.color ?? '#666'
+  const font = style.fontFamily ? `font-family: ${style.fontFamily}; ` : ''
+  const size = style.fontSize ?? '12px'
+  const align = style.align ?? 'left'
+  return `<p style="${font}color: ${color}; font-size: ${size}; line-height: 1.6; margin: 0; text-align: ${align};">${inner}</p>`
+}
+
+// Footer for account emails (no unsubscribe link).
+function transactionalFooter(style: FooterStyle = {}, reason: string = ACCOUNT_REASON): string {
+  const color = style.color ?? '#666'
+  return footerParagraph(
+    `${escapeHtml(BUSINESS_IDENTITY)} · <a href="${EMAIL_SITE_URL}" style="color: ${color};">socion.app</a><br>${escapeHtml(reason)}`,
+    style,
+  )
+}
+
+// Footer for everything else. Throws if the unsubscribe link can't be signed.
+async function nonTransactionalFooter(
+  email: string,
+  style: FooterStyle = {},
+  reason: string = ACCOUNT_REASON,
+): Promise<string> {
+  const color = style.color ?? '#666'
+  const url = await unsubscribePageUrl(email)
+  return footerParagraph(
+    `${escapeHtml(BUSINESS_IDENTITY)} · <a href="${EMAIL_SITE_URL}" style="color: ${color};">socion.app</a><br>${escapeHtml(reason)}<br>` +
+      `<a href="${escapeHtml(url)}" style="color: ${color};">Unsubscribe</a> from these emails.`,
+    style,
+  )
+}
+// ---- END email helpers ------------------------------------------------------
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('PROJECT_SECRET_KEY')!
@@ -73,7 +261,7 @@ async function getContact(userId: string): Promise<{ email: string; name: string
   }
 }
 
-async function sendEmailSafe(args: { to: string; subject: string; html: string }): Promise<void> {
+async function sendEmailSafe(args: { to: string; subject: string; html: string; headers?: Record<string, string> }): Promise<void> {
   try {
     await resend.emails.send({ from: RESEND_FROM, ...args })
   } catch (err) {
@@ -81,22 +269,22 @@ async function sendEmailSafe(args: { to: string; subject: string; html: string }
   }
 }
 
-function emailShell(body: string): string {
+function emailShell(body: string, footer: string = transactionalFooter()): string {
   return `<!DOCTYPE html>
 <html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1a1a1a; line-height: 1.5;">
 ${body}
 <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0 16px;">
-<p style="color: #666; font-size: 13px; margin: 0;">Socion · <a href="https://socion.app" style="color: #666;">socion.app</a></p>
+${footer}
 </body></html>`
 }
 
 function emailRefereeWelcome(name: string | null, referrerName: string | null): string {
   const greeting = name ? `Hi ${name},` : 'Hi,'
   return emailShell(`
-<h2 style="margin-top: 0;">Welcome to Socion${referrerName ? ` — ${referrerName} invited you` : ''}</h2>
+<h2 style="margin-top: 0;">Your 7-day Premium trial is active</h2>
 <p>${greeting}</p>
-<p>Thanks for finishing your profile. You've unlocked <strong>7 days of Socion Premium</strong> — unlimited connections, every relation type in your feed, and full compatibility breakdowns.</p>
-<p><a href="https://socion.app/feed" style="display: inline-block; background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-top: 8px;">Open Socion</a></p>
+<p>Thanks for finishing your profile${referrerName ? ` — you joined through ${referrerName}'s invite` : ''}. Your account now has <strong>7 days of Socion Premium</strong>, starting today. There's nothing to set up and no payment details are needed; when the 7 days are up, the trial simply ends and nothing is charged.</p>
+<p>You can check your plan any time in <a href="https://socion.app/settings" style="color: #1a1a1a;">Settings</a>.</p>
 `)
 }
 
@@ -111,7 +299,7 @@ function emailReferrerRewardEarned(name: string | null, days: number, totalDaysG
 `)
 }
 
-function emailReferrerTierUp(name: string | null, tier: string | null, count: number): string {
+function emailReferrerTierUp(name: string | null, tier: string | null, count: number, footer: string): string {
   const greeting = name ? `Hi ${name},` : 'Hi,'
   const tierLabel = tier ? TIER_LABELS[tier] ?? tier : null
   return emailShell(`
@@ -119,7 +307,7 @@ function emailReferrerTierUp(name: string | null, tier: string | null, count: nu
 <p>${greeting}</p>
 <p>Someone you invited just finished setting up their Socion profile. That's ${count} qualifying ${count === 1 ? 'referral' : 'referrals'} so far.</p>
 <p><a href="https://socion.app/settings" style="display: inline-block; background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-top: 8px;">See your invite stats</a></p>
-`)
+`, footer)
 }
 
 serve(async (req) => {
@@ -167,7 +355,7 @@ serve(async (req) => {
   if (refereeContact) {
     await sendEmailSafe({
       to: refereeContact.email,
-      subject: 'Welcome to Socion — your 7-day trial is active',
+      subject: 'Your 7-day Socion Premium trial is active',
       html: emailRefereeWelcome(refereeContact.name, referrerContact?.name ?? null),
     })
   }
@@ -185,17 +373,30 @@ serve(async (req) => {
         html: emailReferrerRewardEarned(referrerContact.name, referral.reward_days_granted, referrerRow?.referral_premium_days_granted ?? referral.reward_days_granted),
       })
     } else {
-      const { data: referrerRow } = await supabase
-        .from('users')
-        .select('referral_count_qualified')
-        .eq('id', referral.referrer_id)
-        .maybeSingle()
-      const { data: tier } = await supabase.rpc('referral_tier', { p_user_id: referral.referrer_id })
-      await sendEmailSafe({
-        to: referrerContact.email,
-        subject: 'Another successful referral',
-        html: emailReferrerTierUp(referrerContact.name, tier, referrerRow?.referral_count_qualified ?? 0),
-      })
+      // Nothing changed on their account, so this is non-transactional:
+      // consented members only, and never without a working unsubscribe.
+      const { data: canSend, error: consentErr } = await supabase.rpc('can_send_marketing', { p_email: referrerContact.email })
+      if (consentErr) console.error('can_send_marketing failed:', consentErr.message)
+      if (canSend === true) {
+        try {
+          const footer = await nonTransactionalFooter(referrerContact.email)
+          const headers = await listUnsubscribeHeaders(referrerContact.email)
+          const { data: referrerRow } = await supabase
+            .from('users')
+            .select('referral_count_qualified')
+            .eq('id', referral.referrer_id)
+            .maybeSingle()
+          const { data: tier } = await supabase.rpc('referral_tier', { p_user_id: referral.referrer_id })
+          await sendEmailSafe({
+            to: referrerContact.email,
+            subject: 'Another successful referral',
+            html: emailReferrerTierUp(referrerContact.name, tier, referrerRow?.referral_count_qualified ?? 0, footer),
+            headers,
+          })
+        } catch (err) {
+          console.error('Tier-up email skipped:', (err as Error).message)
+        }
+      }
     }
   }
 

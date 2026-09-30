@@ -4,8 +4,14 @@
 // Called daily by pg_cron (see 20260706120000_abandoned_signup_nudge.sql).
 // Finds auth.users older than a threshold with no matching public.users row
 // (i.e. they started signup but never completed ProfileSetup.jsx / createProfile)
-// and sends a single "finish setting up your profile" transactional email via
-// Resend, linking back to /profile/setup.
+// and sends a single "finish setting up your profile" reminder via Resend,
+// linking back to /profile/setup.
+//
+// Classified as non-transactional: it's a nudge, not something the person
+// needs to run an account. So it carries the unsubscribe footer and the
+// List-Unsubscribe / List-Unsubscribe-Post headers (RFC 8058), and
+// get_abandoned_signups() skips anyone in email_suppressions. If the
+// unsubscribe link can't be signed (UNSUBSCRIBE_SECRET unset) nothing is sent.
 //
 // One-time per user: claim_abandoned_signup_nudge() records the send and only
 // lets one (concurrent/retried) invocation actually claim each candidate. On a
@@ -18,6 +24,7 @@
 //
 // Required env vars (shared with other functions):
 //   RESEND_API_KEY
+//   UNSUBSCRIBE_SECRET  (see the email helpers block below)
 // Auto-injected:
 //   SUPABASE_URL
 // Set as a secret (same as the other functions here):
@@ -27,6 +34,183 @@
 //   { "olderThanHours": 24, "newerThanDays": 30, "limit": 200, "dryRun": true }
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0?target=denonext'
+
+// ---- BEGIN email helpers ----------------------------------------------------
+// Identical copy in each Resend sender and in email-unsubscribe, so every
+// function is a single file that can be pasted into the dashboard editor:
+//   email-unsubscribe, notify-abandoned-signup, send-referral-emails,
+//   stripe-webhook
+// Change all four together; `npm run check:email-helpers` (run in CI) fails if
+// the copies differ.
+//
+// Footer variants:
+//   transactional     — business identity + why you're receiving it. For
+//                       emails the member needs about their account (billing,
+//                       Premium, rewards they earned). No unsubscribe link.
+//   non-transactional — the same plus an unsubscribe link. Every send that
+//                       uses it must also pass listUnsubscribeHeaders()
+//                       (RFC 8058 one-click).
+//
+// Unsubscribe links carry the address plus an HMAC-SHA256 of it keyed with
+// UNSUBSCRIBE_SECRET, so a link can't be forged for someone else's address.
+// If UNSUBSCRIBE_SECRET is missing, building a non-transactional footer or
+// headers throws: callers treat that as "don't send" (fail closed).
+//
+// Env: UNSUBSCRIBE_SECRET (secret), SUPABASE_URL (auto-injected),
+//      SITE_URL (optional, defaults to https://socion.app)
+
+const BUSINESS_IDENTITY =
+  'Socion · Stern Consulting · Unit 110172, PO Box 6945, London, W1A 6US, UK'
+
+const ACCOUNT_REASON =
+  "You're receiving this because you have an account at socion.app."
+
+const EMAIL_SITE_URL = (Deno.env.get('SITE_URL') ?? 'https://socion.app').replace(/\/$/, '')
+const EMAIL_SUPABASE_URL = (Deno.env.get('SUPABASE_URL') ?? '').replace(/\/$/, '')
+
+// Domain separation: the MAC covers a purpose prefix as well as the address,
+// so a token minted here can't be replayed as some other signed value if the
+// secret is ever reused.
+const TOKEN_PREFIX = 'socion-unsubscribe:v1:'
+
+function normaliseEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function toBase64Url(bytes: Uint8Array): string {
+  let bin = ''
+  for (const b of bytes) bin += String.fromCharCode(b)
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+}
+
+function fromBase64Url(s: string): Uint8Array<ArrayBuffer> {
+  const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - (s.length % 4)) % 4)
+  const bin = atob(b64)
+  const out = new Uint8Array(new ArrayBuffer(bin.length))
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
+  return out
+}
+
+function encodeEmailParam(email: string): string {
+  return toBase64Url(new TextEncoder().encode(normaliseEmail(email)))
+}
+
+function decodeEmailParam(param: string): string | null {
+  try {
+    const email = normaliseEmail(new TextDecoder().decode(fromBase64Url(param)))
+    return email.includes('@') ? email : null
+  } catch {
+    return null
+  }
+}
+
+async function hmacKey(): Promise<CryptoKey> {
+  const secret = Deno.env.get('UNSUBSCRIBE_SECRET')
+  if (!secret) throw new Error('UNSUBSCRIBE_SECRET is not set')
+  return crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign', 'verify'],
+  )
+}
+
+async function unsubscribeToken(email: string): Promise<string> {
+  const sig = await crypto.subtle.sign(
+    'HMAC',
+    await hmacKey(),
+    new TextEncoder().encode(TOKEN_PREFIX + normaliseEmail(email)),
+  )
+  return toBase64Url(new Uint8Array(sig))
+}
+
+// crypto.subtle.verify compares in constant time.
+async function verifyUnsubscribeToken(email: string, token: string): Promise<boolean> {
+  try {
+    return await crypto.subtle.verify(
+      'HMAC',
+      await hmacKey(),
+      fromBase64Url(token),
+      new TextEncoder().encode(TOKEN_PREFIX + normaliseEmail(email)),
+    )
+  } catch {
+    return false
+  }
+}
+
+async function unsubscribeQuery(email: string): Promise<string> {
+  return `e=${encodeEmailParam(email)}&t=${await unsubscribeToken(email)}`
+}
+
+// The link people click in the footer: a confirmation page on the site, which
+// then POSTs to the email-unsubscribe function.
+async function unsubscribePageUrl(email: string): Promise<string> {
+  return `${EMAIL_SITE_URL}/unsubscribe?${await unsubscribeQuery(email)}`
+}
+
+// The URL mail clients POST to for one-click unsubscribe (RFC 8058).
+async function oneClickUnsubscribeUrl(email: string): Promise<string> {
+  if (!EMAIL_SUPABASE_URL) throw new Error('SUPABASE_URL is not set')
+  return `${EMAIL_SUPABASE_URL}/functions/v1/email-unsubscribe?${await unsubscribeQuery(email)}`
+}
+
+// Headers for every non-transactional send. https only: nothing processes
+// replies to noreply@, so a mailto: target would silently go nowhere.
+async function listUnsubscribeHeaders(email: string): Promise<Record<string, string>> {
+  return {
+    'List-Unsubscribe': `<${await oneClickUnsubscribeUrl(email)}>`,
+    'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+  }
+}
+
+type FooterStyle = {
+  color?: string
+  fontFamily?: string
+  fontSize?: string
+  align?: 'left' | 'center'
+}
+
+function footerParagraph(inner: string, style: FooterStyle): string {
+  const color = style.color ?? '#666'
+  const font = style.fontFamily ? `font-family: ${style.fontFamily}; ` : ''
+  const size = style.fontSize ?? '12px'
+  const align = style.align ?? 'left'
+  return `<p style="${font}color: ${color}; font-size: ${size}; line-height: 1.6; margin: 0; text-align: ${align};">${inner}</p>`
+}
+
+// Footer for account emails (no unsubscribe link).
+function transactionalFooter(style: FooterStyle = {}, reason: string = ACCOUNT_REASON): string {
+  const color = style.color ?? '#666'
+  return footerParagraph(
+    `${escapeHtml(BUSINESS_IDENTITY)} · <a href="${EMAIL_SITE_URL}" style="color: ${color};">socion.app</a><br>${escapeHtml(reason)}`,
+    style,
+  )
+}
+
+// Footer for everything else. Throws if the unsubscribe link can't be signed.
+async function nonTransactionalFooter(
+  email: string,
+  style: FooterStyle = {},
+  reason: string = ACCOUNT_REASON,
+): Promise<string> {
+  const color = style.color ?? '#666'
+  const url = await unsubscribePageUrl(email)
+  return footerParagraph(
+    `${escapeHtml(BUSINESS_IDENTITY)} · <a href="${EMAIL_SITE_URL}" style="color: ${color};">socion.app</a><br>${escapeHtml(reason)}<br>` +
+      `<a href="${escapeHtml(url)}" style="color: ${color};">Unsubscribe</a> from these emails.`,
+    style,
+  )
+}
+// ---- END email helpers ------------------------------------------------------
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY  = Deno.env.get('PROJECT_SECRET_KEY')!
@@ -40,7 +224,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, content-type, x-cron-secret',
 }
 
-function nudgeEmailHtml(): string {
+// This reminder goes to people who authenticated but never finished a
+// profile, so the shared footer's reason line is tailored to that.
+const NUDGE_REASON = "You're receiving this because you started creating an account at socion.app."
+
+function nudgeEmailHtml(footer: string): string {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -89,10 +277,7 @@ function nudgeEmailHtml(): string {
         <!-- Footer -->
         <tr>
           <td style="padding:20px 32px;text-align:center">
-            <p style="margin:0;font-size:12px;color:#9a8a6a;font-family:sans-serif;line-height:1.6">
-              Socion · <a href="https://socion.app" style="color:#9a6f38;text-decoration:none">socion.app</a><br>
-              You're getting this because you started creating a Socion account.
-            </p>
+            ${footer}
           </td>
         </tr>
 
@@ -105,6 +290,13 @@ function nudgeEmailHtml(): string {
 
 async function sendNudge(to: string): Promise<boolean> {
   try {
+    // Fail closed: if the unsubscribe link can't be built, don't send.
+    const footer = await nonTransactionalFooter(
+      to,
+      { color: '#9a8a6a', fontFamily: 'sans-serif', align: 'center' },
+      NUDGE_REASON,
+    )
+    const headers = await listUnsubscribeHeaders(to)
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -115,7 +307,8 @@ async function sendNudge(to: string): Promise<boolean> {
         from: RESEND_FROM,
         to: [to],
         subject: 'Finish setting up your Socion profile',
-        html: nudgeEmailHtml(),
+        html: nudgeEmailHtml(footer),
+        headers,
       }),
     })
     if (!res.ok) {

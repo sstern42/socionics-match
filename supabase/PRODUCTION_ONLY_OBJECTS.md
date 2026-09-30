@@ -28,6 +28,13 @@ only production has.
   from its usage, with the evidence recorded inline. **Production's copies are
   authoritative** — these were written to make a rebuild work, not to redefine
   what is live.
+- The `delete-account` edge function (called from `src/pages/ProfileEdit.jsx`)
+  was deployed but never committed. It is now in
+  `supabase/functions/delete-account/`, copied unchanged from the deployed
+  version in September 2026. It wasn't in the list below: the audit
+  cross-checked `.rpc()` / `.from()` calls, not `functions/v1/` URLs, so other
+  deployed-only functions could still exist. Compare the dashboard's Edge
+  Functions list with `supabase/functions/` to check.
 
 ## What is still missing
 
@@ -126,3 +133,18 @@ URL:
 - the `avatars` storage bucket and its `storage.objects` policies (`avatars.sql`)
 - the three `cron.schedule()` jobs — `compute-stats`, `daily-ai-usage`,
   `daily-digest` (`stats.sql`), which read `service_role_key` from Vault
+
+Edge Function configuration for the email-consent work (September 2026). The
+tables and functions are all in `20260930120000`–`20260930140000`; these are
+dashboard settings a migration can't carry:
+
+- secrets `UNSUBSCRIBE_SECRET` (read by the email helpers block, so every Resend
+  sender plus `email-unsubscribe`) and `MAILERLITE_WEBHOOK_SECRET`
+  (`mailerlite-webhook`), and `MAILERLITE_API_KEY` (`delete-account`, to remove
+  deleted members from MailerLite)
+- "Verify JWT" turned **off** for `email-unsubscribe` and `mailerlite-webhook`
+  (mail providers and MailerLite call them without a Supabase JWT)
+- the MailerLite webhook itself (URL, events, secret) — steps in the header of
+  `supabase/functions/mailerlite-webhook/index.ts`
+- the `notify-abandoned-signup` `cron.schedule()` job (commented SQL in
+  `20260706120000_abandoned_signup_nudge.sql`), which was already manual

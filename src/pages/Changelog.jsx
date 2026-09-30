@@ -4,6 +4,15 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '30 September 2026',
+       label: 'New',
+       items: [
+         'Email preferences — you can now choose whether to get occasional Socion updates by email (a few times a year at most). New members are asked when they set up their profile, existing members get a one-time question, and you can change your mind any time under Profile → Notifications',
+         'Email preferences — every non-essential email from Socion now has a one-click unsubscribe link. Essential emails about your account, like billing, still arrive as normal',
+         'Privacy policy and terms — updated to explain exactly how we use your email address, how to unsubscribe, and who runs Socion',
+       ],
+     },
+     {
        date: '23 September 2026',
        label: 'New',
        items: [
