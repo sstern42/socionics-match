@@ -126,3 +126,17 @@ URL:
 - the `avatars` storage bucket and its `storage.objects` policies (`avatars.sql`)
 - the three `cron.schedule()` jobs — `compute-stats`, `daily-ai-usage`,
   `daily-digest` (`stats.sql`), which read `service_role_key` from Vault
+
+Edge Function configuration for the email-consent work (September 2026). The
+tables and functions are all in `20260930120000`–`20260930140000`; these are
+dashboard settings a migration can't carry:
+
+- secrets `UNSUBSCRIBE_SECRET` (read by `_shared/email.ts`, so every Resend
+  sender plus `email-unsubscribe`) and `MAILERLITE_WEBHOOK_SECRET`
+  (`mailerlite-webhook`)
+- "Verify JWT" turned **off** for `email-unsubscribe` and `mailerlite-webhook`
+  (mail providers and MailerLite call them without a Supabase JWT)
+- the MailerLite webhook itself (URL, events, secret) — steps in the header of
+  `supabase/functions/mailerlite-webhook/index.ts`
+- the `notify-abandoned-signup` `cron.schedule()` job (commented SQL in
+  `20260706120000_abandoned_signup_nudge.sql`), which was already manual
