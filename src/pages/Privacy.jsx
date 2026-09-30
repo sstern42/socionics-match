@@ -64,17 +64,17 @@ export default function Privacy() {
           <ul>
             <li><strong>Supabase</strong> — database, authentication, and file storage (EU West, Ireland)</li>
             <li><strong>Netlify</strong> — hosting and deployment</li>
-            <li><strong>Resend</strong> — service email delivery (mail.socion.app sending domain)</li>
+            <li><strong>Resend</strong> — service emails and reminders (account and payment emails, sent from mail.socion.app)</li>
             <li><strong>Google</strong> — optional sign-in via Google Identity Services</li>
-            <li><strong>Discord</strong> — optional sign-in with your Discord account. We also post operational notifications to Socion's Discord server, such as a new sign-up with a partially masked email address</li>
-            <li><strong>MailerLite</strong> — Socion update emails, sent only if you've opted in (news.socion.app sending domain)</li>
+            <li><strong>Discord</strong> — optional sign-in via Discord OAuth. We also post operational notifications to Socion's Discord server, such as a new sign-up with a partially masked email address</li>
+            <li><strong>MailerLite</strong> — occasional Socion updates, sent only if you opt in (news.socion.app sending domain)</li>
             <li><strong>Umami</strong> — cookieless, privacy-first analytics</li>
             <li><strong>Stripe</strong> — payment processing for Premium subscriptions</li>
             <li><strong>Anthropic</strong> — AI responses for the Socionics AI assistant and the typing chat (messages you send are processed by Anthropic's API)</li>
           </ul>
 
           <h2>Data retention</h2>
-          <p>Your data is retained for as long as your account is active. If you delete your account, your profile, messages, matches, and push subscriptions are permanently deleted. Anonymised, aggregated research data may be retained. Consent records and the do-not-email list described under Marketing emails are kept after deletion, so we can show what was agreed and make sure we never email you again.</p>
+          <p>Your data is retained for as long as your account is active. If you delete your account, your profile, messages, matches, and push subscriptions are permanently deleted. Anonymised, aggregated research data may be retained. Consent records and the do-not-email list described under Marketing emails are kept after deletion, so we can show what was agreed and make sure we never email you again. If you delete your account, you are also removed from our email list in MailerLite. If you have unsubscribed from our emails, we keep your email address on a suppression list solely to make sure we never email you again; it isn't used for anything else.</p>
 
           <h2>Your rights</h2>
           <p>Under UK GDPR you have the right to access, correct, or delete your personal data. You can update your profile at any time via the Profile page. You can permanently delete your account and all associated data directly in the app via Profile → Details → Delete account. For any other data requests, contact <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)' }}>hello@socion.app</a>.</p>

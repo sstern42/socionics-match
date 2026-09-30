@@ -140,7 +140,8 @@ dashboard settings a migration can't carry:
 
 - secrets `UNSUBSCRIBE_SECRET` (read by `_shared/email.ts`, so every Resend
   sender plus `email-unsubscribe`) and `MAILERLITE_WEBHOOK_SECRET`
-  (`mailerlite-webhook`)
+  (`mailerlite-webhook`), and `MAILERLITE_API_KEY` (`delete-account`, to remove
+  deleted members from MailerLite)
 - "Verify JWT" turned **off** for `email-unsubscribe` and `mailerlite-webhook`
   (mail providers and MailerLite call them without a Supabase JWT)
 - the MailerLite webhook itself (URL, events, secret) — steps in the header of
