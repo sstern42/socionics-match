@@ -5,7 +5,7 @@ import { usePageMeta } from '../hooks/usePageMeta'
 import { supabaseUrl } from '../lib/supabase'
 
 // Confirmation page for the unsubscribe link in Socion's non-transactional
-// emails (supabase/functions/_shared/email.ts). Opening it never unsubscribes
+// emails (the email helpers block in supabase/functions/*/index.ts). Opening it never unsubscribes
 // anyone -- mail scanners prefetch links -- so the change only happens when
 // the button POSTs to the email-unsubscribe edge function, which checks the
 // link's signature. Works signed out.

@@ -21,6 +21,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # Edge functions carry identical copies of the email helpers so each
+      # can be deployed from the dashboard editor; keep them in step.
+      - run: npm run check:email-helpers
       # Build with placeholder env vars: Vite inlines import.meta.env at build
       # time, and a missing VITE_* var is a silent empty string rather than an
       # error, so real credentials aren't needed to catch a broken build.

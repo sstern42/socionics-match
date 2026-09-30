@@ -138,7 +138,7 @@ Edge Function configuration for the email-consent work (September 2026). The
 tables and functions are all in `20260930120000`–`20260930140000`; these are
 dashboard settings a migration can't carry:
 
-- secrets `UNSUBSCRIBE_SECRET` (read by `_shared/email.ts`, so every Resend
+- secrets `UNSUBSCRIBE_SECRET` (read by the email helpers block, so every Resend
   sender plus `email-unsubscribe`) and `MAILERLITE_WEBHOOK_SECRET`
   (`mailerlite-webhook`), and `MAILERLITE_API_KEY` (`delete-account`, to remove
   deleted members from MailerLite)

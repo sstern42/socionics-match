@@ -151,7 +151,8 @@ Follow the constraints the template already encodes:
   `Socion · Stern Consulting · Unit 110172, PO Box 6945, London, W1A 6US, UK`
   (in the HTML: `Socion &middot; Stern Consulting &middot; Unit 110172, PO Box
   6945, London, W1A 6US, UK`). The same line is used in the Resend footer
-  (`supabase/functions/_shared/email.ts`); change both together.
+  (`BUSINESS_IDENTITY` in the email helpers block copied into each Resend
+  sender in `supabase/functions/`); change them together.
 - **Only send to the consented list.** Import from Admin → "Marketing-consented
   members" (exported fresh before each campaign), never the incomplete-signup or
   full member lists. The "why you're receiving this" line must match what people

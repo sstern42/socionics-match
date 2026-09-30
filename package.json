@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:email-helpers": "node scripts/check-email-helpers.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.100.0",
