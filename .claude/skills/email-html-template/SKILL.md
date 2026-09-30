@@ -97,7 +97,8 @@ this order:
      `@media` query stacks the two columns on mobile.
    - Divider → **CTA box** (tinted panel with eyebrow, headline, pitch, and a
      gold button) → sign-off ("Spencer" + Socion.app link).
-3. **"Why you're receiving this"** — one faint sentence of list context.
+3. **"Why you're receiving this"** — one faint sentence of list context. Keep
+   it consistent with the consent wording (a few times a year at most).
 4. **Footer** — Privacy · Terms · Discord links, the physical address line, and
    the `{$unsubscribe}` link.
 
@@ -145,8 +146,17 @@ Follow the constraints the template already encodes:
   these for click tracking. **Do not hand-write or invent them** — omit them in
   authored HTML; MailerLite assigns them, and click tracking still works on
   plain `<a href>` pasted into the custom-HTML block.
-- **Physical address is required** (anti-spam law). Keep the
-  `Socion · Stern Consulting · London, UK` line in the footer.
+- **Physical address is required** (anti-spam law). Keep the full
+  business identity line in the footer, exactly:
+  `Socion · Stern Consulting · Unit 110172, PO Box 6945, London, W1A 6US, UK`
+  (in the HTML: `Socion &middot; Stern Consulting &middot; Unit 110172, PO Box
+  6945, London, W1A 6US, UK`). The same line is used in the Resend footer
+  (`supabase/functions/_shared/email.ts`); change both together.
+- **Only send to the consented list.** Import from Admin → "Marketing-consented
+  members" (exported fresh before each campaign), never the incomplete-signup or
+  full member lists. The "why you're receiving this" line must match what people
+  agreed to (`docs/policies/consent-text-v1.md`): occasional updates, a few
+  times a year at most.
 - **UTM params** go on every campaign link:
   `?utm_source=mailerlite&utm_medium=email&utm_campaign=<slug>`.
 - **Preheader is on you — MailerLite won't add one.** For a custom-HTML campaign
@@ -187,7 +197,8 @@ Match the register of the example campaign:
    or preview in a browser. The email is the deliverable; show it, don't just
    describe it.
 2. **Checklist before it's ready to paste into MailerLite:**
-   - `{$unsubscribe}` present in the footer, and the address line intact.
+   - `{$unsubscribe}` present in the footer, and the full business identity
+     line (with the PO Box address) intact.
    - `{$name}` (or a safe fallback) in the header kicker.
    - Preheader filled in (not left as placeholder, not a copy of the subject),
      and the zero-width spacer block left intact after it.
