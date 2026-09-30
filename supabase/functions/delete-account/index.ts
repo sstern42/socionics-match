@@ -1,7 +1,8 @@
 // supabase/functions/delete-account/index.ts
 // Deletes the calling user's account — all data cascades from auth.users.
-// Secrets required (auto-injected by Supabase):
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// Secrets required:
+//   SUPABASE_URL          (auto-injected)
+//   PROJECT_SECRET_KEY    service role key (same as the other functions)
 // Secret (optional — without it the MailerLite step is skipped and logged):
 //   MAILERLITE_API_KEY   MailerLite API token (Integrations → API)
 //
@@ -76,37 +77,31 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405, headers: corsHeaders })
   }
 
-  // Extract caller identity from JWT — Supabase platform already verified
-  // the token before the function runs, so decoding is sufficient
   const authHeader = req.headers.get('Authorization')
   if (!authHeader?.startsWith('Bearer ')) {
     return new Response('Unauthorised', { status: 401, headers: corsHeaders })
   }
   const jwt = authHeader.replace('Bearer ', '')
-  let userId: string
-  try {
-    const payload = JSON.parse(atob(jwt.split('.')[1]))
-    if (!payload?.sub) throw new Error('No sub')
-    userId = payload.sub
-  } catch {
-    return new Response('Unauthorised', { status: 401, headers: corsHeaders })
-  }
-  // user.id in the rest of the function was auth user id — map it
-  const user = { id: userId }
 
   const adminClient = createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
-  // Capture the email now — it's gone once the auth user is deleted.
-  // Best-effort: a failure here only means the MailerLite step is skipped.
-  let email: string | null = null
-  try {
-    const { data } = await adminClient.auth.admin.getUserById(user.id)
-    email = data?.user?.email ?? null
-  } catch (err) {
-    console.error('Could not read email before deletion:', (err as Error).message)
+  // Verify the token with Supabase Auth rather than trusting its payload.
+  // This used to base64-decode the JWT and take `sub` unchecked, relying on
+  // the platform's "Verify JWT" setting; with that setting off, a forged
+  // token naming any user id would have deleted that account. getUser()
+  // checks the signature and expiry and that the user still exists, so this
+  // no longer depends on the dashboard setting (keep it on anyway).
+  const { data: authData, error: authError } = await adminClient.auth.getUser(jwt)
+  if (authError || !authData?.user) {
+    return new Response('Unauthorised', { status: 401, headers: corsHeaders })
   }
+  const user = { id: authData.user.id }
+
+  // Capture the email now — it's gone once the auth user is deleted. Used
+  // only for the best-effort MailerLite removal below.
+  const email: string | null = authData.user.email ?? null
 
   // Delete avatar from storage (best-effort — don't fail if missing)
   try {
