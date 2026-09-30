@@ -15,6 +15,12 @@
 //   STRIPE_WEBHOOK_SECRET      whsec_... (from Stripe webhook endpoint config)
 //   RESEND_API_KEY             your existing Resend key
 //
+// All three emails here (Premium welcome, payment failed, Premium ended) are
+// transactional: they report a change to the member's subscription. They use
+// the shared transactional footer (../_shared/email.ts) and no unsubscribe.
+// Deploy with the CLI (supabase functions deploy stripe-webhook) so the
+// ../_shared import is bundled.
+//
 // Auto-injected by Supabase (do not set manually):
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY
@@ -32,6 +38,7 @@ import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import Stripe from 'https://esm.sh/stripe@17.5.0?target=denonext'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0?target=denonext'
 import { Resend } from 'https://esm.sh/resend@4.0.0?target=denonext'
+import { transactionalFooter } from '../_shared/email.ts'
 
 // ============================================================================
 // Setup
@@ -248,7 +255,7 @@ function emailShell(body: string): string {
 <html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1a1a1a; line-height: 1.5;">
 ${body}
 <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0 16px;">
-<p style="color: #666; font-size: 13px; margin: 0;">Socion · <a href="https://socion.app" style="color: #666;">socion.app</a></p>
+${transactionalFooter()}
 </body></html>`
 }
 
@@ -281,8 +288,7 @@ function emailCancellation(name: string | null): string {
   <li>Your feed reverts to same-quadra matches only</li>
   <li>Compatibility breakdowns show in basic mode</li>
 </ul>
-<p>If you change your mind, you can resubscribe anytime — your data picks up right where you left off.</p>
-<p><a href="https://socion.app/premium" style="display: inline-block; background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-top: 8px;">Resubscribe</a></p>
+<p>If you change your mind, you can <a href="https://socion.app/premium" style="color: #1a1a1a;">resubscribe</a> anytime — your data picks up right where you left off.</p>
 `)
 }
 

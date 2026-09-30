@@ -7,6 +7,16 @@
 //   - to the referrer: reward earned (days granted), or a tier-up
 //     acknowledgement if they're already premium and no days were granted
 //
+// Classification (see ../_shared/email.ts):
+//   - referee welcome / trial active   transactional (their account just
+//                                      changed: a trial was switched on)
+//   - referrer "You earned N days"     transactional (days were added to
+//                                      their account)
+//   - referrer "Another successful     non-transactional: nothing about the
+//     referral" (tier-up)              account changed. Only sent when
+//                                      can_send_marketing() is TRUE, with the
+//                                      unsubscribe footer and headers.
+//
 // No-ops quietly if the referee has no 'qualified' referrals row — this lets
 // the client call it unconditionally after every signup, referred or not.
 //
@@ -15,6 +25,7 @@
 //
 // Required env vars (shared with other functions):
 //   RESEND_API_KEY
+//   UNSUBSCRIBE_SECRET  (tier-up email only; see ../_shared/email.ts)
 // Auto-injected:
 //   SUPABASE_URL
 //   SUPABASE_SERVICE_ROLE_KEY
@@ -25,6 +36,7 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0?target=denonext'
 import { Resend } from 'https://esm.sh/resend@4.0.0?target=denonext'
+import { listUnsubscribeHeaders, nonTransactionalFooter, transactionalFooter } from '../_shared/email.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('PROJECT_SECRET_KEY')!
@@ -73,7 +85,7 @@ async function getContact(userId: string): Promise<{ email: string; name: string
   }
 }
 
-async function sendEmailSafe(args: { to: string; subject: string; html: string }): Promise<void> {
+async function sendEmailSafe(args: { to: string; subject: string; html: string; headers?: Record<string, string> }): Promise<void> {
   try {
     await resend.emails.send({ from: RESEND_FROM, ...args })
   } catch (err) {
@@ -81,22 +93,22 @@ async function sendEmailSafe(args: { to: string; subject: string; html: string }
   }
 }
 
-function emailShell(body: string): string {
+function emailShell(body: string, footer: string = transactionalFooter()): string {
   return `<!DOCTYPE html>
 <html><body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1a1a1a; line-height: 1.5;">
 ${body}
 <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 32px 0 16px;">
-<p style="color: #666; font-size: 13px; margin: 0;">Socion · <a href="https://socion.app" style="color: #666;">socion.app</a></p>
+${footer}
 </body></html>`
 }
 
 function emailRefereeWelcome(name: string | null, referrerName: string | null): string {
   const greeting = name ? `Hi ${name},` : 'Hi,'
   return emailShell(`
-<h2 style="margin-top: 0;">Welcome to Socion${referrerName ? ` — ${referrerName} invited you` : ''}</h2>
+<h2 style="margin-top: 0;">Your 7-day Premium trial is active</h2>
 <p>${greeting}</p>
-<p>Thanks for finishing your profile. You've unlocked <strong>7 days of Socion Premium</strong> — unlimited connections, every relation type in your feed, and full compatibility breakdowns.</p>
-<p><a href="https://socion.app/feed" style="display: inline-block; background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-top: 8px;">Open Socion</a></p>
+<p>Thanks for finishing your profile${referrerName ? ` — you joined through ${referrerName}'s invite` : ''}. Your account now has <strong>7 days of Socion Premium</strong>, starting today. There's nothing to set up and no payment details are needed; when the 7 days are up, the trial simply ends and nothing is charged.</p>
+<p>You can check your plan any time in <a href="https://socion.app/settings" style="color: #1a1a1a;">Settings</a>.</p>
 `)
 }
 
@@ -111,7 +123,7 @@ function emailReferrerRewardEarned(name: string | null, days: number, totalDaysG
 `)
 }
 
-function emailReferrerTierUp(name: string | null, tier: string | null, count: number): string {
+function emailReferrerTierUp(name: string | null, tier: string | null, count: number, footer: string): string {
   const greeting = name ? `Hi ${name},` : 'Hi,'
   const tierLabel = tier ? TIER_LABELS[tier] ?? tier : null
   return emailShell(`
@@ -119,7 +131,7 @@ function emailReferrerTierUp(name: string | null, tier: string | null, count: nu
 <p>${greeting}</p>
 <p>Someone you invited just finished setting up their Socion profile. That's ${count} qualifying ${count === 1 ? 'referral' : 'referrals'} so far.</p>
 <p><a href="https://socion.app/settings" style="display: inline-block; background: #1a1a1a; color: #fff; padding: 10px 20px; border-radius: 4px; text-decoration: none; margin-top: 8px;">See your invite stats</a></p>
-`)
+`, footer)
 }
 
 serve(async (req) => {
@@ -167,7 +179,7 @@ serve(async (req) => {
   if (refereeContact) {
     await sendEmailSafe({
       to: refereeContact.email,
-      subject: 'Welcome to Socion — your 7-day trial is active',
+      subject: 'Your 7-day Socion Premium trial is active',
       html: emailRefereeWelcome(refereeContact.name, referrerContact?.name ?? null),
     })
   }
@@ -185,17 +197,30 @@ serve(async (req) => {
         html: emailReferrerRewardEarned(referrerContact.name, referral.reward_days_granted, referrerRow?.referral_premium_days_granted ?? referral.reward_days_granted),
       })
     } else {
-      const { data: referrerRow } = await supabase
-        .from('users')
-        .select('referral_count_qualified')
-        .eq('id', referral.referrer_id)
-        .maybeSingle()
-      const { data: tier } = await supabase.rpc('referral_tier', { p_user_id: referral.referrer_id })
-      await sendEmailSafe({
-        to: referrerContact.email,
-        subject: 'Another successful referral',
-        html: emailReferrerTierUp(referrerContact.name, tier, referrerRow?.referral_count_qualified ?? 0),
-      })
+      // Nothing changed on their account, so this is non-transactional:
+      // consented members only, and never without a working unsubscribe.
+      const { data: canSend, error: consentErr } = await supabase.rpc('can_send_marketing', { p_email: referrerContact.email })
+      if (consentErr) console.error('can_send_marketing failed:', consentErr.message)
+      if (canSend === true) {
+        try {
+          const footer = await nonTransactionalFooter(referrerContact.email)
+          const headers = await listUnsubscribeHeaders(referrerContact.email)
+          const { data: referrerRow } = await supabase
+            .from('users')
+            .select('referral_count_qualified')
+            .eq('id', referral.referrer_id)
+            .maybeSingle()
+          const { data: tier } = await supabase.rpc('referral_tier', { p_user_id: referral.referrer_id })
+          await sendEmailSafe({
+            to: referrerContact.email,
+            subject: 'Another successful referral',
+            html: emailReferrerTierUp(referrerContact.name, tier, referrerRow?.referral_count_qualified ?? 0, footer),
+            headers,
+          })
+        } catch (err) {
+          console.error('Tier-up email skipped:', (err as Error).message)
+        }
+      }
     }
   }
 

@@ -4,8 +4,14 @@
 // Called daily by pg_cron (see 20260706120000_abandoned_signup_nudge.sql).
 // Finds auth.users older than a threshold with no matching public.users row
 // (i.e. they started signup but never completed ProfileSetup.jsx / createProfile)
-// and sends a single "finish setting up your profile" transactional email via
-// Resend, linking back to /profile/setup.
+// and sends a single "finish setting up your profile" reminder via Resend,
+// linking back to /profile/setup.
+//
+// Classified as non-transactional: it's a nudge, not something the person
+// needs to run an account. So it carries the unsubscribe footer and the
+// List-Unsubscribe / List-Unsubscribe-Post headers (RFC 8058), and
+// get_abandoned_signups() skips anyone in email_suppressions. If the
+// unsubscribe link can't be signed (UNSUBSCRIBE_SECRET unset) nothing is sent.
 //
 // One-time per user: claim_abandoned_signup_nudge() records the send and only
 // lets one (concurrent/retried) invocation actually claim each candidate. On a
@@ -18,6 +24,7 @@
 //
 // Required env vars (shared with other functions):
 //   RESEND_API_KEY
+//   UNSUBSCRIBE_SECRET  (see ../_shared/email.ts)
 // Auto-injected:
 //   SUPABASE_URL
 // Set as a secret (same as the other functions here):
@@ -27,6 +34,7 @@
 //   { "olderThanHours": 24, "newerThanDays": 30, "limit": 200, "dryRun": true }
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0?target=denonext'
+import { listUnsubscribeHeaders, nonTransactionalFooter } from '../_shared/email.ts'
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY  = Deno.env.get('PROJECT_SECRET_KEY')!
@@ -40,7 +48,11 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, content-type, x-cron-secret',
 }
 
-function nudgeEmailHtml(): string {
+// This reminder goes to people who authenticated but never finished a
+// profile, so the shared footer's reason line is tailored to that.
+const NUDGE_REASON = "You're receiving this because you started creating an account at socion.app."
+
+function nudgeEmailHtml(footer: string): string {
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -89,10 +101,7 @@ function nudgeEmailHtml(): string {
         <!-- Footer -->
         <tr>
           <td style="padding:20px 32px;text-align:center">
-            <p style="margin:0;font-size:12px;color:#9a8a6a;font-family:sans-serif;line-height:1.6">
-              Socion · <a href="https://socion.app" style="color:#9a6f38;text-decoration:none">socion.app</a><br>
-              You're getting this because you started creating a Socion account.
-            </p>
+            ${footer}
           </td>
         </tr>
 
@@ -105,6 +114,13 @@ function nudgeEmailHtml(): string {
 
 async function sendNudge(to: string): Promise<boolean> {
   try {
+    // Fail closed: if the unsubscribe link can't be built, don't send.
+    const footer = await nonTransactionalFooter(
+      to,
+      { color: '#9a8a6a', fontFamily: 'sans-serif', align: 'center' },
+      NUDGE_REASON,
+    )
+    const headers = await listUnsubscribeHeaders(to)
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -115,7 +131,8 @@ async function sendNudge(to: string): Promise<boolean> {
         from: RESEND_FROM,
         to: [to],
         subject: 'Finish setting up your Socion profile',
-        html: nudgeEmailHtml(),
+        html: nudgeEmailHtml(footer),
+        headers,
       }),
     })
     if (!res.ok) {
