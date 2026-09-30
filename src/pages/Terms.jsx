@@ -12,9 +12,9 @@ export default function Terms() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 14 June 2026</p>
+          <p style={metaStyle}>Last updated: 30 September 2026</p>
 
-          <p>These terms govern your use of Socion, operated by Spencer Stern, London, UK. By creating an account you agree to these terms. If you do not agree, do not use the service.</p>
+          <p>These terms govern your use of Socion, operated by Spencer Stern, trading as Stern Consulting (sole trader). Unit 110172, PO Box 6945, London, W1A 6US, United Kingdom. By creating an account you agree to these terms. If you do not agree, do not use the service.</p>
 
           <h2>1. Eligibility</h2>
           <p>You must be at least 18 years old to use Socion. By registering, you confirm that you meet this requirement. If we discover a user is under 18, their account will be removed immediately.</p>
@@ -62,7 +62,7 @@ export default function Terms() {
           <p>Nothing in these terms limits our liability for death or personal injury caused by negligence, fraud, or any other liability that cannot be excluded under English law.</p>
 
           <h2>10. Third-party services</h2>
-          <p>Socion uses Supabase for data storage and authentication, Resend for email delivery, Umami for privacy-preserving analytics, Stripe for payment processing, and Anthropic for AI assistant responses. Your use of these services is subject to their respective terms and policies.</p>
+          <p>Socion uses Supabase for data storage and authentication, Resend for service email delivery, MailerLite for Socion update emails (sent only if you opt in), Umami for privacy-preserving analytics, Stripe for payment processing, and Anthropic for AI assistant responses. Your use of these services is subject to their respective terms and policies.</p>
 
           <h2>11. Changes to these terms</h2>
           <p>We may update these terms from time to time. Continued use of Socion after changes are posted constitutes acceptance of the revised terms. The date at the top of this page reflects when these terms were last updated.</p>
