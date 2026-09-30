@@ -93,7 +93,6 @@ export default function ProfileEdit() {
           hide_activity: hideActivity,
           connection_question: connectionQuestion.trim() || null,
           discord_handle: discordHandle.trim() || null,
-          email_notifications: profile.profile_data?.email_notifications ?? true,
         },
         // Type itself is handled separately below (don't allow type change
         // if verified) -- omitting it here leaves the column untouched.
