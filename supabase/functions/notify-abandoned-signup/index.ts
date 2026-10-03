@@ -59,8 +59,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0?target
 // Env: UNSUBSCRIBE_SECRET (secret), SUPABASE_URL (auto-injected),
 //      SITE_URL (optional, defaults to https://socion.app)
 
+// Mirrors EMAIL_IDENTITY in src/config/legal.js, the source of truth for the
+// operator's name and address (edge functions can't import from src/). The
+// email helpers check fails if the two differ.
 const BUSINESS_IDENTITY =
-  'Socion · Stern Consulting · Unit 110172, PO Box 6945, London, W1A 6US, UK'
+  'Socion · Spencer Stern t/a Stern Consulting · Unit 110172, PO Box 6945, London W1A 6US, United Kingdom'
 
 const ACCOUNT_REASON =
   "You're receiving this because you have an account at socion.app."

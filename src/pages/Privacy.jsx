@@ -1,5 +1,6 @@
 import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { OPERATOR_FULL, POSTAL_ADDRESS, CONTACT_EMAIL, ICO_NUMBER } from '../config/legal'
 
 export default function Privacy() {
   usePageMeta('Privacy Policy | Socion™', 'Socion privacy policy — how your data is stored, what is shared with other members, your GDPR rights, and how to delete your account.')
@@ -12,9 +13,12 @@ export default function Privacy() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 30 September 2026</p>
+          <p style={metaStyle}>Last updated: October 2026</p>
 
-          <p>Socion is operated by Spencer Stern, trading as Stern Consulting (sole trader). Unit 110172, PO Box 6945, London, W1A 6US, United Kingdom. Stern Consulting is the data controller for your personal data. This policy explains what personal data we collect, how we use it, and your rights under UK GDPR.</p>
+          <p>This policy explains what personal data we collect, how we use it, and your rights under UK GDPR.</p>
+
+          <h2>Data controller</h2>
+          <p>The data controller for Socion is {OPERATOR_FULL}, {POSTAL_ADDRESS}. Email: <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--accent)' }}>{CONTACT_EMAIL}</a>. Registered with the UK Information Commissioner's Office under registration number {ICO_NUMBER}.</p>
 
           <h2>What we collect</h2>
           <p>When you create an account and use Socion, we collect:</p>
@@ -77,7 +81,7 @@ export default function Privacy() {
           <p>Your data is retained for as long as your account is active. If you delete your account, your profile, messages, matches, and push subscriptions are permanently deleted. Anonymised, aggregated research data may be retained. Consent records and the do-not-email list described under Marketing emails are kept after deletion, so we can show what was agreed and make sure we never email you again. If you delete your account, you are also removed from our email list in MailerLite. If you have unsubscribed from our emails, we keep your email address on a suppression list solely to make sure we never email you again; it isn't used for anything else.</p>
 
           <h2>Your rights</h2>
-          <p>Under UK GDPR you have the right to access, correct, or delete your personal data. You can update your profile at any time via the Profile page. You can permanently delete your account and all associated data directly in the app via Profile → Details → Delete account. For any other data requests, contact <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)' }}>hello@socion.app</a>.</p>
+          <p>Under UK GDPR you have the right to access, correct, or delete your personal data. You can update your profile at any time via the Profile page. You can permanently delete your account and all associated data directly in the app via Profile → Details → Delete account. For any other data requests, contact <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--accent)' }}>{CONTACT_EMAIL}</a>.</p>
 
           <h2>Cookies</h2>
           <p>Socion does not use cookies for tracking or advertising. Supabase Auth uses a session token stored in your browser's local storage to keep you signed in.</p>
@@ -86,7 +90,7 @@ export default function Privacy() {
           <p>If we make material changes to this policy, we will update the date at the top of this page. Continued use of Socion after changes constitutes acceptance.</p>
 
           <h2>Contact</h2>
-          <p>Questions about this policy: <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)' }}>hello@socion.app</a></p>
+          <p>Questions about this policy: <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--accent)' }}>{CONTACT_EMAIL}</a></p>
         </div>
       </section>
     </Layout>

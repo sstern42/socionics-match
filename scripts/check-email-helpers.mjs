@@ -1,8 +1,10 @@
 // Fails if the "email helpers" block differs between the edge functions that
 // carry a copy of it. Each function holds its own copy (rather than importing
 // a shared module) so it can be deployed from the Supabase dashboard editor,
-// which only uploads the function's own folder.
+// which only uploads the function's own folder. It also checks the footer's
+// BUSINESS_IDENTITY line against src/config/legal.js.
 import { readFileSync } from 'node:fs'
+import { EMAIL_IDENTITY } from '../src/config/legal.js'
 
 const FUNCTIONS = ['email-unsubscribe', 'notify-abandoned-signup', 'send-referral-emails', 'stripe-webhook']
 const BEGIN = '// ---- BEGIN email helpers'
@@ -28,4 +30,17 @@ if (differing.length) {
   console.error('Make the same change in every copy.')
   process.exit(1)
 }
-console.log(`Email helpers block identical in ${blocks.length} functions.`)
+
+// The footer identity line must also match the site's legal constants.
+const identity = reference.block.match(/const BUSINESS_IDENTITY =\s*'([^']*)'/)
+if (!identity) {
+  console.error(`${reference.path}: BUSINESS_IDENTITY not found in email helpers block`)
+  process.exit(1)
+}
+if (identity[1] !== EMAIL_IDENTITY) {
+  console.error('BUSINESS_IDENTITY in the email helpers differs from EMAIL_IDENTITY in src/config/legal.js:')
+  console.error(`  helpers: ${identity[1]}`)
+  console.error(`  legal.js: ${EMAIL_IDENTITY}`)
+  process.exit(1)
+}
+console.log(`Email helpers block identical in ${blocks.length} functions; footer matches src/config/legal.js.`)

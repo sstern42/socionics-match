@@ -7,6 +7,7 @@ import { supabase, supabaseUrl, supabaseKey } from '../lib/supabase'
 import { updateProfileData } from '../lib/profile'
 import ReferralPanel from '../components/profile/ReferralPanel'
 import PointsPanel from '../components/profile/PointsPanel'
+import LegalLines from '../components/LegalLines'
 
 const VERIFIED_TYPE_SOURCES = new Set(['paid_verified', 'community_verified'])
 
@@ -269,6 +270,16 @@ export default function Settings() {
           Looking for profile and notification settings? They're under{' '}
           <Link to="/profile/edit" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Profile</Link>.
         </p>
+
+        <div style={{ borderTop: '1px solid var(--border)', marginTop: '2rem', paddingTop: '1.25rem' }}>
+          <p style={{ fontSize: '0.72rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.5rem' }}>Legal</p>
+          <LegalLines />
+          <p style={{ fontSize: '0.72rem', marginTop: '0.4rem' }}>
+            <Link to="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Privacy</Link>
+            {' · '}
+            <Link to="/terms" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Terms</Link>
+          </p>
+        </div>
       </section>
     </Layout>
   )

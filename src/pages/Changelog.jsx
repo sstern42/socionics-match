@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '3 October 2026',
+       label: 'Update',
+       items: [
+         'Privacy policy and terms: both now say clearly who runs Socion, with our postal address and UK Information Commissioner\'s Office registration number. The site footer and Settings show the same details',
+       ],
+     },
+     {
        date: '30 September 2026',
        label: 'New',
        items: [
