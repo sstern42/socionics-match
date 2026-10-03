@@ -4,6 +4,17 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 3 October 2026
+
+### Changed
+- **Legal identity in one place**: new `src/config/legal.js` holds the operator name (Spencer Stern), trading name (Stern Consulting), postal address, country, contact email (`hello@socion.app`) and ICO registration number (ZC239854), plus derived `OPERATOR_FULL` ("Spencer Stern, trading as Stern Consulting"), `OPERATOR_SHORT` ("Spencer Stern t/a Stern Consulting"), `POSTAL_ADDRESS` and `EMAIL_IDENTITY`. The footer, Settings, privacy policy and terms read from it.
+- **Site footer**: now reads "© {year} Spencer Stern t/a Stern Consulting. All rights reserved." with a smaller second line giving the postal address and a `mailto:` contact link (replacing "© Socion.app ... Created by Spencer Stern"). The name keeps the existing link to spencerstern.com and its `spencerstern-click` Umami event. Every page hides the footer at 700px and below, so the same two lines (`LegalLines`) also appear at the bottom of the logged-out mobile menu and in a new "Legal" block at the foot of Settings.
+- **Privacy policy (October 2026)**: new "Data controller" section naming Spencer Stern, trading as Stern Consulting, with address, contact email and ICO registration number ZC239854. The opening paragraph no longer says "Stern Consulting is the data controller" (a trading name, not a legal person). Archived as `docs/policies/privacy-2026-10-03.md`.
+- **Terms of service (October 2026)**: new "Who we are" section (operator, sole trader based in England, address, email) that also defines "we", "us" and "our" as the operator, so the billing, cancellation and refund wording refers to them consistently. Section 4 now has members grant the content licence to "us" rather than to "Socion", which is a service name rather than a legal person. Archived as `docs/policies/terms-2026-10-03.md`.
+- **Resend email footer**: `BUSINESS_IDENTITY` in the shared email helpers is now "Socion · Spencer Stern t/a Stern Consulting · Unit 110172, PO Box 6945, London W1A 6US, United Kingdom" (was "Socion · Stern Consulting · ... London, W1A 6US, UK"). Unsubscribe links and headers are unchanged. `npm run check:email-helpers` now also fails if this line differs from `EMAIL_IDENTITY` in `src/config/legal.js`. Needs redeploying: `email-unsubscribe`, `notify-abandoned-signup`, `send-referral-emails`, `stripe-webhook`.
+
+---
+
 ## 30 September 2026
 
 ### Added

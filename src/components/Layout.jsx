@@ -9,12 +9,14 @@ import { setUnreadBadge } from '../lib/pageTitle'
 import IOSInstallBanner from './IOSInstallBanner'
 import AnnouncementBanner from './AnnouncementBanner'
 import MarketingConsentPrompt from './MarketingConsentPrompt'
+import LegalLines from './LegalLines'
 import NotificationBell from './NotificationBell'
 import { useNotifications } from '../hooks/useNotifications'
 import { createNotification } from '../lib/notifications'
 import { shouldShowCatchup, markCatchupShown, getCatchupSummary } from '../lib/catchup'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
+import { OPERATOR_NAME, TRADING_NAME, POSTAL_ADDRESS, CONTACT_EMAIL } from '../config/legal'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','IEE','SLI']
 
@@ -766,6 +768,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
                   <span style={{ fontSize: '0.82rem', letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--muted)' }}>Theme</span>
                   <ThemeToggle />
                 </div>
+                <LegalLines style={{ borderTop: '1px solid var(--border)', padding: '0.75rem 1.5rem' }} />
               </>
             )}
           </nav>
@@ -782,7 +785,8 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
 
         <footer className={`site-footer${hideFooter ? ' footer-desktop-only' : ''}`}>
           <div>
-            <p>&copy; {new Date().getFullYear()} <a href="https://socion.app" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Socion.app</a>. All rights reserved. Created by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" data-umami-event="spencerstern-click" data-umami-event-source="footer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>Spencer Stern ↗</a></p>
+            <p>&copy; {new Date().getFullYear()} <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" data-umami-event="spencerstern-click" data-umami-event-source="footer" style={{ color: 'var(--muted)', textDecoration: 'none' }}>{OPERATOR_NAME}</a> t/a {TRADING_NAME}. All rights reserved.</p>
+            <p className="site-footer-legal">{POSTAL_ADDRESS} · <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
           </div>
           <div style={{ display: 'flex', gap: '1.1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" data-umami-event="si-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>

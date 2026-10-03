@@ -1,5 +1,6 @@
 import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { OPERATOR_FULL, POSTAL_ADDRESS, CONTACT_EMAIL } from '../config/legal'
 
 export default function Terms() {
   usePageMeta('Terms of Service | Socion™', 'Terms of service for Socion — acceptable use, subscription billing, refund policy, and the rules that keep the community safe and honest.')
@@ -12,9 +13,12 @@ export default function Terms() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: 30 September 2026</p>
+          <p style={metaStyle}>Last updated: October 2026</p>
 
-          <p>These terms govern your use of Socion, operated by Spencer Stern, trading as Stern Consulting (sole trader). Unit 110172, PO Box 6945, London, W1A 6US, United Kingdom. By creating an account you agree to these terms. If you do not agree, do not use the service.</p>
+          <h2>Who we are</h2>
+          <p>Socion (socion.app) is operated by {OPERATOR_FULL}, a sole trader based in England. {POSTAL_ADDRESS}. Email: <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{CONTACT_EMAIL}</a>. In these terms, "we", "us" and "our" mean {OPERATOR_FULL}.</p>
+
+          <p>These terms govern your use of Socion. By creating an account you agree to these terms. If you do not agree, do not use the service.</p>
 
           <h2>1. Eligibility</h2>
           <p>You must be at least 18 years old to use Socion. By registering, you confirm that you meet this requirement. If we discover a user is under 18, their account will be removed immediately.</p>
@@ -36,7 +40,7 @@ export default function Terms() {
           <p>Violation of these rules may result in immediate account suspension or removal without notice.</p>
 
           <h2>4. Content ownership</h2>
-          <p>You retain ownership of the content you post on Socion, including your profile information, bio, and messages. By posting content, you grant Socion a non-exclusive, royalty-free licence to display that content to other users as part of the service.</p>
+          <p>You retain ownership of the content you post on Socion, including your profile information, bio, and messages. By posting content, you grant us a non-exclusive, royalty-free licence to display that content to other users as part of the service.</p>
           <p>You also agree that anonymised, aggregated data derived from your activity (such as feedback ratings on intertype relation matches) may be used for research purposes, as described in our <a href="/privacy" style={{ color: 'var(--accent)', textDecoration: 'none' }}>privacy policy</a>.</p>
 
           <h2>5. Premium subscriptions and billing</h2>
@@ -71,7 +75,7 @@ export default function Terms() {
           <p>These terms are governed by the laws of England and Wales. Any disputes arising under them shall be subject to the exclusive jurisdiction of the courts of England and Wales.</p>
 
           <h2>Contact</h2>
-          <p>Questions about these terms? Contact us at <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@socion.app</a>.</p>
+          <p>Questions about these terms? Contact us at <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{CONTACT_EMAIL}</a>.</p>
         </div>
       </section>
     </Layout>

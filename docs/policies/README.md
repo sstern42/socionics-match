@@ -10,6 +10,8 @@ snapshots of them.
 | [`privacy-2026-09-30.md`](privacy-2026-09-30.md) | Superseded the same day by revision 2, before release |
 | [`privacy-2026-09-30-r2.md`](privacy-2026-09-30-r2.md) | 30 September 2026 |
 | [`terms-2026-09-30.md`](terms-2026-09-30.md) | 30 September 2026 |
+| [`privacy-2026-10-03.md`](privacy-2026-10-03.md) | 3 October 2026 |
+| [`terms-2026-10-03.md`](terms-2026-10-03.md) | 3 October 2026 |
 | [`consent-text-v1.md`](consent-text-v1.md) | 30 September 2026 |
 
 Earlier versions (last updated 14 June 2026) were not archived; they are in
