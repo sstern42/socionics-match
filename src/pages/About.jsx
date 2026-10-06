@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import Layout from '../components/Layout'
 import { supabase } from '../lib/supabase'
 import { usePageMeta } from '../hooks/usePageMeta'
+import { YSWE } from '../data/books'
 
 // ── Constants ─────────────────────────────────────────────────────────
 const AVATAR_URL =
@@ -145,7 +146,18 @@ export default function About() {
               >
                 Socionics Insight
               </a>
-              , the largest English-language Socionics reference, and has studied the theory since 2004.
+              , the largest English-language Socionics reference, and the author of{' '}
+              <a
+                href={YSWE.site}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-umami-event="yswe-click"
+                data-umami-event-source="about"
+                style={{ color: 'var(--text)', textUnderlineOffset: 3 }}
+              >
+                <em>Your Social World Explained</em>
+              </a>
+              . He has studied the theory since 2004.
               His type is ILE-C, verified by Jack Aaron at the World Socionics Society.
             </p>
 

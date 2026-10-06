@@ -24,4 +24,5 @@ export const SMS_BOOKS = {
 export const YSWE = {
   nickname: 'Your Social World Explained',
   url: 'https://amzn.to/4bhGbPx',
+  site: 'https://www.yoursocialworldexplained.com/',
 };
