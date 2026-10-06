@@ -4,6 +4,13 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 6 October 2026
+
+### Added
+- **Links to yoursocialworldexplained.com**: the book now has its own site. The About page bio names Spencer as the author of *Your Social World Explained*, linked to it, and the footer gains a "yoursocialworldexplained.com ↗" link after socionicsinsight.com. Both send a `yswe-click` Umami event with `source` (`about` or `footer`). The URL lives in `YSWE.site` in `src/data/books.js`.
+
+---
+
 ## 3 October 2026
 
 ### Changed

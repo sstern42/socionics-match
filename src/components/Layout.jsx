@@ -17,6 +17,7 @@ import { shouldShowCatchup, markCatchupShown, getCatchupSummary } from '../lib/c
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
 import { getRoomLastVisited } from '../pages/Rooms'
 import { OPERATOR_NAME, TRADING_NAME, POSTAL_ADDRESS, CONTACT_EMAIL } from '../config/legal'
+import { YSWE } from '../data/books'
 
 const TYPES = ['ILE','SEI','ESE','LII','EIE','LSI','SLE','IEI','SEE','ILI','LIE','ESI','LSE','EII','IEE','SLI']
 
@@ -790,6 +791,7 @@ export default function Layout({ children, hideFooter = false, noScroll = false 
           </div>
           <div style={{ display: 'flex', gap: '1.1rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <a href="https://socionicsinsight.com" target="_blank" rel="noopener noreferrer" data-umami-event="si-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>socionicsinsight.com ↗</a>
+            <a href={YSWE.site} target="_blank" rel="noopener noreferrer" data-umami-event="yswe-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>yoursocialworldexplained.com ↗</a>
             <a href="https://github.com/sstern42/socionics-match" target="_blank" rel="noopener noreferrer" data-umami-event="github-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Open source ↗</a>
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" data-umami-event="discord-click" data-umami-event-source="footer" style={{ fontSize: '0.78rem', color: 'var(--muted)', textDecoration: 'none' }}>Discord ↗</a>
             {session && (
