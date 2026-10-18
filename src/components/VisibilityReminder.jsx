@@ -31,7 +31,7 @@ const COPY = {
   both: {
     icon: '🕵️',
     title: "You're anonymous and hiding your activity",
-    body: "You're hidden from the feed by default and ranked lower — most members never see you. Make yourself visible to start showing up.",
+    body: "You're hidden from the feed by default and ranked lower, most members never see you. Make yourself visible to start showing up.",
     cta: 'Make me visible',
   },
   anon: {

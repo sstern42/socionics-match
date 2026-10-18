@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase'
 import { getQuadra } from '../data/relations'
 import SIWebview from '../components/SIWebview'
 import { usePushNotifications } from '../lib/usePushNotifications'
-import { getRoomActiveMembers, ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES } from '../lib/rooms'
+import { getRoomActiveMembers, ACCEPTED_IMAGE_TYPES, MAX_IMAGE_BYTES, markRoomVisited } from '../lib/rooms'
 import { updateProfileData } from '../lib/profile'
 import { formatTime } from '../lib/dateUtils'
 import GifPicker from '../components/GifPicker'
@@ -16,11 +16,8 @@ import { GIF_ENABLED } from '../lib/giphy'
 
 const QUADRA_COLOURS = { Alpha:'#BA7517', Beta:'#791F1F', Gamma:'#0F6E56', Delta:'#185FA5', Socion:'#6B4C9A' }
 const ROOM_TABS = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Socion']
-const ROOM_LAST_VISITED_KEY = 'socion_room_last_visited'
 const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🔥']
 
-export function markRoomVisited() { localStorage.setItem(ROOM_LAST_VISITED_KEY, new Date().toISOString()) }
-export function getRoomLastVisited() { return localStorage.getItem(ROOM_LAST_VISITED_KEY) }
 
 function getSenderName(msg) {
   if (msg.sender?.profile_data?.anonymous) return 'Anonymous'
@@ -133,7 +130,7 @@ function RoomMessage({
         )}
 
         {isBot ? (
-          <span title="Socion Host — an AI conversation starter" style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, color:'var(--accent)', border:'1px solid var(--accent-lt)', padding:'0.1rem 0.4rem', borderRadius:2, background:'rgba(154,111,56,0.06)' }}>
+          <span title="Socion Host, an AI conversation starter" style={{ fontSize:'0.6rem', letterSpacing:'0.08em', textTransform:'uppercase', fontWeight:600, color:'var(--accent)', border:'1px solid var(--accent-lt)', padding:'0.1rem 0.4rem', borderRadius:2, background:'rgba(154,111,56,0.06)' }}>
             Host
           </span>
         ) : (
@@ -328,7 +325,7 @@ const RoomInput = React.memo(function RoomInput({
       <div style={{ borderTop:'1px solid var(--border)', background:'var(--card-bg)', flexShrink:0 }}>
         <div style={{ padding:'0.75rem 1.5rem', display:'flex', alignItems:'center', gap:'0.5rem' }}>
           <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color:'var(--muted)', flexShrink:0 }}><rect x="3" y="6" width="8" height="7" rx="1"/><path d="M5 6V4a2 2 0 0 1 4 0v2"/></svg>
-          <p style={{ fontSize:'0.82rem', color:'var(--muted)', fontStyle:'italic' }}>Viewing {viewingQuadra} room — read only</p>
+          <p style={{ fontSize:'0.82rem', color:'var(--muted)', fontStyle:'italic' }}>Viewing {viewingQuadra} room, read only</p>
         </div>
       </div>
     )
@@ -370,7 +367,7 @@ const RoomInput = React.memo(function RoomInput({
       <div style={{ padding:isMobile?'0.6rem 0.75rem':'1rem 1.5rem' }}>
         {isAnonymous ? (
           <div style={{ display:'flex',alignItems:'center',gap:'0.75rem',padding:'0.75rem 1rem',background:'var(--surface)',borderRadius:4,border:'1px solid var(--border)' }}>
-            <span style={{ fontSize:'0.85rem',color:'var(--muted)' }}>🕵️ Anonymous mode — switch to your profile to chat in the room.</span>
+            <span style={{ fontSize:'0.85rem',color:'var(--muted)' }}>🕵️ Anonymous mode, switch to your profile to chat in the room.</span>
             <Link to="/profile/edit" style={{ fontSize:'0.78rem',color:'var(--accent)',textDecoration:'none',flexShrink:0 }}>Edit profile →</Link>
           </div>
         ) : (
@@ -454,7 +451,7 @@ function RoomSidebar({ quadra, quadraColour, memberCount, isReadOnly, isFounder,
         </div>
         {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>{memberCount} {memberCount===1?'member':'members'}</span>}
         <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.35rem' }}>
-          {quadra==='Socion' ? `${profile?.type} — all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
+          {quadra==='Socion' ? `${profile?.type}, all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type}, viewing as founder` : `${profile?.type}, your quadra room`}
         </p>
         <div style={{ display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'0.35rem', marginTop:'0.6rem' }}>
           {ROOM_TABS.map(q => {
@@ -747,13 +744,13 @@ export default function Rooms() {
       setMessages(prev => prev.map(m => m.id===messageId ? { ...m, content:editText.trim(), edited_at:new Date().toISOString() } : m))
       setEditingId(null); setEditText('')
       window.umami?.track('room-message-edited')
-    } catch { setActionError('Could not save edit — try again.') }
+    } catch { setActionError('Could not save edit, try again.') }
   }
 
   async function handleDeleteConfirm(messageId) {
     setDeleting(true); setActionError(null)
     try { await softDelete(messageId); setDeleteConfirmId(null) }
-    catch { setActionError('Could not delete that message — try again.') }
+    catch { setActionError('Could not delete that message, try again.') }
     finally { setDeleting(false) }
   }
 
@@ -830,7 +827,7 @@ export default function Rooms() {
                 all inside one scroll container so the header can never be clipped off-screen on mobile */}
             <div ref={listRef} style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column' }}>
 
-            {/* Header + active members strip (mobile only — on desktop these live in the sidebar),
+            {/* Header + active members strip (mobile only, on desktop these live in the sidebar),
                 kept together in one sticky wrapper so the online indicator never scrolls out of view */}
             {isMobile && (
             <div style={{ position:'sticky', top:0, zIndex:1 }}>
@@ -842,7 +839,7 @@ export default function Rooms() {
                   {memberCount!=null && <span style={{ fontSize:'0.72rem', color:'var(--muted)', letterSpacing:'0.04em' }}>· {memberCount} {memberCount===1?'member':'members'}</span>}
                 </div>
                 <p style={{ fontSize:'0.72rem', color:'var(--muted)', marginTop:'0.2rem' }}>
-                  {quadra==='Socion' ? `${profile?.type} — all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type} — viewing as founder` : `${profile?.type} — your quadra room`}
+                  {quadra==='Socion' ? `${profile?.type}, all 16 types, one room` : isReadOnly ? `Viewing as ${profile?.type} · read only` : isFounder && viewingQuadra ? `${profile?.type}, viewing as founder` : `${profile?.type}, your quadra room`}
                 </p>
                 <div style={{ display:'flex', gap:'0.35rem', marginTop:'0.45rem', flexWrap:'wrap' }}>
                   {ROOM_TABS.map(q => {
@@ -936,7 +933,7 @@ export default function Rooms() {
               </div>
             )}
 
-            {/* Input area — isolated component so typing doesn't re-render the message list */}
+            {/* Input area, isolated component so typing doesn't re-render the message list */}
             <RoomInput
               onSend={handleSend}
               sending={sending}
@@ -987,7 +984,7 @@ export default function Rooms() {
       {lightboxUrl && (
         <div onClick={() => setLightboxUrl(null)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.88)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
           <img src={lightboxUrl} alt="shared image" crossOrigin="anonymous" style={{ maxWidth:'92vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
-          <button type="button" onClick={() => setLightboxUrl(null)} style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
+          <button type="button" onClick={() => setLightboxUrl(null)} aria-label="Close" style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center' }}>×</button>
         </div>
       )}
 

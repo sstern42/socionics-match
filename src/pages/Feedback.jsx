@@ -144,7 +144,7 @@ export default function Feedback() {
 
           <textarea
             className="input-standalone"
-            placeholder="Optional — anything you'd like to add about the dynamic?"
+            placeholder="Optional, anything you'd like to add about the dynamic?"
             value={comment}
             onChange={e => setComment(e.target.value)}
             rows={3}

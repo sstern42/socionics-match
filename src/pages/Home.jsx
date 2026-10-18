@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
+import { takePostAuthRedirect } from '../lib/postAuthRedirect'
 import Layout from '../components/Layout'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
@@ -12,11 +13,11 @@ import { setBaseTitle } from '../lib/pageTitle'
 const TESTIMONIALS = [
   {
     name: 'Intrion', type: 'ILE', relation: null, gender: 'male', avatar: null,
-    quote: "An innovative experiment and tool in one — real utility, real potential.",
+    quote: "An innovative experiment and tool in one, real utility, real potential.",
   },
   {
     name: 'Lena', type: 'ILE', relation: null, gender: 'female', avatar: null,
-    quote: "Finally a place to connect with people who are as serious about Socionics as you are — and the app shows you the nature of each relation before you even say hello. A refreshing initiative. I hope it helps bring Socionics west.",
+    quote: "Finally a place to connect with people who are as serious about Socionics as you are, and the app shows you the nature of each relation before you even say hello. A refreshing initiative. I hope it helps bring Socionics west.",
   },
   {
     name: 'Memes', type: 'EIE', relation: null, gender: 'female', avatar: null,
@@ -148,7 +149,7 @@ function HomeSwipeDemo({ loggedIn }) {
       <div style={{ maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
         <p style={{ fontSize: '0.78rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 500, marginBottom: '0.4rem' }}>Try it</p>
         <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.25rem' }}>
-          Pick your type — or your best guess — and swipe a few profiles to see the dynamic you'd have with each.
+          Pick your type, or your best guess, and swipe a few profiles to see the dynamic you'd have with each.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.4rem' }}>
           {TYPES.map(t => (
@@ -188,7 +189,7 @@ function HomeSwipeDemo({ loggedIn }) {
         <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.6 }}>
           {loggedIn
             ? `${name} is a demo profile. Head to your feed to swipe real members whose type fits yours.`
-            : `That's the demo — ${name} isn't a real member. Sign up free to meet people whose type actually fits yours.`}
+            : `That's the demo, ${name} isn't a real member. Sign up free to meet people whose type actually fits yours.`}
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
           {loggedIn ? (
@@ -291,7 +292,13 @@ export default function Home() {
       })
   }, [])
 
-  if (session && profile) return <HomeDashboard />
+  if (session && profile) {
+    // OAuth sign-in returns to / rather than /auth, so honour a pending
+    // /auth?redirect=... request here.
+    const pending = takePostAuthRedirect()
+    if (pending) return <Navigate to={pending} replace />
+    return <HomeDashboard />
+  }
 
   return (
     <>
@@ -305,7 +312,7 @@ export default function Home() {
         </h1>
 
         <p className="fade-up-3" style={{ fontSize: 'clamp(1rem,2.2vw,1.2rem)', color: 'var(--muted)', maxWidth: 480, lineHeight: 1.75 }}>
-          Socionics maps 16 named dynamics between every type pair. You choose the dynamic — the app shows you who fits.
+          Socionics maps 16 named dynamics between every type pair. You choose the dynamic, the app shows you who fits.
         </p>
 
         <div className="fade-up-4" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -342,7 +349,7 @@ export default function Home() {
         </p>
       </section>
 
-      {/* THE FEED — moved directly under the hero so the strongest proof isn't buried below the fold */}
+      {/* THE FEED, moved directly under the hero so the strongest proof isn't buried below the fold */}
       <section style={{ padding: '0 2rem 6rem' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>The feed</p>
@@ -350,7 +357,7 @@ export default function Home() {
             Every profile shows <em>your dynamic</em>
           </h2>
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 500, margin: '0 auto 3rem', lineHeight: 1.7 }}>
-            Not just a profile — a named relationship dynamic, computed from your type and theirs. Try it below.
+            Not just a profile, a named relationship dynamic, computed from your type and theirs. Try it below.
           </p>
 
           <HomeSwipeDemo loggedIn={!!(session && profile)} />
@@ -418,17 +425,17 @@ export default function Home() {
         <TestimonialsCarousel />
       </section>
 
-      {/* FEATURE CARDS — trimmed to the four most decision-relevant */}
+      {/* FEATURE CARDS, trimmed to the four most decision-relevant */}
       <section style={{ borderTop: '1px solid var(--border)', padding: '6rem 2rem', background: 'var(--card-bg)' }}>
         <div style={{ maxWidth: 900, margin: '0 auto' }}>
           <p className="eyebrow" style={{ textAlign: 'center', marginBottom: '1rem' }}>What you get</p>
           <h2 style={{ textAlign: 'center', marginBottom: '3.5rem' }}>Built differently<br />from the ground up</h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '2rem' }}>
             {[
-              { title: '🔍 Transparent matching', body: 'Every connection shows the named relation type and its character. No black box — you see exactly why you were matched.' },
+              { title: '🔍 Transparent matching', body: 'Every connection shows the named relation type and its character. No black box, you see exactly why you were matched.' },
               { title: '🎯 You choose the dynamic', body: "Select which of the 16 relation types you want. Dual for deep complementarity. Mirror for intellectual sparring. Your terms, not the algorithm's." },
-              { title: '🤖 Socionics AI', body: "Ask anything about types, relations, or your own dynamics. An AI assistant answers in seconds — and personalizes responses to your type.", link: '/ask' },
-              { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes — and the core is free, always." },
+              { title: '🤖 Socionics AI', body: "Ask anything about types, relations, or your own dynamics. An AI assistant answers in seconds, and personalises responses to your type.", link: '/ask' },
+              { title: '✨ Free to join', body: "No app store. Browser-based and installable as a PWA. Sign up and you're on the feed in minutes, and the core is free, always." },
             ].map(({ title, body, link }) => (
               <div key={title} style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 6, background: 'var(--card-bg)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{title}</h3>

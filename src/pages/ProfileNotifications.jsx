@@ -147,7 +147,7 @@ export default function ProfileNotifications() {
               </label>
             )}
 
-            {/* Room notifications — only shown when push is subscribed */}
+            {/* Room notifications, only shown when push is subscribed */}
             {pushSubscribed && (
               <label
                 style={{
@@ -206,7 +206,7 @@ export default function ProfileNotifications() {
             </button>
           </div>
 
-          {/* Marketing consent — deliberately separate from the service
+          {/* Marketing consent, deliberately separate from the service
               notifications above, with its own immediate save. */}
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div>

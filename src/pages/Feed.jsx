@@ -158,7 +158,7 @@ export default function Feed() {
 
   function handleShare() {
     const url = 'https://socion.app'
-    const text = `Match by Socionics type, not algorithm — ${memberCount ? memberCount + ' members' : 'growing fast'}`
+    const text = `Match by Socionics type, not algorithm, ${memberCount ? memberCount + ' members' : 'growing fast'}`
     window.umami?.track('feed-share-clicked', { method: navigator.share ? 'native' : 'clipboard' })
     if (navigator.share) {
       navigator.share({ title: 'Socion', text, url }).catch(() => {})
@@ -476,7 +476,7 @@ export default function Feed() {
     <Layout noScroll hideFooter>
       <div className="feed-layout" style={{ maxWidth: 1650, margin: '0 auto', width: '100%' }}>
 
-        {/* Desktop-only persistent sidebar — compact profile widget, room for future widgets */}
+        {/* Desktop-only persistent sidebar, compact profile widget, room for future widgets */}
         <aside className="feed-sidebar">
           <MiniProfileCard
             profile={profile}
@@ -532,7 +532,7 @@ export default function Feed() {
         <VisibilityReminder />
 
         {/* Header */}
-        {/* Browse / Swipe toggle — always visible */}
+        {/* Browse / Swipe toggle, always visible */}
         <div className="feed-mode-toggle" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
           {swipeMode && (
             <p style={{ fontSize: '0.75rem', color: 'var(--muted)', letterSpacing: '0.04em' }}>
@@ -576,7 +576,7 @@ export default function Feed() {
           <p className="eyebrow">Your matches</p>
           <div style={{ marginTop: '0.4rem' }}>
             <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem,5vw,3.5rem)' }}>
-              {profile?.type} — <em>finding your dynamic</em>
+              {profile?.type}, <em>finding your dynamic</em>
             </h1>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
@@ -606,7 +606,7 @@ export default function Feed() {
           </p>
           {swipeMode && (
             <p style={{ color: 'var(--muted)', fontSize: '0.82rem', marginTop: '0.25rem' }}>
-              Swipe through profiles — if someone likes you back, you'll be notified. Browse mode visibility is unaffected.
+              Swipe through profiles, if someone likes you back, you'll be notified. Browse mode visibility is unaffected.
             </p>
           )}
           {!isPremium && (
@@ -629,7 +629,7 @@ export default function Feed() {
           </div>
         </div>
 
-        {/* Banners — hidden in mobile swipe mode */}
+        {/* Banners, hidden in mobile swipe mode */}
         <div className="feed-preamble">
 
         {/* Free-tier quadra notice */}
@@ -665,7 +665,7 @@ export default function Feed() {
             }}
           >
             <p style={{ fontSize: '0.82rem', color: 'var(--accent)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>↻</span> new members just joined — refresh your feed
+              <span>↻</span> new members just joined, refresh your feed
             </p>
             <button
               type="button"
@@ -689,7 +689,7 @@ export default function Feed() {
 
         </div>{/* end feed-preamble */}
 
-        {/* SWIPE / BROWSE MODE — keyed so content crossfades on toggle */}
+        {/* SWIPE / BROWSE MODE, keyed so content crossfades on toggle */}
         <div key={swipeMode ? 'swipe' : 'browse'} className="feed-content-enter">
         {swipeMode ? (
           fetching || dataUpdatedAt === 0 ? (
@@ -949,22 +949,22 @@ export default function Feed() {
                       </FeedAd>
                     )}
                     {i === 4 && !dismissedAds.share && (
-                      <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`Socion works better with more types in the pool — ${memberCount ? memberCount + ' members so far,' : 'growing every day,'} but the rarer types are harder to find. If you know someone who's into personality theory, send them the link.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
+                      <FeedAd id="share" eyebrow="Spread the word" headline="Know someone who'd be into this?" body={`Socion works better with more types in the pool, ${memberCount ? memberCount + ' members so far,' : 'growing every day,'} but the rarer types are harder to find. If you know someone who's into personality theory, send them the link.`} ctaLabel={shareState === 'copied' ? '✓ Link copied' : navigator.share ? 'Share Socion →' : 'Copy link'} onClick={handleShare} onDismiss={() => dismissAd('share')} />
                     )}
                     {i === 6 && !isPremium && !dismissedAds.premium && (
-                      <FeedAd id="premium" eyebrow="Socion Premium" headline="Unlock the full experience" body="Filter by any of the 16 relation types, see who viewed your profile, get full compatibility breakdowns, and unlimited AI. $14.99 / year — less than a coffee." ctaLabel="See Premium →" onClick={() => { window.umami?.track('feed-premium-clicked'); navigate('/premium') }} onDismiss={() => dismissAd('premium')} />
+                      <FeedAd id="premium" eyebrow="Socion Premium" headline="Unlock the full experience" body="Filter by any of the 16 relation types, see who viewed your profile, get full compatibility breakdowns, and unlimited AI. $14.99 / year, less than a coffee." ctaLabel="See Premium →" onClick={() => { window.umami?.track('feed-premium-clicked'); navigate('/premium') }} onDismiss={() => dismissAd('premium')} />
                     )}
                     {i === 7 && !dismissedAds['get-typed'] && (
                       <FeedAd id="get-typed" eyebrow="Get typed" headline="Working hypothesis or final answer?" body="Most people spend years second-guessing their type. Socion's typing marketplace connects you with experienced typists who analyse your cognitive functions, rule out lookalikes, and deliver a written report you can build on. Your verified badge updates automatically." ctaLabel="Book a session →" onClick={() => { window.umami?.track('feed-get-typed-clicked'); navigate('/typing') }} onDismiss={() => dismissAd('get-typed')} />
                     )}
                     {i === 9 && !dismissedAds.discord && (
-                      <FeedAd id="discord" eyebrow="Community" headline="The conversation goes deeper on Discord" body="The Socion Discord is where members go beyond profiles — discussing dynamics, debating typings, and asking the questions that don't fit in a bio. Active, free, and worth five seconds to join." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
+                      <FeedAd id="discord" eyebrow="Community" headline="The conversation goes deeper on Discord" body="The Socion Discord is where members go beyond profiles, discussing dynamics, debating typings, and asking the questions that don't fit in a bio. Active, free, and worth five seconds to join." ctaLabel="Join Discord →" onClick={() => { window.umami?.track('feed-discord-clicked'); window.open('https://discord.gg/328KxsDKdr', '_blank', 'noopener,noreferrer') }} onDismiss={() => dismissAd('discord')} />
                     )}
                     {i === 11 && !dismissedAds.ask && (
-                      <FeedAd id="ask" eyebrow="Socionics AI" headline="Ask anything about your type" body="Not sure how a relation actually plays out day-to-day? Curious what your leading function looks like under stress? The Socion AI knows the model inside-out — ask it anything." ctaLabel="Open AI chat →" onClick={() => { window.umami?.track('feed-ask-clicked'); navigate('/ask') }} onDismiss={() => dismissAd('ask')} />
+                      <FeedAd id="ask" eyebrow="Socionics AI" headline="Ask anything about your type" body="Not sure how a relation actually plays out day-to-day? Curious what your leading function looks like under stress? The Socion AI knows the model inside-out, ask it anything." ctaLabel="Open AI chat →" onClick={() => { window.umami?.track('feed-ask-clicked'); navigate('/ask') }} onDismiss={() => dismissAd('ask')} />
                     )}
                     {i === 12 && !dismissedAds['si-type'] && profile?.type && (
-                      <FeedAd id="si-type" eyebrow="Deep dive" headline={`The ${profile.type} — in full`} body={`Your type has a specific cognitive architecture: a leading function, a creative function, a blind spot, and a shadow. The full ${profile.type} profile on Socionics Insight covers all of it — including how others experience you and which dynamics tend to run best.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
+                      <FeedAd id="si-type" eyebrow="Deep dive" headline={`The ${profile.type}, in full`} body={`Your type has a specific cognitive architecture: a leading function, a creative function, a blind spot, and a shadow. The full ${profile.type} profile on Socionics Insight covers all of it, including how others experience you and which dynamics tend to run best.`} ctaLabel={`Read about ${profile.type} →`} onClick={() => { window.umami?.track('feed-si-type-clicked', { type: profile.type }); setWebviewUrl(`https://socionicsinsight.com/types/${profile.type.toLowerCase()}/`) }} onDismiss={() => dismissAd('si-type')} />
                     )}
                     {i === 14 && !dismissedAds.support && (
                       <FeedAd id="support" eyebrow="Support Socion" headline="Keep Socion independent" body="Socion is built and maintained by one person, without investors or ads. The core will always be free. If it's helped you find connections or finally make sense of your dynamics, there are a few ways to help keep it running." ctaLabel="Support Socion →" onClick={() => { window.umami?.track('feed-support-clicked'); navigate('/support') }} onDismiss={() => dismissAd('support')} />
@@ -979,7 +979,7 @@ export default function Feed() {
               {(feedExhausted || !hasMore || (feedTotal !== null && feedTotal - offsetRef.current <= 0)) ? (
                 <div style={{ textAlign: 'center', marginTop: '2.5rem', paddingBottom: '1rem' }}>
                   <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1rem', color: 'var(--muted)' }}>
-                    You've seen everyone — check back as the community grows.
+                    You've seen everyone, check back as the community grows.
                   </p>
                 </div>
               ) : hasMore && (
@@ -1013,7 +1013,7 @@ export default function Feed() {
         </div>{/* end feed-content-enter */}
       </section>
 
-        {/* Desktop-only persistent right rail — only shows once there's room to keep the feed column centred */}
+        {/* Desktop-only persistent right rail, only shows once there's room to keep the feed column centred */}
         <aside className="feed-sidebar-right">
           <FeedRightSidebar isPremium={isPremium} />
         </aside>
@@ -1032,7 +1032,7 @@ export default function Feed() {
         const isAnon = targetProfile.profile_data?.anonymous ?? false
         const targetName = isAnon ? 'Anonymous' : (targetProfile.profile_data?.name ?? targetProfile.type)
         const question = targetProfile.profile_data?.connection_question
-        const label = question || 'Introduce yourself — what brings you to Socion?'
+        const label = question || 'Introduce yourself. What brings you to Socion?'
         const isConnecting = connectingId === targetProfile.id
         return (
           <div

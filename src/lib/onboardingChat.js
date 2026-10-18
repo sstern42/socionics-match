@@ -17,11 +17,11 @@ async function authedPost(path, body) {
   try {
     data = await res.json()
   } catch {
-    throw new Error('Something went wrong — please try again.')
+    throw new Error('Something went wrong, please try again.')
   }
 
   if (!res.ok) {
-    const err = new Error(data.error ?? 'Something went wrong — please try again.')
+    const err = new Error(data.error ?? 'Something went wrong, please try again.')
     err.status = res.status
     throw err
   }

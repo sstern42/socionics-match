@@ -93,7 +93,7 @@ export default function TypingChat() {
 
   usePageMeta(
     'Free Typing Chat | Socion™',
-    'A short, adaptive chat to get a preliminary read on your Socionics type — free, and always visibly preliminary until a paid report confirms it.'
+    'A short, adaptive chat to get a preliminary read on your Socionics type, free, and always visibly preliminary until a paid report confirms it.'
   )
 
   const [screen, setScreen] = useState('intro') // intro | chat | analysing | lean-choice | results | self-select
@@ -268,21 +268,21 @@ export default function TypingChat() {
                 {source === 'signup' ? <>Let's find your <em>type</em></> : <>Try the <em>typing chat</em></>}
               </h1>
               <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.75rem', lineHeight: 1.65, maxWidth: 460 }}>
-                A short, adaptive conversation — no jargon, no forced-choice questions. You'll get a preliminary type read at the end, clearly marked as such until a{' '}
+                A short, adaptive conversation, no jargon, no forced-choice questions. You'll get a preliminary type read at the end, clearly marked as such until a{' '}
                 <a href="/typing" style={{ color: 'var(--accent)', textDecoration: 'none' }}>paid, human-reviewed report</a>{' '}
                 confirms it.
               </p>
               {alreadyVerified && (
                 <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '1rem', lineHeight: 1.6, maxWidth: 440, fontStyle: 'italic' }}>
-                  Your type ({profile.type}) is already confirmed, so this won't change your profile — feel free to try it out of curiosity.
+                  Your type ({profile.type}) is already confirmed, so this won't change your profile, feel free to try it out of curiosity.
                 </p>
               )}
               {sessionsRemaining != null && (
                 <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: '1rem', lineHeight: 1.6 }}>
                   {outOfSessions
-                    ? "You've used all your free chats for today — come back tomorrow, or pick your type below."
+                    ? "You've used all your free chats for today, come back tomorrow, or pick your type below."
                     : `${sessionsRemaining} of ${SESSIONS_PER_DAY_LIMIT} free chats left today`}
-                  {!outOfSessions && ' — kept fair so everyone gets a turn.'}
+                  {!outOfSessions && ', kept fair so everyone gets a turn.'}
                 </p>
               )}
             </div>
@@ -358,7 +358,7 @@ export default function TypingChat() {
               }} aria-label="Send">↑</button>
             </div>
             <p style={{ fontSize: '0.72rem', color: 'var(--muted)', textAlign: 'center', opacity: 0.7, margin: '0.6rem 0 0', lineHeight: 1.5 }}>
-              AI can make mistakes — longer, more detailed answers help it read you more accurately.
+              AI can make mistakes, longer, more detailed answers help it read you more accurately.
             </p>
             <button
               type="button"
@@ -427,7 +427,7 @@ export default function TypingChat() {
               onClick={() => setScreen('self-select')}
               style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.82rem', cursor: 'pointer', textDecoration: 'underline' }}
             >
-              Neither feels right — let me pick my type
+              Neither feels right. Let me pick my type
             </button>
           </div>
         )}
@@ -474,14 +474,14 @@ export default function TypingChat() {
 
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, maxWidth: 440 }}>
               {wasApplied
-                ? 'This is a preliminary read, not a full report — it stays visibly preliminary until a paid typist confirms it.'
-                : `Your confirmed type (${profile?.type}) hasn't changed — this was just a test run, and a chat read can never overwrite a type that's already been confirmed.`}
+                ? 'This is a preliminary read, not a full report, it stays visibly preliminary until a paid typist confirms it.'
+                : `Your confirmed type (${profile?.type}) hasn't changed, this was just a test run, and a chat read can never overwrite a type that's already been confirmed.`}
             </p>
 
             {couponEligible && (
               <div style={{ padding: '1rem 1.25rem', border: '1px solid var(--accent-lt)', borderRadius: 8, background: 'rgba(154,111,56,0.06)', maxWidth: 440 }}>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text)', margin: 0, lineHeight: 1.6 }}>
-                  Thanks for completing the chat — use code <strong style={{ color: 'var(--accent)' }}>{ONBOARDING_COUPON_CODE}</strong> for 25% off your first year of Premium
+                  Thanks for completing the chat, use code <strong style={{ color: 'var(--accent)' }}>{ONBOARDING_COUPON_CODE}</strong> for 25% off your first year of Premium
                   {couponDaysLeft ? ` (expires in ${couponDaysLeft} day${couponDaysLeft === 1 ? '' : 's'}).` : '.'}
                 </p>
               </div>

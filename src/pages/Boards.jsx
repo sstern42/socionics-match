@@ -33,7 +33,7 @@ export default function Boards() {
           Boards
         </h1>
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '2.5rem' }}>
-          Discussions open to everyone — pick a topic and dive in.
+          Discussions open to everyone, pick a topic and dive in.
         </p>
 
         {loading ? (

@@ -39,7 +39,7 @@ export default function Typing() {
 
   usePageMeta(
     'Get Your Socionics Type Confirmed | Socion™',
-    'Get your Socionics type confirmed by a specialist. Written reports and voice sessions available — so every match you make rests on the right type.'
+    'Get your Socionics type confirmed by a specialist. Written reports and voice sessions available, so every match you make rests on the right type.'
   )
 
   if (loading) return null
@@ -58,7 +58,7 @@ export default function Typing() {
           Get <em>typed</em>
         </h1>
         <p style={{ fontSize: '0.92rem', color: 'var(--muted)', lineHeight: 1.75, marginBottom: '1.5rem' }}>
-          Most people mistype themselves, especially early on. A typing report from a specialist gives you a considered, reasoned answer — so every match you make rests on the right type.
+          Most people mistype themselves, especially early on. A typing report from a specialist gives you a considered, reasoned answer, so every match you make rests on the right type.
         </p>
 
         <a
@@ -73,7 +73,7 @@ export default function Typing() {
         >
           <span style={{ fontSize: '0.88rem', color: 'var(--text)' }}>
             {isVerified ? (
-              <>Already typed <strong style={{ fontWeight: 500 }}>{profile.type}</strong>? See how the free chat reads you — it's just a test run, your confirmed type won't change.</>
+              <>Already typed <strong style={{ fontWeight: 500 }}>{profile.type}</strong>? See how the free chat reads you, it's just a test run, your confirmed type won't change.</>
             ) : (
               <>Not sure of your type? <strong style={{ fontWeight: 500 }}>Try our free typing chat</strong> for a preliminary read.</>
             )}
@@ -161,7 +161,7 @@ export default function Typing() {
                   {/* Relation context line */}
                   {profile && relInfo && profile.type !== typist.type && (
                     <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.55, margin: 0 }}>
-                      A {relInfo.name.toLowerCase()} relation's perspective on {profile.type} — {relInfo.description.toLowerCase()}
+                      A {relInfo.name.toLowerCase()} relation's perspective on {profile.type}, {relInfo.description.toLowerCase()}
                     </p>
                   )}
 
@@ -186,7 +186,7 @@ export default function Typing() {
                           "{t.quote}"
                         </p>
                         <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.3rem' }}>
-                          — {t.name}{t.type ? `, ${t.type}` : ''}
+                         , {t.name}{t.type ? `, ${t.type}` : ''}
                         </p>
                       </div>
                     );
@@ -211,7 +211,7 @@ export default function Typing() {
                       </span>
                     )}
                   </div>
-                  {/* Availability — own line with pulse */}
+                  {/* Availability, own line with pulse */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <span style={{
                       width: 7, height: 7, borderRadius: '50%', background: avail.colour,
@@ -286,7 +286,7 @@ export default function Typing() {
       {lightbox && (
         <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
           <img src={lightbox} alt="" style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }} onClick={e => e.stopPropagation()} />
-          <button type="button" onClick={() => setLightbox(null)} style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button type="button" onClick={() => setLightbox(null)} aria-label="Close" style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       )}
     </Layout>

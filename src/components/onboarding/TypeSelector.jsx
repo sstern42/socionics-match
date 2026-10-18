@@ -73,7 +73,7 @@ export default function TypeSelector({
         {selected ? (
           <>
             <p style={{ color: 'var(--muted)', fontSize: '0.88rem' }}>
-              Selected: <strong style={{ color: 'var(--accent)', fontWeight: 500 }}>{selected} — {TYPE_DESCRIPTIONS[selected]}</strong>
+              Selected: <strong style={{ color: 'var(--accent)', fontWeight: 500 }}>{selected}, {TYPE_DESCRIPTIONS[selected]}</strong>
             </p>
             <button
               type="button"

@@ -47,7 +47,7 @@ export default function Terms() {
           <p>Socion offers an optional paid Premium tier. By subscribing you agree to the following:</p>
           <ul>
             <li><strong>Pricing</strong> — Premium is billed annually. The current price is displayed on the Premium page at the time of purchase and may change for future renewals. We will notify you of price changes before your renewal date.</li>
-            <li><strong>Billing</strong> — Payments are processed by Stripe. Your subscription renews automatically each year unless cancelled. You can manage or cancel your subscription at any time via Profile → Subscription.</li>
+            <li><strong>Billing</strong> — Payments are processed by Stripe. Your subscription renews automatically each year unless cancelled. You can manage or cancel your subscription at any time from Settings.</li>
             <li><strong>Refunds</strong> — We do not offer refunds for partial billing periods. If you cancel, your Premium access continues until the end of the current billing period.</li>
             <li><strong>Founding Member status</strong> — Users who joined during the founding period receive Premium access free for life as a thank-you for early support. This status is non-transferable and tied to the original account.</li>
           </ul>

@@ -546,7 +546,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
         setConversationCostUsd(prev => prev + costUsd)
       }
       if (hitMaxTokens) {
-        setError('Response was cut off — ask me to continue or try a more specific question.')
+        setError('Response was cut off, ask me to continue or try a more specific question.')
         return
       }
     } catch (err) {
@@ -632,7 +632,7 @@ export default function SocionicsChat({ userType = null, userId = null, isPremiu
           <div style={{ textAlign: 'center', paddingTop: 32 }}>
             <div style={{ fontSize: 28, marginBottom: 8, color: 'var(--accent)' }}>✦</div>
             <p style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 24, lineHeight: 1.6 }}>
-              Ask anything about Socionics — types, relations, compatibility, Model A.
+              Ask anything about Socionics, types, relations, compatibility, Model A.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 380, margin: '0 auto' }}>
               {chips.map(q => (

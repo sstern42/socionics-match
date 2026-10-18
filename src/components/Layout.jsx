@@ -15,7 +15,7 @@ import { useNotifications } from '../hooks/useNotifications'
 import { createNotification } from '../lib/notifications'
 import { shouldShowCatchup, markCatchupShown, getCatchupSummary } from '../lib/catchup'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../pages/Changelog'
-import { getRoomLastVisited } from '../pages/Rooms'
+import { getRoomLastVisited } from '../lib/rooms'
 import { OPERATOR_NAME, TRADING_NAME, POSTAL_ADDRESS, CONTACT_EMAIL } from '../config/legal'
 import { YSWE } from '../data/books'
 

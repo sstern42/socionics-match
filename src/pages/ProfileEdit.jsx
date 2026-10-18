@@ -153,7 +153,7 @@ export default function ProfileEdit() {
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession()
       const token = currentSession?.access_token
-      if (!token) throw new Error('No session token — please sign in again')
+      if (!token) throw new Error('No session token, please sign in again')
       const url = `${supabaseUrl}/functions/v1/delete-account`
       const res = await fetch(url, {
         method: 'POST',
@@ -278,25 +278,25 @@ export default function ProfileEdit() {
               <input
                 className="input-standalone"
                 type="text"
-                placeholder="City (optional) — e.g. London, not Greater London"
+                placeholder="City (optional), e.g. London, not Greater London"
                 value={city}
                 onChange={e => setCity(e.target.value)}
                 style={{ fontFamily: 'var(--sans)' }}
               />
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                Helps others know whether meeting up is realistic. Only your city is shown — never a postcode.
+                Helps others know whether meeting up is realistic. Only your city is shown, never a postcode.
               </p>
             </div>
             <div>
               <textarea className="input-standalone" placeholder="A short bio (optional)" value={bio} onChange={e => setBio(e.target.value)} rows={4} style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
               <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                Visible to other users even in anonymous mode — keep it vague if you prefer privacy.
+                Visible to other users even in anonymous mode, keep it vague if you prefer privacy.
               </p>
             </div>
             <div>
               <textarea
                 className="input-standalone"
-                placeholder={`Connection question (optional) — shown to people before they connect with you, e.g. "What's a book that changed how you see the world?"`}
+                placeholder={`Connection question (optional), shown to people before they connect with you, e.g. "What's a book that changed how you see the world?"`}
                 value={connectionQuestion}
                 onChange={e => setConnectionQuestion(e.target.value.slice(0, 120))}
                 rows={2}
@@ -312,7 +312,7 @@ export default function ProfileEdit() {
               <input
                 className="input-standalone"
                 type="text"
-                placeholder="Discord username (optional) — e.g. yourname or yourname#1234"
+                placeholder="Discord username (optional), e.g. yourname or yourname#1234"
                 value={discordHandle}
                 onChange={e => setDiscordHandle(e.target.value.slice(0, 100))}
                 style={{ fontFamily: 'var(--sans)' }}
@@ -340,7 +340,7 @@ export default function ProfileEdit() {
               </div>
             </label>
 
-            {/* Type field — locked if verified */}
+            {/* Type field, locked if verified */}
             <div>
               {isVerified ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.65rem 0.75rem', border: '1px solid var(--border)', borderRadius: 3, background: 'var(--surface)' }}>
@@ -374,7 +374,7 @@ export default function ProfileEdit() {
 
           {error && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{error}</p>}
 
-          {/* Blocking reasons — shown only when something is preventing save */}
+          {/* Blocking reasons, shown only when something is preventing save */}
           {!saving && blockingReasons.length > 0 && (
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'center', lineHeight: 1.5 }}>
               To save, please add: {blockingReasons.join(', ')}.

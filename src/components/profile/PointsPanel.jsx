@@ -107,7 +107,7 @@ export default function PointsPanel({ profile }) {
           <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingLeft: '1.1rem', margin: 0 }}>
             {leaderboard.map((row, i) => (
               <li key={i} style={{ fontSize: '0.82rem', color: 'var(--text)' }}>
-                {row.display_name || 'A Socion member'} — {row.points_total.toLocaleString()}
+                {row.display_name || 'A Socion member'}, {row.points_total.toLocaleString()}
               </li>
             ))}
           </ol>

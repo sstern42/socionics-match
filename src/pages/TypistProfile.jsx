@@ -143,7 +143,7 @@ export default function TypistProfile() {
         {/* Relation context line */}
         {profile && relInfo && profile.type !== typist.type && (
           <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-            A {relInfo.name.toLowerCase()} relation's perspective on {profile.type} — {relInfo.description.toLowerCase()}
+            A {relInfo.name.toLowerCase()} relation's perspective on {profile.type}, {relInfo.description.toLowerCase()}
           </p>
         )}
 
@@ -182,7 +182,7 @@ export default function TypistProfile() {
           ))}
         </div>
 
-        {/* What you get — only shown when populated */}
+        {/* What you get, only shown when populated */}
         {typist.whatYouGet && typist.whatYouGet.length > 0 && (
           <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '1.5rem', marginBottom: '2.5rem', background: 'var(--card-bg)' }}>
             <p style={{ fontSize: '0.72rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500, marginBottom: '1rem' }}>
@@ -208,7 +208,7 @@ export default function TypistProfile() {
               "{t.quote}"
             </p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
-              — {t.name}{t.type ? `, ${t.type}` : ''}
+             , {t.name}{t.type ? `, ${t.type}` : ''}
             </p>
           </div>
         ))}
@@ -308,7 +308,7 @@ export default function TypistProfile() {
             <Link to={`/auth?redirect=/typing/${typist.slug}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>
               Create a free Socion account
             </Link>
-            {' '}to book — takes under a minute.
+            {' '}to book, takes under a minute.
           </p>
         )}
 
@@ -328,7 +328,7 @@ export default function TypistProfile() {
           </div>
         )}
 
-        {/* Payment note — only shown when signed in and booking is ready */}
+        {/* Payment note, only shown when signed in and booking is ready */}
         {session && bookingReady && typist.paymentNote && (
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.65, marginBottom: '2.5rem' }}>
             {typist.paymentNote}

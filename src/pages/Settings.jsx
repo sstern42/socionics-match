@@ -77,7 +77,7 @@ export default function Settings() {
       : profile?.plan_status === 'past_due'
         ? 'Premium (payment due)'
         : onReferralTrial
-          ? `Premium trial — ${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left`
+          ? `Premium trial, ${trialDaysLeft} ${trialDaysLeft === 1 ? 'day' : 'days'} left`
           : 'Free'
 
   async function handleManage() {
@@ -154,7 +154,7 @@ export default function Settings() {
               )}
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
                 {isPastDue
-                  ? 'Your access stays on in the meantime — manage your subscription or update your card below.'
+                  ? 'Your access stays on in the meantime, manage your subscription or update your card below.'
                   : 'Manage your subscription, update your payment method, or view invoices.'}
               </p>
               <button type="button" className="btn-primary" onClick={handleManage} disabled={busy} style={{ alignSelf: 'flex-start', opacity: busy ? 0.6 : 1 }}>
@@ -166,7 +166,7 @@ export default function Settings() {
           {onReferralTrial && (
             <>
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                You're on a Premium trial from a referral — unlimited connections and full compatibility breakdowns until it ends. Subscribe to keep Premium afterwards.
+                You're on a Premium trial from a referral, unlimited connections and full compatibility breakdowns until it ends. Subscribe to keep Premium afterwards.
               </p>
               <Link to="/premium" className="btn-primary" style={{ alignSelf: 'flex-start', textDecoration: 'none' }}>
                 Upgrade to Premium
@@ -177,7 +177,7 @@ export default function Settings() {
           {!isPremium && (
             <>
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.6 }}>
-                You're on the free tier — 3 connections and same-quadra matches.
+                You're on the free tier, 3 connections and same-quadra matches.
               </p>
               <Link to="/premium" className="btn-primary" style={{ alignSelf: 'flex-start', textDecoration: 'none' }}>
                 Upgrade to Premium
@@ -197,7 +197,7 @@ export default function Settings() {
             {!VERIFIED_TYPE_SOURCES.has(profile.type_source) && (
               <a
                 href="/typing"
-                title="Not yet confirmed by a specialist — get a written report to verify it"
+                title="Not yet confirmed by a specialist, get a written report to verify it"
                 style={{ fontSize: '0.7rem', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--accent)', border: '1px solid var(--accent-lt)', padding: '0.25rem 0.6rem', borderRadius: 3, flexShrink: 0, textDecoration: 'none' }}
               >
                 Preliminary

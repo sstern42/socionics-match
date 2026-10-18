@@ -37,7 +37,7 @@ const DIFFERENTIATORS = [
   },
   {
     title: 'User agency',
-    desc:  'Choose the specific dynamic you want — Dual, Mirror, Activity, any of the 16 — rather than delegating that choice to an algorithm.',
+    desc:  'Choose the specific dynamic you want, Dual, Mirror, Activity, any of the 16, rather than delegating that choice to an algorithm.',
   },
   {
     title: 'Falsifiable',
@@ -73,7 +73,7 @@ const h2 = {
 export default function About() {
   const [avatarOk, setAvatarOk] = useState(true)
 
-  usePageMeta('How Socionics Matching Works | Socion™', 'Socion matches you by Socionics type — 16 types, 16 named relation dynamics, a published matching matrix, and no black-box algorithm.')
+  usePageMeta('How Socionics Matching Works | Socion™', 'Socion matches you by Socionics type, 16 types, 16 named relation dynamics, a published matching matrix, and no black-box algorithm.')
 
   const { data: statsData } = useQuery({
     queryKey: ['public-stats'],
@@ -134,7 +134,7 @@ export default function About() {
 
           <div style={{ flex: 1 }}>
             <p style={body}>
-              Socion was built by Spencer Stern — solo, from scratch, in early 2026. Spencer is the
+              Socion was built by Spencer Stern, solo, from scratch, in early 2026. Spencer is the
               founder of{' '}
               <a
                 href="https://socionicsinsight.com"
@@ -162,7 +162,7 @@ export default function About() {
             </p>
 
             <p style={{ ...body, marginBottom: 0 }}>
-              Socion exists because the theory deserves an honest empirical test at scale — and because
+              Socion exists because the theory deserves an honest empirical test at scale, and because
               every matching product on the market is a black box optimising for engagement rather than
               compatibility. The matching logic here is the published intertype relations matrix. You can
               inspect it, challenge it, and watch it play out.
@@ -177,8 +177,8 @@ export default function About() {
 
         <p style={body}>
           Socionics is a personality framework developed in the 1970s by Lithuanian researcher Aushra
-          Augusta, built on Jungian foundations. It defines 16 personality types and — unlike MBTI or
-          the Big Five — maps the specific relationship dynamic between every possible pair. The unit of
+          Augusta, built on Jungian foundations. It defines 16 personality types and, unlike MBTI or
+          the Big Five, maps the specific relationship dynamic between every possible pair. The unit of
           analysis is the dyad, not the individual.
         </p>
 
@@ -226,7 +226,7 @@ export default function About() {
         <h2 style={h2}>The 16 intertype relations</h2>
 
         <p style={body}>
-          Every pair of types produces one of 16 named relationship dynamics — not just compatible or
+          Every pair of types produces one of 16 named relationship dynamics, not just compatible or
           incompatible, but named, characterised, with predictable qualities. A Dual pairing creates
           natural complementarity. A Mirror pairing stimulates but can sting. A Conflict pairing drains
           both sides regardless of goodwill or effort.
@@ -235,7 +235,7 @@ export default function About() {
         <p style={{ ...body, marginBottom: '1.25rem' }}>
           These dynamics are not specific to romance. A Dual is a Dual whether you are dating, building
           a company, or making a friend. Socion lets you filter by the specific dynamic you are looking
-          for — not just a demographic.
+          for, not just a demographic.
         </p>
 
         {/* Relations grid */}
@@ -321,7 +321,7 @@ export default function About() {
 
         {/* Open source */}
         <p style={{ ...body, marginBottom: '0.75rem' }}>
-          The codebase is open source — the matching logic is auditable by anyone. Community trust through
+          The codebase is open source, the matching logic is auditable by anyone. Community trust through
           transparency, not a proprietary black box.
         </p>
 

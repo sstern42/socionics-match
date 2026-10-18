@@ -12,6 +12,18 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 - **Mutual-match modal relation**: after a right swipe that completed a match, the modal named the relation from your side (your role) while the card you had just swiped, the feed and messages all show the other person's role toward you. The modal now matches the rest of the UI; the value stored on `swipes.relation_type` is unchanged.
 - **Dynamics tab asymmetric buckets**: `matches.relation_type` is written from whichever side created the match, so rows where you are `user_a` were sometimes bucketed by your role and sometimes by theirs. The tab now always derives the relation from the two types.
 - Copy: "hetroverted" typo; Conflict is "all four Jungian dichotomies flipped", not "every dichotomy" (conflictors share 7 of the 15 Reinin dichotomies); Benefactor description now matches socionics-core.
+- **Post-sign-in redirect**: `/auth?redirect=/typing/:slug` (linked from typist pages) was ignored; Auth always went to `/`. The path is remembered in sessionStorage (`src/lib/postAuthRedirect.js`, same-origin paths only) and consumed by Auth after OTP, or by Home after the OAuth round trip, which lands on `/`.
+- **Conversation initial load**: `getMessages()` had no `.catch`, so a failed load left the thread on its spinner with an unhandled rejection. UserProfile's fetch likewise ignored `error`.
+- **`NotificationPrompt`**: `useState` moved above the effect that calls its setter.
+- **Terms**: section 5 pointed to "Profile → Subscription", a tab that does not exist; subscriptions are managed from Settings. Archived as `docs/policies/terms-2026-10-18.md`. Help's "How do I upgrade" answer said the same.
+- **UK spellings** in the changelog, dashboard copy and Admin ("personalised", "summarise", "coloured", "dismissible").
+
+### Changed
+- **Em dashes removed from copy**: 655 replaced across `src/` and `index.html` (Changelog bullet labels become "Label: text", mid-sentence dashes become commas, placeholder cells use an en dash). `Privacy.jsx` and `Terms.jsx` are left as they are because any wording change needs a new dated archive; they are the only two files with a non-zero allowance in the new `scripts/em-dash-baseline.json`. `npm run check:em-dashes` (in CI) fails if any file's count rises; `--update` only lowers the baseline.
+- **Canonical URL**: `index.html` has `<link rel="canonical">` and `usePageMeta` now keeps it, `og:url` and `twitter:url` in step with the route, path only (query strings such as `?src=` and `?room=` no longer leak into share URLs).
+- **Fonts**: Google Fonts moved from a blocking `@import` at the top of `index.css` to `preconnect` plus `<link rel="stylesheet">` in `index.html`.
+- **Focus styles**: a global `:focus-visible` outline for links, buttons and fields; several inputs set `outline: none`. Photo-viewer close buttons gain `aria-label="Close"`.
+- **Rooms chunk**: `markRoomVisited`/`getRoomLastVisited` moved from `pages/Rooms.jsx` to `lib/rooms.js`. Layout and HomeDashboard imported them from the page, which pulled the whole Rooms page into the shared Layout chunk (163 KB → 110 KB; Rooms is now its own 48 KB lazy chunk).
 
 ### Added
 - **`npm run check:core-data`**, run in CI: verifies `TYPES`, all 256 `MATRIX` cells, quadras, the 16 Model A stacks, the Reinin table, book nicknames and the two pair lists in the `chat-socionics` prompt against `socionics-core` (new devDependency, pinned 1.5.0), so a direction error like the above fails the build.

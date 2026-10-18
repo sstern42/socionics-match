@@ -183,7 +183,7 @@ export default function BoardDetail() {
           <p style={{ color: '#c0392b', fontSize: '0.85rem' }}>{error}</p>
         ) : posts.length === 0 ? (
           <p style={{ fontFamily: 'var(--serif)', fontStyle: 'italic', fontSize: '1.1rem', color: 'var(--muted)', textAlign: 'center', padding: '4rem 0' }}>
-            No posts yet — be the first.
+            No posts yet, be the first.
           </p>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>

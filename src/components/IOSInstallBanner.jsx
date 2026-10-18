@@ -47,7 +47,7 @@ export default function IOSInstallBanner() {
         <line x1="9" y1="1" x2="9" y2="11"/>
       </svg>
       <span>
-        Install Socion — tap <strong style={{ color: 'var(--accent)' }}>Share</strong> then <strong style={{ color: 'var(--accent)' }}>Add to Home Screen</strong>
+        Install Socion, tap <strong style={{ color: 'var(--accent)' }}>Share</strong> then <strong style={{ color: 'var(--accent)' }}>Add to Home Screen</strong>
       </span>
       <button
         onClick={dismiss}

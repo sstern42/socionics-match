@@ -211,17 +211,17 @@ export default function DynamicsTab({ userId, myType, isPremium }) {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {r.ratingsGiven.length >= 1
                   ? <RatingBar value={r.avgGiven} globalAvg={r.globalAvg} colour={colour} />
-                  : <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>—</span>
+                  : <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>, </span>
                 }
               </div>
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 {r.ratingsRcvd.length >= 1
                   ? <RatingBar value={r.avgReceived} globalAvg={null} colour={colour} />
-                  : <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>—</span>
+                  : <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>, </span>
                 }
               </div>
               <span style={{ fontSize: '0.78rem', color: 'var(--muted)', textAlign: 'right' }}>
-                {r.totalMessages > 0 ? r.totalMessages.toLocaleString() : '—'}
+                {r.totalMessages > 0 ? r.totalMessages.toLocaleString() : '–'}
               </span>
             </div>
           )
@@ -234,7 +234,7 @@ export default function DynamicsTab({ userId, myType, isPremium }) {
         {!hasAnyRatings && ' Rate your connections to unlock rating comparisons.'}
       </p>
       <p style={{ fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.65, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-        Ratings are self-reported and the sample is small — treat patterns as directional, not definitive. Site averages update as more connections are rated.
+        Ratings are self-reported and the sample is small, treat patterns as directional, not definitive. Site averages update as more connections are rated.
       </p>
     </div>
   )

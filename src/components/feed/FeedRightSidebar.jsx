@@ -24,7 +24,7 @@ function StatRow({ label, value }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', padding: '0.2rem 0' }}>
       <span style={{ color: 'var(--muted)' }}>{label}</span>
-      <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{value ?? '—'}</span>
+      <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{value ?? '–'}</span>
     </div>
   )
 }

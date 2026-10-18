@@ -8,7 +8,7 @@ export default function EntryChoice({ onKnowType, onFindType }) {
         </h1>
         <p className="fade-up-3" style={{ color: 'var(--muted)', maxWidth: 460, margin: '1.25rem auto 0' }}>
           If you already know your type from the community, skip straight to it.
-          Otherwise, give us a starting guess — you'll get a real read from a
+          Otherwise, give us a starting guess, you'll get a real read from a
           short typing chat right after you sign up.
         </p>
       </div>

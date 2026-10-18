@@ -8,7 +8,7 @@ export function isDuplicateNameError(err) {
   return err?.code === '23505' && /display_name_taken/.test(err?.message ?? '')
 }
 
-export const DUPLICATE_NAME_MESSAGE = 'That display name is already taken — please choose another.'
+export const DUPLICATE_NAME_MESSAGE = 'That display name is already taken, please choose another.'
 
 // "Complete" mirrors the Feed's existing "With photos" filter (avatar_url
 // presence) rather than inventing a separate notion of what counts as a

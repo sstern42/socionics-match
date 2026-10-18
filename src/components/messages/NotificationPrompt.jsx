@@ -4,6 +4,8 @@ import { usePushNotifications } from '../../lib/usePushNotifications'
 export default function NotificationPrompt({ userId }) {
   const { supported, permission, subscribed, subscribe } = usePushNotifications(userId)
 
+  const [localSubscribed, setLocalSubscribed] = useState(false)
+
   useEffect(() => {
     if (!supported) return
     function recheck() {
@@ -17,7 +19,6 @@ export default function NotificationPrompt({ userId }) {
     return () => window.removeEventListener('push-subscribed', recheck)
   }, [supported])
 
-  const [localSubscribed, setLocalSubscribed] = useState(false)
 
   if (!supported || permission === 'denied' || subscribed || localSubscribed) return null
 

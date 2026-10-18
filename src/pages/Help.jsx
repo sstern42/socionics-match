@@ -10,7 +10,7 @@ const FAQS = [
     items: [
       {
         q: "What if I don't know my type?",
-        a: "No problem — Socion includes a short questionnaire that will suggest your most likely type. It's not perfect, but it's a good starting point. You can always change your type later as you learn more about Socionics.",
+        a: "No problem, Socion includes a short questionnaire that will suggest your most likely type. It's not perfect, but it's a good starting point. You can always change your type later as you learn more about Socionics.",
       },
       {
         q: 'Can I change my type after signing up?',
@@ -18,11 +18,11 @@ const FAQS = [
       },
       {
         q: 'How accurate is the typing questionnaire?',
-        a: "It's a reasonable first approximation — better than most online tests. That said, Socionics typing is genuinely difficult and self-report has limits. Treat the result as a starting point rather than a definitive answer.",
+        a: "It's a reasonable first approximation, better than most online tests. That said, Socionics typing is genuinely difficult and self-report has limits. Treat the result as a starting point rather than a definitive answer.",
       },
       {
         q: "What's the difference between Socionics and MBTI?",
-        a: "They share the same 16-type structure and Jungian roots, but Socionics is primarily a theory of relationships rather than individual traits. The type names differ slightly, and crucially, Socionics maps a specific named dynamic between every possible pair of types. MBTI doesn't do this. The two systems also differ on how some types are defined — introverted types in particular don't map cleanly between the two.",
+        a: "They share the same 16-type structure and Jungian roots, but Socionics is primarily a theory of relationships rather than individual traits. The type names differ slightly, and crucially, Socionics maps a specific named dynamic between every possible pair of types. MBTI doesn't do this. The two systems also differ on how some types are defined, introverted types in particular don't map cleanly between the two.",
       },
     ],
   },
@@ -31,11 +31,11 @@ const FAQS = [
     items: [
       {
         q: 'What is the Get Typed service?',
-        a: 'Get Typed is a marketplace of Socionics typists — each with their own method, pricing, and availability. You choose a typist, pay securely via Stripe, and receive a considered read on your type with your Socion profile updated to match.',
+        a: 'Get Typed is a marketplace of Socionics typists, each with their own method, pricing, and availability. You choose a typist, pay securely via Stripe, and receive a considered read on your type with your Socion profile updated to match.',
       },
       {
         q: 'How does it work?',
-        a: 'Browse the typists on the Get Typed page and choose one that suits you. Each typist has their own method — some work via a written questionnaire, others via voice call on Discord. After payment you are taken through their process, and your report or session outcome is delivered within the timeframe they specify.',
+        a: 'Browse the typists on the Get Typed page and choose one that suits you. Each typist has their own method, some work via a written questionnaire, others via voice call on Discord. After payment you are taken through their process, and your report or session outcome is delivered within the timeframe they specify.',
       },
       {
         q: 'How much does it cost?',
@@ -43,11 +43,11 @@ const FAQS = [
       },
       {
         q: 'How long does the questionnaire take?',
-        a: "For written report typists, most people take 20–30 minutes. There are twelve questions and you answer in your own words — two or three honest sentences each is plenty. You can take as long as you like; there's no timer. Voice-based typists will discuss their session format on their profile page.",
+        a: "For written report typists, most people take 20–30 minutes. There are twelve questions and you answer in your own words, two or three honest sentences each is plenty. You can take as long as you like; there's no timer. Voice-based typists will discuss their session format on their profile page.",
       },
       {
         q: 'How is the report delivered?',
-        a: "Written reports are delivered by email, typically running 3,500–5,000 words and covering your type, the reasoning behind it, and what it means for the relations that fit you. Voice-based typists may deliver a summary separately — check their profile for details.",
+        a: "Written reports are delivered by email, typically running 3,500–5,000 words and covering your type, the reasoning behind it, and what it means for the relations that fit you. Voice-based typists may deliver a summary separately, check their profile for details.",
       },
       {
         q: 'Is fluent English required?',
@@ -59,7 +59,7 @@ const FAQS = [
       },
       {
         q: 'What if my report says my type is uncertain?',
-        a: "If the evidence is genuinely split, the report says so honestly — naming the most likely candidates and explaining what distinguishes them — rather than forcing a single answer. A frank 'between these two' is more useful than false certainty, and you're welcome to reply with anything that might resolve it.",
+        a: "If the evidence is genuinely split, the report says so honestly, naming the most likely candidates and explaining what distinguishes them, rather than forcing a single answer. A frank 'between these two' is more useful than false certainty, and you're welcome to reply with anything that might resolve it.",
       },
     ],
   },
@@ -68,7 +68,7 @@ const FAQS = [
     items: [
       {
         q: 'How does the matching work?',
-        a: "Socion matches you based on your Socionics type and the relation types you're open to. Every pair of types produces one of 16 named dynamics — Dual, Mirror, Activity, Conflict, and so on. You choose which dynamics you want to connect with, and Socion surfaces people whose type produces that dynamic with yours.",
+        a: "Socion matches you based on your Socionics type and the relation types you're open to. Every pair of types produces one of 16 named dynamics, Dual, Mirror, Activity, Conflict, and so on. You choose which dynamics you want to connect with, and Socion surfaces people whose type produces that dynamic with yours.",
       },
       {
         q: "Why can I see some types but not others in my feed?",
@@ -80,7 +80,7 @@ const FAQS = [
       },
       {
         q: 'Can I disconnect from someone?',
-        a: "Yes. Open the conversation, tap the ··· menu, and choose Disconnect. This ends the connection for both of you and frees up a connection slot — your message history isn't deleted, but neither of you can send new messages unless you reconnect. If you want to stop someone contacting you entirely, use Block instead, which is permanent.",
+        a: "Yes. Open the conversation, tap the ··· menu, and choose Disconnect. This ends the connection for both of you and frees up a connection slot, your message history isn't deleted, but neither of you can send new messages unless you reconnect. If you want to stop someone contacting you entirely, use Block instead, which is permanent.",
       },
     ],
   },
@@ -89,15 +89,15 @@ const FAQS = [
     items: [
       {
         q: 'What do the relation types mean?',
-        a: "Each of the 16 relation types has a distinct character — some are complementary, some stimulating, some challenging. Tap the relation badge on any profile card to read about it, or browse the full library at socionicsinsight.com/relations/.",
+        a: "Each of the 16 relation types has a distinct character, some are complementary, some stimulating, some challenging. Tap the relation badge on any profile card to read about it, or browse the full library at socionicsinsight.com/relations/.",
       },
       {
         q: 'Why would I want to connect with a Conflict type?',
-        a: "Some people are curious about challenging dynamics, or want to understand them better. Socion doesn't tell you who to connect with — it gives you the information and lets you decide. Some find value in every relation type depending on context and purpose.",
+        a: "Some people are curious about challenging dynamics, or want to understand them better. Socion doesn't tell you who to connect with, it gives you the information and lets you decide. Some find value in every relation type depending on context and purpose.",
       },
       {
         q: 'Can I filter by specific relation types?',
-        a: "Yes — go to Profile → Details and select the relation types you're open to. Premium members can filter across all 16 relation types. Free members see same-quadra matches by default.",
+        a: "Yes, go to Profile → Details and select the relation types you're open to. Premium members can filter across all 16 relation types. Free members see same-quadra matches by default.",
       },
     ],
   },
@@ -106,15 +106,15 @@ const FAQS = [
     items: [
       {
         q: 'What is the Socionics AI assistant?',
-        a: "The AI assistant is a built-in Socionics tutor personalised to your type. Ask it anything — what your function stack means, how a specific relation dynamic plays out, what Model A says about your type, how your quadra shapes your values, or how to interpret a connection you've made. It lives at socion.app/ask and is available to all signed-in members.",
+        a: "The AI assistant is a built-in Socionics tutor personalised to your type. Ask it anything, what your function stack means, how a specific relation dynamic plays out, what Model A says about your type, how your quadra shapes your values, or how to interpret a connection you've made. It lives at socion.app/ask and is available to all signed-in members.",
       },
       {
         q: 'How many AI messages do I get?',
-        a: "Free members get 10 messages per day. Premium members get unlimited access. The limit resets daily — it's designed to be enough for a focused session without restriction for casual use.",
+        a: "Free members get 10 messages per day. Premium members get unlimited access. The limit resets daily, it's designed to be enough for a focused session without restriction for casual use.",
       },
       {
         q: 'How accurate is the AI?',
-        a: "The AI uses authoritative source data — function stacks, intertype relations, type descriptions, and quadra values — drawn directly from socionicsinsight.com. It won't hallucinate basic Socionics facts. For nuanced or contested areas of theory (subtypes, schools of thought, edge cases), treat its answers as a well-informed starting point and verify with the reference site if it matters.",
+        a: "The AI uses authoritative source data, function stacks, intertype relations, type descriptions, and quadra values, drawn directly from socionicsinsight.com. It won't hallucinate basic Socionics facts. For nuanced or contested areas of theory (subtypes, schools of thought, edge cases), treat its answers as a well-informed starting point and verify with the reference site if it matters.",
       },
       {
         q: 'What can I ask the AI?',
@@ -127,11 +127,11 @@ const FAQS = [
     items: [
       {
         q: 'How do I change my purpose?',
-        a: "Go to Profile → Details. You can update your purpose — dating, friendship, networking, or team building — at any time. Your feed will reflect the change immediately.",
+        a: "Go to Profile → Details. You can update your purpose, dating, friendship, networking, or team building, at any time. Your feed will reflect the change immediately.",
       },
       {
         q: 'Can I use Socion anonymously?',
-        a: "Yes. Enable anonymous mode in Profile → Details. In anonymous mode your name and photo are hidden from other users. You can still connect and message — others just won't see your identity until you choose to reveal it.",
+        a: "Yes. Enable anonymous mode in Profile → Details. In anonymous mode your name and photo are hidden from other users. You can still connect and message, others just won't see your identity until you choose to reveal it.",
       },
       {
         q: 'How do I delete my account?',
@@ -148,19 +148,19 @@ const FAQS = [
       },
       {
         q: "Why didn't I get points for that message/post/reaction?",
-        a: "Repeatable actions — messages, board posts and reactions, and room posts — have a daily cap per action type, so points build up steadily rather than all at once. One-time actions like completing your profile or your first login of the day don't have a cap.",
+        a: "Repeatable actions, messages, board posts and reactions, and room posts, have a daily cap per action type, so points build up steadily rather than all at once. One-time actions like completing your profile or your first login of the day don't have a cap.",
       },
       {
         q: 'What are tiers?',
-        a: "As your total grows you move through tiers — Regular (100+), Active (500+), Core Member (1,500+), and Legend (5,000+) — shown as a badge next to your points total. They're recognition only for now, with no extra features attached.",
+        a: "As your total grows you move through tiers, Regular (100+), Active (500+), Core Member (1,500+), and Legend (5,000+), shown as a badge next to your points total. They're recognition only for now, with no extra features attached.",
       },
       {
         q: 'Is there a points leaderboard?',
-        a: "Yes — the top 10 members by points (Active tier and above) are shown on your points panel, next to the referral panel on Settings and your Dashboard. Members in anonymous mode are excluded, same as the referral leaderboard.",
+        a: "Yes, the top 10 members by points (Active tier and above) are shown on your points panel, next to the referral panel on Settings and your Dashboard. Members in anonymous mode are excluded, same as the referral leaderboard.",
       },
       {
         q: 'Can I see how I earned my points?',
-        a: "Yes — click \"See breakdown\" under your points total (Settings or your Dashboard) for a summary by category: profile completion, daily logins, matches, messages, board activity, Quadra Room posts, and referrals, each with a count and the points earned from it.",
+        a: "Yes, click \"See breakdown\" under your points total (Settings or your Dashboard) for a summary by category: profile completion, daily logins, matches, messages, board activity, Quadra Room posts, and referrals, each with a count and the points earned from it.",
       },
       {
         q: 'Can I spend my points on anything?',
@@ -168,7 +168,7 @@ const FAQS = [
       },
       {
         q: 'Do points expire?',
-        a: "No — your total only ever goes up. There's no decay or expiry.",
+        a: "No, your total only ever goes up. There's no decay or expiry.",
       },
     ],
   },
@@ -198,15 +198,15 @@ const FAQS = [
       },
       {
         q: 'What is a founding member?',
-        a: "Members who joined Socion before 16 June 2026 are founding members. Founding members have permanent free premium access — all premium features, forever, at no cost. It's a thank-you for being early.",
+        a: "Members who joined Socion before 16 June 2026 are founding members. Founding members have permanent free premium access, all premium features, forever, at no cost. It's a thank-you for being early.",
       },
       {
         q: 'How do I upgrade to Premium?',
-        a: "Go to the Premium page from the footer or your profile. Payment is handled securely via Stripe. Once your payment is confirmed, premium features are available immediately.",
+        a: "Go to the Premium page from the footer or from Settings. Payment is handled securely via Stripe. Once your payment is confirmed, premium features are available immediately.",
       },
       {
         q: 'What happens if my premium subscription lapses?',
-        a: "Nothing is deleted and no existing connections are severed. Your message history is fully retained. Premium features simply gate new actions — you won't be able to add connections beyond 3, filter outside your quadra, or use the AI beyond 10 messages per day until you re-subscribe.",
+        a: "Nothing is deleted and no existing connections are severed. Your message history is fully retained. Premium features simply gate new actions, you won't be able to add connections beyond 3, filter outside your quadra, or use the AI beyond 10 messages per day until you re-subscribe.",
       },
       {
         q: 'Can I cancel at any time?',
@@ -223,7 +223,7 @@ const FAQS = [
       },
       {
         q: 'How do I install Socion to my home screen?',
-        a: "On iPhone, you must use Safari — Chrome and other iOS browsers don't support home screen installation. Open socion.app in Safari, tap the Share button, then \"Add to Home Screen.\" On Android: open socion.app in Chrome, tap the three-dot menu, then \"Add to Home Screen\" or \"Install app.\"",
+        a: "On iPhone, you must use Safari, Chrome and other iOS browsers don't support home screen installation. Open socion.app in Safari, tap the Share button, then \"Add to Home Screen.\" On Android: open socion.app in Chrome, tap the three-dot menu, then \"Add to Home Screen\" or \"Install app.\"",
       },
       {
         q: 'Push notifications not working?',
@@ -243,14 +243,14 @@ const NOTIFICATIONS_CONTENT = [
 2. Tap the Share button (the box with an arrow)
 3. Tap "Add to Home Screen"
 4. Open Socion from your home screen
-5. Go to Messages — a prompt to enable notifications will appear automatically
+5. Go to Messages, a prompt to enable notifications will appear automatically
 
 Already installed but still not working? Safari may have blocked the permission:
 
 1. Open the Settings app
 2. Scroll down to Safari → Settings for Websites → Notifications
 3. Find socion.app and set it to Allow
-4. Reopen Socion from your home screen and go to Messages — the prompt will reappear`,
+4. Reopen Socion from your home screen and go to Messages, the prompt will reappear`,
   },
   {
     heading: 'Android (Chrome)',
@@ -301,7 +301,7 @@ function FAQItem({ q, a, isNotifications }) {
               <p style={{ fontSize: '0.82rem', color: 'var(--muted)', lineHeight: 1.7, paddingTop: '0.5rem', borderTop: '1px solid var(--border)' }}>
                 Still not working? Drop a message in the{' '}
                 <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Discord</a>
-                {' '}and describe your device and browser — we'll help you get it sorted.
+                {' '}and describe your device and browser, we'll help you get it sorted.
               </p>
             </div>
           ) : (
@@ -314,7 +314,7 @@ function FAQItem({ q, a, isNotifications }) {
 }
 
 export default function Help() {
-  usePageMeta('Socionics Matching Help & FAQ | Socion™', 'Answers to common questions about Socion — typing, the Get Typed service, matching dynamics, Premium, and how to get the most from the app.')
+  usePageMeta('Socionics Matching Help & FAQ | Socion™', 'Answers to common questions about Socion, typing, the Get Typed service, matching dynamics, Premium, and how to get the most from the app.')
   const { hash } = useLocation()
 
   useEffect(() => {

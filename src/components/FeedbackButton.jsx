@@ -203,7 +203,7 @@ export default function FeedbackButton() {
                 {/* Error */}
                 {status === 'error' && (
                   <p style={{ margin: 0, fontSize: '13px', color: 'var(--color-error, #c0392b)' }}>
-                    something went wrong — please try again.
+                    something went wrong, please try again.
                   </p>
                 )}
 

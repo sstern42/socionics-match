@@ -1,6 +1,13 @@
 import { supabase } from './supabase'
 import { awardPoints } from './points'
 
+// Last time this browser opened a room. Lives here rather than in pages/Rooms.jsx
+// so Layout and HomeDashboard can read it without pulling the whole Rooms page
+// into the shared Layout chunk.
+const ROOM_LAST_VISITED_KEY = 'socion_room_last_visited'
+export function markRoomVisited() { localStorage.setItem(ROOM_LAST_VISITED_KEY, new Date().toISOString()) }
+export function getRoomLastVisited() { return localStorage.getItem(ROOM_LAST_VISITED_KEY) }
+
 const PAGE_SIZE = 50
 
 // Shared select fragment — keeps all three query sites in sync
@@ -67,7 +74,7 @@ export async function sendRoomMessage({ roomId, senderId, content, imageUrl = nu
 // Upload an image to the room-images bucket.
 // Returns the public URL on success.
 // Accepts JPEG, PNG, GIF, WebP up to MAX_IMAGE_BYTES.
-export const MAX_IMAGE_BYTES = 15 * 1024 * 1024 // 15 MB — covers animated GIFs
+export const MAX_IMAGE_BYTES = 15 * 1024 * 1024 // 15 MB, covers animated GIFs
 export const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 export async function uploadRoomImage(roomId, file) {
@@ -75,7 +82,7 @@ export async function uploadRoomImage(roomId, file) {
     throw new Error('Only JPEG, PNG, GIF, and WebP images are supported.')
   }
   if (file.size > MAX_IMAGE_BYTES) {
-    throw new Error(`Image too large — please keep it under 15 MB.`)
+    throw new Error(`Image too large, please keep it under 15 MB.`)
   }
 
   const ext  = file.name.split('.').pop().toLowerCase() || 'jpg'
