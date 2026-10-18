@@ -45,17 +45,19 @@ repo. A rebuilt database will not have it.
 
 | Function | Called from |
 |---|---|
-| `get_incomplete_signups` | admin |
-| `get_member_emails` | admin |
 | `get_network_data` | network graph |
 | `get_public_stats` | public stats page |
 | `get_saved_profile_ids` | saved profiles |
 | `get_saved_profiles` | saved profiles |
-| `has_swiped_right` | feed / swipe deck |
 | `mark_messages_read` | messages |
-| `toggle_message_reaction` | messages |
 | `toggle_save_profile` | saved profiles |
 | `unmatch` | connections |
+
+Since reconstructed and no longer missing: `get_incomplete_signups`,
+`get_member_emails`, `has_swiped_right` and `toggle_message_reaction`
+(`20260803140000_harden_production_only_rpcs.sql`; `get_member_emails` again in
+`20260930140000`). The seven above were re-confirmed absent on a full replay of
+all 80 migrations on 18 October 2026.
 
 ### Tables
 
@@ -71,7 +73,7 @@ table, yet no file ever creates it.
 
 Postgres does not validate the body of a `plpgsql` function when it is created
 — only when it runs. So a migration that defines a function against a
-non-existent table still applies cleanly. **All 74 migrations replaying
+non-existent table still applies cleanly. **All 80 migrations replaying
 successfully proves the DDL is ordered correctly; it does not prove the
 functions work.** The gap above was found by cross-checking every
 `.rpc('…')` and `.from('…')` in `src/` and `supabase/functions/` against a
@@ -91,10 +93,8 @@ FROM pg_proc p
 JOIN pg_namespace n ON n.oid = p.pronamespace
 WHERE n.nspname = 'public'
   AND p.proname IN (
-    'get_incomplete_signups','get_member_emails','get_network_data',
-    'get_public_stats','get_saved_profile_ids','get_saved_profiles',
-    'has_swiped_right','mark_messages_read','toggle_message_reaction',
-    'toggle_save_profile','unmatch'
+    'get_network_data','get_public_stats','get_saved_profile_ids',
+    'get_saved_profiles','mark_messages_read','toggle_save_profile','unmatch'
   );
 
 -- Tables the migrations don't create, with their columns

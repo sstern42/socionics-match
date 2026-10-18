@@ -3,8 +3,10 @@
 // Secrets required:
 //   SUPABASE_URL          (auto-injected)
 //   PROJECT_SECRET_KEY    service role key (same as the other functions)
-// Secret (optional — without it the MailerLite step is skipped and logged):
+// Secrets (optional; without them the matching step is skipped and logged):
 //   MAILERLITE_API_KEY   MailerLite API token (Integrations → API)
+//   STRIPE_SECRET_KEY    cancels a live Premium subscription and deletes the
+//                        Stripe customer before the account row cascades away
 //
 // After a successful deletion, the member is also deleted from MailerLite
 // (the privacy policy promises this). That step is best-effort: it runs only
@@ -18,6 +20,10 @@ import { createClient } from 'npm:@supabase/supabase-js'
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL')!
 const SERVICE_KEY   = Deno.env.get('PROJECT_SECRET_KEY')!
 const MAILERLITE_API_KEY = Deno.env.get('MAILERLITE_API_KEY')
+const STRIPE_SECRET_KEY  = Deno.env.get('STRIPE_SECRET_KEY')
+
+const STRIPE_API = 'https://api.stripe.com/v1'
+const STRIPE_TIMEOUT_MS = 8000
 
 const MAILERLITE_API = 'https://connect.mailerlite.com/api'
 const MAILERLITE_TIMEOUT_MS = 8000
@@ -68,6 +74,37 @@ async function removeFromMailerLite(email: string): Promise<void> {
   }
 }
 
+// Cancel the member's subscription and delete their Stripe customer. Without
+// this, deleting the users row (which holds the only link to Stripe) leaves a
+// subscription that keeps billing with nothing on our side to tie it to, and
+// later webhooks for that customer match no row. Best-effort and logged: a
+// Stripe outage must not block a deletion request, but it is logged at error
+// level so it can be finished by hand from the Stripe dashboard.
+async function cancelStripe(subscriptionId: string | null, customerId: string | null): Promise<void> {
+  if (!subscriptionId && !customerId) return
+  if (!STRIPE_SECRET_KEY) {
+    console.error(`Stripe cleanup skipped (STRIPE_SECRET_KEY not set): subscription=${subscriptionId} customer=${customerId}`)
+    return
+  }
+  const headers = { 'Authorization': `Bearer ${STRIPE_SECRET_KEY}` }
+  try {
+    if (subscriptionId) {
+      const res = await fetch(`${STRIPE_API}/subscriptions/${encodeURIComponent(subscriptionId)}`, {
+        method: 'DELETE', headers, signal: AbortSignal.timeout(STRIPE_TIMEOUT_MS),
+      })
+      if (!res.ok && res.status !== 404) console.error('Stripe subscription cancel failed:', res.status, await res.text())
+    }
+    if (customerId) {
+      const res = await fetch(`${STRIPE_API}/customers/${encodeURIComponent(customerId)}`, {
+        method: 'DELETE', headers, signal: AbortSignal.timeout(STRIPE_TIMEOUT_MS),
+      })
+      if (!res.ok && res.status !== 404) console.error('Stripe customer delete failed:', res.status, await res.text())
+    }
+  } catch (err) {
+    console.error(`Stripe cleanup failed for subscription=${subscriptionId} customer=${customerId}:`, (err as Error).message)
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -103,6 +140,14 @@ Deno.serve(async (req) => {
   // only for the best-effort MailerLite removal below.
   const email: string | null = authData.user.email ?? null
 
+  // Stripe first: the ids live on the users row, which is about to cascade.
+  const { data: billing } = await adminClient
+    .from('users')
+    .select('stripe_subscription_id, stripe_customer_id')
+    .eq('auth_id', user.id)
+    .maybeSingle()
+  await cancelStripe(billing?.stripe_subscription_id ?? null, billing?.stripe_customer_id ?? null)
+
   // Delete avatar from storage (best-effort — don't fail if missing)
   try {
     const { data: files } = await adminClient.storage
@@ -120,8 +165,9 @@ Deno.serve(async (req) => {
   // push_subscriptions also references auth.users with on delete cascade
   const { error: deleteErr } = await adminClient.auth.admin.deleteUser(user.id)
   if (deleteErr) {
+    console.error('deleteUser failed:', deleteErr.message)
     return new Response(
-      JSON.stringify({ error: deleteErr.message }),
+      JSON.stringify({ error: 'Account deletion failed. Please try again or email hello@socion.app.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

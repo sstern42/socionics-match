@@ -299,6 +299,7 @@ Deno.serve(async (req) => {
     // A throw after the opening turn charged (e.g. the model response failed to
     // parse as JSON) also means a try spent for nothing — give it back.
     if (refundSession) await refundSession()
-    return json({ error: (err as Error).message ?? 'Something went wrong.' }, 500)
+    console.error('onboarding-typing-turn error:', err)
+    return json({ error: 'Something went wrong. Please try again.' }, 500)
   }
 })

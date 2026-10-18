@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Fix missing table grants on Rooms tables
--- Migration: 20260619150000_room_grants_fix.sql
+-- Migration: 20260619150001_room_grants_fix.sql
 --
 -- RLS policies restrict which *rows* a role can see/touch, but
 -- Postgres still requires baseline table-level GRANTs before RLS
