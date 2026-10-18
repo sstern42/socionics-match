@@ -9,6 +9,14 @@ node_modules/
 # Build output
 dist/
 build/
+.netlify/
+
+# Supabase CLI
+supabase/.temp/
+supabase/.branches/
+
+# Claude Code local settings
+.claude/settings.local.json
 
 # Vite
 *.local
