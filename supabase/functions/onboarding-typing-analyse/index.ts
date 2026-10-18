@@ -291,6 +291,6 @@ Deno.serve(async (req) => {
     })
   } catch (err) {
     console.error('onboarding-typing-analyse error:', err)
-    return json({ error: (err as Error).message ?? 'Something went wrong.' }, 500)
+    return json({ error: 'Something went wrong. Please try again.' }, 500)
   }
 })

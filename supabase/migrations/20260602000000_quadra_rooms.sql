@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Quadra Group Rooms
--- Migration: 20260602_quadra_rooms.sql
+-- Migration: 20260602000000_quadra_rooms.sql
 -- Phase 1: schema, seed, trigger, backfill, RLS
 -- Run in Supabase SQL editor. Safe to re-run (all statements
 -- use IF NOT EXISTS or OR REPLACE).

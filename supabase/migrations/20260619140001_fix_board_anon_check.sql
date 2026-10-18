@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Fix "permission denied for table users" on board posts
--- Migration: 20260619140000_fix_board_anon_check.sql
+-- Migration: 20260619140001_fix_board_anon_check.sql
 --
 -- Root cause: board_posts_insert / board_comments_insert checked
 -- (SELECT is_anonymous FROM auth.users WHERE id = auth.uid()).

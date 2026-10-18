@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Boards (forum-style discussion topics)
--- Migration: 20260618_boards.sql
+-- Migration: 20260618000000_boards.sql
 -- Founder/mod-curated boards, open to all members for posting.
 -- Run in Supabase SQL editor. Safe to re-run (IF NOT EXISTS / OR REPLACE).
 -- =============================================================

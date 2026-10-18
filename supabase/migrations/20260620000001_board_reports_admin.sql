@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Founder access to board_reports for moderation
--- Migration: 20260620_board_reports_admin.sql
+-- Migration: 20260620000001_board_reports_admin.sql
 -- Allows founders to read all board_reports (not just their own)
 -- and resolve them. Run in Supabase SQL editor. Safe to re-run.
 -- =============================================================

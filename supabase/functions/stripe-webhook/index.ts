@@ -301,6 +301,17 @@ async function sendEmailSafe(args: { to: string; subject: string; html: string }
 // Event handlers
 // ============================================================================
 
+// A Stripe redelivery of checkout.session.completed (after a partial failure)
+// must not move premium_started_at forward.
+async function existingPremiumStart(userId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('users')
+    .select('premium_started_at')
+    .eq('id', userId)
+    .maybeSingle()
+  return data?.premium_started_at ?? null
+}
+
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
   const userId = session.client_reference_id
   if (!userId) {
@@ -322,7 +333,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       plan_status: 'active',
       stripe_customer_id: customerId,
       stripe_subscription_id: subscriptionId,
-      premium_started_at: new Date().toISOString(),
+      premium_started_at: await existingPremiumStart(userId) ?? new Date().toISOString(),
       premium_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
     })
     .eq('id', userId)
@@ -438,7 +449,7 @@ ${transactionalFooter()}
 }
 
 function emailWelcome(name: string | null): string {
-  const greeting = name ? `Hi ${name},` : 'Hi,'
+  const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
   return emailShell(`
 <h2 style="margin-top: 0;">Welcome to Socion Premium</h2>
 <p>${greeting}</p>
@@ -455,7 +466,7 @@ function emailWelcome(name: string | null): string {
 }
 
 function emailCancellation(name: string | null): string {
-  const greeting = name ? `Hi ${name},` : 'Hi,'
+  const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
   return emailShell(`
 <h2 style="margin-top: 0;">Your Socion Premium has ended</h2>
 <p>${greeting}</p>
@@ -471,7 +482,7 @@ function emailCancellation(name: string | null): string {
 }
 
 function emailPaymentFailed(name: string | null): string {
-  const greeting = name ? `Hi ${name},` : 'Hi,'
+  const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
   return emailShell(`
 <h2 style="margin-top: 0;">Your payment didn't go through</h2>
 <p>${greeting}</p>

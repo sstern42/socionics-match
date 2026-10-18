@@ -539,7 +539,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     console.error('chat-socionics error:', err)
     return new Response(
-      JSON.stringify({ error: err.message ?? 'Something went wrong.' }),
+      JSON.stringify({ error: 'Something went wrong. Please try again.' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }

@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Global "Socion" Room (all 16 types, one room)
--- Migration: 20260619_socion_room.sql
+-- Migration: 20260619000001_socion_room.sql
 -- Adds a single global room alongside the four quadra rooms.
 -- Membership is universal: every authenticated, non-anonymous,
 -- unmuted user can read and post here regardless of their

@@ -1,6 +1,6 @@
 -- =============================================================
 -- Socion — Founder/mod pinning for board posts
--- Migration: 20260619_board_founder_pinning.sql
+-- Migration: 20260619000000_board_founder_pinning.sql
 -- Allows founders to pin/unpin any post, regardless of authorship.
 -- Run in Supabase SQL editor. Safe to re-run.
 -- =============================================================

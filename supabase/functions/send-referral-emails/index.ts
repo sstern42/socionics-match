@@ -282,17 +282,17 @@ ${footer}
 }
 
 function emailRefereeWelcome(name: string | null, referrerName: string | null): string {
-  const greeting = name ? `Hi ${name},` : 'Hi,'
+  const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
   return emailShell(`
 <h2 style="margin-top: 0;">Your 7-day Premium trial is active</h2>
 <p>${greeting}</p>
-<p>Thanks for finishing your profile${referrerName ? ` — you joined through ${referrerName}'s invite` : ''}. Your account now has <strong>7 days of Socion Premium</strong>, starting today. There's nothing to set up and no payment details are needed; when the 7 days are up, the trial simply ends and nothing is charged.</p>
+<p>Thanks for finishing your profile${referrerName ? ` — you joined through ${escapeHtml(referrerName)}'s invite` : ''}. Your account now has <strong>7 days of Socion Premium</strong>, starting today. There's nothing to set up and no payment details are needed; when the 7 days are up, the trial simply ends and nothing is charged.</p>
 <p>You can check your plan any time in <a href="https://socion.app/settings" style="color: #1a1a1a;">Settings</a>.</p>
 `)
 }
 
 function emailReferrerRewardEarned(name: string | null, days: number, totalDaysGranted: number): string {
-  const greeting = name ? `Hi ${name},` : 'Hi,'
+  const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
   return emailShell(`
 <h2 style="margin-top: 0;">🎉 You earned ${days} days of Premium</h2>
 <p>${greeting}</p>
@@ -303,7 +303,7 @@ function emailReferrerRewardEarned(name: string | null, days: number, totalDaysG
 }
 
 function emailReferrerTierUp(name: string | null, tier: string | null, count: number, footer: string): string {
-  const greeting = name ? `Hi ${name},` : 'Hi,'
+  const greeting = name ? `Hi ${escapeHtml(name)},` : 'Hi,'
   const tierLabel = tier ? TIER_LABELS[tier] ?? tier : null
   return emailShell(`
 <h2 style="margin-top: 0;">🎉 Another successful referral${tierLabel ? ` — you're a ${tierLabel} now` : ''}</h2>

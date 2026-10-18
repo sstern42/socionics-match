@@ -1220,7 +1220,9 @@ function VerificationPanel({ users, onUpdate }) {
   async function grant(userId, newType) {
     setVerifying(userId); setError(null)
     try {
-      const { error } = await supabase.from('users').update({ verified_by: verifierName.trim() || 'Spencer', type: newType }).eq('id', userId)
+      // Founder-checked SECURITY DEFINER RPC: a direct UPDATE on another member's
+      // row matches nothing under the "update own profile" policy.
+      const { error } = await supabase.rpc('admin_set_verified_type', { p_user_id: userId, p_verified_by: verifierName.trim() || 'Spencer', p_type: newType })
       if (error) throw error
       await onUpdate()
     } catch (err) { setError(err.message ?? JSON.stringify(err)) } finally { setVerifying(null) }
@@ -1229,7 +1231,7 @@ function VerificationPanel({ users, onUpdate }) {
   async function revoke(userId) {
     setVerifying(userId); setError(null)
     try {
-      const { error } = await supabase.from('users').update({ verified_by: null }).eq('id', userId)
+      const { error } = await supabase.rpc('admin_set_verified_type', { p_user_id: userId, p_verified_by: null, p_type: null })
       if (error) throw error
       await onUpdate()
     } catch (err) { setError(err.message ?? JSON.stringify(err)) } finally { setVerifying(null) }
