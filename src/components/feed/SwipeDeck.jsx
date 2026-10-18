@@ -36,7 +36,8 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
       return
     }
 
-    const relationType = getRelation(userType, profile.type)
+    const relationType = getRelation(userType, profile.type)           // my role, stored on swipes.relation_type
+    const displayRelationType = getRelation(profile.type, userType)    // their role toward me, shown everywhere else in the UI
 
     // Remove from deck immediately for snappy UX
     setSwiped(prev => new Set([...prev, profile.id]))
@@ -80,7 +81,7 @@ export default function SwipeDeck({ profiles, currentUserId, userType, onMatch, 
           .maybeSingle()
 
         window.umami?.track('swipe-mutual-match', { relationType: relationType ?? 'unknown' })
-        onMatch?.({ profile, relationType, matchId: matchRow?.id ?? null })
+        onMatch?.({ profile, relationType: displayRelationType, matchId: matchRow?.id ?? null })
       }
     }
   }, [currentUserId, userType, onMatch, blockRightSwipe, onBlockedRightSwipe, onSwipeComplete])

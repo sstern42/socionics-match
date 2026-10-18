@@ -1,7 +1,8 @@
 // compatibility.js — Model A compatibility breakdown for premium users
 //
-// Sourced from socionicsinsight.com type pages (function stacks) and
-// relation pages (taglines, strengths, friction, advice).
+// Function stacks verified against sstern42/socionics-core data/types.json (canonical);
+// taglines, strengths, friction and advice from socionicsinsight.com relation pages.
+// RELATION_DATA keys are MY role in the relation (e.g. SUPERVISOR = I supervise them).
 // Called by Conversation.jsx to render the inline premium breakdown panel.
 
 // ─── Model A position names ──────────────────────────────────────────────────
@@ -186,7 +187,7 @@ const RELATION_DATA = {
 
   CONTRARY: {
     tagline: 'An intellectually attractive opening that gradually reveals two irreconcilable perspectives on the same world.',
-    summary: 'Contrary (Extinguishment) pairs share hetroverted orientation and functional vocabulary, producing easy early contact that eventually reveals a fundamental divergence in how they interpret the same information.',
+    summary: 'Contrary (Extinguishment) pairs share heteroverted orientation and functional vocabulary, producing easy early contact that eventually reveals a fundamental divergence in how they interpret the same information.',
     strengths: [
       'Early interactions feel stimulating — each recognises the other\'s thinking and can follow it closely.',
       'Shared functional vocabulary creates genuine intellectual kinship.',
@@ -233,8 +234,8 @@ const RELATION_DATA = {
   },
 
   CONFLICT: {
-    tagline: 'The polar-opposite relation — every dichotomy flipped, every instinct misaligned.',
-    summary: 'Conflict partners have entirely opposite dichotomies. An initial pull of opposites gives way to fundamental irreconcilability as proximity and time increase.',
+    tagline: 'The polar-opposite relation — all four Jungian dichotomies flipped, every instinct misaligned.',
+    summary: 'Conflict partners sit on opposite sides of all four Jungian dichotomies. An initial pull of opposites gives way to fundamental irreconcilability as proximity and time increase.',
     strengths: [
       'The initial encounter can feel genuinely interesting — each appears interestingly different.',
       'Early contact sometimes produces real insight precisely because the other represents the full opposite perspective.',
