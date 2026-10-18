@@ -1,58 +1,55 @@
 # Contributing to Socion™
 
-Socion is open source under the MIT licence. The matching logic — the intertype relations matrix and type confidence scoring — is published and auditable. Community trust through transparency is a core principle of the project.
+Socion is open source under the MIT licence. The matching logic, the intertype relations matrix and type confidence scoring, is published and auditable. Community trust through transparency is a core principle of the project.
 
 ## Current state
 
-Socion launched on 25 March 2026. The core matching loop — onboarding, feed, connect, message, feedback — is live. The app has grown to include premium subscriptions, quadra group chat rooms, a typing directory, saved profiles, platform statistics, and an AI Socionics Q&A feature.
+Socion launched on 25 March 2026. The core matching loop, onboarding, feed, connect, message, feedback, is live. The app has grown to include premium subscriptions, quadra group chat rooms, a typing directory, saved profiles, platform statistics, and an AI Socionics Q&A feature.
 
 ## What this repo contains
 
 The full frontend React app (`src/`) and the Supabase schema and SQL files (`supabase/`). Key files:
 
-- `src/data/relations.js` — the intertype relations matrix. Single source of truth for all matching logic.
-- `src/lib/feed.js` — feed filtering and match creation.
-- `src/lib/messages.js` — messaging and match retrieval.
-- `src/lib/rooms.js` — quadra group chat logic.
-- `src/lib/premium.js` — premium subscription checks.
-- `src/lib/blocks.js` — cool-off and block/report logic.
-- `src/lib/archive.js` — archive and unmatch logic.
-- `supabase/schema.sql` — base database schema (run once).
-- `supabase/rls_reset.sql` — full Row Level Security policy set.
-- `supabase/get_admin_stats.sql` — SECURITY DEFINER function for site-wide admin analytics.
-- `supabase/migrations/` — incremental schema changes; apply in filename order when upgrading.
+- `src/data/relations.js`: the intertype relations matrix. Single source of truth for all matching logic.
+- `src/lib/feed.js`: feed filtering and match creation.
+- `src/lib/messages.js`: messaging and match retrieval.
+- `src/lib/rooms.js`: quadra group chat logic.
+- `src/lib/premium.js`: premium subscription checks.
+- `src/lib/blocks.js`: cool-off and block/report logic.
+- `src/lib/archive.js`: archive and unmatch logic.
+- `supabase/migrations/`: the schema, applied in filename order. The loose `.sql` files beside it (except `avatars.sql` and the cron part of `stats.sql`) are historical.
 
 ## How to contribute
 
-**Bug reports** — open a GitHub issue with steps to reproduce. Screenshots welcome.
+**Bug reports**, open a GitHub issue with steps to reproduce. Screenshots welcome.
 
-**Matrix corrections** — open an issue citing the specific relation pair and the source you are working from. The SLIDE System™ framework underlies the typing logic; corrections should reference established Socionics literature.
+**Matrix corrections**, open an issue citing the specific relation pair and the source you are working from. The SLIDE System™ framework underlies the typing logic; corrections should reference established Socionics literature.
 
-**Feature suggestions** — open an issue before building. The product direction is intentional. Describe the use case, not just the feature.
+**Feature suggestions**, open an issue before building. The product direction is intentional. Describe the use case, not just the feature.
 
-**Pull requests** — welcome for bug fixes and small improvements. For larger changes, open an issue first to discuss scope. PRs should be focused and not bundle unrelated changes.
+**Pull requests**, welcome for bug fixes and small improvements. For larger changes, open an issue first to discuss scope. PRs should be focused and not bundle unrelated changes.
 
-**Socionics expertise** — if you have deep knowledge of the theory and spot an inconsistency in how types or relations are described, open an issue. Type descriptions and relation copy are in `src/data/relations.js` and referenced throughout.
+**Socionics expertise**, if you have deep knowledge of the theory and spot an inconsistency in how types or relations are described, open an issue. Type descriptions and relation copy are in `src/data/relations.js` and referenced throughout.
 
 ## Local setup
 
 See the README for full setup instructions.
 
-You will need your own Supabase project — the schema is in `supabase/schema.sql`. Run `rls_reset.sql` after schema setup to apply Row Level Security policies. Do not commit credentials.
+You will need your own Supabase project. Apply everything in `supabase/migrations/` in filename order (`supabase db push`, or paste each file into the SQL editor), then `avatars.sql` for the storage bucket and the cron block of `stats.sql`. The other loose `.sql` files are historical and superseded by the migrations. Do not commit credentials.
 
-Environment variables (see `.env.example` — the one canonical list):
-- `VITE_SUPABASE_URL` — required
-- `VITE_SUPABASE_ANON_KEY` — required
-- `VITE_GOOGLE_CLIENT_ID` — optional, for Google One Tap sign-in
-- `VITE_VAPID_PUBLIC_KEY` — optional, for web push notifications
-- `VITE_GIPHY_API_KEY` — optional, for the GIF picker in messages and rooms
+Environment variables (see `.env.example`, the one canonical list):
+- `VITE_SUPABASE_URL`: required
+- `VITE_SUPABASE_ANON_KEY`: required
+- `VITE_ONBOARDING_COUPON_CODE`, `VITE_ONBOARDING_COUPON_EXPIRES`, optional, typing-chat discount banner
+- `VITE_VAPID_PUBLIC_KEY`: optional, for web push notifications
+- `VITE_GIPHY_API_KEY`: optional, for the GIF picker in messages and rooms
 
 ## Database migrations
 
 Migrations live in `supabase/migrations/` and Supabase applies them in
 **lexical filename order**, so the filename is the ordering. Rules:
 
-- Name every file `YYYYMMDDHHMMSS_short_description.sql` — a full 14-digit
+- Name every file `YYYYMMDDHHMMSS_short_description.sql`, a full 14-digit
   timestamp, then an underscore, then a `snake_case` description. Not
   `20260602_thing.sql`, not `thing.sql`: `_` sorts after digits, so a
   short-date file runs *after* every full-timestamp file from the same day,
@@ -60,7 +57,7 @@ Migrations live in `supabase/migrations/` and Supabase applies them in
 - Keep timestamps **unique**. Two files sharing a timestamp are ordered only
   by their description, which is accidental rather than intentional. If you
   need a second migration in the same minute, bump the seconds.
-- Write migrations to be **idempotent** — `CREATE TABLE IF NOT EXISTS`,
+- Write migrations to be **idempotent**, `CREATE TABLE IF NOT EXISTS`,
   `ADD COLUMN IF NOT EXISTS`, `CREATE OR REPLACE FUNCTION`, and
   `DROP POLICY IF EXISTS` before `CREATE POLICY`. They get re-run.
 - **Create everything in a migration**, including tables and functions you are
@@ -69,7 +66,7 @@ Migrations live in `supabase/migrations/` and Supabase applies them in
   [`supabase/PRODUCTION_ONLY_OBJECTS.md`](supabase/PRODUCTION_ONLY_OBJECTS.md)
   exists. Note that Postgres does not check a `plpgsql` function's body at
   creation time, so a migration referencing a table that does not exist still
-  applies cleanly — and fails later, at runtime.
+  applies cleanly, and fails later, at runtime.
 - A PR touching `supabase/` spins up a **billed** Supabase preview database
   (~$0.01344/hr) for as long as it stays open. Merge or close it promptly.
 
@@ -77,10 +74,10 @@ Migrations live in `supabase/migrations/` and Supabase applies them in
 
 No strict linter beyond the default ESLint config. A few principles:
 
-- Keep the intertype relations matrix as a single source of truth — derive from it, do not duplicate it.
+- Keep the intertype relations matrix as a single source of truth, derive from it, do not duplicate it.
 - Feed filtering happens server-side (Postgres `.in()`) not client-side. Keep it that way.
-- Profile data lives in `profile_data` JSONB — new profile fields go there, not as new columns.
-- Fire-and-forget analytics via `window.umami?.track()` — always use optional chaining so it fails silently if Umami hasn't loaded.
+- Profile data lives in `profile_data` JSONB, new profile fields go there, not as new columns.
+- Fire-and-forget analytics via `window.umami?.track()`, always use optional chaining so it fails silently if Umami hasn't loaded.
 - No new dependencies without a clear reason.
 
 ## Licence
