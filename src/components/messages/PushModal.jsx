@@ -61,7 +61,7 @@ export default function PushModal({ userId }) {
           </h3>
         </div>
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.7 }}>
-          Enable push notifications and you'll know instantly when someone messages you — no need to keep the app open.
+          Enable push notifications and you'll know instantly when someone messages you, no need to keep the app open.
         </p>
         {subscribeError && (
           <p style={{ fontSize: '0.8rem', color: '#c0392b', lineHeight: 1.5 }}>{subscribeError}</p>

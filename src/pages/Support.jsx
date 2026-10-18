@@ -2,7 +2,7 @@ import Layout from '../components/Layout'
 import { usePageMeta } from '../hooks/usePageMeta'
 
 export default function Support() {
-  usePageMeta('Support Us — Ad-Free & Independent | Socion™', 'Socion is ad-free and built by one person. Tip on Ko-fi or keep using it free — every bit of support helps.')
+  usePageMeta('Support Us, Ad-Free & Independent | Socion™', 'Socion is ad-free and built by one person. Tip on Ko-fi or keep using it free, every bit of support helps.')
   return (
     <Layout noScroll hideFooter>
       <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 1.5rem' }}>
@@ -19,7 +19,7 @@ export default function Support() {
           If it's been useful, a tip helps cover the running costs and keeps the project going. Even a one-time £3 makes a difference.
         </p>
 
-        {/* Ko-fi — primary */}
+        {/* Ko-fi, primary */}
         <div style={{
           border: '1px solid var(--accent)',
           borderRadius: 8,
@@ -48,7 +48,7 @@ export default function Support() {
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>one-time · no account needed · takes 30 seconds</p>
         </div>
 
-        {/* Typing — secondary, inline */}
+        {/* Typing, secondary, inline */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
@@ -65,7 +65,7 @@ export default function Support() {
               <em>Get your type confirmed</em>
             </p>
             <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7, flex: 1 }}>
-              A written typing report from a Socion typist — reasoned, considered, and your profile updated to match. From $29.
+              A written typing report from a Socion typist, reasoned, considered, and your profile updated to match. From $29.
             </p>
             <a
               href="/typing"
@@ -82,7 +82,7 @@ export default function Support() {
           <div>
             <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.15rem', marginBottom: '0.5rem' }}>Other ways to help</h2>
             <p style={{ fontSize: '0.9rem', color: 'var(--muted)', lineHeight: 1.8 }}>
-              Not in a position to tip? Sharing Socion with someone who'd be into it is genuinely more valuable at this stage — the network compounds with every new member.
+              Not in a position to tip? Sharing Socion with someone who'd be into it is genuinely more valuable at this stage, the network compounds with every new member.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export default function Support() {
 
         <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
           <p style={{ fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.7 }}>
-            Socion is built and maintained by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Spencer Stern</a> — independently, without funding or a team. Questions or feedback: <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@socion.app</a>
+            Socion is built and maintained by <a href="https://spencerstern.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Spencer Stern</a>, independently, without funding or a team. Questions or feedback: <a href="mailto:hello@socion.app" style={{ color: 'var(--accent)', textDecoration: 'none' }}>hello@socion.app</a>
             {' · '}
             <a href="https://discord.gg/328KxsDKdr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'none' }}>Join the Discord</a>
           </p>

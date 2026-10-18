@@ -156,7 +156,7 @@ function useForceSimulation(nodes, edges, width, height) {
 }
 
 export default function Network() {
-  usePageMeta('Socionics Relation Map | Socion™', 'Interactive map of all 16 Socionics relation dynamics — live satisfaction ratings for every type pair, colour-coded by quadra.')
+  usePageMeta('Socionics Relation Map | Socion™', 'Interactive map of all 16 Socionics relation dynamics, live satisfaction ratings for every type pair, colour-coded by quadra.')
   const svgRef = useRef(null)
   const containerRef = useRef(null)
   const [width, setWidth] = useState(0)
@@ -278,7 +278,7 @@ export default function Network() {
             The theory <em>in real time</em>
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '0.95rem', maxWidth: 540, margin: '0.75rem auto 0', lineHeight: 1.7 }}>
-            Every node is a Socionics type. Every edge is a real connection between members. Thickness shows connection volume. Colour shows average rating — green is high, amber is mid, red is low.
+            Every node is a Socionics type. Every edge is a real connection between members. Thickness shows connection volume. Colour shows average rating, green is high, amber is mid, red is low.
           </p>
         </div>
 

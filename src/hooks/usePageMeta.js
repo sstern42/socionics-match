@@ -27,12 +27,18 @@ export function usePageMeta(title, description) {
   useEffect(() => {
     const prevOgUrl = getMeta('meta[property="og:url"]')?.getAttribute('content')
     const prevTwUrl = getMeta('meta[name="twitter:url"]')?.getAttribute('content')
-    const url = window.location.href
+    const canonical = getMeta('link[rel="canonical"]')
+    const prevCanon = canonical?.getAttribute('href')
+    // Canonical and share URLs carry the path only: query strings (?src=, ?room=)
+    // are the same page, and the SPA fallback serves every path with 200.
+    const url = window.location.origin + window.location.pathname
     setMeta('meta[property="og:url"]',  url)
     setMeta('meta[name="twitter:url"]', url)
+    if (canonical) canonical.setAttribute('href', url)
     return () => {
       if (prevOgUrl !== undefined) setMeta('meta[property="og:url"]',  prevOgUrl)
       if (prevTwUrl !== undefined) setMeta('meta[name="twitter:url"]', prevTwUrl)
+      if (canonical && prevCanon) canonical.setAttribute('href', prevCanon)
     }
   }, [])
 

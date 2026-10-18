@@ -40,7 +40,7 @@ class ErrorBoundary extends Component {
             Something went wrong loading the app
           </h1>
           <p style={{ fontSize: '0.9rem', color: 'var(--muted)', maxWidth: 360, lineHeight: 1.6 }}>
-            This can happen on a flaky connection. Try reloading — if you're on mobile data and it keeps failing, switching to Wi-Fi often helps.
+            This can happen on a flaky connection. Try reloading, if you're on mobile data and it keeps failing, switching to Wi-Fi often helps.
           </p>
           <button
             type="button"

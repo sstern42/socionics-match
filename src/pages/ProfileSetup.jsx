@@ -77,7 +77,7 @@ export default function ProfileSetup() {
       })
 
       if (!newProfile) {
-        throw new Error('Profile was not created — check Supabase RLS policies.')
+        throw new Error('Profile was not created, check Supabase RLS policies.')
       }
 
       // The insert above can't carry consent (protect_sensitive_user_columns
@@ -145,7 +145,7 @@ export default function ProfileSetup() {
           <div style={{ width: '100%', maxWidth: 480, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             {referredByCode && (
               <div style={{ border: '1px solid var(--border)', borderRadius: 8, padding: '0.9rem 1.1rem', background: 'rgba(154,111,56,0.05)', fontSize: '0.85rem', color: 'var(--text)', lineHeight: 1.5 }}>
-                🎉 {referrerName ? <>You were invited by <strong>{referrerName}</strong></> : 'You were invited to Socion'} — finish your profile to unlock 7 days of Premium.
+                🎉 {referrerName ? <>You were invited by <strong>{referrerName}</strong></> : 'You were invited to Socion'}, finish your profile to unlock 7 days of Premium.
               </div>
             )}
             <div style={{ textAlign: 'center' }}>
@@ -179,7 +179,7 @@ export default function ProfileSetup() {
                   onChange={e => setDob(e.target.value)}
                 />
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                  Date of birth — only your age is shown on your card, never your DOB.
+                  Date of birth, only your age is shown on your card, never your DOB.
                 </p>
               </div>
               <select
@@ -208,26 +208,26 @@ export default function ProfileSetup() {
                 <input
                   className="input-standalone"
                   type="text"
-                  placeholder="City (optional) — e.g. London, not Greater London"
+                  placeholder="City (optional), e.g. London, not Greater London"
                   value={city}
                   onChange={e => setCity(e.target.value)}
                   style={{ fontFamily: 'var(--sans)' }}
                 />
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                  Helps others know whether meeting up is realistic. Only your city is shown — never a postcode.
+                  Helps others know whether meeting up is realistic. Only your city is shown, never a postcode.
                 </p>
               </div>
               <div>
                 <textarea
                   className="input-standalone"
-                  placeholder="A short bio — how you'd describe yourself to a stranger (optional)"
+                  placeholder="A short bio, how you'd describe yourself to a stranger (optional)"
                   value={bio}
                   onChange={e => setBio(e.target.value)}
                   rows={4}
                   style={{ resize: 'vertical', fontFamily: 'var(--sans)', lineHeight: 1.6 }}
                 />
                 <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                  Visible to other users even in anonymous mode — keep it vague if you prefer privacy.
+                  Visible to other users even in anonymous mode, keep it vague if you prefer privacy.
                 </p>
               </div>
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: 'pointer', background: anonymous ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
@@ -269,7 +269,7 @@ export default function ProfileSetup() {
                     {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                   <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                    Just your best guess for now — it's only a placeholder until you're typed properly.
+                    Just your best guess for now, it's only a placeholder until you're typed properly.
                   </p>
                   <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', marginTop: '0.6rem', cursor: 'pointer' }}>
                     <input
@@ -324,7 +324,7 @@ export default function ProfileSetup() {
               disabled={!name || !dob || !type}
               style={{ opacity: (!name || !dob || !type) ? 0.5 : 1 }}
             >
-              Next — choose your dynamics
+              Next, choose your dynamics
             </button>
           </div>
         </section>

@@ -156,9 +156,9 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
       </div>
 
       <div style={{ borderTop: '1px solid var(--border)', padding: '0.5rem 1rem' }}>
-        <StatRow label="Profile viewers" value={viewCount ?? '—'} onClick={() => navigate(`/profile/${profile.id}?tab=views`)} />
+        <StatRow label="Profile viewers" value={viewCount ?? '–'} onClick={() => navigate(`/profile/${profile.id}?tab=views`)} />
         <StatRow label="Connections" value={isPremium ? connectionCount : `${connectionCount} of 3`} />
-        <StatRow label="Points" value={pointsTotal?.toLocaleString() ?? '—'} onClick={() => navigate('/help#points')} />
+        <StatRow label="Points" value={pointsTotal?.toLocaleString() ?? '–'} onClick={() => navigate('/help#points')} />
       </div>
 
       <div style={{ borderTop: '1px solid var(--border)', padding: '0.35rem 1rem' }}>
@@ -166,7 +166,7 @@ export default function MiniProfileCard({ profile, isPremium, connectionCount, s
         <QuickLink icon="💬" label="Your matches" onClick={() => navigate('/messages')} />
         <QuickLink icon="🏠" label="Rooms" onClick={() => navigate('/rooms')} />
         <QuickLink icon="📋" label="Boards" onClick={() => navigate('/boards')} />
-        <QuickLink icon="🧭" label={isTypeVerified ? 'Free typing chat (just for fun)' : 'Free typing chat — preliminary read'} onClick={() => navigate('/typing/chat')} />
+        <QuickLink icon="🧭" label={isTypeVerified ? 'Free typing chat (just for fun)' : 'Free typing chat, preliminary read'} onClick={() => navigate('/typing/chat')} />
         <QuickLink icon="👁" label={previewOpen ? 'Hide card preview' : 'Preview your card'} onClick={onTogglePreview} />
       </div>
 

@@ -407,6 +407,9 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         markMatchRead(matchId); markRead(matchId)
         subtractUnread(unreadInChat)
       }
+    }).catch(err => {
+      console.error('getMessages failed', err)
+      if (!cancelled) setLoading(false)
     })
 
     const msgChannel = subscribeToMessages(
@@ -680,7 +683,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               See exactly how you and {otherName} fit
             </p>
             <p style={{ fontSize:'0.78rem',color:'var(--muted)',lineHeight:1.5,margin:0,maxWidth:360 }}>
-              Premium unlocks your full Model A breakdown — function-by-function strengths, friction points and a practical note.
+              Premium unlocks your full Model A breakdown, function-by-function strengths, friction points and a practical note.
             </p>
             <Link to="/premium" onClick={() => window.umami?.track('breakdown-teaser-cta',{source:isMobile?'mobile':'desktop'})} style={{ marginTop:'0.15rem',display:'inline-block',background:'var(--accent)',color:'#fff',textDecoration:'none',fontSize:'0.8rem',fontWeight:500,padding:'0.5rem 1.1rem',borderRadius:4 }}>
               Unlock with Premium
@@ -728,7 +731,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
                 setBreakdownOpen(next)
               }}
               aria-label={breakdownUnlocked ? 'Compatibility breakdown' : 'Compatibility breakdown (locked)'}
-              title={breakdownUnlocked ? (breakdownOpen ? 'Hide breakdown' : 'Full breakdown') : 'Full compatibility breakdown — locked'}
+              title={breakdownUnlocked ? (breakdownOpen ? 'Hide breakdown' : 'Full breakdown') : 'Full compatibility breakdown, locked'}
               style={{ position:'relative',display:'flex',alignItems:'center',justifyContent:'center',width:32,height:32,borderRadius:'50%',background:breakdownOpen?'var(--accent-lt)':'var(--surface)',border:'none',cursor:'pointer',fontSize:'0.95rem',flexShrink:0,lineHeight:1 }}
             >
               📊
@@ -768,7 +771,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       {!hasFeedback && messages.length >= 5 && (
         <div style={{ padding:'0.6rem 1.5rem',borderBottom:'1px solid var(--border)',background:'rgba(154,111,56,0.05)',display:'flex',alignItems:'center',justifyContent:'space-between',gap:'1rem' }}>
-          <p style={{ fontSize:'0.78rem',color:'var(--muted)' }}>Rate this connection — does the theory hold?</p>
+          <p style={{ fontSize:'0.78rem',color:'var(--muted)' }}>Rate this connection, does the theory hold?</p>
           <button type="button" onClick={() => navigate(`/feedback/${match.id}`)} style={{ background:'none',border:'1px solid var(--accent-lt)',borderRadius:3,padding:'0.3rem 0.75rem',fontSize:'0.75rem',color:'var(--accent)',cursor:'pointer',whiteSpace:'nowrap' }}>Rate it →</button>
         </div>
       )}
@@ -950,7 +953,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
         <div ref={bottomRef} />
       </div>
 
-      {/* Input area — isolated component so typing doesn't re-render the message list */}
+      {/* Input area, isolated component so typing doesn't re-render the message list */}
       <MessageInput
         onSend={handleSend}
         sending={sending}
@@ -977,7 +980,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
 
       </div>
 
-      {/* Desktop sidebar — profile, relation info, breakdown and actions */}
+      {/* Desktop sidebar, profile, relation info, breakdown and actions */}
       <aside className="convo-sidebar hidden-mobile">
         <div style={{ padding:'1.5rem 1.25rem 1.25rem',borderBottom:'1px solid var(--border)',display:'flex',flexDirection:'column',alignItems:'center',textAlign:'center',gap:'0.5rem' }}>
           <Link to={`/profile/${otherUserId}`} style={{ flexShrink:0,textDecoration:'none' }}>
@@ -1052,7 +1055,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               <>
                 <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.3rem',marginBottom:'0.75rem' }}>Disconnected</h3>
                 <p style={{ fontSize:'0.88rem',color:'var(--muted)',lineHeight:1.7,marginBottom:'1.5rem' }}>
-                  You've disconnected from {otherName}. Your slot is free — head back to the feed to find someone new.
+                  You've disconnected from {otherName}. Your slot is free. Head back to the feed to find someone new.
                 </p>
                 <div style={{ display:'flex',justifyContent:'flex-end' }}>
                   <button type="button" className="btn-primary" onClick={() => { window.location.href = '/feed' }}>Return to feed</button>
@@ -1062,7 +1065,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
               <>
                 <h3 style={{ fontFamily:'var(--serif)',fontSize:'1.3rem',marginBottom:'0.75rem' }}>Disconnect from {otherName}?</h3>
                 <p style={{ fontSize:'0.88rem',color:'var(--muted)',lineHeight:1.7,marginBottom:'1.5rem' }}>
-                  This ends the connection for both of you and removes it from both your lists. It frees up a connection slot, and you'll see each other in the feed again. Your message history isn't deleted — but neither of you can send new messages unless you reconnect.
+                  This ends the connection for both of you and removes it from both your lists. It frees up a connection slot, and you'll see each other in the feed again. Your message history isn't deleted, but neither of you can send new messages unless you reconnect.
                 </p>
                 {blockError && <p style={{ fontSize:'0.82rem',color:'#c0392b',marginBottom:'0.75rem' }}>{blockError}</p>}
                 <div style={{ display:'flex',gap:'0.75rem',justifyContent:'flex-end' }}>
@@ -1105,7 +1108,7 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     {lightboxUrl && (
       <div onClick={() => setLightboxUrl(null)} style={{ position:'fixed',inset:0,zIndex:1000,background:'rgba(0,0,0,0.88)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'zoom-out' }}>
         <img src={lightboxUrl} alt="shared image" style={{ maxWidth:'92vw',maxHeight:'90vh',objectFit:'contain',borderRadius:6 }} onClick={e=>e.stopPropagation()} />
-        <button type="button" onClick={() => setLightboxUrl(null)} style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1 }}>×</button>
+        <button type="button" onClick={() => setLightboxUrl(null)} aria-label="Close" style={{ position:'fixed',top:'1.5rem',right:'1.5rem',background:'rgba(255,255,255,0.15)',border:'none',borderRadius:'50%',width:36,height:36,color:'#fff',fontSize:'1.2rem',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',lineHeight:1 }}>×</button>
       </div>
     )}
     </>

@@ -8,8 +8,8 @@ const TIER_LABELS = {
   catalyst_plus: 'Catalyst+',
 }
 
-const SHARE_TEXT_TRIAL = "I'm on Socion, a Socionics-based matching app — use my link and we both get a Premium trial:"
-const SHARE_TEXT_REFEREE_ONLY = "I'm on Socion, a Socionics-based matching app — use my link and you get a 7-day Premium trial:"
+const SHARE_TEXT_TRIAL = "I'm on Socion, a Socionics-based matching app, use my link and we both get a Premium trial:"
+const SHARE_TEXT_REFEREE_ONLY = "I'm on Socion, a Socionics-based matching app, use my link and you get a 7-day Premium trial:"
 
 export default function ReferralPanel({ profile, isPremium }) {
   const [tier, setTier] = useState(null)
@@ -92,7 +92,7 @@ export default function ReferralPanel({ profile, isPremium }) {
 
       {(tier === 'catalyst' || tier === 'catalyst_plus' || count >= 5) && isPremium && (
         <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, fontStyle: 'italic' }}>
-          {count >= 10 ? 'Catalyst+ rewards (free report or 1:1)' : '50% off a typing report'} — coming soon.
+          {count >= 10 ? 'Catalyst+ rewards (free report or 1:1)' : '50% off a typing report'}, coming soon.
         </p>
       )}
 
@@ -102,7 +102,7 @@ export default function ReferralPanel({ profile, isPremium }) {
           <ol style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', paddingLeft: '1.1rem', margin: 0 }}>
             {leaderboard.map((row, i) => (
               <li key={i} style={{ fontSize: '0.82rem', color: 'var(--text)' }}>
-                {row.display_name || 'A Socion member'} — {row.referral_count_qualified}
+                {row.display_name || 'A Socion member'}, {row.referral_count_qualified}
               </li>
             ))}
           </ol>

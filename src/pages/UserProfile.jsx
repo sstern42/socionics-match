@@ -72,7 +72,8 @@ export default function UserProfile() {
       .select('id, type, profile_data, avatar_url, photos, verified_by, is_founding_member, plan_status')
       .eq('id', userId)
       .maybeSingle()
-      .then(({ data }) => { setOther(data); setFetching(false) })
+      .then(({ data, error }) => { setOther(error ? null : data); setFetching(false) })
+      .catch(() => setFetching(false))
   }, [userId])
 
   useEffect(() => {
@@ -288,7 +289,7 @@ export default function UserProfile() {
     return (
       <div style={{ textAlign: 'center', padding: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
         <div style={{ fontFamily: 'var(--serif)', fontSize: '3rem', fontWeight: 500, color: 'var(--accent)', lineHeight: 1 }}>
-          {viewCount ?? '—'}
+          {viewCount ?? '–'}
         </div>
         <p style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6 }}>
           {viewCount === 1 ? 'person has viewed' : 'people have viewed'} your profile.
@@ -298,7 +299,7 @@ export default function UserProfile() {
             See who's been looking.
           </p>
           <p style={{ fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.6, marginBottom: '1rem' }}>
-            Premium unlocks the full viewer list — name, type, relation, and when they visited.
+            Premium unlocks the full viewer list, name, type, relation, and when they visited.
           </p>
           <Link
             to="/premium"
@@ -490,7 +491,7 @@ export default function UserProfile() {
                     {copied ? '✓ Copied' : 'Copy'}
                   </button>
                 </div>
-                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.5rem', lineHeight: 1.5 }}>{!isSelf ? 'Find them on Discord to continue the conversation there.' : 'Your Discord handle — visible to your connections.'}</p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.5rem', lineHeight: 1.5 }}>{!isSelf ? 'Find them on Discord to continue the conversation there.' : 'Your Discord handle, visible to your connections.'}</p>
               </div>
             )}
 
@@ -502,7 +503,7 @@ export default function UserProfile() {
               </div>
             )}
 
-            {/* Book CTA — non-self, non-anon profiles only */}
+            {/* Book CTA, non-self, non-anon profiles only */}
             {!isSelf && !isAnon && SMS_BOOKS[other.type] && (
               <div style={{ border: '1px solid var(--border)', borderRadius: 4, padding: '0.85rem 1rem' }}>
                 <p style={{ fontSize: '0.65rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.65rem' }}>Socionics Made Simple</p>
@@ -512,7 +513,7 @@ export default function UserProfile() {
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ fontSize: '0.88rem', fontWeight: 500, color: 'var(--text)', margin: '0 0 0.3rem' }}>
-                      The {other.type} — {SMS_BOOKS[other.type].nickname}
+                      The {other.type}, {SMS_BOOKS[other.type].nickname}
                     </p>
                     <a
                       href={SMS_BOOKS[other.type].url}
@@ -524,7 +525,7 @@ export default function UserProfile() {
                       Read on Amazon →
                     </a>
                     <p style={{ fontSize: '0.62rem', color: 'var(--muted)', marginTop: '0.3rem', lineHeight: 1.4 }}>
-                      Affiliate link — we earn a small commission at no extra cost to you.
+                      Affiliate link, we earn a small commission at no extra cost to you.
                     </p>
                   </div>
                 </div>
@@ -533,7 +534,7 @@ export default function UserProfile() {
 
             {!discordHandle && !isSelf && (
               <p style={{ fontSize: '0.78rem', color: 'var(--muted)', lineHeight: 1.6, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-                This member hasn't added a Discord handle yet. You can ask them to add one in your conversation — they'll find it under Profile → Details.
+                This member hasn't added a Discord handle yet. You can ask them to add one in your conversation, they'll find it under Profile → Details.
               </p>
             )}
           </div>
@@ -547,7 +548,7 @@ export default function UserProfile() {
             <div>
               <p style={{ fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '0.4rem' }}>Connecting with {name}</p>
               <p style={{ fontSize: '0.95rem', fontFamily: 'var(--serif)', fontStyle: 'italic', color: 'var(--text)', lineHeight: 1.5, margin: 0 }}>
-                {other.profile_data?.connection_question || 'Introduce yourself — what brings you to Socion?'}
+                {other.profile_data?.connection_question || 'Introduce yourself. What brings you to Socion?'}
               </p>
             </div>
             <textarea className="input-standalone" placeholder="Write your message…" value={connectMessage} onChange={e => setConnectMessage(e.target.value)} onKeyDown={e => e.key === 'Enter' && e.ctrlKey && connectMessage.trim().length >= 10 && handleConnectSubmit()} rows={4} autoFocus disabled={connecting} style={{ resize: 'none', fontFamily: 'var(--sans)', lineHeight: 1.6 }} />
@@ -600,7 +601,7 @@ export default function UserProfile() {
       {lightbox && (
         <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'zoom-out' }}>
           <img src={lightbox} alt="" style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain', borderRadius: 6 }} onClick={e => e.stopPropagation()} />
-          <button type="button" onClick={() => setLightbox(null)} style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+          <button type="button" onClick={() => setLightbox(null)} aria-label="Close" style={{ position: 'fixed', top: '1.5rem', right: '1.5rem', background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%', width: 36, height: 36, color: '#fff', fontSize: '1.2rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
         </div>
       )}
 

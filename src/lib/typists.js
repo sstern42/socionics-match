@@ -15,7 +15,7 @@ export const TYPISTS = {
     dob:             '1982-05-24',
     flag:            'GB',
     studyingSince:   2004,
-    bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire — async, considered, and reasoned.',
+    bio:             'Founder of Socion and Socionics Insight. Written reports based on a 12-question questionnaire, async, considered, and reasoned.',
     credibilityLine: 'Spencer has delivered typing reports to clients across Socionics Insight and Socion.',
     linkedin:        'https://www.linkedin.com/in/spencerstern/',
     discordUrl:      null,
@@ -30,14 +30,14 @@ export const TYPISTS = {
     bookingReady:    true,
     currency:        'USD',
     contact:         'spencer@socion.app',
-    paymentNote:     "Payment is taken by Stripe. Straight after, you'll be taken to the questionnaire to complete in your own time. The clock on your turnaround starts once you submit it — not at payment.",
+    paymentNote:     "Payment is taken by Stripe. Straight after, you'll be taken to the questionnaire to complete in your own time. The clock on your turnaround starts once you submit it, not at payment.",
     referralNote:    null,
     tiersLabel:      null,
     testimonials:    [
       { quote: 'The results were very helpful to me. It provided a clue to deepening my understanding.', name: 'Yotaka' },
       { quote: "A typing report backed with enough evidence and reasoning to assuage any doubts… and that's coming from an EII.", name: 'Chihuahua' },
       { quote: "Spencer provided a thorough, well-analyzed typing that I hadn't considered but is accurate.", name: 'Andrew' },
-      { quote: 'Reasonable and enjoyable — both process and result. Highly recommend for anyone who strives to get know themselves.', name: 'Sol' },
+      { quote: 'Reasonable and enjoyable, both process and result. Highly recommend for anyone who strives to get know themselves.', name: 'Sol' },
     ],
     tiers: [
       {
@@ -65,7 +65,7 @@ export const TYPISTS = {
     ],
     steps: [
       ['01', 'Pay',     'Choose Standard or Express. Payment is handled securely by Stripe.'],
-      ['02', 'Answer',  "You're taken straight to a short questionnaire — twelve questions about how you think and relate. Answer in your own words."],
+      ['02', 'Answer',  "You're taken straight to a short questionnaire, twelve questions about how you think and relate. Answer in your own words."],
       ['03', 'Receive', 'Your written report lands by email within the timeframe you chose. It confirms your type, explains the reasoning, and your Socion profile is updated to match.'],
     ],
     whatYouGet: [
@@ -100,7 +100,7 @@ export const TYPISTS = {
     currency:        'USD',
     contact:         'uncle.sam@socion.app', // forwarding to: ustypologyservice@gmail.com
     paymentNote:     "Payment is taken by Stripe. After payment you'll be taken to a booking page to schedule your session with Uncle Sam.",
-    referralNote:    "Refer a friend and get $10 back — if someone you refer books any session, you'll receive a $10 discount or refund on your next booking. Applies to all tiers.",
+    referralNote:    "Refer a friend and get $10 back, if someone you refer books any session, you'll receive a $10 discount or refund on your next booking. Applies to all tiers.",
     tiersLabel:      'Choose your session',
     testimonial:     { quote: 'Uncle Sam was very calm and considerate when it came to explaining my type to me. He allowed me to feel comfortable enough to ask questions freely and express my concerns or disagreements.', name: 'Luna, Typology Testing' },
     tiers: [
@@ -110,7 +110,7 @@ export const TYPISTS = {
         price:          '$39.99',
         turnaround:     '60 min',
         turnaroundLabel:'Session duration: 60 min',
-        description:    'A focused Q&A session to determine which of the 16 personality types best fits you. Thorough, standardised typing process — ideal if you mainly want to know your type.',
+        description:    'A focused Q&A session to determine which of the 16 personality types best fits you. Thorough, standardised typing process, ideal if you mainly want to know your type.',
         href:           'https://buy.stripe.com/5kQeVf9T5bMvbI9dLc6AM01',
         highlight:      false,
       },

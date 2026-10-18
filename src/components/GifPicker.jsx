@@ -161,7 +161,7 @@ export default function GifPicker({ onSelect, onClose }) {
         )}
       </div>
 
-      {/* Giphy attribution — required by terms */}
+      {/* Giphy attribution, required by terms */}
       <div style={{ padding: '0.3rem 0.75rem', borderTop: '1px solid var(--border)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
         <img
           src="https://developers.giphy.com/branch/master/static/header-logo-8974b8ae658f704a5b48a2d039b8ad93.gif"

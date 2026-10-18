@@ -29,7 +29,7 @@ function FounderFeedToggle() {
         <div>
           <p style={{ fontSize: '0.78rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--muted)', fontWeight: 500 }}>Founder feed override</p>
           <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', lineHeight: 1.5 }}>
-            {enabled ? 'Active — showing all profiles regardless of purpose.' : 'Off — feed filters by your purpose as normal.'}
+            {enabled ? 'Active, showing all profiles regardless of purpose.' : 'Off, feed filters by your purpose as normal.'}
           </p>
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', flexShrink: 0 }}>
@@ -484,7 +484,7 @@ export default function Admin() {
             { value: totalMessages,     label: 'Messages',      delta: messagesToday, sub: messagesEver > 0 ? `${messagesEver.toLocaleString()} all-time` : null },
             { value: Object.keys(typeCounts).length, label: 'Types represented' },
             { value: totalAssessments,  label: 'Assessments' },
-            { value: avgRating ? `${avgRating}/5` : '—', label: `Avg rating (${ratingsCount})` },
+            { value: avgRating ? `${avgRating}/5` : '–', label: `Avg rating (${ratingsCount})` },
             { value: active7d,          label: 'Active 7d' },
             { value: inactive,          label: 'Inactive 7d+' },
             { value: messagingActive,   label: 'Messaging 7d' },
@@ -528,7 +528,7 @@ export default function Admin() {
           const showLabel = i => i === 0 || i === points.length - 1 || i % Math.max(1, Math.floor(points.length / 6)) === 0
           return (
             <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
-              <p style={cardTitleStyle}>Member growth {growthData.length > 30 && <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>— last 30 days</span>}</p>
+              <p style={cardTitleStyle}>Member growth {growthData.length > 30 && <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontWeight: 400 }}>, last 30 days</span>}</p>
               <div style={{ marginTop: '1.25rem', overflowX: 'auto' }}>
                 <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block', minWidth: `${Math.max(visibleData.length * 28, 300)}px` }}>
                   <defs>
@@ -675,7 +675,7 @@ export default function Admin() {
 
           {/* Top referrers */}
           <div style={cardStyle}>
-            <p style={cardTitleStyle}>Top referrers {topReferrers.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none yet</span>}</p>
+            <p style={cardTitleStyle}>Top referrers {topReferrers.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>, none yet</span>}</p>
             {topReferrers.length > 0 && (
               <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', paddingRight: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {topReferrers.map((r, i) => (
@@ -703,7 +703,7 @@ export default function Admin() {
 
           {/* Referral premium rewards */}
           <div style={cardStyle}>
-            <p style={cardTitleStyle}>Referral premium {referralRewarded.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none active</span>}</p>
+            <p style={cardTitleStyle}>Referral premium {referralRewarded.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>, none active</span>}</p>
             {referralRewarded.length > 0 && (
               <div style={{ maxHeight: 180, overflowY: 'auto', marginTop: '1rem', paddingRight: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 {referralRewarded.map(r => (
@@ -729,7 +729,7 @@ export default function Admin() {
             <p style={cardTitleStyle}>
               Ratings by relation type
               <span style={{ color: 'var(--muted)', fontWeight: 300, marginLeft: '0.5rem' }}>
-                — {feedbackCount} of {totalMatchCount} site-wide connections rated
+               , {feedbackCount} of {totalMatchCount} site-wide connections rated
               </span>
             </p>
             {relAvgRatings.length === 0 ? (
@@ -753,7 +753,7 @@ export default function Admin() {
           </div>
 
           <div style={cardStyle}>
-            <p style={cardTitleStyle}>Comments {comments.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none yet</span>}</p>
+            <p style={cardTitleStyle}>Comments {comments.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>, none yet</span>}</p>
             {comments.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 280, overflowY: 'auto' }}>
                 {comments.map((c, i) => (
@@ -779,10 +779,10 @@ export default function Admin() {
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <p style={cardTitleStyle}>Incomplete sign-ups <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— last 7 days</span></p>
+              <p style={cardTitleStyle}>Incomplete sign-ups <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>, last 7 days</span></p>
               <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>Authenticated but never completed onboarding.</p>
               <p style={exportWarningStyle}>
-                Not for MailerLite or any marketing — nobody here has given marketing consent (it's captured at profile setup). The automated one-off reminder already covers them.
+                Not for MailerLite or any marketing, nobody here has given marketing consent (it's captured at profile setup). The automated one-off reminder already covers them.
               </p>
             </div>
             {incompleteSignups.length > 0 && (
@@ -825,7 +825,7 @@ export default function Admin() {
               <p style={cardTitleStyle}>Marketing-consented members ({memberEmails.length})</p>
               <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.3rem' }}>Members who opted in to Socion update emails and haven't unsubscribed, bounced or been banned.</p>
               <p style={exportWarningStyle}>
-                The only list to import into MailerLite. Export fresh before each campaign — people opt out between sends, and an old copy won't know.
+                The only list to import into MailerLite. Export fresh before each campaign, people opt out between sends, and an old copy won't know.
               </p>
             </div>
             {memberEmails.length > 0 && (
@@ -851,7 +851,7 @@ export default function Admin() {
         <div style={{ ...cardStyle, marginBottom: '1.5rem' }}>
           <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
             <div>
-              <p style={cardTitleStyle}>Inactive users <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {inactiveUsers.length} inactive {inactiveThreshold}d+</span></p>
+              <p style={cardTitleStyle}>Inactive users <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>, {inactiveUsers.length} inactive {inactiveThreshold}d+</span></p>
               <p style={exportWarningStyle}>
                 Copy and Export include only the {inactiveUsers.filter(u => u.marketing_ok).length} marketing-consented members below; the list shows everyone. Export fresh before each send.
               </p>
@@ -914,7 +914,7 @@ export default function Admin() {
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.78rem', fontWeight: 500, color: 'var(--accent)', width: 36 }}>{u.type}</span>
                   <span style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
-                    {u.profile_data?.name ?? '—'}
+                    {u.profile_data?.name ?? '–'}
                     {u.profile_data?.age ? `, ${u.profile_data.age}` : ''}
                     {u.profile_data?.gender && u.profile_data.gender !== 'Prefer not to say' ? ` ${{ Man: '👨', Woman: '👩', 'Non-binary': '🧑' }[u.profile_data.gender] ?? ''}` : ''}
                   </span>
@@ -937,14 +937,14 @@ export default function Admin() {
         </div>
 
         {/* ── Controls: interactive settings & moderation ───────── */}
-        <SectionHeading title="Controls" note="Interactive — toggles, messaging & moderation" />
+        <SectionHeading title="Controls" note="Interactive, toggles, messaging & moderation" />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(360px, 100%), 1fr))', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'start' }}>
           {/* Site-wide banner */}
           <div style={cardStyle}>
             <p style={cardTitleStyle}>Site-wide banner</p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem' }}>
-              Shown on every page above the nav. CTA always links to /support. Not dismissable, so keep it short and evergreen.
+              Shown on every page above the nav. CTA always links to /support. Not dismissible, so keep it short and evergreen.
             </p>
             <textarea
               value={siteBanner}
@@ -975,9 +975,9 @@ export default function Admin() {
             </div>
           </div>
 
-          {/* Quadra Rooms — host prompt */}
+          {/* Quadra Rooms, host prompt */}
           <div style={founderCardStyle}>
-            <p style={cardTitleStyle}>Quadra Rooms — post a host prompt</p>
+            <p style={cardTitleStyle}>Quadra Rooms, post a host prompt</p>
             <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.4rem', marginBottom: '1rem', lineHeight: 1.5 }}>
               Drops an AI-generated conversation-starter into the selected rooms as “Socion Host”, right now. Members with room notifications on get pinged. A room with no members is skipped. (The scheduler already does this automatically for rooms that have gone quiet.)
             </p>
@@ -1053,22 +1053,22 @@ export default function Admin() {
                 else { localStorage.setItem('umami.disabled', '1'); setTrackingExcluded(true) }
               }}
             >
-              {trackingExcluded ? '✓ Excluded — re-enable?' : 'Exclude this device'}
+              {trackingExcluded ? '✓ Excluded, re-enable?' : 'Exclude this device'}
             </button>
           </div>
         </div>
 
-        {/* Moderation — reports */}
+        {/* Moderation, reports */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'start' }}>
           {/* Reports */}
           <div style={cardStyle}>
-            <p style={cardTitleStyle}>Reports {reports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none</span>}</p>
+            <p style={cardTitleStyle}>Reports {reports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>, none</span>}</p>
             {reports.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem' }}>
                 {reports.map(r => (
                   <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: `2px solid ${r.lifted_at ? 'var(--border)' : '#c0392b'}`, paddingLeft: '0.75rem' }}>
                     <p style={{ color: r.lifted_at ? 'var(--muted)' : '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
-                      {r.reason}{r.lifted_at && ' — unblocked'}
+                      {r.reason}{r.lifted_at && ', unblocked'}
                     </p>
                     <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
                       <strong>{r.blocked_name ?? r.blocked_id}</strong> blocked by <strong>{r.blocker_name ?? r.blocker_id}</strong>
@@ -1099,13 +1099,13 @@ export default function Admin() {
 
           {/* Board reports */}
           <div style={cardStyle}>
-            <p style={cardTitleStyle}>Board reports {boardReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
+            <p style={cardTitleStyle}>Board reports {boardReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>, none open</span>}</p>
             {boardReports.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
                 {boardReports.map(r => (
                   <div key={r.id} style={{ fontSize: '0.78rem', borderLeft: '2px solid #c0392b', paddingLeft: '0.75rem' }}>
                     <p style={{ color: '#c0392b', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem' }}>
-                      {r.reason ?? 'No reason given'} {r.post_id ? '— post' : '— comment'}
+                      {r.reason ?? 'No reason given'} {r.post_id ? ', post' : ', comment'}
                     </p>
                     <p style={{ color: 'var(--text)', marginTop: '0.3rem' }}>
                       Reported by <strong>{r.reporter_name ?? 'Unknown'}</strong>
@@ -1146,7 +1146,7 @@ export default function Admin() {
 
           {/* User reports */}
           <div style={cardStyle}>
-            <p style={cardTitleStyle}>User reports {userReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>— none open</span>}</p>
+            <p style={cardTitleStyle}>User reports {userReports.length === 0 && <span style={{ color: 'var(--muted)', fontWeight: 300 }}>, none open</span>}</p>
             {userReports.length > 0 && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '1rem', maxHeight: 420, overflowY: 'auto' }}>
                 {userReports.map(r => (
@@ -1285,7 +1285,7 @@ function VerificationPanel({ users, onUpdate }) {
                     {SOCIONICS_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 )}
-                <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.profile_data?.name ?? '—'}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.profile_data?.name ?? '–'}</span>
                 {isVerified && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontSize: '0.6rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>
                     <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 12, height: 12, borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '0.45rem', fontWeight: 700, lineHeight: 1 }}>✓</span>
@@ -1368,7 +1368,7 @@ function BannedEmailsPanel() {
     <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
       <p style={cardTitleStyle}>
         Banned emails
-        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {items.length} blocked</span>
+        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>, {items.length} blocked</span>
       </p>
       <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: '1rem' }}>
         <input
@@ -1455,7 +1455,7 @@ function FeedbackPanel() {
     <div style={{ ...cardStyle, marginBottom: '1.5rem', marginTop: '1.5rem' }}>
       <p style={cardTitleStyle}>
         User feedback
-        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>— {items.length} {filter === 'all' ? 'total' : filter}</span>
+        <span style={{ fontWeight: 300, color: 'var(--muted)', marginLeft: '0.5rem' }}>, {items.length} {filter === 'all' ? 'total' : filter}</span>
       </p>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '1rem' }}>
         {['open', 'reviewed', 'resolved', 'all'].map(s => (

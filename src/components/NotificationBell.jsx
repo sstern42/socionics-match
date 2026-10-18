@@ -250,7 +250,7 @@ export default function NotificationBell({ notifications, unreadCount, loading, 
             )}
           </div>
 
-          {/* Footer — only when there's content */}
+          {/* Footer, only when there's content */}
           {notifications.length > 0 && (
             <div style={{
               padding: '0.5rem 1rem',

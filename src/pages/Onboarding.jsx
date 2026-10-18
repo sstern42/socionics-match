@@ -12,7 +12,7 @@ export default function Onboarding() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
-  usePageMeta('Get Started | Socion™', "Tell us what you're looking for, find your Socionics type, and create your free profile — takes about two minutes.")
+  usePageMeta('Get Started | Socion™', "Tell us what you're looking for, find your Socionics type, and create your free profile, takes about two minutes.")
 
   const knowsType = searchParams.get('know') === '1'
   const [step, setStep] = useState('purpose')
@@ -89,7 +89,7 @@ export default function Onboarding() {
                 disabled={purposes.length === 0}
                 style={{ opacity: purposes.length === 0 ? 0.5 : 1 }}
               >
-                Next — find your type
+                Next, find your type
               </button>
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function Onboarding() {
             onConfirm={handleConfirm}
             eyebrow="Starting guess"
             title={<>Take your best <em>guess</em></>}
-            description="You don't need to get this right — it's just a starting point. Right after you sign up, a short typing chat will give you a real preliminary read and can update it."
+            description="You don't need to get this right, it's just a starting point. Right after you sign up, a short typing chat will give you a real preliminary read and can update it."
             confirmLabel="Continue"
           />
         )}

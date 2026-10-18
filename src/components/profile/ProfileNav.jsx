@@ -33,7 +33,7 @@ export default function ProfileNav() {
       marginBottom: '2rem',
       width: '100%',
     }}>
-      {/* Main tabs — natural width, never grow */}
+      {/* Main tabs, natural width, never grow */}
       <div style={{ display: 'flex', flex: '0 0 auto' }}>
         {TABS.map(tab => (
           <Link key={tab.to} to={tab.to} style={linkStyle(pathname === tab.to)}>
@@ -42,7 +42,7 @@ export default function ProfileNav() {
         ))}
       </div>
 
-      {/* View profile + Help — pushed right on desktop, wrap to next line on mobile */}
+      {/* View profile + Help, pushed right on desktop, wrap to next line on mobile */}
       <div style={{ display: 'flex', marginLeft: 'auto' }}>
         {profile?.id && (
           <Link

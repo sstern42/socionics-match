@@ -41,7 +41,7 @@ function timeAgo(dateStr) {
 }
 
 export default function Stats() {
-  usePageMeta('Socionics Compatibility Stats | Socion™', 'Live compatibility data from Socion members — satisfaction ratings by relation type, most-connected dynamics, type distribution, and real feedback.')
+  usePageMeta('Socionics Compatibility Stats | Socion™', 'Live compatibility data from Socion members, satisfaction ratings by relation type, most-connected dynamics, type distribution, and real feedback.')
   const { session } = useAuth()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -108,7 +108,7 @@ export default function Stats() {
           Does the theory hold?
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '0.92rem', lineHeight: 1.7, maxWidth: 560, marginBottom: '3rem' }}>
-          Socionics makes specific, falsifiable predictions about relationship quality. Here's what the data says — drawn from real connections and ratings on Socion.
+          Socionics makes specific, falsifiable predictions about relationship quality. Here's what the data says, drawn from real connections and ratings on Socion.
         </p>
 
         {/* Headline numbers */}
@@ -167,7 +167,7 @@ export default function Stats() {
         {sortedRels.length > 0 && (
           <div style={{ marginBottom: '3rem' }}>
             <h2 style={sectionHeadStyle}>Most connected relation types</h2>
-            <p style={sectionSubStyle}>Which relations members actually connect in — revealed preference.</p>
+            <p style={sectionSubStyle}>Which relations members actually connect in, revealed preference.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1.25rem' }}>
               {sortedRels.map(({ rel, count }) => (
                 <div key={rel} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

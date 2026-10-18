@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../lib/AuthContext'
 import { usePageMeta } from '../hooks/usePageMeta'
 import { getSignupDevice } from '../lib/device'
+import { rememberPostAuthRedirect, takePostAuthRedirect } from '../lib/postAuthRedirect'
 
 const IS_PROD = window.location.hostname === 'socion.app'
 const PENDING_EMAIL_KEY = 'socion_pending_email'
@@ -17,7 +18,7 @@ const PENDING_EMAIL_KEY = 'socion_pending_email'
 const OAUTH_ENABLED = IS_PROD
 
 export default function Auth() {
-  usePageMeta('Sign In or Create a Free Account | Socion™', 'Sign in or create a free Socion account. Match by Socionics personality type — choose your dynamic and connect with people who fit you by design.')
+  usePageMeta('Sign In or Create a Free Account | Socion™', 'Sign in or create a free Socion account. Match by Socionics personality type, choose your dynamic and connect with people who fit you by design.')
   const [email, setEmail] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -34,10 +35,16 @@ export default function Auth() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const incomingType = searchParams.get('type')
+  const redirectParam = searchParams.get('redirect')
+
+  // A page that sent the visitor here can ask to get them back afterwards.
+  useEffect(() => { rememberPostAuthRedirect(redirectParam) }, [redirectParam])
 
   useEffect(() => {
     if (authLoading) return
-    if (session) navigate(profile ? '/' : '/onboarding')
+    if (!session) return
+    if (!profile) { navigate('/onboarding'); return }
+    navigate(takePostAuthRedirect() ?? '/')
   }, [session, profile, authLoading, navigate])
 
   useEffect(() => {

@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
     // Boot timeout — if nothing has resolved auth yet, stop blocking first paint.
     const bootTimer = setTimeout(() => {
       if (!settledRef.current) {
-        console.warn('Auth did not initialise within timeout — booting logged-out shell.')
+        console.warn('Auth did not initialise within timeout, booting logged-out shell.')
         setSession(s => (s === undefined ? null : s))
         setProfile(p => (p === undefined ? null : p))
       }

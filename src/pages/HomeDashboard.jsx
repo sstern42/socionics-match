@@ -5,7 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabase'
 import { useUnreadCount, markMessagesRead } from '../lib/useUnreadCount'
 import { useNotifications } from '../hooks/useNotifications'
-import { getRoomLastVisited } from './Rooms'
+import { getRoomLastVisited } from '../lib/rooms'
 import ReferralPanel from '../components/profile/ReferralPanel'
 import PointsPanel from '../components/profile/PointsPanel'
 import LatestArticles from '../components/LatestArticles'
@@ -153,15 +153,15 @@ export default function HomeDashboard() {
         <div style={{ marginBottom: '1.25rem' }}>
           <DashboardCard
             eyebrow="Your type"
-            title={uncertainType ? 'Not fully confirmed' : `${profile?.type} — confirmed`}
+            title={uncertainType ? 'Not fully confirmed' : `${profile?.type}, confirmed`}
             to={uncertainType ? '/typing' : '/ask'}
             cta={uncertainType ? 'Get professionally typed →' : 'Ask the AI →'}
           >
             {uncertainType
               ? "Your self-typing result wasn't highly confident. Ask the AI or book a professional typist to confirm it."
-              : 'Explore your type further — ask the AI about your relations, dynamics, and compatibility.'}
+              : 'Explore your type further, ask the AI about your relations, dynamics, and compatibility.'}
             <Link to="/typing/chat" style={{ display: 'block', marginTop: '0.6rem', color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}>
-              {isTypeVerified ? 'Try our free typing chat — just for fun →' : 'Try our free typing chat for a preliminary read →'}
+              {isTypeVerified ? 'Try our free typing chat, just for fun →' : 'Try our free typing chat for a preliminary read →'}
             </Link>
           </DashboardCard>
         </div>
