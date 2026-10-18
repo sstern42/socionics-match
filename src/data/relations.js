@@ -17,14 +17,15 @@ export const RELATIONS = {
   CONFLICT:       { name: 'Conflict',       description: 'Fundamental incompatibility. Draining for both.',                                        siSlug: 'conflict' },
   SUPER_EGO:      { name: 'Super-Ego',      description: 'Mutual respect at distance, friction up close.',                                         siSlug: 'super-ego' },
   CONTRARY:       { name: 'Contrary',       description: 'Alternate views on the same problems.',                                                  siSlug: 'extinguishment' },
-  BENEFACTOR:     { name: 'Benefactor',     description: 'One-directional support; giver benefits more than receiver.',                            siSlug: 'benefaction' },
+  BENEFACTOR:     { name: 'Benefactor',     description: 'One-directional support. The benefactor feels useful; the beneficiary may feel subtly patronised.',                            siSlug: 'benefaction' },
   BENEFICIARY:    { name: 'Beneficiary',    description: 'Receiving end of Benefactor relation.',                                                  siSlug: 'benefaction' },
   SUPERVISOR:     { name: 'Supervisor',     description: 'One type monitors the other\'s weak points.',                                            siSlug: 'supervision' },
   SUPERVISEE:     { name: 'Supervisee',     description: 'Receiving end of Supervision relation.',                                                 siSlug: 'supervision' },
   ILLUSIONARY:    { name: 'Illusionary',    description: 'Initial attraction gives way to mutual misreading.',                                     siSlug: 'mirage' },
 }
 
-// Matrix sourced from socionics.com/rel/relcht.htm
+// Matrix verified cell-for-cell against sstern42/socionics-core data/relations.json (the
+// canonical source for all type and relation data); originally from socionics.com/rel/relcht.htm
 // Row = type A, column = type B, value = relation from A's perspective.
 // Note: the display layer uses displayRelation (other->me) for feed cards and pills,
 // which inverts asymmetric keys — this is intentional and consistent throughout.
@@ -49,6 +50,16 @@ export const MATRIX = {
 
 export function getRelation(typeA, typeB) {
   return MATRIX[typeA]?.[typeB] ?? null
+}
+
+// Inverse of the four asymmetric keys; symmetric keys map to themselves.
+// Use to convert a display relation (other -> me) into my own role, or back.
+const ASYMMETRIC_INVERSE = {
+  BENEFACTOR: 'BENEFICIARY', BENEFICIARY: 'BENEFACTOR',
+  SUPERVISOR: 'SUPERVISEE', SUPERVISEE: 'SUPERVISOR',
+}
+export function toMyRole(displayRelation) {
+  return ASYMMETRIC_INVERSE[displayRelation] ?? displayRelation
 }
 
 // Returns the type that has the given relation to myType (from myType's perspective).

@@ -24,6 +24,8 @@ jobs:
       # Edge functions carry identical copies of the email helpers so each
       # can be deployed from the dashboard editor; keep them in step.
       - run: npm run check:email-helpers
+      # Every type and relation table the app ships is checked against socionics-core.
+      - run: npm run check:core-data
       # Build with placeholder env vars: Vite inlines import.meta.env at build
       # time, and a missing VITE_* var is a silent empty string rather than an
       # error, so real credentials aren't needed to catch a broken build.

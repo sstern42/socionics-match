@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
-import { RELATIONS } from '../../data/relations'
+import { RELATIONS, getRelation, toMyRole } from '../../data/relations'
 import { getCompatibilityBreakdown } from '../../data/compatibility'
 import { getMessages, sendMessage, subscribeToMessages, markRead, toggleReaction, uploadMessageImage } from '../../lib/messages'
 import { coolOff, hardBlock, getBlockBetween, liftBlock } from '../../lib/blocks'
@@ -365,8 +365,15 @@ export default function Conversation({ match, currentUserId, hasFeedback, onBack
     return null
   })()
 
+  // displayRelationType is the other person's role toward me (other -> me), e.g. SUPERVISOR
+  // means they supervise me. The breakdown prose is written from MY role, so the four
+  // asymmetric keys are inverted before lookup. Symmetric keys pass through unchanged.
   const breakdown = profile?.type
-    ? getCompatibilityBreakdown(profile.type, match.other.type, match.displayRelationType ?? match.relation_type)
+    ? getCompatibilityBreakdown(
+        profile.type,
+        match.other.type,
+        toMyRole(match.displayRelationType ?? getRelation(match.other.type, profile.type)),
+      )
     : null
   const breakdownUnlocked = isPremium && !!breakdown
 

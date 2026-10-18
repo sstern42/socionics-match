@@ -4,6 +4,20 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 18 October 2026
+
+### Fixed
+- **Benefit and Supervision direction in the AI chat prompt**: the "authoritative" pair lists in `chat-socionics` had 8 of 16 Benefactor pairs and 6 of 16 Supervisor pairs reversed (for example SLE listed as benefactor of LIE, where LIE is SLE's benefactor), so the AI would state the direction backwards for those pairs while its own per-type reference said the opposite. Both lines are regenerated from socionics-core. Needs redeploying: `chat-socionics`.
+- **Premium Model A breakdown described the wrong person's role**: the panel in a conversation is keyed by the other person's relation to you (so "Supervisor" means they supervise you), but the breakdown prose for the four asymmetric relations is written from your own role. A supervisee was therefore told "your leading function addresses the supervisee's most vulnerable position". The key is now inverted through a new `toMyRole()` helper before lookup; the 12 symmetric relations are unaffected.
+- **Mutual-match modal relation**: after a right swipe that completed a match, the modal named the relation from your side (your role) while the card you had just swiped, the feed and messages all show the other person's role toward you. The modal now matches the rest of the UI; the value stored on `swipes.relation_type` is unchanged.
+- **Dynamics tab asymmetric buckets**: `matches.relation_type` is written from whichever side created the match, so rows where you are `user_a` were sometimes bucketed by your role and sometimes by theirs. The tab now always derives the relation from the two types.
+- Copy: "hetroverted" typo; Conflict is "all four Jungian dichotomies flipped", not "every dichotomy" (conflictors share 7 of the 15 Reinin dichotomies); Benefactor description now matches socionics-core.
+
+### Added
+- **`npm run check:core-data`**, run in CI: verifies `TYPES`, all 256 `MATRIX` cells, quadras, the 16 Model A stacks, the Reinin table, book nicknames and the two pair lists in the `chat-socionics` prompt against `socionics-core` (new devDependency, pinned 1.5.0), so a direction error like the above fails the build.
+
+---
+
 ## 6 October 2026
 
 ### Added

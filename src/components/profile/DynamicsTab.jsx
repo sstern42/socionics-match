@@ -71,9 +71,10 @@ export default function DynamicsTab({ userId, myType, isPremium }) {
       }
       const rows = (userRows ?? []).map(r => ({
         ...r,
-        display_relation: r.is_user_a
-          ? r.relation_type
-          : (MATRIX[r.other_type]?.[myType] ?? r.relation_type),
+        // matches.relation_type is written from whichever side created the match, so it
+        // is not reliably "my role". Always derive the display relation (other -> me) from
+        // the types, which is what every other surface shows.
+        display_relation: MATRIX[r.other_type]?.[myType] ?? r.relation_type,
         rating_given:    r.rating_given    != null ? parseFloat(r.rating_given)    : null,
         rating_received: r.rating_received != null ? parseFloat(r.rating_received) : null,
         message_count:   parseInt(r.message_count ?? 0),
