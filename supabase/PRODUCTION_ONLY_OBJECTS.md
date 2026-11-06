@@ -151,5 +151,8 @@ dashboard settings a migration can't carry:
   function. Optional `MAILERLITE_SIGNAL_GROUP_ID` overrides the built-in id of
   the "Socionics Insight - Socionics Signal" group. Keep "Verify JWT" on: the
   function also checks the token itself
+- `unsubscribe-signal` (November 2026, `20261106130000`) needs the same
+  `MAILERLITE_API_KEY` (and `MAILERLITE_SIGNAL_GROUP_ID` if set on
+  `subscribe-signal`). Keep "Verify JWT" on
 - the `notify-abandoned-signup` `cron.schedule()` job (commented SQL in
   `20260706120000_abandoned_signup_nudge.sql`), which was already manual
