@@ -13,7 +13,7 @@ export default function Terms() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: October 2026</p>
+          <p style={metaStyle}>Last updated: November 2026</p>
 
           <h2>Who we are</h2>
           <p>Socion (socion.app) is operated by {OPERATOR_FULL}, a sole trader based in England. {POSTAL_ADDRESS}. Email: <a href={`mailto:${CONTACT_EMAIL}`} style={{ color: 'var(--accent)', textDecoration: 'none' }}>{CONTACT_EMAIL}</a>. In these terms, "we", "us" and "our" mean {OPERATOR_FULL}.</p>
@@ -66,7 +66,7 @@ export default function Terms() {
           <p>Nothing in these terms limits our liability for death or personal injury caused by negligence, fraud, or any other liability that cannot be excluded under English law.</p>
 
           <h2>10. Third-party services</h2>
-          <p>Socion uses Supabase for data storage and authentication, Resend for service email delivery, MailerLite for Socion update emails (sent only if you opt in), Umami for privacy-preserving analytics, Stripe for payment processing, and Anthropic for AI assistant responses. Your use of these services is subject to their respective terms and policies.</p>
+          <p>Socion uses Supabase for data storage and authentication, Resend for service email delivery, MailerLite for Socion update emails and the Socionics Signal newsletter (each sent only if you opt in), Umami for privacy-preserving analytics, Stripe for payment processing, and Anthropic for AI assistant responses. Your use of these services is subject to their respective terms and policies.</p>
 
           <h2>11. Changes to these terms</h2>
           <p>We may update these terms from time to time. Continued use of Socion after changes are posted constitutes acceptance of the revised terms. The date at the top of this page reflects when these terms were last updated.</p>

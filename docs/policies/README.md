@@ -13,7 +13,10 @@ snapshots of them.
 | [`privacy-2026-10-03.md`](privacy-2026-10-03.md) | 3 October 2026 |
 | [`terms-2026-10-03.md`](terms-2026-10-03.md) | 3 October 2026 |
 | [`terms-2026-10-18.md`](terms-2026-10-18.md) | 18 October 2026 |
+| [`privacy-2026-11-06.md`](privacy-2026-11-06.md) | 6 November 2026 |
+| [`terms-2026-11-06.md`](terms-2026-11-06.md) | 6 November 2026 |
 | [`consent-text-v1.md`](consent-text-v1.md) | 30 September 2026 |
+| [`consent-text-v2.md`](consent-text-v2.md) | 6 November 2026 (adds Socionics Signal) |
 
 Earlier versions (last updated 14 June 2026) were not archived; they are in
 git history in `src/pages/Privacy.jsx` and `src/pages/Terms.jsx`.

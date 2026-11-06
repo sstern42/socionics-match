@@ -13,7 +13,7 @@ export default function Privacy() {
         </h1>
 
         <div style={proseStyle}>
-          <p style={metaStyle}>Last updated: October 2026</p>
+          <p style={metaStyle}>Last updated: November 2026</p>
 
           <p>This policy explains what personal data we collect, how we use it, and your rights under UK GDPR.</p>
 
@@ -24,7 +24,7 @@ export default function Privacy() {
           <p>When you create an account and use Socion, we collect:</p>
           <ul>
             <li><strong>Account data</strong> — your email address and how you sign in: with a one-time code sent to your email, or through Google or Discord (no password is stored). We use your email address to sign you in, to send service emails about your account, and, only if you opt in, to send Socion updates</li>
-            <li><strong>Email preferences</strong> — whether you've agreed to Socion update emails, when and where you told us (for example at sign-up or in Settings), and, if you unsubscribe or an email bounces, a record that we must not email that address again</li>
+            <li><strong>Email preferences</strong> — whether you've agreed to Socion update emails or subscribed to Socionics Signal, when and where you told us (for example at sign-up, in Settings or on the feed), and, if you unsubscribe or an email bounces, a record that we must not email that address again</li>
             <li><strong>Profile data</strong> — your name, age, gender, location, bio, Socionics type, profile photo, and optional connection question, as you provide them</li>
             <li><strong>Usage data</strong> — the connections you make, messages you send, and feedback ratings you submit</li>
             <li><strong>Push notification tokens</strong> — if you enable push notifications, your device's push subscription endpoint is stored to deliver notifications</li>
@@ -44,6 +44,7 @@ export default function Privacy() {
             <li>To send service emails about your account — for example Premium and billing emails, or referral rewards added to your account</li>
             <li>To send a single reminder if you start signing up but don't finish your profile (it has an unsubscribe link)</li>
             <li>To send occasional Socion updates by email, only if you've opted in (see <a href="#marketing-emails" style={{ color: 'var(--accent)' }}>Marketing emails</a> below)</li>
+            <li>To send Socionics Signal, Spencer's newsletter, only if you subscribe to it</li>
             <li>To process Premium payments through Stripe</li>
             <li>To answer your questions in the Socionics AI assistant and the typing chat, through Anthropic</li>
             <li>To keep the community safe: moderating reports, enforcing our terms, and preventing abuse</li>
@@ -55,6 +56,7 @@ export default function Privacy() {
           <h2 id="marketing-emails">Marketing emails</h2>
           <p><strong>What we send.</strong> Occasional Socion updates — news about new features and the community, a few times a year at most. These are sent through MailerLite.</p>
           <p><strong>Legal basis.</strong> Your consent. We only send them if you've said yes: by ticking the box when you create your profile, by choosing "Yes, send me updates" when we ask in the app, or by turning on "Socion updates by email" in Settings. The box is never ticked for you, and saying no doesn't affect your account.</p>
+          <p><strong>Socionics Signal.</strong> Separately, you can subscribe to Socionics Signal, Spencer's email newsletter from socionicsinsight.com (new articles, Socion news and Socionics theory), from the feed. It goes to your account email address and is sent through MailerLite. It is a separate choice from Socion updates: saying yes to one doesn't sign you up to the other. Unsubscribe with the link at the bottom of any Signal email. Because both are sent from the same MailerLite account, unsubscribing there stops both Signal and Socion updates.</p>
           <p><strong>How to unsubscribe.</strong> Use the unsubscribe link at the bottom of any of these emails, or turn off "Socion updates by email" in Settings (Profile → Notifications). Either takes effect straight away and you can change your mind at any time.</p>
           <p><strong>Service emails continue.</strong> While you have an account, we'll still send emails you need about it — for example billing, Premium or security emails. These aren't marketing and aren't affected by your marketing choice.</p>
           <p><strong>What we keep.</strong> We keep a record of each consent choice (what you chose, when, and the wording you saw) so we can show what you agreed to. If you unsubscribe, or an email to you bounces, we keep your email address on a do-not-email list so you aren't emailed again, including after you delete your account.</p>
@@ -71,7 +73,7 @@ export default function Privacy() {
             <li><strong>Resend</strong> — service emails and reminders (account and payment emails, sent from mail.socion.app)</li>
             <li><strong>Google</strong> — optional sign-in via Google Identity Services</li>
             <li><strong>Discord</strong> — optional sign-in via Discord OAuth. We also post operational notifications to Socion's Discord server, such as a new sign-up with a partially masked email address</li>
-            <li><strong>MailerLite</strong> — occasional Socion updates, sent only if you opt in (news.socion.app sending domain)</li>
+            <li><strong>MailerLite</strong> — occasional Socion updates (news.socion.app sending domain) and the Socionics Signal newsletter, each sent only if you opt in</li>
             <li><strong>Umami</strong> — cookieless, privacy-first analytics</li>
             <li><strong>Stripe</strong> — payment processing for Premium subscriptions</li>
             <li><strong>Anthropic</strong> — AI responses for the Socionics AI assistant and the typing chat (messages you send are processed by Anthropic's API)</li>

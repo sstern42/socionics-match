@@ -2,6 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { ENTRIES as CHANGELOG_ENTRIES } from '../../pages/Changelog'
+import SignalSubscribe from './SignalSubscribe'
+import { SIGNAL_SOURCES } from '../../lib/signal'
+import { useAuth } from '../../lib/AuthContext'
 
 function Card({ title, children }) {
   return (
@@ -69,6 +72,7 @@ function StatsCard() {
 }
 
 function FounderPreviewCard() {
+  const { profile } = useAuth()
   const { data: post } = useQuery({
     queryKey: ['founder-post-latest'],
     queryFn: async () => {
@@ -84,17 +88,27 @@ function FounderPreviewCard() {
     staleTime: 5 * 60_000,
   })
 
-  if (!post) return null
+  const preview = post?.content?.length > 140 ? post.content.slice(0, 140) + '…' : post?.content
 
-  const preview = post.content?.length > 140 ? post.content.slice(0, 140) + '…' : post.content
+  // Shown even with no founder post yet, so the Signal sign-up still has a home
+  if (!post && profile?.signal_opt_in === true) return null
 
   return (
     <Card title="From the founder">
-      <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: '0.6rem' }}>
-        {new Date(post.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}
-      </p>
-      <p style={{ fontSize: '0.8rem', color: 'var(--text)', lineHeight: 1.5 }}>{preview}</p>
-      <CardLink to="/updates">Read more →</CardLink>
+      {post && (
+        <>
+          <p style={{ fontSize: '0.7rem', color: 'var(--muted)', marginBottom: '0.6rem' }}>
+            {new Date(post.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long' })}
+          </p>
+          <p style={{ fontSize: '0.8rem', color: 'var(--text)', lineHeight: 1.5 }}>{preview}</p>
+          <CardLink to="/updates">Read more →</CardLink>
+        </>
+      )}
+      <SignalSubscribe
+        source={SIGNAL_SOURCES.sidebar}
+        compact
+        lead={<>Spencer's newsletter, <strong>Socionics Signal</strong>: new articles, Socion news and type theory, by email.</>}
+      />
     </Card>
   )
 }

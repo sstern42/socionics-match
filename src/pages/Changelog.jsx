@@ -4,6 +4,13 @@ import { usePageMeta } from '../hooks/usePageMeta'
 
 export const ENTRIES = [
      {
+       date: '6 November 2026',
+       label: 'New',
+       items: [
+         'Socionics Signal: subscribe to Spencer\'s newsletter with one click from the feed, for new articles, Socion news and type theory in your inbox',
+       ],
+     },
+     {
        date: '18 October 2026',
        label: 'Fixed',
        items: [

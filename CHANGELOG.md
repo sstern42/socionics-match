@@ -4,6 +4,16 @@ All notable changes to [socion.app](https://socion.app). Newest first.
 
 ---
 
+## 6 November 2026
+
+### Added
+- **Socionics Signal sign-up in the feed**: signed-in members can subscribe to Socionics Signal (Spencer's email newsletter, run from socionicsinsight.com) with one click using their account email. It sits below the "New on Socionics Insight" card, the first in-feed card and the one that shows on mobile, and in the Premium right sidebar's "From the founder" card, which now renders even when there is no founder post so the sign-up has a home. Both disappear once `users.signal_opt_in` is true. Umami: `signal-subscribe-click`, `signal-subscribed`, `signal-subscribe-error` (each with `source`). `FeedAd` gains an optional `footer` prop below the CTA.
+- **New edge function `subscribe-signal`**: verifies the JWT, refuses banned or bounced/complained addresses, upserts the subscriber in MailerLite with the Signal group (`203226992088188319`, overridable with `MAILERLITE_SIGNAL_GROUP_ID`), and only then records consent. **Needs deploying: `subscribe-signal`** (uses the existing `MAILERLITE_API_KEY`).
+- **Migration `20261106120000_socionics_signal_opt_in.sql`**: Signal is a separate consent purpose from Socion updates. Adds `users.signal_opt_in` / `signal_opt_in_at` / `signal_consent_source` (pinned by `protect_sensitive_user_columns()`, carried forward from `20261018120000`), `consent_events.purpose` (`socion_updates` for every existing row, or `socionics_signal`), two new sources (`signal_feed_card_v1`, `signal_sidebar_v1`) and the service-role writer `record_signal_opt_in()`. `suppress_email()` now also ends a Signal subscription on a MailerLite opt-out (MailerLite unsubscribes are account-wide) but not on Socion's own Resend unsubscribe link.
+- Consent wording archived as `docs/policies/consent-text-v2.md`. Privacy policy (Signal under Marketing emails, uses and third parties) and Terms (third-party services) updated, archived as `privacy-2026-11-06.md` and `terms-2026-11-06.md`.
+
+---
+
 ## 18 October 2026
 
 ### Fixed
