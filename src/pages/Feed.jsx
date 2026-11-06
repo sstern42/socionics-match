@@ -8,6 +8,7 @@ import MiniProfileCard from '../components/feed/MiniProfileCard'
 import QuadraOnlineCard from '../components/feed/QuadraOnlineCard'
 import FeedRightSidebar from '../components/feed/FeedRightSidebar'
 import FeedAd from '../components/feed/FeedAd'
+import SignalSubscribe from '../components/feed/SignalSubscribe'
 import SwipeDeck from '../components/feed/SwipeDeck'
 import MatchModal from '../components/feed/MatchModal'
 import SeekingYou from '../components/feed/SeekingYou'
@@ -21,6 +22,7 @@ import { hasLapsedReferralPremium } from '../lib/premium'
 import { RELATIONS, MATRIX, QUADRAS, getQuadra } from '../data/relations'
 import { supabase } from '../lib/supabase'
 import { useSIArticles } from '../lib/siArticles'
+import { SIGNAL_SOURCES } from '../lib/signal'
 
 const FOUNDER_FEED_KEY = 'socion_founder_feed_override'
 const AD_DISMISSED_KEY = 'socion_feed_ad_dismissed'
@@ -934,7 +936,7 @@ export default function Feed() {
                       onToggleSave={handleToggleSave}
                     />
                     {i === 2 && showArticlesAd && (
-                      <FeedAd id="si-articles" eyebrow="New on Socionics Insight" headline={latestArticle.title} body={latestArticle.summary} ctaLabel="Read article →" onClick={() => { window.umami?.track('si-article-click', { source: 'feed', title: latestArticle.title }); setWebviewUrl(latestArticle.link) }} onDismiss={() => dismissAd('si-articles', latestArticle.link)}>
+                      <FeedAd id="si-articles" eyebrow="New on Socionics Insight" headline={latestArticle.title} body={latestArticle.summary} ctaLabel="Read article →" onClick={() => { window.umami?.track('si-article-click', { source: 'feed', title: latestArticle.title }); setWebviewUrl(latestArticle.link) }} onDismiss={() => dismissAd('si-articles', latestArticle.link)} footer={<SignalSubscribe source={SIGNAL_SOURCES.feedCard} />}>
                         {siArticles.length > 1 && (
                           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                             {siArticles.slice(1).map(a => (

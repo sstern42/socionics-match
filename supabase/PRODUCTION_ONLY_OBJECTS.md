@@ -146,5 +146,10 @@ dashboard settings a migration can't carry:
   (mail providers and MailerLite call them without a Supabase JWT)
 - the MailerLite webhook itself (URL, events, secret) — steps in the header of
   `supabase/functions/mailerlite-webhook/index.ts`
+- `subscribe-signal` (November 2026, `20261106120000`) reuses
+  `MAILERLITE_API_KEY`; set it on this function too if secrets are scoped per
+  function. Optional `MAILERLITE_SIGNAL_GROUP_ID` overrides the built-in id of
+  the "Socionics Insight - Socionics Signal" group. Keep "Verify JWT" on: the
+  function also checks the token itself
 - the `notify-abandoned-signup` `cron.schedule()` job (commented SQL in
   `20260706120000_abandoned_signup_nudge.sql`), which was already manual
