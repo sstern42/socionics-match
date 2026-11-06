@@ -5,6 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 import { usePageTitle } from '../hooks/usePageTitle'
 import { updateProfileData } from '../lib/profile'
 import { setEmailNotifications as saveEmailNotifications, setMarketingPreference, MARKETING_SOURCES } from '../lib/emailPreferences'
+import { unsubscribeFromSignal } from '../lib/signal'
 import { usePushNotifications } from '../lib/usePushNotifications'
 import ProfileNav from '../components/profile/ProfileNav'
 
@@ -28,6 +29,12 @@ export default function ProfileNotifications() {
   const [marketingSaving, setMarketingSaving] = useState(false)
   const [marketingError, setMarketingError]   = useState(null)
   const marketingOptIn = profile?.marketing_opt_in === true
+
+  // Socionics Signal: this toggle only unsubscribes. Subscribing is through
+  // the feed and sidebar sign-ups, next to their archived consent wording.
+  const [signalSaving, setSignalSaving] = useState(false)
+  const [signalError, setSignalError]   = useState(null)
+  const signalOptIn = profile?.signal_opt_in === true
 
   const {
     supported: pushSupported,
@@ -73,6 +80,21 @@ export default function ProfileNotifications() {
       setMarketingError(err.message)
     } finally {
       setMarketingSaving(false)
+    }
+  }
+
+  async function handleSignalUnsubscribe() {
+    if (!profile || signalSaving || !signalOptIn) return
+    setSignalSaving(true)
+    setSignalError(null)
+    window.umami?.track('signal-unsubscribe', { source: 'settings' })
+    try {
+      await unsubscribeFromSignal()
+      await refreshProfile()
+    } catch (err) {
+      setSignalError(err.message)
+    } finally {
+      setSignalSaving(false)
     }
   }
 
@@ -210,7 +232,7 @@ export default function ProfileNotifications() {
               notifications above, with its own immediate save. */}
           <div style={{ borderTop: '1px solid var(--border)', paddingTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <div>
-              <p style={sectionLabelStyle}>Socion updates</p>
+              <p style={sectionLabelStyle}>Email newsletters</p>
               <p style={sectionNoteStyle}>Optional. Separate from the account notifications above.</p>
             </div>
             <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: marketingSaving ? 'default' : 'pointer', background: marketingOptIn ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
@@ -232,6 +254,30 @@ export default function ProfileNotifications() {
               </div>
             </label>
             {marketingError && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{marketingError}</p>}
+
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '0.75rem', border: '1px solid var(--border)', borderRadius: 4, cursor: signalOptIn && !signalSaving ? 'pointer' : 'default', background: signalOptIn ? 'rgba(154,111,56,0.05)' : 'transparent' }}>
+              <input
+                type="checkbox"
+                checked={signalOptIn}
+                disabled={signalSaving || !signalOptIn}
+                onChange={e => { if (!e.target.checked) handleSignalUnsubscribe() }}
+                style={{ accentColor: 'var(--accent)', width: 16, height: 16, marginTop: 2, flexShrink: 0 }}
+              />
+              <div>
+                <p style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text)' }}>📰 Socionics Signal</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem', lineHeight: 1.5 }}>
+                  Spencer's newsletter from socionicsinsight.com: new articles, Socion news and type theory. Turning this off doesn't change Socion updates.
+                </p>
+                <p style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
+                  {signalSaving
+                    ? 'Unsubscribing…'
+                    : signalOptIn
+                      ? '✓ Subscribed'
+                      : <>Not subscribed. You can subscribe from the <Link to="/feed" style={{ color: 'var(--accent)', textDecoration: 'none' }}>feed</Link>.</>}
+                </p>
+              </div>
+            </label>
+            {signalError && <p style={{ fontSize: '0.82rem', color: '#c0392b', textAlign: 'center' }}>{signalError}</p>}
           </div>
         </div>
       </section>

@@ -8,6 +8,7 @@ export const ENTRIES = [
        label: 'New',
        items: [
          'Socionics Signal: subscribe to Spencer\'s newsletter with one click from the feed, for new articles, Socion news and type theory in your inbox',
+         'Socionics Signal: you can now unsubscribe from Settings, under Profile → Notifications, without affecting Socion updates',
        ],
      },
      {

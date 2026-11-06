@@ -13,19 +13,29 @@ export const SIGNAL_SOURCES = {
 
 export const SIGNAL_CONSENT_TEXT = 'Free, occasional emails from Spencer. Unsubscribe from any email.'
 
-// Adds the signed-in member's account email to the Signal list. The server
-// verifies the session, subscribes them in MailerLite and records the consent.
-export async function subscribeToSignal(source) {
+async function callSignalFunction(name, body) {
   const { data: { session } } = await supabase.auth.getSession()
   const token = session?.access_token
   if (!token) throw new Error('Please sign in again.')
-  const res = await fetch(`${supabaseUrl}/functions/v1/subscribe-signal`, {
+  const res = await fetch(`${supabaseUrl}/functions/v1/${name}`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${token}`, apikey: supabaseKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ source }),
+    body: JSON.stringify(body ?? {}),
   })
   let json = {}
   try { json = await res.json() } catch { /* non-JSON */ }
   if (!res.ok) throw new Error(json.error ?? `Something went wrong (${res.status}).`)
   return json
+}
+
+// Adds the signed-in member's account email to the Signal list. The server
+// verifies the session, subscribes them in MailerLite and records the consent.
+export function subscribeToSignal(source) {
+  return callSignalFunction('subscribe-signal', { source })
+}
+
+// Removes the signed-in member from the Signal group in MailerLite (Socion
+// updates are untouched) and records the opt-out. Used by the Settings toggle.
+export function unsubscribeFromSignal() {
+  return callSignalFunction('unsubscribe-signal')
 }

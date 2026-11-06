@@ -240,6 +240,9 @@ export default function Settings() {
               <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
                 Socion updates by email: <strong>{profile.marketing_opt_in === true ? 'on' : 'off'}</strong>
               </p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text)', marginTop: '0.2rem' }}>
+                Socionics Signal: <strong>{profile.signal_opt_in === true ? 'on' : 'off'}</strong>
+              </p>
             </div>
             <Link to="/profile/notifications" style={{ fontSize: '0.82rem', color: 'var(--accent)', textDecoration: 'none', flexShrink: 0 }}>
               Change →
